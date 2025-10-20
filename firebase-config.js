@@ -1,6 +1,6 @@
 // Firebase Configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyBGaONCeB5MQCYdp3Gv8eUKPvLsBGFnXgY",
+  apiKey: "AIzaSyCvfk81onpaDSRewbJ_3cnPNMuKPz5GelM",
   authDomain: "ebhcs-bulletin-board.firebaseapp.com",
   projectId: "ebhcs-bulletin-board",
   storageBucket: "ebhcs-bulletin-board.firebasestorage.app",
