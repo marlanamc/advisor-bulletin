@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "ebhcs-bulletin-board"
+  },
+  "targets": {
+    "ebhcs-bulletin-board": {
+      "hosting": {
+        "ebhcsjobboard": [
+          "ebhcsjobboard"
+        ]
+      }
+    }
+  }
+}

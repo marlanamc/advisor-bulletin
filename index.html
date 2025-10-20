@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EBHCS Advisor Bulletin Board</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="header-left"></div>
+            <div class="header-center">
+                <h1>⚓ East Boston Harborside Community School</h1>
+                <h2>Advisor Bulletin Board</h2>
+            </div>
+            <div class="header-right"></div>
+        </div>
+        <div class="wave-decoration"></div>
+    </header>
+
+    <main class="main-content">
+        <!-- Filter/Search Section -->
+        <div class="filter-section">
+            <div class="search-bar">
+                <input type="text" id="searchInput" placeholder="Search bulletins..." class="search-input">
+                <button id="searchBtn" class="search-btn">🔍</button>
+                <button id="toggleFilters" class="toggle-filters-btn">
+                    <span>🔧</span> Filters
+                    <span id="activeFiltersCount" class="active-filters-count" style="display: none;">
+                        (<span id="filterCount">0</span>)
+                    </span>
+                </button>
+            </div>
+
+            <div class="filter-controls-new" id="filterControls" style="display: none;">
+                <!-- Row 1: Categories and Posted Date -->
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <h4 class="filter-group-title">Categories</h4>
+                        <div class="filter-chips" id="categoryChips">
+                            <button class="filter-chip category-announcement" data-category="announcement">
+                                📢 Announcements
+                            </button>
+                            <button class="filter-chip category-career-fair" data-category="career-fair">
+                                🎪 Career Fair
+                            </button>
+                            <button class="filter-chip category-college" data-category="college">
+                                🎓 College
+                            </button>
+                            <button class="filter-chip category-immigration" data-category="immigration">
+                                🗽 Immigration
+                            </button>
+                            <button class="filter-chip category-job" data-category="job">
+                                💼 Jobs
+                            </button>
+                            <button class="filter-chip category-resource" data-category="resource">
+                                🔧 Resources
+                            </button>
+                            <button class="filter-chip category-training" data-category="training">
+                                📚 Training
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="filter-group">
+                        <h4 class="filter-group-title">Posted Date</h4>
+                        <div class="filter-chips" id="postedDateChips">
+                            <button class="filter-chip posted-chip" data-posted="today">
+                                🆕 Today
+                            </button>
+                            <button class="filter-chip posted-chip" data-posted="thisweek">
+                                📅 This Week
+                            </button>
+                            <button class="filter-chip posted-chip" data-posted="lastweek">
+                                📆 Last Week
+                            </button>
+                            <button class="filter-chip posted-chip" data-posted="thismonth">
+                                🗓️ This Month
+                            </button>
+                            <button class="filter-chip posted-chip" data-posted="lastmonth">
+                                📋 Last Month
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 2: Deadlines and Class Types -->
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <h4 class="filter-group-title">Deadlines</h4>
+                        <div class="filter-chips" id="deadlineChips">
+                            <button class="filter-chip deadline-chip" data-deadline="soon">
+                                ⚡ Due Soon (7 days)
+                            </button>
+                            <button class="filter-chip deadline-chip" data-deadline="thisweek">
+                                📆 This Week
+                            </button>
+                            <button class="filter-chip deadline-chip" data-deadline="thismonth">
+                                📅 This Month
+                            </button>
+                            <button class="filter-chip deadline-chip" data-deadline="nodate">
+                                🔄 No Deadline
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="filter-group">
+                        <h4 class="filter-group-title">Class Types</h4>
+                        <div class="filter-chips" id="classTypeChips">
+                            <button class="filter-chip classtype-chip" data-classtype="esol">
+                                🌎 ESOL
+                            </button>
+                            <button class="filter-chip classtype-chip" data-classtype="hse">
+                                📝 HSE
+                            </button>
+                            <button class="filter-chip classtype-chip" data-classtype="famlit">
+                                👨‍👩‍👧 FamLit
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Row 3: Posted By -->
+                <div class="filter-row">
+                    <div class="filter-group" style="grid-column: 1 / -1;">
+                        <h4 class="filter-group-title">Posted By Advisor</h4>
+                        <div class="filter-chips" id="postedByChips">
+                            <!-- Advisor filter chips will be dynamically populated -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="filter-actions">
+                    <div class="expired-toggle-container">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="showExpiredToggle">
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <span class="toggle-label">Show Expired</span>
+                    </div>
+                    <button id="clearFilters" class="clear-btn">🗑️ Clear All Filters</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- View Toggle Controls -->
+        <div class="view-controls">
+            <div class="view-toggle">
+                <button id="galleryViewBtn" class="view-btn active" data-view="gallery">
+                    <span>🖼️</span> Gallery
+                </button>
+                <button id="calendarViewBtn" class="view-btn" data-view="calendar">
+                    <span>📅</span> Calendar
+                </button>
+            </div>
+        </div>
+
+        <div class="results-info" id="resultsInfo"></div>
+
+        <!-- Debug Controls (only visible when bulletins are not showing) -->
+        <div id="debugControls" style="display: none; margin: 20px 0; padding: 15px; background: rgba(255, 193, 7, 0.1); border: 2px solid #ffc107; border-radius: 8px;">
+            <h4 style="margin: 0 0 10px 0; color: #d97706;">🔧 Debug: Bulletins Not Showing?</h4>
+            <p style="margin: 0 0 15px 0; color: #92400e; font-size: 14px;">If bulletins exist but aren't visible, try these debugging tools:</p>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button onclick="inspectBulletins()" style="background: #0ea5e9; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">🔍 Inspect Data</button>
+                <button onclick="forceRefresh()" style="background: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">🔄 Force Refresh</button>
+                <button onclick="showAllBulletins()" style="background: #8b5cf6; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">📋 Show All</button>
+                <button onclick="resetToSampleData()" style="background: #f59e0b; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">📝 Load Sample Data</button>
+            </div>
+            <p style="margin: 10px 0 0 0; font-size: 12px; color: #92400e;">
+                💡 Open browser console (F12) to see detailed debugging information
+            </p>
+        </div>
+
+        <!-- Bulletin Views -->
+        <div class="bulletin-container">
+            <div class="bulletin-view bulletin-grid active" id="bulletinGrid" data-view="gallery">
+                <!-- Gallery view bulletins will be dynamically loaded here -->
+            </div>
+
+            <div class="bulletin-view bulletin-calendar" id="bulletinCalendar" data-view="calendar">
+                <!-- Calendar view bulletins will be dynamically loaded here -->
+            </div>
+        </div>
+
+        <div class="empty-state" id="emptyState" style="display: none;">
+            <h3>No bulletins posted yet</h3>
+            <p>Advisors can log in to post job opportunities, training sessions, and important announcements.</p>
+        </div>
+    </main>
+
+    <div id="bulletinDetailModal" class="modal bulletin-detail-modal" aria-hidden="true">
+        <div class="modal-content bulletin-detail-content">
+            <button id="closeBulletinDetail" class="close-detail" aria-label="Close bulletin detail">&times;</button>
+            <div id="bulletinDetailBody"></div>
+        </div>
+    </div>
+
+
+    <!-- Notification and tutorial modals removed for streamlined interface -->
+
+    <footer>
+        <div class="footer-content">
+            <p>EBHCS Advisor Bulletin Board</p>
+            <div class="footer-contact">
+                <p>Having issues with the site? <a href="mailto:mcreed@ebhcs.org" class="contact-link">Contact us</a></p>
+            </div>
+            <div class="advisor-portal-section">
+                <a href="admin.html" class="admin-btn footer-admin-btn">
+                    <span>⛵</span>
+                    Advisor Portal
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-storage-compat.js"></script>
+
+    <!-- Choose: Local storage version OR Firebase version -->
+    <!-- For local testing, use: -->
+    <!-- <script src="script.js"></script> -->
+
+    <!-- For production with Firebase, use: -->
+    <script src="firebase-config.js"></script>
+</body>
+</html>

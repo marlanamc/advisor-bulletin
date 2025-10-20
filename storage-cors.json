@@ -1,0 +1,11 @@
+[
+  {
+    "origin": [
+      "https://ebhcsjobboard.web.app",
+      "https://ebhcsjobboard.firebaseapp.com"
+    ],
+    "method": ["GET", "POST", "PUT", "HEAD"],
+    "responseHeader": ["Content-Type", "Authorization", "x-goog-meta-*"],
+    "maxAgeSeconds": 3600
+  }
+]

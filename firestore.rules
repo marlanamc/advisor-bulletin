@@ -1,0 +1,82 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /bulletins/{bulletinId} {
+
+      // Anyone can read active bulletins (for student viewing)
+      allow read: if resource.data.isActive == true;
+
+      // Only authenticated advisors can create bulletins
+      allow create: if request.auth != null
+        && request.auth.token.email.matches('.*@ebhcs\\.org')
+        && validateBulletinData(request.resource.data)
+        && request.resource.data.postedBy == getUsername(request.auth.token.email);
+
+      // Original authors can update their own bulletins; admin/leah may update any bulletin
+      allow update: if request.auth != null
+        && request.auth.token.email.matches('.*@ebhcs\\.org')
+        && (isPrivilegedAdvisor(request.auth.token.email)
+          || resource.data.postedBy == getUsername(request.auth.token.email))
+        && validateBulletinData(request.resource.data)
+        && request.resource.data.postedBy == resource.data.postedBy
+        && request.resource.data.datePosted == resource.data.datePosted;
+
+      // Original authors (or admin/leah) can delete by setting isActive: false
+      allow update: if request.auth != null
+        && request.auth.token.email.matches('.*@ebhcs\\.org')
+        && (isPrivilegedAdvisor(request.auth.token.email)
+          || resource.data.postedBy == getUsername(request.auth.token.email))
+        && request.resource.data.isActive == false
+        && request.resource.data.keys().hasAll(resource.data.keys());
+    }
+
+    match /users/{username} {
+      // Users can read and write their own user document
+      allow read, write: if request.auth != null
+        && request.auth.token.email.matches('.*@ebhcs\\.org')
+        && username == getUsername(request.auth.token.email);
+
+      // Admin can read/write any user document
+      allow read, write: if request.auth != null
+        && request.auth.token.email == 'admin@ebhcs.org';
+    }
+
+    function getUsername(email) {
+      return email.split('@')[0];
+    }
+
+    function isPrivilegedAdvisor(email) {
+      return email == 'admin@ebhcs.org' || email == 'leah@ebhcs.org';
+    }
+
+    function validateBulletinData(data) {
+      // Required fields
+      let hasRequired = data.keys().hasAll(['title', 'category', 'advisorName', 'postedBy', 'isActive'])
+        && data.title is string && data.title.size() > 0 && data.title.size() <= 200
+        && data.category is string && data.category in ['job', 'training', 'college', 'career-fair', 'announcement', 'resource', 'immigration']
+        && data.advisorName is string && data.advisorName.size() > 0
+        && data.postedBy is string && data.postedBy.size() > 0
+        && data.isActive is bool;
+
+      // Optional string fields - allow if not present, empty, or valid string
+      let validOptionalFields =
+        (!('description' in data) || data.description is string)
+        && (!('company' in data) || data.company is string)
+        && (!('contact' in data) || data.contact is string)
+        && (!('deadline' in data) || data.deadline is string)
+        && (!('eventTime' in data) || data.eventTime is string)
+        && (!('eventLink' in data) || data.eventLink is string)
+        && (!('dateType' in data) || data.dateType is string)
+        && (!('eventDate' in data) || data.eventDate is string)
+        && (!('startDate' in data) || data.startDate is string)
+        && (!('endDate' in data) || data.endDate is string)
+        && (!('startTime' in data) || data.startTime is string)
+        && (!('endTime' in data) || data.endTime is string)
+        && (!('eventLocation' in data) || data.eventLocation is string)
+        && (!('classType' in data) || data.classType is string)
+        && (!('image' in data) || data.image == null || data.image is string);
+
+      return hasRequired && validOptionalFields;
+    }
+  }
+}

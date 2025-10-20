@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EBHCS Admin - Post Bulletin</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="header-left">
+                <a href="index.html" class="back-btn">← View Bulletins</a>
+            </div>
+            <div class="header-center">
+                <h1>⚓ East Boston Harborside Community School</h1>
+                <h2>Advisor Dashboard</h2>
+            </div>
+            <div class="header-right">
+                <button id="logoutBtn" class="logout-btn" style="display: none;">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Admin Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>Advisor Login</h3>
+            <div id="loginError" class="error-message" style="display: none;"></div>
+            <div id="loginSuccess" class="success-message" style="display: none;"></div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" name="username" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <div class="password-input-wrapper">
+                        <input type="password" id="password" name="password" required autocomplete="current-password">
+                        <button type="button" class="show-password" onclick="togglePassword('password')" tabindex="-1">Show</button>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" id="loginSubmitBtn">Login</button>
+                    <button type="button" id="forgotPasswordBtn" class="secondary-btn">Forgot Password?</button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+
+    <!-- Password Change Modal -->
+    <div id="passwordChangeModal" class="modal">
+        <div class="modal-content">
+            <h3>Change Your Password</h3>
+            <p class="password-change-notice">For security, please change your password from the default.</p>
+            <div id="passwordChangeError" class="error-message" style="display: none;"></div>
+
+            <form id="passwordChangeForm">
+                <div class="form-group">
+                    <label for="currentPassword">Current Password:</label>
+                    <div class="password-input-wrapper">
+                        <input type="password" id="currentPassword" name="currentPassword" required>
+                        <button type="button" class="show-password" onclick="togglePassword('currentPassword')" tabindex="-1">Show</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="newPassword">New Password:</label>
+                    <div class="password-input-wrapper">
+                        <input type="password" id="newPassword" name="newPassword" required minlength="8">
+                        <button type="button" class="show-password" onclick="togglePassword('newPassword')" tabindex="-1">Show</button>
+                    </div>
+                    <small class="input-help">At least 8 characters, include letters and numbers</small>
+                </div>
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm New Password:</label>
+                    <div class="password-input-wrapper">
+                        <input type="password" id="confirmPassword" name="confirmPassword" required>
+                        <button type="button" class="show-password" onclick="togglePassword('confirmPassword')" tabindex="-1">Show</button>
+                    </div>
+                </div>
+                <div class="password-strength" id="passwordStrength"></div>
+                <div class="form-actions">
+                    <button type="submit" id="changePasswordBtn">Change Password</button>
+                    <button type="button" id="skipPasswordChange" class="secondary-btn">Skip for Now</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Forgot Password Modal -->
+    <div id="forgotPasswordModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeForgotPassword()">&times;</span>
+            <h3>Reset Password</h3>
+            <div id="forgotPasswordError" class="error-message" style="display: none;"></div>
+            <div id="forgotPasswordSuccess" class="success-message" style="display: none;"></div>
+
+            <form id="forgotPasswordForm">
+                <div class="form-group">
+                    <label for="resetUsername">Email Address:</label>
+                    <input type="email" id="resetUsername" name="resetUsername" required placeholder="Enter your @ebhcs.org email address">
+                </div>
+                <p class="reset-info">We'll send a secure password reset link to your email address. Check your inbox and spam folder.</p>
+                <div class="form-actions">
+                    <button type="submit">Send Reset Email</button>
+                    <button type="button" onclick="closeForgotPassword()" class="secondary-btn">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <main class="main-content">
+        <!-- Login Required Message -->
+        <div id="loginRequired" class="login-required">
+            <div class="login-card">
+                <h3>Advisor Login Required</h3>
+                <p>Please log in to post bulletins and manage announcements.</p>
+                <button id="loginBtn" class="admin-btn">Login</button>
+            </div>
+        </div>
+
+        <!-- Admin Panel -->
+        <div id="adminPanel" class="admin-panel" style="display: none;">
+            <div class="welcome-section">
+                <h3 id="welcomeMessage">Welcome, Advisor!</h3>
+                <p>Create and manage bulletins for ESOL students</p>
+            </div>
+
+            <div class="admin-tabs" role="tablist" aria-label="Admin navigation">
+                <button class="tab-btn active" role="tab" aria-selected="true" aria-controls="postTab" onclick="showTab('post')" onkeydown="handleTabKeydown(event, 'post')">New Post</button>
+                <button class="tab-btn" role="tab" aria-selected="false" aria-controls="manageTab" onclick="showTab('manage')" onkeydown="handleTabKeydown(event, 'manage')">Manage Posts</button>
+            </div>
+
+            <!-- New Post Tab -->
+            <div id="postTab" class="tab-content active" role="tabpanel" aria-labelledby="post-tab">
+                <div class="post-form-container">
+                    <h4>Create New Bulletin</h4>
+                    
+                    <!-- Form Progress Indicator -->
+                    <div class="form-progress" id="formProgress" style="display: none;">
+                        <div class="form-progress-header">
+                            <h5 class="form-progress-title">Form Completion</h5>
+                            <span class="form-progress-percentage" id="progressPercentage">0%</span>
+                        </div>
+                        <div class="form-progress-bar">
+                            <div class="form-progress-fill" id="progressFill" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    
+                    <form id="bulletinForm">
+                        
+                        <!-- Required Information Section -->
+                        <div class="form-section required">
+                            <div class="form-section-header">
+                                <div class="form-section-icon">📋</div>
+                                <div>
+                                    <h3 class="form-section-title">Required Information</h3>
+                                    <p class="form-section-subtitle">These fields are mandatory for all bulletins</p>
+                                </div>
+                            </div>
+                            
+                            <div class="field-group double">
+                                <div class="form-group required-field">
+                                    <label for="title" class="required">Title</label>
+                                    <input type="text" id="title" name="title" required placeholder="e.g., Job Opening: Customer Service Representative" maxlength="200" class="required">
+                                    <div class="field-feedback" id="titleFeedback"></div>
+                                    <small class="input-help required">A clear, descriptive title helps students understand the opportunity</small>
+                                </div>
+
+                                <div class="form-group required-field">
+                                    <label for="category" class="required">Category</label>
+                                    <select id="category" name="category" required class="required">
+                                        <option value="">Select a category</option>
+                                        <option value="job">Job Opportunity</option>
+                                        <option value="training">Training/Workshop</option>
+                                        <option value="college">College/University</option>
+                                        <option value="career-fair">Career Fair</option>
+                                        <option value="immigration">Immigration</option>
+                                        <option value="announcement">General Announcement</option>
+                                        <option value="resource">Resource/Service</option>
+                                    </select>
+                                    <small class="input-help required">Choose the most appropriate category for this bulletin</small>
+                                </div>
+                            </div>
+
+                            <div class="form-group required-field">
+                                <label for="advisorName" class="required">Posted by</label>
+                                <select id="advisorName" name="advisorName" required class="required">
+                                    <option value="">Select your name</option>
+                                    <option value="Jorge">Jorge</option>
+                                    <option value="Fabiola">Fabiola</option>
+                                    <option value="Leidy">Leidy</option>
+                                    <option value="Carmen">Carmen</option>
+                                    <option value="Jerome">Jerome</option>
+                                    <option value="Felipe">Felipe</option>
+                                    <option value="Simonetta">Simonetta</option>
+                                    <option value="Mike K.">Mike K.</option>
+                                    <option value="Leah">Leah</option>
+                                    <option value="Administrator">Administrator</option>
+                                </select>
+                                <small class="input-help required">This helps students know who posted the information</small>
+                            </div>
+                        </div>
+
+                        <!-- Recommended Information Section -->
+                        <div class="form-section optional">
+                            <div class="form-section-header">
+                                <div class="form-section-icon">✨</div>
+                                <div>
+                                    <h3 class="form-section-title">Recommended Details</h3>
+                                    <p class="form-section-subtitle">These fields make your bulletin more helpful and engaging</p>
+                                </div>
+                            </div>
+
+                            <div class="form-group optional-field">
+                                <label for="description">Description</label>
+                                <textarea id="description" name="description" rows="4" placeholder="Provide details about the opportunity or announcement..." maxlength="2000" class="recommended"></textarea>
+                                <div class="field-feedback" id="descriptionFeedback"></div>
+                                <small class="input-help recommended">Add details so students know why this opportunity matters to them</small>
+                            </div>
+
+                            <div class="field-group double">
+                                <div class="form-group optional-field">
+                                    <label for="company">Company/Organization</label>
+                                    <input type="text" id="company" name="company" placeholder="e.g., Boston Medical Center" class="recommended">
+                                    <small class="input-help">The organization offering the opportunity</small>
+                                </div>
+
+                                <div class="form-group optional-field">
+                                    <label for="classType">Class Type (if applicable)</label>
+                                    <select id="classType" name="classType" class="recommended">
+                                        <option value="">Select class type (if applicable)</option>
+                                        <option value="esol">ESOL (English for Speakers of Other Languages)</option>
+                                        <option value="hse">HSE (High School Equivalency)</option>
+                                        <option value="famlit">FamLit (Family Literacy)</option>
+                                    </select>
+                                    <small class="input-help">Which student groups would benefit most from this opportunity?</small>
+                                </div>
+                            </div>
+
+                            <div class="form-group optional-field">
+                                <label for="eventLink">Link (optional)</label>
+                                <input type="url" id="eventLink" name="eventLink" placeholder="https://example.com/register" class="recommended">
+                                <small class="input-help">Add a URL for more details or registration. The link will be clickable for students.</small>
+                            </div>
+
+                            <div class="form-group optional-field">
+                                <label for="contact">Contact Information</label>
+                                <textarea id="contact" name="contact" rows="2" placeholder="Email, phone, or website for more information" class="recommended"></textarea>
+                                <small class="input-help">How can students get more information or apply?</small>
+                            </div>
+                        </div>
+
+                        <!-- Event Details Section -->
+                        <div class="form-section event-details">
+                            <div class="form-section-header">
+                                <div class="form-section-icon">📅</div>
+                                <div>
+                                    <h3 class="form-section-title">Event & Timing Details</h3>
+                                    <p class="form-section-subtitle">Add dates, times, and location information to help students plan</p>
+                                </div>
+                            </div>
+
+                            <div class="field-group double">
+                                <div class="form-group event-field">
+                                    <label for="dateType">Date Type</label>
+                                    <select id="dateType" name="dateType" onchange="toggleDateFields()" class="recommended">
+                                        <option value="">No specific date</option>
+                                        <option value="deadline">Application Deadline</option>
+                                        <option value="event">Event Date</option>
+                                        <option value="range">Event Date Range</option>
+                                    </select>
+                                    <small class="input-help">What type of date information is most relevant?</small>
+                                </div>
+
+                                <div class="form-group event-field">
+                                    <label for="eventLocation">Event Format</label>
+                                    <select id="eventLocation" name="eventLocation" class="recommended">
+                                        <option value="">Select format (if applicable)</option>
+                                        <option value="in-person">In-Person</option>
+                                        <option value="online">Online</option>
+                                        <option value="hybrid">Hybrid (In-Person & Online)</option>
+                                    </select>
+                                    <small class="input-help">How will this event be conducted?</small>
+                                </div>
+                            </div>
+
+                            <div class="field-group" id="dateFields" style="display: none;">
+                                <div class="form-group event-field" id="singleDateGroup">
+                                    <label for="eventDate">Date</label>
+                                    <input type="date" id="eventDate" name="eventDate" class="recommended">
+                                </div>
+
+                                <div class="form-group event-field" id="startDateGroup" style="display: none;">
+                                    <label for="startDate">Start Date</label>
+                                    <input type="date" id="startDate" name="startDate" class="recommended">
+                                </div>
+
+                                <div class="form-group event-field" id="endDateGroup" style="display: none;">
+                                    <label for="endDate">End Date</label>
+                                    <input type="date" id="endDate" name="endDate" class="recommended">
+                                </div>
+                            </div>
+
+                            <div class="field-group double">
+                                <div class="form-group event-field">
+                                    <label for="startTime">Start Time (optional)</label>
+                                    <input type="time" id="startTime" name="startTime" class="recommended">
+                                </div>
+
+                                <div class="form-group event-field">
+                                    <label for="endTime">End Time (optional)</label>
+                                    <input type="time" id="endTime" name="endTime" class="recommended">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Visual Enhancement Section -->
+                        <div class="form-section enhancement">
+                            <div class="form-section-header">
+                                <div class="form-section-icon">🖼️</div>
+                                <div>
+                                    <h3 class="form-section-title">Visual Enhancement</h3>
+                                    <p class="form-section-subtitle">Make your bulletin stand out with an image</p>
+                                </div>
+                            </div>
+
+                            <div class="form-group enhancement-field">
+                                <label for="image">Add Image (optional)</label>
+                                <input type="file" id="image" name="image" accept="image/*" class="file-input recommended">
+                                <div class="file-upload-help">
+                                    <small>Upload a logo, flyer, or relevant image. Use JPG/PNG/GIF/WebP under 10MB (large posters are auto-resized; aim for ≤1MB and around 800×600px).</small>
+                                </div>
+                                <div id="imagePreview" class="image-preview"></div>
+                            </div>
+
+                            <div class="form-group enhancement-field">
+                                <label for="pdf">Add PDF (optional)</label>
+                                <input type="file" id="pdf" name="pdf" accept=".pdf,application/pdf" class="file-input recommended">
+                                <div class="file-upload-help">
+                                    <small>Upload a PDF flyer, form, or information sheet. Maximum file size: 10MB.</small>
+                                </div>
+                                <div id="pdfPreview" class="pdf-preview"></div>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="preview-btn" onclick="previewBulletin()">Preview</button>
+                            <button type="submit" class="submit-btn" id="postBulletinBtn">Post Bulletin</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Manage Posts Tab -->
+            <div id="manageTab" class="tab-content">
+                <div class="manage-header">
+                    <h4>Manage Your Posts</h4>
+                    <div class="manage-controls">
+                        <input type="text" id="manageSearchInput" placeholder="Search your posts..." class="manage-search">
+                        <select id="manageSortSelect" class="manage-sort">
+                            <option value="newest">Newest First</option>
+                            <option value="oldest">Oldest First</option>
+                            <option value="category">By Category</option>
+                            <option value="deadline">By Deadline</option>
+                        </select>
+                        <select id="manageFilterSelect" class="manage-filter">
+                            <option value="all">All Posts</option>
+                            <option value="active">Active</option>
+                            <option value="expired">Expired</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="manageBulletins" class="manage-bulletins-grid">
+                    <!-- Bulletins for management will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Preview Modal -->
+    <div id="previewModal" class="modal">
+        <div class="modal-content preview-modal-content">
+            <span class="close" onclick="closePreview()">&times;</span>
+            <h3>Bulletin Preview</h3>
+            <div id="previewContent" class="preview-content">
+                <!-- Preview will be shown here -->
+            </div>
+            <div class="preview-actions">
+                <button onclick="closePreview()" class="cancel-btn">Edit</button>
+                <button onclick="submitFromPreview()" class="submit-btn">Post Bulletin</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <p>EBHCS Advisor Portal</p>
+            <div class="footer-contact">
+                <p>Having issues with the site? <a href="mailto:mcreed@ebhcs.org" class="contact-link">Contact us</a></p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-storage-compat.js"></script>
+
+    <!-- Choose: Local storage version OR Firebase version -->
+    <!-- For local testing, use: -->
+    <!-- <script src="script.js"></script> -->
+
+    <!-- For production with Firebase, use: -->
+    <script src="firebase-config.js"></script>
+    <script src="enhanced-auth.js"></script>
+    <script src="firebase-admin.js"></script>
+
+</body>
+</html>
