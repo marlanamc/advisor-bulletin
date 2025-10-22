@@ -2,6 +2,12 @@
   "firestore": {
     "rules": "firestore.rules"
   },
+  "storage": [
+    {
+      "target": "uploads",
+      "rules": "storage.rules"
+    }
+  ],
   "hosting": [
     {
       "target": "ebhcsjobboard",

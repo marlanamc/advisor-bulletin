@@ -8,6 +8,11 @@
         "ebhcsjobboard": [
           "ebhcsjobboard"
         ]
+      },
+      "storage": {
+        "uploads": [
+          "ebhcs-bulletin-uploads-us"
+        ]
       }
     }
   }

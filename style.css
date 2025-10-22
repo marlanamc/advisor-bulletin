@@ -702,6 +702,8 @@ header h2 {
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 .bulletin-card.hash-highlight {
@@ -774,9 +776,9 @@ header h2 {
 
 .bulletin-header {
     display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
+    flex-direction: column;
     margin-bottom: 15px;
+    position: relative;
 }
 
 .bulletin-title {
@@ -784,8 +786,13 @@ header h2 {
     font-weight: 600;
     color: #0f172a;
     margin-bottom: 12px;
+    margin-top: 8px;
     line-height: 1.4;
     letter-spacing: -0.025em;
+    width: 100%;
+    padding-right: 0;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 @media (min-width: 640px) {
@@ -795,58 +802,67 @@ header h2 {
 }
 
 .category-badge {
-    padding: 8px 16px;
-    border-radius: 12px;
-    font-size: 0.75rem;
+    padding: 6px 12px;
+    border-radius: 10px;
+    font-size: 0.65rem;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.8px;
+    letter-spacing: 0.6px;
     backdrop-filter: blur(5px);
     transition: all 0.3s ease;
+    align-self: flex-start;
+    white-space: nowrap;
 }
 
 .category-job {
-    background: linear-gradient(135deg, #caf0f8 0%, #ade8f4 100%);
-    color: #0077b6;
-    border: 2px solid #90e0ef;
-    text-shadow: none;
-}
-.category-training {
-    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-    color: #92400e;
-    border: 2px solid #fcd34d;
-    text-shadow: none;
-}
-.category-college {
-    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-    color: #1e40af;
+    background: linear-gradient(135deg, #bfdbfe 0%, #dbeafe 100%);
+    color: #1e3a8a;
     border: 2px solid #93c5fd;
     text-shadow: none;
+    font-weight: 700;
 }
-.category-career-fair {
-    background: linear-gradient(135deg, #fecdd3 0%, #fda4af 100%);
-    color: #be123c;
-    border: 2px solid #fb7185;
+.category-training {
+    background: linear-gradient(135deg, #fed7aa 0%, #ffedd5 100%);
+    color: #7c2d12;
+    border: 2px solid #fdba74;
     text-shadow: none;
-    box-shadow: 0 2px 8px rgba(251, 113, 133, 0.25);
+    font-weight: 700;
 }
-.category-immigration {
-    background: linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 100%);
-    color: #6b21a8;
-    border: 2px solid #c084fc;
-    text-shadow: none;
-}
-.category-announcement {
-    background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
-    color: #4338ca;
+.category-college {
+    background: linear-gradient(135deg, #c7d2fe 0%, #e0e7ff 100%);
+    color: #3730a3;
     border: 2px solid #a5b4fc;
     text-shadow: none;
+    font-weight: 700;
+}
+.category-career-fair {
+    background: linear-gradient(135deg, #fbcfe8 0%, #fce7f3 100%);
+    color: #9f1239;
+    border: 2px solid #f9a8d4;
+    text-shadow: none;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(249, 168, 212, 0.25);
+}
+.category-immigration {
+    background: linear-gradient(135deg, #e9d5ff 0%, #f3e8ff 100%);
+    color: #6b21a8;
+    border: 2px solid #d8b4fe;
+    text-shadow: none;
+    font-weight: 700;
+}
+.category-announcement {
+    background: linear-gradient(135deg, #c7d2fe 0%, #ddd6fe 100%);
+    color: #4338ca;
+    border: 2px solid #a78bfa;
+    text-shadow: none;
+    font-weight: 700;
 }
 .category-resource {
-    background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
-    color: #047857;
-    border: 2px solid #6ee7b7;
+    background: linear-gradient(135deg, #bbf7d0 0%, #dcfce7 100%);
+    color: #14532d;
+    border: 2px solid #86efac;
     text-shadow: none;
+    font-weight: 700;
 }
 
 .bulletin-description {
@@ -933,14 +949,25 @@ header h2 {
 .meta-item {
     margin-bottom: 8px;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
+    word-wrap: break-word;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 .meta-item strong {
     margin-right: 8px;
     min-width: 80px;
+    flex-shrink: 0;
     color: #334155;
     font-weight: 600;
+}
+
+.meta-item a {
+    word-break: break-all;
+    overflow-wrap: anywhere;
+    max-width: 100%;
+    display: inline-block;
 }
 
 .deadline-warning {
@@ -1021,18 +1048,38 @@ header h2 {
     top: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.2s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .modal-content {
     background-color: white;
     margin: 5% auto;
-    padding: 30px;
-    border-radius: 12px;
+    padding: 40px;
+    border-radius: 16px;
     width: 90%;
     max-width: 500px;
     position: relative;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    animation: slideDown 0.3s ease-out;
+    border: 2px solid rgba(14, 165, 233, 0.2);
 }
 
 .bulletin-detail-modal {
@@ -1187,18 +1234,107 @@ header h2 {
 }
 
 .close {
-    color: #aaa;
+    color: #94a3b8;
     float: right;
-    font-size: 28px;
+    font-size: 32px;
     font-weight: bold;
     position: absolute;
-    right: 20px;
-    top: 15px;
+    right: 24px;
+    top: 20px;
     cursor: pointer;
+    transition: all 0.2s ease;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    background: transparent;
+    z-index: 10;
 }
 
 .close:hover {
-    color: #333;
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+    transform: scale(1.1);
+}
+
+.close:active {
+    transform: scale(0.95);
+}
+
+.modal-subtitle {
+    color: #64748b;
+    font-size: 0.95rem;
+    margin: -8px 0 24px 0;
+    line-height: 1.5;
+}
+
+.modal-content h3 {
+    color: #0f172a;
+    font-size: 1.6rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+.modal-content input[type="text"],
+.modal-content input[type="password"],
+.modal-content input[type="email"] {
+    transition: all 0.2s ease;
+    border: 2px solid #e2e8f0;
+}
+
+.modal-content input[type="text"]:focus,
+.modal-content input[type="password"]:focus,
+.modal-content input[type="email"]:focus {
+    border-color: #0ea5e9;
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+    outline: none;
+}
+
+.modal-content button[type="submit"] {
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.modal-content button[type="submit"]:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+}
+
+.modal-content button[type="submit"]:active {
+    transform: translateY(0);
+}
+
+.modal-content button[type="submit"]:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.modal-content button.loading {
+    position: relative;
+    color: transparent;
+    pointer-events: none;
+}
+
+.modal-content button.loading::after {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    top: 50%;
+    left: 50%;
+    margin-left: -9px;
+    margin-top: -9px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
 }
 
 /* Admin Panel */
@@ -4970,5 +5106,152 @@ select:focus {
 
     .admin-tabs {
         flex-direction: column;
+    }
+}
+
+/* ========================================
+   MOBILE STABILITY IMPROVEMENTS
+   ======================================== */
+
+/* Prevent Double-Tap Zoom & Remove Tap Delays */
+button,
+.btn,
+.bulletin-card,
+.category-filter,
+.admin-tab,
+.close,
+a {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Mobile Touch Feedback - Only on Touch Devices */
+@media (hover: none) and (pointer: coarse) {
+    /* Button Press Feedback */
+    button:active,
+    .btn:active {
+        transform: scale(0.97);
+        opacity: 0.9;
+        transition: transform 0.1s ease, opacity 0.1s ease;
+    }
+
+    /* Card Tap Feedback */
+    .bulletin-card:active {
+        transform: scale(0.99);
+        transition: transform 0.15s ease;
+    }
+
+    /* Tab Press Feedback */
+    .admin-tab:active,
+    .category-filter:active {
+        transform: scale(0.98);
+        opacity: 0.9;
+        transition: transform 0.1s ease;
+    }
+
+    /* Link Press Feedback */
+    a:active {
+        opacity: 0.7;
+        transition: opacity 0.1s ease;
+    }
+}
+
+/* iOS Keyboard & Modal Fixes */
+@media (max-width: 768px) {
+    /* Use dynamic viewport height for iOS keyboard handling */
+    .modal {
+        height: 100dvh;
+        height: 100vh; /* Fallback for older browsers */
+    }
+
+    /* Make modal content scrollable on small screens */
+    .modal-content {
+        max-height: 85vh;
+        max-height: 85dvh;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+        margin: 2% auto;
+    }
+
+    /* Ensure form inputs stay visible when keyboard opens */
+    .modal-content input:focus,
+    .modal-content textarea:focus {
+        scroll-margin-top: 120px;
+        scroll-margin-bottom: 120px;
+    }
+
+    /* Prevent body scroll when modal is open */
+    body.modal-open {
+        position: fixed;
+        width: 100%;
+        overflow: hidden;
+        touch-action: none;
+    }
+
+    /* Better momentum scrolling */
+    .bulletin-grid,
+    .bulletin-detail-content,
+    .modal-content {
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+    }
+
+    /* Prevent text selection during scroll */
+    .bulletin-card,
+    .category-filter {
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-touch-callout: none;
+    }
+
+    /* But allow text selection in bulletin content */
+    .bulletin-description,
+    .detail-description,
+    .bulletin-title {
+        -webkit-user-select: text;
+        user-select: text;
+    }
+}
+
+/* Extra Small Screens - Additional Stability */
+@media (max-width: 480px) {
+    /* Larger tap targets on small screens */
+    button,
+    .btn {
+        min-height: 44px;
+        min-width: 44px;
+        padding: 12px 20px;
+    }
+
+    .close {
+        width: 44px;
+        height: 44px;
+        font-size: 36px;
+    }
+
+    /* More padding for easier scrolling */
+    .modal-content {
+        padding: 24px 16px;
+        max-height: 90vh;
+        max-height: 90dvh;
+    }
+
+    /* Prevent horizontal scroll */
+    body {
+        overflow-x: hidden;
+    }
+}
+
+/* Smooth Scrolling for All Mobile */
+@media (max-width: 768px) {
+    html {
+        scroll-behavior: smooth;
+        -webkit-text-size-adjust: 100%;
+    }
+
+    /* Prevent bounce effect on body */
+    body {
+        overscroll-behavior-y: none;
     }
 }

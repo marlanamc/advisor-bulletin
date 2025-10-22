@@ -1,9 +1,9 @@
 // Firebase Configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyCvfk81onpaDSRewbJ_3cnPNMuKPz5GelM",
+  apiKey: "AIzaSyBGaONCeB5MQCYdp3Gv8eUKPvLsBGFnXgY",
   authDomain: "ebhcs-bulletin-board.firebaseapp.com",
   projectId: "ebhcs-bulletin-board",
-  storageBucket: "ebhcs-bulletin-board.firebasestorage.app",
+  storageBucket: "ebhcs-bulletin-uploads-us",
   messagingSenderId: "556649154585",
   appId: "1:556649154585:web:3a3f49d2056aa507088288"
 };
@@ -455,12 +455,10 @@ class FirebaseBulletinBoard {
             <div class="bulletin-card ${isExpired ? 'expired-bulletin' : ''}" id="bulletin-${bulletin.id}">
                 ${isExpired ? '<div class="expired-banner">EXPIRED</div>' : ''}
                 <div class="bulletin-header">
-                    <div>
-                        <div class="bulletin-title">${this.escapeHtml(bulletin.title)}</div>
-                    </div>
                     <span class="category-badge category-${bulletin.category}">
                         ${this.getCategoryDisplay(bulletin.category)}
                     </span>
+                    <div class="bulletin-title">${this.escapeHtml(bulletin.title)}</div>
                 </div>
 
                 ${bulletin.image ? `
@@ -531,7 +529,7 @@ class FirebaseBulletinBoard {
                     <div class="bulletin-action-buttons">
                         ${bulletin.pdfUrl ? `
                             <a href="#" target="_blank" class="pdf-btn" title="View PDF document" data-pdf-url="${bulletin.pdfUrl.substring(0, 100)}..." onclick="window.bulletinBoard.openPdfFromBulletin('${bulletin.id}'); return false;" onkeydown="if(event.key==='Enter'||event.key===' '){window.bulletinBoard.openPdfFromBulletin('${bulletin.id}');return false;}" role="button" aria-label="View PDF document for ${this.escapeHtml(bulletin.title)}" tabindex="0">
-                                📄 PDF
+                                📄 View PDF
                             </a>
                         ` : ''}
                         <button class="share-btn" onclick="shareBulletin('${bulletin.id}', '${this.escapeHtml(bulletin.title).replace(/'/g, "&#39;")}')">
@@ -971,10 +969,7 @@ class FirebaseBulletinBoard {
             console.log('=== PDF OPENING DEBUG START ===');
             console.log('Opening PDF for bulletin ID:', bulletinId);
             console.log('Total bulletins loaded:', this.bulletins.length);
-            
-            // Show loading state
-            this.showTemporaryMessage('Loading PDF...', 'info');
-            
+
             // Find the bulletin in our current data
             const bulletin = this.bulletins.find(b => b.id === bulletinId);
             console.log('Found bulletin:', bulletin ? 'YES' : 'NO');
@@ -1379,7 +1374,7 @@ class FirebaseBulletinBoard {
                     <div class="bulletin-list-actions">
                         ${bulletin.pdfUrl ? `
                             <a href="#" target="_blank" class="pdf-btn" title="View PDF document" data-pdf-url="${bulletin.pdfUrl.substring(0, 100)}..." onclick="window.bulletinBoard.openPdfFromBulletin('${bulletin.id}'); return false;" onkeydown="if(event.key==='Enter'||event.key===' '){window.bulletinBoard.openPdfFromBulletin('${bulletin.id}');return false;}" role="button" aria-label="View PDF document for ${this.escapeHtml(bulletin.title)}" tabindex="0">
-                                📄 PDF
+                                📄 View PDF
                             </a>
                         ` : ''}
                         <button type="button" class="share-btn" onclick="window.bulletinBoard.shareBulletin('${bulletin.id}')">

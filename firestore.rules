@@ -17,9 +17,8 @@ service cloud.firestore {
         && request.auth.token.email.matches('.*@ebhcs\\.org')
         && (isPrivilegedAdvisor(request.auth.token.email)
           || resource.data.postedBy == getUsername(request.auth.token.email))
-        && validateBulletinData(request.resource.data)
-        && request.resource.data.postedBy == resource.data.postedBy
-        && request.resource.data.datePosted == resource.data.datePosted;
+        && (!('postedBy' in request.resource.data) || request.resource.data.postedBy == resource.data.postedBy)
+        && (!('datePosted' in request.resource.data) || request.resource.data.datePosted == resource.data.datePosted);
 
       // Original authors (or admin/leah) can delete by setting isActive: false
       allow update: if request.auth != null
@@ -74,7 +73,8 @@ service cloud.firestore {
         && (!('endTime' in data) || data.endTime is string)
         && (!('eventLocation' in data) || data.eventLocation is string)
         && (!('classType' in data) || data.classType is string)
-        && (!('image' in data) || data.image == null || data.image is string);
+        && (!('image' in data) || data.image == null || data.image is string)
+        && (!('pdfUrl' in data) || data.pdfUrl == null || data.pdfUrl is string);
 
       return hasRequired && validOptionalFields;
     }

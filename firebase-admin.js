@@ -98,13 +98,8 @@ class FirebaseAdminPanel {
         // PDF upload preview
         document.getElementById('pdf').addEventListener('change', (e) => this.handlePdfPreview(e));
 
-        // Close modal when clicking outside
+        // Close preview modal when clicking outside (but NOT login modal - that's annoying during login)
         window.addEventListener('click', (e) => {
-            const modal = document.getElementById('loginModal');
-            if (e.target === modal) {
-                this.hideLoginModal();
-            }
-
             const previewModal = document.getElementById('previewModal');
             if (e.target === previewModal) {
                 this.closePreview();
@@ -330,13 +325,20 @@ class FirebaseAdminPanel {
                 throw 'Optimized image is still larger than 4MB. Please upload a smaller image.';
             }
 
-            bulletin.image = processedImage.dataUrl;
+            // Update the document with just the image field
+            if (editingId) {
+                await db.collection('bulletins').doc(editingId).update({
+                    image: processedImage.dataUrl
+                });
+            } else {
+                // For new bulletins, add the image to the bulletin object
+                bulletin.image = processedImage.dataUrl;
+                await this.saveBulletin(bulletin, null);
+            }
 
             // Handle PDF upload if provided
             if (pdfFile && pdfFile.size > 0) {
                 await this.handlePdfUpload(pdfFile, bulletin, editingId);
-            } else {
-                await this.saveBulletin(bulletin, editingId);
             }
 
             if (processedImage.infoMessage && !usedCachedImage) {
@@ -348,6 +350,7 @@ class FirebaseAdminPanel {
                 ? error
                 : 'Image upload failed. Please try uploading a JPG/PNG under 10MB.';
             this.showTemporaryMessage(message, 'error');
+            throw error; // Re-throw to prevent form reset on error
         }
     }
 
@@ -363,44 +366,30 @@ class FirebaseAdminPanel {
                 throw 'Please select a valid PDF file.';
             }
 
-            console.log('Uploading PDF to Firebase Storage...');
             this.showTemporaryMessage('Uploading PDF...', 'info');
-            
-            // Generate unique filename
+
+            // Generate unique filename using the bulletin ID
             const timestamp = Date.now();
-            const filename = `pdfs/${bulletin.id || 'temp'}_${timestamp}.pdf`;
-            
-            // Create storage reference
+            const bulletinId = editingId || 'unknown';
+            const filename = `pdfs/${bulletinId}_${timestamp}.pdf`;
+
+            // Create storage reference and upload
             const storageRef = firebase.storage().ref().child(filename);
-            
-            // Upload file to Firebase Storage with progress tracking
-            const uploadTask = storageRef.put(file);
-            
-            // Track upload progress
-            uploadTask.on('state_changed', 
-                (snapshot) => {
-                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                    console.log(`Upload progress: ${progress.toFixed(1)}%`);
-                },
-                (error) => {
-                    console.error('Upload error:', error);
-                    throw error;
-                }
-            );
-            
-            // Wait for upload to complete
-            const snapshot = await uploadTask;
-            console.log('PDF upload completed:', snapshot.metadata.name);
-            
+            const snapshot = await storageRef.put(file);
+
             // Get download URL
             const downloadUrl = await snapshot.ref.getDownloadURL();
-            console.log('PDF download URL:', downloadUrl);
-            
-            // Store the download URL instead of base64 data
-            bulletin.pdfUrl = downloadUrl;
 
-            await this.saveBulletin(bulletin, editingId);
-            this.showTemporaryMessage('PDF uploaded successfully!', 'success');
+            // Update the document with the PDF URL
+            if (editingId) {
+                await db.collection('bulletins').doc(editingId).update({
+                    pdfUrl: downloadUrl
+                });
+                this.showTemporaryMessage('PDF uploaded successfully!', 'success');
+                this.loadManageBulletins();
+            } else {
+                throw new Error('No bulletin ID available for PDF upload');
+            }
         } catch (error) {
             console.error('PDF upload error:', error);
             
@@ -910,12 +899,10 @@ class FirebaseAdminPanel {
         previewContent.innerHTML = `
             <div class="bulletin-card">
                 <div class="bulletin-header">
-                    <div>
-                        <div class="bulletin-title">${this.escapeHtml(bulletin.title)}</div>
-                    </div>
                     <span class="category-badge category-${bulletin.category}">
                         ${this.getCategoryDisplay(bulletin.category)}
                     </span>
+                    <div class="bulletin-title">${this.escapeHtml(bulletin.title)}</div>
                 </div>
 
                 ${bulletin.image ? `
@@ -1402,18 +1389,22 @@ class FirebaseAdminPanel {
         bulletin.postedBy = this.currentUser.username;
         bulletin.datePosted = firebase.firestore.FieldValue.serverTimestamp();
 
-        // Handle file uploads (image and PDF)
+        // Create the Firestore document FIRST to get an ID
+        const docRef = await db.collection('bulletins').add(bulletin);
+        const bulletinId = docRef.id;
+
+        // Handle file uploads (image and PDF) using the real bulletin ID
         const imageFile = formData.get('image');
         const pdfFile = formData.get('pdf');
-        
+
         if (imageFile && imageFile.size > 0) {
-            await this.handleImageUpload(imageFile, bulletin, pdfFile);
+            await this.handleImageUpload(imageFile, bulletin, pdfFile, bulletinId);
         } else if (pdfFile && pdfFile.size > 0) {
-            await this.handlePdfUpload(pdfFile, bulletin);
-        } else {
-            // Only save if there are no files (file upload handlers save it)
-            await this.saveBulletin(bulletin);
+            await this.handlePdfUpload(pdfFile, bulletin, bulletinId);
         }
+
+        // Reload bulletins to show the new one
+        this.loadManageBulletins();
     }
 
     async updateBulletin(formData, bulletinId) {
@@ -1474,8 +1465,16 @@ class FirebaseAdminPanel {
 
     async saveBulletin(bulletin, editingId = null) {
         try {
-            // Debug: Log what we're sending
-            console.log('Attempting to save bulletin:', JSON.stringify(bulletin, null, 2));
+            // Calculate approximate document size
+            const bulletinStr = JSON.stringify(bulletin);
+            const sizeInBytes = new Blob([bulletinStr]).size;
+            const sizeInMB = (sizeInBytes / (1024 * 1024)).toFixed(2);
+
+            console.log(`Bulletin size: ${sizeInMB} MB (${sizeInBytes} bytes)`);
+
+            if (sizeInBytes > 1048576) { // 1MB in bytes
+                throw new Error(`Bulletin too large (${sizeInMB} MB). Firestore documents must be under 1 MB. Try using a smaller image.`);
+            }
 
             if (editingId) {
                 await db.collection('bulletins').doc(editingId).update(bulletin);
@@ -1483,12 +1482,12 @@ class FirebaseAdminPanel {
                 await db.collection('bulletins').add(bulletin);
             }
 
-            // Note: Don't reset form here - let the caller handle that
             // Reload bulletins to show updated data
             this.loadManageBulletins();
         } catch (error) {
             console.error('Error saving bulletin:', error);
-            console.error('Failed bulletin data:', bulletin);
+            console.error('Error code:', error.code);
+            console.error('Error message:', error.message);
             throw error;
         }
     }

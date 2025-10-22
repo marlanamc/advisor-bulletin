@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>EBHCS Admin - Post Bulletin</title>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -25,20 +25,21 @@
     <!-- Admin Login Modal -->
     <div id="loginModal" class="modal">
         <div class="modal-content">
-            <span class="close">&times;</span>
+            <span class="close" title="Close login">&times;</span>
             <h3>Advisor Login</h3>
+            <p class="modal-subtitle">Enter your credentials to access the advisor portal</p>
             <div id="loginError" class="error-message" style="display: none;"></div>
             <div id="loginSuccess" class="success-message" style="display: none;"></div>
 
             <form id="loginForm">
                 <div class="form-group">
                     <label for="username">Username:</label>
-                    <input type="text" id="username" name="username" required autocomplete="username">
+                    <input type="text" id="username" name="username" required autocomplete="username" placeholder="your.name">
                 </div>
                 <div class="form-group">
                     <label for="password">Password:</label>
                     <div class="password-input-wrapper">
-                        <input type="password" id="password" name="password" required autocomplete="current-password">
+                        <input type="password" id="password" name="password" required autocomplete="current-password" placeholder="Enter your password">
                         <button type="button" class="show-password" onclick="togglePassword('password')" tabindex="-1">Show</button>
                     </div>
                 </div>
