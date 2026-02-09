@@ -814,7 +814,7 @@ class FirebaseAdminPanel {
     }
 
     canManageAllPosts() {
-        return this.currentUser && ['admin', 'leah', 'lgregory'].includes(this.currentUser.username);
+        return this.currentUser && ['admin', 'leah', 'lgregory', 'mcreed'].includes(this.currentUser.username);
     }
 
     loadManageBulletins() {
