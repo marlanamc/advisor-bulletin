@@ -39,6 +39,29 @@ header {
     top: 0;
     z-index: 100;
     overflow: hidden;
+    transition: padding 0.3s ease;
+}
+
+/* Collapsed header state when scrolled */
+header.collapsed {
+    padding: 6px 0 0 0;
+}
+
+header.collapsed .header-content {
+    padding: 0 20px 6px 20px;
+}
+
+header.collapsed h1 {
+    font-size: 1.1rem;
+    margin-bottom: 0;
+}
+
+header.collapsed h2 {
+    display: none;
+}
+
+header.collapsed .wave-decoration {
+    height: 3px;
 }
 
 .wave-decoration {
@@ -46,6 +69,7 @@ header {
     background: linear-gradient(90deg, transparent 0%, rgba(14, 165, 233, 0.3) 25%, rgba(2, 132, 199, 0.4) 50%, rgba(3, 105, 161, 0.3) 75%, transparent 100%);
     position: relative;
     overflow: hidden;
+    transition: height 0.3s ease;
 }
 
 .wave-decoration::before {
@@ -72,6 +96,7 @@ header {
     justify-content: space-between;
     align-items: center;
     text-align: center;
+    transition: padding 0.3s ease;
 }
 
 .header-center {
@@ -93,6 +118,7 @@ header h1 {
     font-weight: 600;
     margin-bottom: 4px;
     letter-spacing: -0.025em;
+    transition: font-size 0.3s ease, margin 0.3s ease;
 }
 
 header h2 {
@@ -100,6 +126,7 @@ header h2 {
     font-size: 0.95rem;
     font-weight: 400;
     opacity: 0.9;
+    transition: opacity 0.3s ease;
 }
 
 .admin-btn {

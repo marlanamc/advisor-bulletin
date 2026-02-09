@@ -421,5 +421,20 @@
     <script src="enhanced-auth.js"></script>
     <script src="firebase-admin.js"></script>
 
+    <!-- Header collapse on scroll -->
+    <script>
+        (function() {
+            const header = document.querySelector('header');
+            if (header) {
+                window.addEventListener('scroll', function() {
+                    if (window.pageYOffset > 50) {
+                        header.classList.add('collapsed');
+                    } else {
+                        header.classList.remove('collapsed');
+                    }
+                }, { passive: true });
+            }
+        })();
+    </script>
 </body>
 </html>

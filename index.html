@@ -228,5 +228,25 @@
 
     <!-- For production with Firebase, use: -->
     <script src="firebase-config.js"></script>
+
+    <!-- Header collapse on scroll -->
+    <script>
+        (function() {
+            const header = document.querySelector('header');
+            let lastScroll = 0;
+
+            window.addEventListener('scroll', function() {
+                const currentScroll = window.pageYOffset;
+
+                if (currentScroll > 50) {
+                    header.classList.add('collapsed');
+                } else {
+                    header.classList.remove('collapsed');
+                }
+
+                lastScroll = currentScroll;
+            }, { passive: true });
+        })();
+    </script>
 </body>
 </html>
