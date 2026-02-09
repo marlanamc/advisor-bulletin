@@ -140,7 +140,8 @@ class FirebaseAdminPanel {
             'felipe': 'Felipe',
             'simonetta': 'Simonetta',
             'mike': 'Mike K.',
-            'leah': 'Leah'
+            'leah': 'Leah',
+            'lgregory': 'Leah Gregory'
         };
         return names[username] || username;
     }
@@ -356,6 +357,16 @@ class FirebaseAdminPanel {
 
     async handlePdfUpload(file, bulletin, editingId = null) {
         try {
+            // Debug logging to help diagnose upload issues
+            console.log('PDF Upload Debug:', {
+                fileName: file.name,
+                fileSize: file.size,
+                fileType: file.type,
+                bulletinId: editingId,
+                userAuthenticated: !!firebase.auth().currentUser,
+                userEmail: firebase.auth().currentUser?.email
+            });
+
             // Check file size (10MB limit)
             if (file.size > 10 * 1024 * 1024) {
                 throw 'PDF file too large. Please select a PDF under 10MB.';
@@ -366,6 +377,13 @@ class FirebaseAdminPanel {
                 throw 'Please select a valid PDF file.';
             }
 
+            // Ensure user is still authenticated and refresh token
+            const currentUser = firebase.auth().currentUser;
+            if (!currentUser) {
+                throw 'Session expired. Please log in again.';
+            }
+            await currentUser.getIdToken(true);
+
             this.showTemporaryMessage('Uploading PDF...', 'info');
 
             // Generate unique filename using the bulletin ID
@@ -373,9 +391,10 @@ class FirebaseAdminPanel {
             const bulletinId = editingId || 'unknown';
             const filename = `pdfs/${bulletinId}_${timestamp}.pdf`;
 
-            // Create storage reference and upload
+            // Create storage reference and upload with explicit content-type
             const storageRef = firebase.storage().ref().child(filename);
-            const snapshot = await storageRef.put(file);
+            const metadata = { contentType: 'application/pdf' };
+            const snapshot = await storageRef.put(file, metadata);
 
             // Get download URL
             const downloadUrl = await snapshot.ref.getDownloadURL();
@@ -795,7 +814,7 @@ class FirebaseAdminPanel {
     }
 
     canManageAllPosts() {
-        return this.currentUser && ['admin', 'leah'].includes(this.currentUser.username);
+        return this.currentUser && ['admin', 'leah', 'lgregory'].includes(this.currentUser.username);
     }
 
     loadManageBulletins() {

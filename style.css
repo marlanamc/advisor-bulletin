@@ -33,7 +33,7 @@ header {
     background: linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.98) 100%);
     backdrop-filter: blur(10px);
     border-bottom: 1px solid rgba(148, 163, 184, 0.2);
-    padding: 24px 0 0 0;
+    padding: 12px 0 0 0;
     box-shadow: 0 4px 20px rgba(15, 23, 42, 0.3);
     position: sticky;
     top: 0;
@@ -42,7 +42,7 @@ header {
 }
 
 .wave-decoration {
-    height: 12px;
+    height: 6px;
     background: linear-gradient(90deg, transparent 0%, rgba(14, 165, 233, 0.3) 25%, rgba(2, 132, 199, 0.4) 50%, rgba(3, 105, 161, 0.3) 75%, transparent 100%);
     position: relative;
     overflow: hidden;
@@ -67,7 +67,7 @@ header {
 .header-content {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 20px 24px 20px;
+    padding: 0 20px 12px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -89,15 +89,15 @@ header {
 
 header h1 {
     color: #f8fafc;
-    font-size: 1.9rem;
+    font-size: 1.5rem;
     font-weight: 600;
-    margin-bottom: 8px;
+    margin-bottom: 4px;
     letter-spacing: -0.025em;
 }
 
 header h2 {
     color: #cbd5e1;
-    font-size: 1.1rem;
+    font-size: 0.95rem;
     font-weight: 400;
     opacity: 0.9;
 }
@@ -4500,15 +4500,15 @@ footer {
     .header-content {
         flex-direction: column;
         text-align: center;
-        gap: 15px;
+        gap: 10px;
     }
 
     header h1 {
-        font-size: 1.5rem;
+        font-size: 1.25rem;
     }
 
     header h2 {
-        font-size: 1rem;
+        font-size: 0.85rem;
     }
 
     .bulletin-grid {
