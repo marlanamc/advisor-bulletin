@@ -909,34 +909,35 @@ class FirebaseBulletinBoard {
 
     isBulletinExpired(bulletin) {
         const now = new Date();
-        
-        // Check deadline-based expiration
-        if (bulletin.deadline) {
-            const deadline = new Date(bulletin.deadline);
-            return deadline < now;
+
+        // Check start/end date range expiration FIRST (highest priority)
+        // This handles events that run over a period of time
+        if (bulletin.startDate && bulletin.endDate) {
+            const endDate = new Date(bulletin.endDate);
+            const endOfDay = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate(), 23, 59, 59);
+            return endOfDay < now;
         }
-        
+
         // Check event-based expiration (with end time)
         if (bulletin.eventDate && bulletin.endTime) {
             // endTime is stored in 24-hour format (e.g., "14:00")
             const eventDateTime = new Date(`${bulletin.eventDate}T${bulletin.endTime}:00`);
             return eventDateTime < now;
         }
-        
+
         // Check event-based expiration (without end time, assume end of day)
         if (bulletin.eventDate && !bulletin.endTime) {
             const eventDate = new Date(bulletin.eventDate);
             const endOfDay = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate(), 23, 59, 59);
             return endOfDay < now;
         }
-        
-        // Check start/end date range expiration
-        if (bulletin.startDate && bulletin.endDate) {
-            const endDate = new Date(bulletin.endDate);
-            const endOfDay = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate(), 23, 59, 59);
-            return endOfDay < now;
+
+        // Check deadline-based expiration (lowest priority, only if no date range exists)
+        if (bulletin.deadline) {
+            const deadline = new Date(bulletin.deadline);
+            return deadline < now;
         }
-        
+
         // Not expired if no date/time information
         return false;
     }
