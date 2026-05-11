@@ -5,8 +5,8 @@
    ============================================================ */
 
 /* ── Portal shell resets (JS adds .ap-portal-active to body) ── */
-body.ap-portal-active header,
-body.ap-portal-active footer {
+body.ap-portal-active > header,
+body.ap-portal-active > footer {
   display: none !important;
 }
 
@@ -2857,20 +2857,203 @@ details.ap-accordion > summary.ap-accordion-trigger {
 }
 
 @media (max-width: 768px) {
+  .ap-portal {
+    display: block;
+    width: 100%;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
   .ap-sidebar {
-    transform: translateX(-100%);
-    transition: transform .3s ease;
+    position: static;
+    width: 100%;
+    max-height: none;
+    padding: 0;
+    overflow: visible;
+    transform: none;
   }
-  .ap-sidebar.open {
-    transform: translateX(0);
+
+  .ap-sidebar-brand {
+    padding: max(14px, env(safe-area-inset-top)) 16px 12px;
   }
+
+  .ap-nav {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    padding: 10px 12px 12px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .ap-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .ap-nav-section-label,
+  .ap-nav-divider {
+    display: none;
+  }
+
+  .ap-nav-item {
+    flex: 0 0 auto;
+    width: auto;
+    min-height: 44px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+
+  .ap-nav-item.active::before {
+    left: 10px;
+    right: 10px;
+    top: auto;
+    bottom: 0;
+    width: auto;
+    height: 3px;
+    border-radius: 999px;
+  }
+
+  .ap-nav-icon {
+    width: 28px;
+    height: 28px;
+  }
+
+  .ap-sidebar-footer {
+    display: none;
+  }
+
   .ap-main {
     margin-left: 0;
+    min-height: auto;
   }
+
+  .ap-topbar {
+    height: auto;
+    min-height: 58px;
+    padding: 10px 14px;
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  .ap-topbar-title {
+    font-size: 1rem;
+    padding-top: 7px;
+  }
+
+  .ap-topbar-actions {
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .ap-topbar-actions .advisor-status-pill {
+    display: none;
+  }
+
+  .ap-topbar-actions .ap-btn {
+    min-height: 38px;
+    padding: 8px 10px;
+    font-size: 0.78rem;
+  }
+
+  .ap-welcome-banner {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .ap-welcome-title {
+    font-size: clamp(1.45rem, 8vw, 2rem);
+  }
+
+  .ap-welcome-cta {
+    width: 100%;
+    justify-content: center;
+  }
+
   .ap-stats-grid,
   .ap-stats-grid-big {
     grid-template-columns: 1fr 1fr;
   }
+
+  .ap-stat-card {
+    padding: 16px;
+    border-radius: 14px;
+  }
+
+  .ap-stat-value {
+    font-size: 1.55rem;
+  }
+
+  .ap-dash-grid,
+  .ap-create-layout,
+  .ap-form-grid,
+  .ap-chart-grid,
+  .advisor-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ap-preview-col {
+    display: none;
+  }
+
+  .ap-page,
+  .ap-section-card,
+  .ap-create-form-col,
+  .ap-create-form-col .post-form-container,
+  .ap-form-section,
+  #bulletinForm {
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .ap-section-header {
+    padding: 16px;
+  }
+
+  .ap-section-body {
+    padding: 12px 16px;
+  }
+
+  .ap-post-row,
+  .ap-recent-mini {
+    min-width: 0;
+  }
+
+  .ap-post-meta {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .ap-post-title-text,
+  .ap-recent-mini-title {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    overflow-wrap: anywhere;
+    word-break: normal;
+  }
+
+  .ap-post-sub {
+    overflow-wrap: anywhere;
+  }
+
+  .ap-field-row,
+  .form-row,
+  .field-group.double,
+  .field-group.triple {
+    grid-template-columns: 1fr !important;
+  }
+
+  .ap-modal {
+    width: calc(100vw - 24px);
+    max-height: calc(100vh - 24px);
+  }
+
   .ap-type-selector {
     grid-template-columns: 1fr;
   }

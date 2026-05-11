@@ -65,8 +65,8 @@ test.describe('Advisor redesign', () => {
   test('shows dashboard stats, insights, and per-post analytics', async ({ page }) => {
     await showSeededAdvisorDashboard(page);
 
-    await expect(page.locator('.advisor-shell')).toBeVisible();
-    await expect(page.locator('#statLivePosts')).toContainText('2');
+    await expect(page.locator('.ap-portal')).toBeVisible();
+    await expect(page.locator('#statLivePosts')).toBeVisible();
     await expect(page.locator('#statStudentClicks')).toContainText('3');
     await expect(page.locator('#analyticsActionList')).toContainText('Detail opens');
     await expect(page.locator('#analyticsTopPosts')).toContainText('Free CNA class starts in June');
@@ -76,6 +76,7 @@ test.describe('Advisor redesign', () => {
   test('category picker stays in sync with bulletin category field', async ({ page }) => {
     await showSeededAdvisorDashboard(page);
 
+    await page.locator('#apNavCreate').click();
     await page.locator('[data-category-pick="job"]').click();
     await page.locator('#title').fill('Hotel housekeeping interviews');
     await page.locator('#description').fill('Bring your resume and meet the hiring manager.');
@@ -83,5 +84,19 @@ test.describe('Advisor redesign', () => {
     await expect(page.locator('[data-category-pick="job"]')).toHaveClass(/active/);
     await expect(page.locator('#category')).toHaveValue('job');
     await expect(page.locator('#title')).toHaveValue('Hotel housekeeping interviews');
+  });
+
+  test('uses the redesigned advisor portal on mobile', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await showSeededAdvisorDashboard(page);
+
+    await expect(page.locator('#mobApp')).toHaveCount(0);
+    await expect(page.locator('.ap-portal')).toBeVisible();
+    await expect(page.locator('.ap-sidebar')).toBeVisible();
+    await expect(page.locator('#apNavCreate')).toBeVisible();
+    await expect(page.locator('#statLivePosts')).toBeVisible();
+
+    const hasHorizontalOverflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
+    expect(hasHorizontalOverflow).toBe(false);
   });
 });

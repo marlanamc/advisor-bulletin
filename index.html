@@ -90,59 +90,6 @@
                 </div>
             </div>
         </div>
-        <!-- ─── CATEGORY BAR (desktop, inside header) ─────────── -->
-        <div class="topbar-cat-row" id="topbarCatRow">
-            <p class="cat-bar-resource-hint">
-                <span class="en-text">Click a category for resources</span>
-                <span class="es-text">Haz clic en una categoría para recursos</span>
-            </p>
-            <div class="cat-bar" id="catBar">
-                <button class="cat-chip cat-chip--all active" data-cat-filter="all" type="button">
-                    <span class="cat-chip-count" id="catAllCount">0</span>
-                    <span class="en-text">All</span><span class="es-text">Todo</span>
-                </button>
-                <button class="cat-chip" data-cat-filter="jobs" type="button">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
-                    <span class="en-text">Jobs</span><span class="es-text">Empleos</span>
-                    <span class="cat-chip-count" style="display:none;"></span>
-                </button>
-                <button class="cat-chip" data-cat-filter="immigration" type="button">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-                    <span class="en-text">Immigration</span><span class="es-text">Inmigración</span>
-                    <span class="cat-chip-count" style="display:none;"></span>
-                </button>
-                <button class="cat-chip" data-cat-filter="housing" type="button">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                    <span class="en-text">Housing</span><span class="es-text">Vivienda</span>
-                    <span class="cat-chip-count" style="display:none;"></span>
-                </button>
-                <button class="cat-chip" data-cat-filter="health" type="button">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
-                    <span class="en-text">Health</span><span class="es-text">Salud</span>
-                    <span class="cat-chip-count" style="display:none;"></span>
-                </button>
-                <button class="cat-chip" data-cat-filter="food" type="button">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
-                    <span class="en-text">Food</span><span class="es-text">Comida</span>
-                    <span class="cat-chip-count" style="display:none;"></span>
-                </button>
-                <button class="cat-chip" data-cat-filter="esol" type="button">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                    <span class="en-text">English class</span><span class="es-text">Inglés</span>
-                    <span class="cat-chip-count" style="display:none;"></span>
-                </button>
-                <button class="cat-chip" data-cat-filter="college" type="button">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
-                    <span class="en-text">College &amp; GED</span><span class="es-text">Colegio</span>
-                    <span class="cat-chip-count" style="display:none;"></span>
-                </button>
-                <button class="cat-chip" data-cat-filter="money" type="button">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-                    <span class="en-text">Money help</span><span class="es-text">Dinero</span>
-                    <span class="cat-chip-count" style="display:none;"></span>
-                </button>
-            </div>
-        </div>
     </header>
 
     <!-- ═══ IMAGE LIGHTBOX ══════════════════════════════════════ -->
@@ -174,7 +121,7 @@
                     <button id="searchBtn" class="search-btn" aria-label="Search the feed">🔍</button>
                 </div>
                 <div class="search-layer-cats" id="searchLayerCats">
-                    <p class="search-layer-cats-label"><span class="en-text">Or browse by category:</span><span class="es-text">O busca por categoría:</span></p>
+                    <p class="search-layer-cats-label"><span class="en-text">Or filter posts by topic:</span><span class="es-text">O filtra publicaciones por tema:</span></p>
                     <div class="search-layer-cat-grid">
                         <button class="sl-cat-btn sl-cat-btn--all active" data-cat-filter="all" type="button">
                             <span class="sl-cat-icon">✨</span>
@@ -183,6 +130,10 @@
                         <button class="sl-cat-btn" data-cat-filter="jobs" type="button">
                             <span class="sl-cat-icon">💼</span>
                             <span class="en-text">Jobs</span><span class="es-text">Empleos</span>
+                        </button>
+                        <button class="sl-cat-btn" data-cat-filter="training" type="button">
+                            <span class="sl-cat-icon">📚</span>
+                            <span class="en-text">Training</span><span class="es-text">Capacitación</span>
                         </button>
                         <button class="sl-cat-btn" data-cat-filter="immigration" type="button">
                             <span class="sl-cat-icon">🌎</span>
@@ -255,8 +206,8 @@
             <!-- ─── STORY BUBBLES (mobile only, hidden on desktop) ── -->
             <div class="story-row-wrap story-row-wrap--mobile">
                 <div class="story-row-label">
-                    <span class="en-text">Tap for resources</span>
-                    <span class="es-text">Toca para recursos</span>
+                    <span class="en-text">Explore resources</span>
+                    <span class="es-text">Explora recursos</span>
                 </div>
                 <div class="story-row" id="feedStoryCats">
                     <!-- Immigration -->
@@ -411,26 +362,27 @@
                                 </div>
                             </div>
                         </div>
-                        <span class="story-bubble-label en-text">Family</span>
-                        <span class="story-bubble-label es-text">Familia</span>
+                        <span class="story-bubble-label en-text">Childcare</span>
+                        <span class="story-bubble-label es-text">Cuidado infantil</span>
                     </button>
-                    <!-- Career Fair -->
-                    <button class="story-bubble" data-app-view-cat="career-fair" type="button">
-                        <div class="story-bubble-ring" style="background: conic-gradient(from 200deg, #e88a2a, #ffc857, #e88a2a)">
+                    <!-- Legal Help -->
+                    <button class="story-bubble" data-app-view-cat="legal-aid" type="button">
+                        <div class="story-bubble-ring" style="background: conic-gradient(from 200deg, #7c3aed, #ffc857, #7c3aed)">
                             <div class="story-bubble-inner">
-                                <div class="story-bubble-icon" style="background:#fbe6cc">
+                                <div class="story-bubble-icon" style="background:#ede9fe">
                                     <svg viewBox="0 0 80 80" width="52" height="52" xmlns="http://www.w3.org/2000/svg">
-                                        <rect width="80" height="80" rx="22" fill="#e88a2a"/>
-                                        <rect x="24" y="38" width="14" height="22" rx="3" fill="#fff"/>
-                                        <rect x="42" y="28" width="14" height="32" rx="3" fill="#fff"/>
-                                        <rect x="18" y="58" width="44" height="3" rx="1.5" fill="#fff" opacity="0.5"/>
-                                        <polygon points="31,30 38,38 24,38" fill="#ffc857"/>
+                                        <rect width="80" height="80" rx="22" fill="#7c3aed"/>
+                                        <path d="M40 20v38" stroke="#fff" stroke-width="5" stroke-linecap="round"/>
+                                        <path d="M25 28h30" stroke="#fff" stroke-width="5" stroke-linecap="round"/>
+                                        <path d="M27 28l-9 16h18l-9-16z" fill="#fff"/>
+                                        <path d="M53 28l-9 16h18l-9-16z" fill="#fff"/>
+                                        <path d="M29 58h22" stroke="#ffc857" stroke-width="5" stroke-linecap="round"/>
                                     </svg>
                                 </div>
                             </div>
                         </div>
-                        <span class="story-bubble-label en-text">Career Fair</span>
-                        <span class="story-bubble-label es-text">Feria</span>
+                        <span class="story-bubble-label en-text">Legal Help</span>
+                        <span class="story-bubble-label es-text">Ayuda legal</span>
                     </button>
                 </div>
             </div>
@@ -458,11 +410,11 @@
                     <section class="feed-category-header" id="feedCategoryHeader" hidden>
                         <div class="feed-category-icon" id="feedCategoryIcon" aria-hidden="true">🏠</div>
                         <div class="feed-category-copy">
-                            <p class="feed-category-kicker" id="feedCategoryKicker">Showing resources</p>
+                            <p class="feed-category-kicker" id="feedCategoryKicker">Showing posts</p>
                             <h2 id="feedCategoryTitle">Housing Help</h2>
                             <p id="feedCategoryDescription">Find apartments, shelters, rent help, and housing support.</p>
                             <div class="feed-category-chips" id="feedCategoryChips" aria-label="Helpful topics"></div>
-                            <div class="feed-category-resources" id="feedCategoryResources" aria-label="Trusted places"></div>
+                            <div class="feed-category-resources" id="feedCategoryResources" aria-hidden="true" hidden></div>
                         </div>
                         <button class="feed-category-clear" id="feedCategoryClear" type="button">
                             <span class="en-text">Show all</span>
@@ -483,7 +435,6 @@
                             <span class="es-text">Filtrar</span>
                         </button>
                     </div>
-
                     <!-- Bulletin grid -->
                     <div class="bulletin-container">
                         <div class="bulletin-grid" id="bulletinGrid">
@@ -1345,7 +1296,7 @@
                 ]
             },
             childcare: {
-                label: { en: 'Family', es: 'Familia' },
+                label: { en: 'Childcare', es: 'Cuidado infantil' },
                 color: '#c08a3e',
                 iconSvg: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/><circle cx="19" cy="11" r="2"/><path d="M23 21v-1a2 2 0 0 0-2-2h-2"/></svg>',
                 orgs: [
@@ -1361,20 +1312,20 @@
                     }
                 ]
             },
-            'career-fair': {
-                label: { en: 'Career Fair', es: 'Feria' },
-                color: '#e88a2a',
-                iconSvg: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>',
+            'legal-aid': {
+                label: { en: 'Legal Help', es: 'Ayuda legal' },
+                color: '#7c3aed',
+                iconSvg: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="M6 6h12"/><path d="m6 6-3 6h6L6 6Z"/><path d="m18 6-3 6h6l-3-6Z"/><path d="M8 21h8"/></svg>',
                 orgs: [
                     {
-                        name: 'MassHire East Boston Career Center',
-                        address: '215 Bremen St, East Boston, MA 02128',
-                        mapUrl: 'https://www.google.com/maps/search/?api=1&query=215+Bremen+St+East+Boston+MA',
-                        phone: '(617) 561-2222',
-                        tel: 'tel:6175612222',
+                        name: 'Greater Boston Legal Services',
+                        address: '197 Friend St, Boston, MA 02114',
+                        mapUrl: 'https://www.google.com/maps/search/?api=1&query=197+Friend+St+Boston+MA',
+                        phone: '(617) 371-1234',
+                        tel: 'tel:6173711234',
                         langs: ['EN', 'ES'],
-                        color: '#e88a2a',
-                        initial: 'MH'
+                        color: '#7c3aed',
+                        initial: 'GB'
                     }
                 ]
             }
@@ -1457,7 +1408,7 @@
         var catDetailBack = document.getElementById('catDetailBack');
         if (catDetailBack) catDetailBack.addEventListener('click', closeCategoryDetail);
 
-        // ── Story bubble → category detail ────────────────────
+        // ── Story bubble → resource category detail ────────────────────
         document.querySelectorAll('.story-bubble[data-app-view-cat]').forEach(function (bubble) {
             bubble.addEventListener('click', function () {
                 var cat = this.getAttribute('data-app-view-cat');

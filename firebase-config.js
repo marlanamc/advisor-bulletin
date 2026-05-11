@@ -98,8 +98,8 @@ const RESOURCE_CATEGORY_CONFIG = {
         color: '#2f934f'
     },
     family: {
-        labelEn: 'Family',
-        labelEs: 'Familia',
+        labelEn: 'Childcare',
+        labelEs: 'Cuidado infantil',
         icon: 'family',
         color: '#c99035'
     },
@@ -115,11 +115,11 @@ const RESOURCE_CATEGORY_CONFIG = {
         icon: 'graduation',
         color: '#0a1d3a'
     },
-    'career-fair': {
-        labelEn: 'Career Fair',
-        labelEs: 'Feria',
-        icon: 'handshake',
-        color: '#f08b1f'
+    'legal-aid': {
+        labelEn: 'Legal help',
+        labelEs: 'Ayuda legal',
+        icon: 'scale',
+        color: '#7c3aed'
     },
     money: {
         labelEn: 'Money help',
@@ -136,7 +136,7 @@ const RESOURCE_CATEGORY_CONFIG = {
 };
 
 const STORY_BUBBLE_PREVIEW_CATEGORIES = ['immigration', 'jobs', 'housing', 'health', 'food'];
-const RESOURCE_TILE_CATEGORIES = ['jobs', 'immigration', 'housing', 'health', 'food', 'family', 'esol', 'college', 'career-fair', 'money'];
+const RESOURCE_TILE_CATEGORIES = ['jobs', 'immigration', 'housing', 'health', 'food', 'family', 'esol', 'college', 'legal-aid', 'money'];
 
 const FEED_CATEGORY_CONTENT = {
     all: {
@@ -153,15 +153,15 @@ const FEED_CATEGORY_CONTENT = {
     },
     job: {
         icon: '💼',
-        title: 'Jobs Hiring Now',
-        description: 'Find job openings, training, resumes, and career support.',
-        chips: ['Hiring Now', 'Training', 'Resume Help', 'Career Fair']
+        title: 'Job Posts',
+        description: 'See advisor posts about job openings, hiring notices, resumes, and career support.',
+        chips: ['Hiring Now', 'Resume Help', 'Career Support']
     },
     jobs: {
         icon: '💼',
-        title: 'Jobs Hiring Now',
-        description: 'Find job openings, training, resumes, and career support.',
-        chips: ['Hiring Now', 'Training', 'Resume Help', 'Career Fair']
+        title: 'Job Posts',
+        description: 'See advisor posts about job openings, hiring notices, resumes, and career support.',
+        chips: ['Hiring Now', 'Resume Help', 'Career Support']
     },
     immigration: {
         icon: '🌎',
@@ -213,9 +213,9 @@ const FEED_CATEGORY_CONTENT = {
     },
     training: {
         icon: '🧰',
-        title: 'New Programs',
-        description: 'Find skills training, certificates, and programs that can lead to work.',
-        chips: ['Certificate', 'Short Program', 'Career Skills', 'Free']
+        title: 'Training Posts',
+        description: 'See advisor posts about workshops, skills training, certificates, and programs.',
+        chips: ['Workshops', 'Certificates', 'Career Skills', 'Programs']
     },
     'career-fair': {
         icon: '📍',
@@ -587,10 +587,6 @@ class FirebaseBulletinBoard {
             chip.addEventListener('click', (e) => this.toggleFilterChip(e.target, 'postedby'));
             postedByChips.appendChild(chip);
         });
-
-        // Update "All" count badge in category bar
-        const allCount = document.getElementById('catAllCount');
-        if (allCount) allCount.textContent = this.getPostBulletins(this.bulletins).length;
     }
 
     bindEvents() {
@@ -657,8 +653,9 @@ class FirebaseBulletinBoard {
             });
         });
 
-        // Category bar (single-select) — filter the feed on all screen sizes
-        document.querySelectorAll('.cat-chip').forEach(chip => {
+        // Post category chips filter the feed. Resource category chips use
+        // data-resource-shortcut and are handled separately.
+        document.querySelectorAll('.cat-chip[data-cat-filter]').forEach(chip => {
             chip.addEventListener('click', () => {
                 const filter = chip.getAttribute('data-cat-filter') || 'all';
                 this.setFeedCategory(filter);
@@ -1038,7 +1035,8 @@ class FirebaseBulletinBoard {
         title.textContent = content.title;
         description.textContent = content.description;
         chips.innerHTML = content.chips.map((chip) => `<span>${this.escapeHtml(chip)}</span>`).join('');
-        resourcesContainer.innerHTML = this.createFeedCategoryResourcesHtml(category);
+        resourcesContainer.innerHTML = '';
+        resourcesContainer.hidden = true;
     }
 
     createFeedCategoryResourcesHtml(category) {
@@ -1107,9 +1105,8 @@ class FirebaseBulletinBoard {
 
     updateActiveCategoryState() {
         const category = this.currentFeedCategory || 'all';
-        const resourceCategory = category === 'job' ? 'jobs' : category === 'childcare' ? 'family' : category;
 
-        document.querySelectorAll('.cat-chip').forEach((chip) => {
+        document.querySelectorAll('.cat-chip[data-cat-filter]').forEach((chip) => {
             const chipCategory = this.normalizeFeedCategory(chip.getAttribute('data-cat-filter') || 'all');
             chip.classList.toggle('active', chipCategory === category || (category === 'all' && chipCategory === 'all'));
         });
@@ -1118,11 +1115,6 @@ class FirebaseBulletinBoard {
             const bubbleCategory = this.normalizeFeedCategory(bubble.getAttribute('data-app-view-cat') || 'all');
             bubble.classList.toggle('active', bubbleCategory === category);
             bubble.setAttribute('aria-pressed', String(bubbleCategory === category));
-        });
-
-        document.querySelectorAll('[data-resource-shortcut], [data-resource-category]').forEach((button) => {
-            const value = button.getAttribute('data-resource-shortcut') || button.getAttribute('data-resource-category') || '';
-            button.classList.toggle('active', this.normalizeFeedCategory(value) === category || value === resourceCategory);
         });
     }
 
@@ -1621,7 +1613,7 @@ class FirebaseBulletinBoard {
             money: 'money',
             esol: 'esol',
             college: 'college',
-            'career-fair': 'career-fair',
+            'legal-aid': 'legal-aid',
         };
         const resourceKey = keyMap[category] || category;
         this.openResourceDetailSheet(resourceKey);
@@ -1629,10 +1621,15 @@ class FirebaseBulletinBoard {
 
     setFeedCategory(category = 'all') {
         const normalizedCategory = this.normalizeFeedCategory(category);
+        if (this.currentView !== 'feed') {
+            this.switchView('feed', { skipRender: true, preserveDetail: true });
+        }
         this.currentFeedCategory = normalizedCategory;
         this.selectedCategories = normalizedCategory === 'all' ? [] : [normalizedCategory];
         this.updateFeedCategoryHeader();
         this.updateActiveCategoryState();
+        this.updateSearchLayerCatState(normalizedCategory);
+        this.updateFilterCount();
         this.applyFilters();
     }
 
@@ -2040,7 +2037,6 @@ class FirebaseBulletinBoard {
     getBulletinCategoryKeys(bulletin) {
         const rawValues = [
             bulletin.category,
-            bulletin.resourceCategory,
             bulletin.classType,
             ...(Array.isArray(bulletin.categories) ? bulletin.categories : []),
             ...(Array.isArray(bulletin.tags) ? bulletin.tags : [])
@@ -2059,19 +2055,12 @@ class FirebaseBulletinBoard {
             .map((value) => this.normalizeFeedCategory(String(value).trim().toLowerCase()))
             .filter(Boolean);
 
-        if (normalized.includes('training')) {
-            normalized.push('job');
-        }
         if (normalized.includes('healthcare')) {
             normalized.push('health');
         }
         if (normalized.includes('english') || normalized.includes('english class')) {
             normalized.push('esol');
         }
-        if (normalized.includes('career-fair')) {
-            normalized.push('job');
-        }
-
         return [...new Set(normalized)];
     }
 
@@ -2697,7 +2686,8 @@ class FirebaseBulletinBoard {
 
         const showExpiredToggle = document.getElementById('showExpiredToggle');
 
-        if (showExpiredToggle && !showExpiredToggle.checked) {
+        const shouldShowExpired = showExpiredToggle && showExpiredToggle.checked;
+        if (!shouldShowExpired) {
             filteredBulletins = filteredBulletins.filter(b => {
                 return !this.isBulletinExpired(b);
             });
@@ -2723,6 +2713,7 @@ class FirebaseBulletinBoard {
         }
 
         // Clear multi-select filters
+        this.currentFeedCategory = 'all';
         this.selectedCategories = [];
         this.selectedPostedDates = [];
         this.selectedDeadlines = [];
@@ -2741,6 +2732,9 @@ class FirebaseBulletinBoard {
         });
 
         this.updateFilterCount();
+        this.updateFeedCategoryHeader();
+        this.updateActiveCategoryState();
+        this.updateSearchLayerCatState('all');
         this.displayBulletins();
         this.updateToggleFiltersLabel(false);
     }

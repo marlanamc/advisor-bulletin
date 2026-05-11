@@ -382,13 +382,6 @@ class FirebaseAdminPanel {
         const advisorsRailBtn = document.getElementById('advisorsRailBtn');
         if (advisorsRailBtn) advisorsRailBtn.style.display = this.currentUser.isAdmin ? '' : 'none';
 
-        // Sync mobile app shell
-        const mobName = document.getElementById('mobWelcomeName');
-        if (mobName) mobName.textContent = `Hi, ${this.currentUser.name} 👋`;
-        const mobLogged = document.getElementById('mobLoggedAs');
-        if (mobLogged) mobLogged.textContent = `Logged in as ${this.currentUser.name}`;
-        this.syncMobDashboard();
-
         this.setContentType(this.contentType || 'post', { preserveFields: true, silent: true });
     }
 
@@ -671,72 +664,6 @@ class FirebaseAdminPanel {
         this.renderAnalyticsList('analyticsActionList', this.analyticsByAction || {}, (key) => this.formatAnalyticsAction(key));
         this.renderAnalyticsList('analyticsTopCategories', this.analyticsByCategory || {}, (key) => this.getCategoryDisplay(key));
         this.renderTopPosts();
-        if (this.currentUser) this.syncMobDashboard();
-    }
-
-    syncMobDashboard() {
-        const isAdmin = this.canManageAllPosts();
-        const studentEventCount = this.analyticsEvents.filter((e) => e.source === 'student').length;
-
-        if (isAdmin) {
-            // ── ADMIN VIEW: school-wide counts ──────────────────────────
-            const allPosts = this.bulletins.filter(b => b.isActive && !this.isResourceBulletin(b));
-            const allLive = allPosts.filter(b => !this.isBulletinExpiredAdmin(b));
-            const allExpiring = allPosts.filter(b => b.deadline && this.isDeadlineClose(b.deadline) && !this.isBulletinExpiredAdmin(b));
-            const allResources = this.bulletins.filter(b => b.isActive && this.isResourceBulletin(b));
-
-            this.setMobStat('mobStatPosts', allLive.length, 'All live posts');
-            this.setMobStat('mobStatResources', allResources.length, 'Resources');
-            this.setMobStat('mobStatClicks', studentEventCount, 'Student clicks');
-            this.setMobStat('mobStatExp', allExpiring.length, 'Expiring soon');
-
-            const eyebrow = document.getElementById('mobAdminEyebrow');
-            if (eyebrow) { eyebrow.textContent = 'ADMIN VIEW · ALL ADVISORS'; eyebrow.classList.add('admin-mode'); }
-
-            const sectionLabel = document.getElementById('mobPostsSectionLabel');
-            if (sectionLabel) sectionLabel.textContent = 'ALL POSTS';
-
-            const sorted = allPosts.concat(allResources).sort((a, b) => {
-                const aDate = a.datePosted ? (a.datePosted.toDate ? a.datePosted.toDate() : new Date(a.datePosted)) : new Date(0);
-                const bDate = b.datePosted ? (b.datePosted.toDate ? b.datePosted.toDate() : new Date(b.datePosted)) : new Date(0);
-                return bDate - aDate;
-            });
-            this.syncMobPostsList(sorted, true);
-
-        } else {
-            // ── ADVISOR VIEW: own posts only ────────────────────────────
-            const mine = this.bulletins.filter(b => b.isActive && this.isMineOrManaged(b));
-            const myPosts = mine.filter(b => !this.isResourceBulletin(b));
-            const myLive = myPosts.filter(b => !this.isBulletinExpiredAdmin(b));
-            const myExpiring = myPosts.filter(b => b.deadline && this.isDeadlineClose(b.deadline) && !this.isBulletinExpiredAdmin(b));
-            const myResources = mine.filter(b => this.isResourceBulletin(b));
-
-            this.setMobStat('mobStatPosts', myLive.length, 'Live posts');
-            this.setMobStat('mobStatResources', myResources.length, 'Resources');
-            this.setMobStat('mobStatClicks', studentEventCount, 'Student clicks');
-            this.setMobStat('mobStatExp', myExpiring.length, 'Expiring soon');
-
-            const eyebrow = document.getElementById('mobAdminEyebrow');
-            if (eyebrow) eyebrow.textContent = 'WELCOME BACK';
-
-            const sectionLabel = document.getElementById('mobPostsSectionLabel');
-            if (sectionLabel) sectionLabel.textContent = 'YOUR POSTS';
-
-            const sorted = mine.sort((a, b) => {
-                const aDate = a.datePosted ? (a.datePosted.toDate ? a.datePosted.toDate() : new Date(a.datePosted)) : new Date(0);
-                const bDate = b.datePosted ? (b.datePosted.toDate ? b.datePosted.toDate() : new Date(b.datePosted)) : new Date(0);
-                return bDate - aDate;
-            });
-            this.syncMobPostsList(sorted, false);
-        }
-    }
-
-    setMobStat(id, value, label) {
-        const el = document.getElementById(id);
-        if (!el) return;
-        el.textContent = value;
-        const span = el.nextElementSibling;
-        if (span) span.innerHTML = label.replace(' ', '<br>');
     }
 
     setText(id, value) {
@@ -854,15 +781,6 @@ class FirebaseAdminPanel {
             // Reset form after successful submission
             this.pendingHighlightId = newBulletinId;
             this.resetForm();
-
-            // Return to mobile home screen on success
-            const mobForm = document.getElementById('mobFormScreen');
-            const mobHome = document.getElementById('mobHome');
-            if (mobForm && mobHome) {
-                mobForm.classList.remove('active');
-                mobHome.classList.add('active');
-                window.scrollTo(0, 0);
-            }
 
             this.showTemporaryMessage(this.isEditMode ? `${submittedLabel} updated successfully!` : `${submittedLabel} saved successfully! Check the Manage tab.`, 'success');
         } catch (error) {
@@ -1363,15 +1281,6 @@ class FirebaseAdminPanel {
             return;
         }
 
-        // On mobile, switch to form screen
-        const mobHome = document.getElementById('mobHome');
-        const mobForm = document.getElementById('mobFormScreen');
-        if (mobHome && mobForm && window.innerWidth <= 768) {
-            mobHome.classList.remove('active');
-            mobForm.classList.add('active');
-            window.scrollTo(0, 0);
-        }
-
         // Switch to post tab
         this.showTab('post');
         document.getElementById('bulletinForm').reset();
@@ -1468,11 +1377,6 @@ class FirebaseAdminPanel {
             const shortTitle = (bulletin.title || bulletin.titleEn || 'this item').slice(0, 50);
             banner.innerHTML = `✏️ Editing: <span style="font-weight:500;color:#78350f">"${shortTitle}"</span> &nbsp;<button type="button" onclick="adminPanel.resetForm()" style="margin-left:auto;background:none;border:none;color:#b45309;font-size:12px;font-weight:700;cursor:pointer;text-decoration:underline">Cancel edit</button>`;
             banner.style.display = 'flex';
-        }
-
-        // Mirror bulletin into mobile shell fields (separate DOM from #bulletinForm)
-        if (typeof window.populateMobAdminEdit === 'function' && window.innerWidth <= 768) {
-            window.populateMobAdminEdit(bulletin);
         }
 
         // Scroll form into view
@@ -2604,67 +2508,6 @@ class FirebaseAdminPanel {
                bulletin.postedBy === n ||
                bulletin.advisorName === n ||
                bulletin.advisorName === u;
-    }
-
-    syncMobPostsList(bulletins, isAdmin = false) {
-        const container = document.getElementById('mobPostsList');
-        if (!container) return;
-        const catIconMap = {
-            job: '💼', training: '🔤', announcement: '📣', immigration: '🌐',
-            college: '🎓', 'career-fair': '🎪', resource: '🏠', health: '❤️', food: '🗑️',
-            jobs: '💼', housing: '🏠', 'legal-aid': '⚖️'
-        };
-
-        const resources = bulletins.filter(b => this.isResourceBulletin(b));
-        const events = bulletins.filter(b => !this.isResourceBulletin(b) && b.hideFromMainFeed);
-        const posts = bulletins.filter(b => !this.isResourceBulletin(b) && !b.hideFromMainFeed);
-
-        if (posts.length === 0 && resources.length === 0 && events.length === 0) {
-            container.innerHTML = '<p class="mob-empty-posts">No posts yet. Write your first bulletin!</p>';
-            return;
-        }
-
-        const renderItem = (b) => {
-            const fullTitle = this.getManageCardTitle(b);
-            const title = fullTitle;
-            const cat = b.category || b.resourceCategory || '';
-            const icon = catIconMap[cat] || (this.isResourceBulletin(b) ? '🔗' : b.hideFromMainFeed ? '📅' : '📋');
-            const isExpired = this.isBulletinExpiredAdmin(b);
-            const posted = b.datePosted ? new Date(b.datePosted.toDate ? b.datePosted.toDate() : b.datePosted) : null;
-            const timeAgo = posted ? this.formatTimeAgo(posted) : '';
-            const status = isExpired
-                ? '<span class="mob-status-expired">expired</span>'
-                : '<span class="mob-status-live">live</span>';
-            const advisorTag = isAdmin && b.advisorName
-                ? ` · ${this.escapeHtml(b.advisorName)}`
-                : '';
-            return `<div class="mob-post-item">
-                <span class="mob-post-icon">${icon}</span>
-                <div class="mob-post-info">
-                    <p class="mob-post-title">${this.escapeHtml(title)}</p>
-                    <p class="mob-post-meta">${timeAgo ? timeAgo + ' · ' : ''}${status}${advisorTag}</p>
-                </div>
-                <button class="mob-post-edit-btn" type="button" onclick="adminPanel.editBulletin('${b.id}')">Edit</button>
-            </div>`;
-        };
-
-        const postsLabel = isAdmin ? 'ALL POSTS' : 'YOUR POSTS';
-        const resourcesLabel = isAdmin ? 'ALL RESOURCES' : 'YOUR RESOURCES';
-        const eventsLabel = isAdmin ? 'ALL EVENTS' : 'YOUR EVENTS';
-
-        let html = '';
-        if (posts.length > 0) {
-            html += (isAdmin ? posts : posts.slice(0, 8)).map(renderItem).join('');
-        }
-        if (resources.length > 0) {
-            html += `<p class="mob-section-label" style="margin-top:18px">${resourcesLabel}</p>`;
-            html += (isAdmin ? resources : resources.slice(0, 6)).map(renderItem).join('');
-        }
-        if (events.length > 0) {
-            html += `<p class="mob-section-label" style="margin-top:18px">${eventsLabel}</p>`;
-            html += events.map(renderItem).join('');
-        }
-        container.innerHTML = html;
     }
 
     formatTimeAgo(date) {
