@@ -2746,12 +2746,21 @@ setTimeout(() => {
     const lightboxImg = document.getElementById('imgLightboxImg');
     const closeBtn = document.getElementById('imgLightboxClose');
     const backdrop = document.getElementById('imgLightboxBackdrop');
+    const openBtn = document.getElementById('imgLightboxOpenBtn');
 
     function openLightbox(src) {
+        lightboxImg.classList.remove('is-tall');
         lightboxImg.src = src;
+        if (openBtn) openBtn.href = src;
         lightbox.classList.add('open');
         lightbox.setAttribute('aria-hidden', 'false');
         document.body.style.overflow = 'hidden';
+
+        // After load, check if portrait/tall poster — let it scroll rather than shrink
+        lightboxImg.onload = function () {
+            const ratio = lightboxImg.naturalHeight / lightboxImg.naturalWidth;
+            if (ratio > 1.2) lightboxImg.classList.add('is-tall');
+        };
     }
 
     function closeLightbox() {
@@ -2759,6 +2768,7 @@ setTimeout(() => {
         lightbox.setAttribute('aria-hidden', 'true');
         document.body.style.overflow = '';
         lightboxImg.src = '';
+        lightboxImg.classList.remove('is-tall');
     }
 
     // Delegate click to any .lightbox-trigger image

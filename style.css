@@ -11484,14 +11484,11 @@ body:has(#loginRequired) {
     }
 
     .side-panel--urgent {
-        padding: 18px;
         overflow: hidden;
         border: 1px solid rgba(255, 225, 214, 0.82);
-        border-radius: 24px;
         background:
             radial-gradient(circle at 10% 8%, rgba(255, 224, 184, 0.48), transparent 28%),
             linear-gradient(145deg, #fffaf5 0%, #fff7f4 52%, #fffefe 100%);
-        box-shadow: 0 22px 48px rgba(15, 23, 42, 0.12);
     }
 
     .urgent-support-disclosure {
@@ -11727,6 +11724,7 @@ body:has(#loginRequired) {
         gap: 14px;
         align-items: center;
         background: linear-gradient(145deg, #fff8e8, #ffe9b7);
+        border: 1px solid rgba(255, 220, 120, 0.5);
     }
 
     .side-panel--advisor p {
@@ -11796,8 +11794,7 @@ body:has(#loginRequired) {
     }
 
     .side-panel--urgent {
-        padding: 18px;
-        border-radius: 22px;
+        padding: 16px;
     }
 
     .urgent-support-top {
@@ -13757,17 +13754,48 @@ body:has(#loginRequired) {
     overflow: auto;
     -webkit-overflow-scrolling: touch;
     border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .img-lightbox-img {
     display: block;
     max-width: 96vw;
-    max-height: 92vh;
     width: auto;
     height: auto;
     border-radius: 8px;
     touch-action: pinch-zoom;
-    cursor: zoom-in;
+}
+
+.img-lightbox-img.is-tall {
+    max-height: none;
+    width: min(96vw, 720px);
+}
+
+.img-lightbox-img:not(.is-tall) {
+    max-height: 92vh;
+}
+
+.img-lightbox-open-btn {
+    display: block;
+    margin: 10px auto 4px;
+    padding: 6px 16px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #fff;
+    font: 700 12px/1 sans-serif;
+    cursor: pointer;
+    text-decoration: none;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    transition: background 0.15s;
+    flex-shrink: 0;
+}
+
+.img-lightbox-open-btn:hover {
+    background: rgba(255, 255, 255, 0.28);
 }
 
 .img-lightbox-close {
