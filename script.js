@@ -303,7 +303,8 @@ class BulletinBoard {
         return `
     <div style="background:#f4f6fb;min-height:100%">
       <div style="position:relative;height:200px;overflow:hidden">
-        ${bulletin.image ? `<img src="${bulletin.image}" alt="" class="lightbox-trigger" data-lightbox-src="${bulletin.image}" style="width:100%;height:100%;object-fit:cover;display:block">` : this.createHeroSvg(bulletin.category)}
+        ${bulletin.image ? `<img src="${bulletin.image}" alt="Tap to view full size" class="lightbox-trigger" data-lightbox-src="${bulletin.image}" style="width:100%;height:100%;object-fit:cover;display:block;cursor:zoom-in">
+        <div style="position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,0.55);color:#fff;font-size:11px;font-weight:700;padding:4px 9px;border-radius:999px;pointer-events:none;font-family:'Plus Jakarta Sans',sans-serif">Tap to expand</div>` : this.createHeroSvg(bulletin.category)}
       </div>
       <div style="background:#fff;margin-top:-20px;border-radius:20px 20px 0 0;padding:20px 16px 24px;position:relative">
         <div style="font-size:11px;font-weight:800;letter-spacing:0.5px;color:${meta.accent};text-transform:uppercase;font-family:'Plus Jakarta Sans',sans-serif">${this.escapeHtml(meta.label)}</div>

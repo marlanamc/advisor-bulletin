@@ -90,6 +90,47 @@
                 </div>
             </div>
         </div>
+        <!-- ─── CATEGORY BAR (desktop, inside header) ─────────── -->
+        <div class="topbar-cat-row" id="topbarCatRow">
+            <div class="cat-bar" id="catBar">
+                <button class="cat-chip cat-chip--all active" data-cat-filter="all" type="button">
+                    <span class="cat-chip-count" id="catAllCount">0</span>
+                    <span class="en-text">All</span><span class="es-text">Todo</span>
+                </button>
+                <button class="cat-chip" data-cat-filter="job" type="button">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+                    <span class="en-text">Jobs</span><span class="es-text">Empleos</span>
+                </button>
+                <button class="cat-chip" data-cat-filter="immigration" type="button">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                    <span class="en-text">Immigration</span><span class="es-text">Inmigración</span>
+                </button>
+                <button class="cat-chip" data-cat-filter="housing" type="button">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                    <span class="en-text">Housing</span><span class="es-text">Vivienda</span>
+                </button>
+                <button class="cat-chip" data-cat-filter="health" type="button">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                    <span class="en-text">Health</span><span class="es-text">Salud</span>
+                </button>
+                <button class="cat-chip" data-cat-filter="food" type="button">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+                    <span class="en-text">Food</span><span class="es-text">Comida</span>
+                </button>
+                <button class="cat-chip" data-cat-filter="esol" type="button">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    <span class="en-text">English class</span><span class="es-text">Inglés</span>
+                </button>
+                <button class="cat-chip" data-cat-filter="college" type="button">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+                    <span class="en-text">College &amp; GED</span><span class="es-text">Colegio</span>
+                </button>
+                <button class="cat-chip" data-cat-filter="money" type="button">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                    <span class="en-text">Money help</span><span class="es-text">Dinero</span>
+                </button>
+            </div>
+        </div>
     </header>
 
     <!-- ═══ IMAGE LIGHTBOX ══════════════════════════════════════ -->
@@ -214,109 +255,16 @@
         <!-- ─── FEED VIEW ─────────────────────────────────────── -->
         <div class="page-view active" id="feedView" data-view-panel="feed">
 
-            <!-- ─── HERO SEARCH ──────────────────────────────────── -->
-            <section class="feed-hero">
-                <div class="feed-hero-inner">
-                    <h1 class="feed-hero-heading en-text">What are you looking for?</h1>
-                    <h1 class="feed-hero-heading es-text">¿Qué estás buscando?</h1>
-                    <p class="feed-hero-sub en-text">Search for jobs, immigration help, housing, and more.</p>
-                    <p class="feed-hero-sub es-text">Busca empleos, ayuda con inmigración, vivienda y más.</p>
-                    <div class="feed-hero-search-row">
-                        <svg class="feed-hero-search-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <circle cx="11" cy="11" r="7"/><path d="m17 17 4 4"/>
-                        </svg>
-                        <input id="heroSearchInput" type="text" class="feed-hero-input"
-                            placeholder="Type here… (e.g. job, doctor, English class)"
-                            autocomplete="off" spellcheck="false">
-                        <button id="heroSearchBtn" class="feed-hero-btn" type="button">
-                            <span class="en-text">Search</span>
-                            <span class="es-text">Buscar</span>
-                        </button>
-                    </div>
-                    <div class="feed-hero-popular">
-                        <span class="feed-popular-label en-text">Popular:</span>
-                        <span class="feed-popular-label es-text">Popular:</span>
-                        <button class="feed-popular-chip" data-search-term="Jobs" type="button">Jobs</button>
-                        <button class="feed-popular-chip" data-search-term="Citizenship" type="button">Citizenship</button>
-                        <button class="feed-popular-chip" data-search-term="Housing" type="button">Housing</button>
-                        <button class="feed-popular-chip" data-search-term="Free doctor" type="button">Free doctor</button>
-                        <button class="feed-popular-chip" data-search-term="English class" type="button">English class</button>
-                    </div>
-                </div>
-            </section>
-
-            <!-- ─── MOBILE COMPACT SEARCH (hidden on desktop) ─────── -->
-            <div class="mobile-inline-search" id="mobileInlineSearch">
+            <!-- mobile-inline-search kept for script.js compat but hidden -->
+            <div class="mobile-inline-search" id="mobileInlineSearch" style="display:none!important">
                 <div class="mobile-inline-search-inner">
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <circle cx="11" cy="11" r="7"/><path d="m17 17 4 4"/>
-                    </svg>
                     <input id="mobileInlineSearchInput" type="text" class="mobile-inline-search-input"
-                        placeholder="Search jobs, immigration, housing…"
-                        autocomplete="off" spellcheck="false">
+                        placeholder="" autocomplete="off" spellcheck="false">
                 </div>
             </div>
-
-            <!-- ─── DESKTOP RESOURCE SHORTCUTS ───────────────────── -->
-            <section class="desktop-resource-shortcuts" aria-labelledby="desktopResourceShortcutsTitle">
-                <div class="desktop-resource-shortcuts-inner">
-                    <div class="desktop-resource-shortcuts-copy">
-                        <p class="desktop-resource-eyebrow">
-                            <span class="en-text">Student resources</span>
-                            <span class="es-text">Recursos para estudiantes</span>
-                        </p>
-                        <h2 id="desktopResourceShortcutsTitle">
-                            <span class="en-text">Click a picture for help</span>
-                            <span class="es-text">Haz clic en una imagen</span>
-                        </h2>
-                    </div>
-                    <div class="resource-story-row desktop-resource-row" id="feedDesktopResourceRow" aria-live="polite">
-                        <!-- Desktop resource bubbles render here -->
-                    </div>
-                </div>
-            </section>
 
             <!-- ─── CATEGORY BAR ────────────────────────────────── -->
-            <div class="cat-bar-wrap">
-                <div class="cat-bar" id="catBar">
-                    <button class="cat-chip cat-chip--all active" data-cat-filter="all" type="button">
-                        <span class="cat-chip-count" id="catAllCount">0</span>
-                        <span class="en-text">All</span><span class="es-text">Todo</span>
-                    </button>
-                    <button class="cat-chip" data-cat-filter="job" type="button">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
-                        <span class="en-text">Jobs</span><span class="es-text">Empleos</span>
-                    </button>
-                    <button class="cat-chip" data-cat-filter="immigration" type="button">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-                        <span class="en-text">Immigration</span><span class="es-text">Inmigración</span>
-                    </button>
-                    <button class="cat-chip" data-cat-filter="housing" type="button">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                        <span class="en-text">Housing</span><span class="es-text">Vivienda</span>
-                    </button>
-                    <button class="cat-chip" data-cat-filter="health" type="button">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
-                        <span class="en-text">Health</span><span class="es-text">Salud</span>
-                    </button>
-                    <button class="cat-chip" data-cat-filter="food" type="button">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
-                        <span class="en-text">Food</span><span class="es-text">Comida</span>
-                    </button>
-                    <button class="cat-chip" data-cat-filter="esol" type="button">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                        <span class="en-text">English class</span><span class="es-text">Inglés</span>
-                    </button>
-                    <button class="cat-chip" data-cat-filter="college" type="button">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
-                        <span class="en-text">College &amp; GED</span><span class="es-text">Colegio</span>
-                    </button>
-                    <button class="cat-chip" data-cat-filter="money" type="button">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-                        <span class="en-text">Money help</span><span class="es-text">Dinero</span>
-                    </button>
-                </div>
-            </div>
+            <!-- cat-bar moved into header; old slot removed -->
 
             <!-- ─── STORY BUBBLES (mobile only, hidden on desktop) ── -->
             <div class="story-row-wrap story-row-wrap--mobile">
@@ -538,15 +486,15 @@
 
                     <div class="desktop-section-heading">
                         <h1 class="feed-page-heading">
-                            <span class="en-text">Bulletin Board</span>
-                            <span class="es-text">Tablón de Anuncios</span>
+                            <span class="en-text">Latest Posts</span>
+                            <span class="es-text">Publicaciones</span>
                         </h1>
                         <button class="desktop-filter-open" type="button" onclick="(function(){ var t=document.getElementById('mobileSearchTrigger'); if(t) t.click(); setTimeout(function(){ var f=document.getElementById('filterControls'); if(f && f.style.display==='none'){ var btn=document.getElementById('toggleFilters'); if(btn) btn.click(); } },120); })()">
                             <svg class="desktop-filter-open-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                 <path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/>
                             </svg>
-                            <span class="en-text">Filters</span>
-                            <span class="es-text">Filtros</span>
+                            <span class="en-text">Filter</span>
+                            <span class="es-text">Filtrar</span>
                         </button>
                     </div>
 
