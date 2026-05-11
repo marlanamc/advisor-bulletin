@@ -657,16 +657,11 @@ class FirebaseBulletinBoard {
             });
         });
 
-        // Category bar (single-select)
-        // On desktop (≥640px), non-"all" chips open the resource detail modal
+        // Category bar (single-select) — filter the feed on all screen sizes
         document.querySelectorAll('.cat-chip').forEach(chip => {
             chip.addEventListener('click', () => {
-                const filter = chip.getAttribute('data-cat-filter');
-                if (filter !== 'all' && window.matchMedia('(min-width: 640px)').matches) {
-                    this.openResourceShortcut(filter);
-                } else {
-                    this.setFeedCategory(filter === 'all' ? 'all' : filter);
-                }
+                const filter = chip.getAttribute('data-cat-filter') || 'all';
+                this.setFeedCategory(filter);
             });
         });
 
@@ -1115,7 +1110,7 @@ class FirebaseBulletinBoard {
         const resourceCategory = category === 'job' ? 'jobs' : category === 'childcare' ? 'family' : category;
 
         document.querySelectorAll('.cat-chip').forEach((chip) => {
-            const chipCategory = chip.getAttribute('data-cat-filter') || 'all';
+            const chipCategory = this.normalizeFeedCategory(chip.getAttribute('data-cat-filter') || 'all');
             chip.classList.toggle('active', chipCategory === category || (category === 'all' && chipCategory === 'all'));
         });
 
