@@ -1086,6 +1086,17 @@
             }, { passive: true });
         }
 
+        // ── Keep --app-header-offset in sync with actual topbar height ──
+        if (header) {
+            function syncHeaderOffset() {
+                var h = header.getBoundingClientRect().height;
+                document.documentElement.style.setProperty('--app-header-offset', h + 'px');
+            }
+            syncHeaderOffset();
+            var ro = new ResizeObserver(syncHeaderOffset);
+            ro.observe(header);
+        }
+
         // ── Language toggle ────────────────────────────────────
         document.querySelectorAll('[data-lang-switch]').forEach(function (btn) {
             btn.addEventListener('click', function () {

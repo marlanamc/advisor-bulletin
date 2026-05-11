@@ -11504,7 +11504,7 @@ body:has(#loginRequired) {
 
 @media (min-width: 1100px) {
     :root {
-        --app-header-offset: 136px;
+        --app-header-offset: 160px;
     }
 
     body {
@@ -12206,7 +12206,7 @@ body:has(#loginRequired) {
 /* Condensed desktop widths: keep topbar and category strip usable */
 @media (min-width: 1100px) and (max-width: 1440px) {
     :root {
-        --app-header-offset: 128px;
+        --app-header-offset: 160px;
     }
 
     .app-main {
