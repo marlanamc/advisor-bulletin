@@ -3704,28 +3704,21 @@ button[disabled] {
 @media (min-width: 768px) {
     #calendarView .view-hero {
         display: grid;
-        grid-template-columns: minmax(0, 1fr) auto;
-        align-items: center;
-        column-gap: 18px;
+        grid-template-columns: minmax(0, 1fr);
+        justify-items: start;
+        gap: 7px;
         margin: 0 auto 14px;
         padding: 14px 20px 16px;
         max-width: min(900px, calc(100% - 48px));
         border-radius: 16px;
     }
 
-    #calendarView .view-hero-eyebrow,
-    #calendarView .view-hero h1 {
-        grid-column: 1;
-    }
-
     .calendar-back-home-btn {
-        grid-column: 2;
-        grid-row: 1 / span 2;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        min-height: 38px;
-        padding: 0 18px;
+        min-height: 34px;
+        padding: 0 15px;
         border: 1px solid rgba(255, 255, 255, 0.34);
         border-radius: 999px;
         background: rgba(255, 255, 255, 0.09);
@@ -12516,6 +12509,7 @@ body:has(#loginRequired) {
 @media (min-width: 768px) {
     .resources-prototype-hero {
         display: grid;
+        position: relative;
         max-width: none;
         min-height: 250px;
         padding: 68px 56px 60px;
@@ -12552,11 +12546,12 @@ body:has(#loginRequired) {
     }
 
     .resources-back-home-btn {
+        position: absolute;
+        top: 24px;
+        left: 32px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        justify-self: center;
-        margin-top: 22px;
         min-height: 42px;
         padding: 0 20px;
         border: 1px solid rgba(255, 255, 255, 0.36);
