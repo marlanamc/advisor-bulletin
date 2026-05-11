@@ -6,7 +6,8 @@
     <title>EBHCS Admin - Post Bulletin</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Lexend:wght@300;400;500;600;700;800&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/src/css/advisor-portal-v2.css">
     <script type="module" src="/src/admin.js"></script>
 </head>
 <body>
@@ -129,92 +130,329 @@
             </div>
         </div>
 
-        <!-- Admin Panel -->
-        <div id="adminPanel" class="admin-panel advisor-redesign" style="display: none;">
-            <div class="advisor-shell">
-                <aside class="advisor-rail" aria-label="Advisor workspace">
-                    <div class="advisor-rail-brand">
-                        <div class="advisor-app-icon">⛵</div>
-                        <div>
-                            <p class="advisor-eyebrow">Advisor Portal</p>
-                            <strong>Bulletin Studio</strong>
-                        </div>
+        <!-- Admin Panel — v2 Redesign -->
+        <div id="adminPanel" class="admin-panel advisor-redesign ap-portal" style="display: none;">
+
+            <!-- ── SIDEBAR ── -->
+            <nav class="ap-sidebar" id="apSidebar" aria-label="Advisor navigation">
+                <div class="ap-sidebar-brand">
+                    <div class="ap-brand-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
                     </div>
-                    <button class="rail-action active" type="button" data-admin-tab-target="post">
-                        <span>+</span>
-                        Create a post
+                    <div class="ap-brand-text">
+                        <div class="ap-brand-school">EBHCS</div>
+                        <div class="ap-brand-subtitle">Advisor Portal</div>
+                    </div>
+                </div>
+
+                <nav class="ap-nav" role="navigation">
+                    <button class="ap-nav-item ap-nav-create" type="button" onclick="apShowPage('create')" id="apNavCreate">
+                        <div class="ap-nav-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        </div>
+                        Create Post
                     </button>
-                    <button class="rail-action" type="button" data-admin-tab-target="manage">
-                        <span>☰</span>
-                        Manage content
+
+                    <div class="ap-nav-section-label">Workspace</div>
+
+                    <button class="ap-nav-item active" type="button" onclick="apShowPage('dashboard')" id="apNavDashboard">
+                        <div class="ap-nav-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                        </div>
+                        Dashboard
                     </button>
-                    <button id="advisorsRailBtn" class="rail-action" type="button" data-admin-tab-target="advisors" style="display:none">
-                        <span>👥</span>
+
+                    <button class="ap-nav-item" type="button" onclick="apShowPage('posts')" id="apNavPosts">
+                        <div class="ap-nav-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                        </div>
+                        My Posts
+                    </button>
+
+                    <button class="ap-nav-item" type="button" onclick="apShowPage('stats')" id="apNavStats">
+                        <div class="ap-nav-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                        </div>
+                        Stats
+                    </button>
+
+                    <div class="ap-nav-divider"></div>
+                    <div class="ap-nav-section-label">Admin</div>
+
+                    <button id="advisorsRailBtn" class="ap-nav-item" type="button" onclick="apShowPage('advisors')" id="apNavAdvisors" style="display:none">
+                        <div class="ap-nav-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        </div>
                         Advisors
                     </button>
-                    <a class="rail-action rail-link" href="index.html">
-                        <span>↗</span>
-                        Student view
+
+                    <div class="ap-nav-divider"></div>
+
+                    <a class="ap-nav-item" href="index.html">
+                        <div class="ap-nav-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                        </div>
+                        Student View
                     </a>
-                    <div class="rail-help">
-                        <span class="rail-help-icon">?</span>
-                        <p>Password help: email <strong>mcreed@ebhcs.org</strong></p>
-                    </div>
-                </aside>
+                </nav>
 
-                <section class="advisor-workspace" aria-label="Advisor content workspace">
-            <div class="welcome-stat-block">
-            <div class="welcome-section">
-                <div class="welcome-section-topbar">
-                    <a href="index.html" class="welcome-topbar-home">🏠 Student view</a>
-                    <div class="advisor-status-pill" id="advisorStatusPill">Connecting...</div>
-                </div>
-                <div class="welcome-section-body">
-                    <div class="welcome-section-text">
-                        <h3 id="welcomeMessage">Hi, Advisor 👋</h3>
-                        <p>Create clear, student-ready updates and see what students click.</p>
+                <div class="ap-sidebar-footer">
+                    <div class="ap-advisor-card">
+                        <div class="ap-advisor-avatar" id="apAdvisorAvatar">A</div>
+                        <div>
+                            <div class="ap-advisor-name" id="apAdvisorName">Advisor</div>
+                            <div class="ap-advisor-role">EBHCS Staff</div>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </nav>
 
-            <section class="advisor-stat-grid" aria-label="Bulletin metrics">
-                <div class="advisor-stat-card">
-                    <strong id="statLivePosts">0</strong>
-                    <span>Live posts</span>
-                </div>
-                <div class="advisor-stat-card advisor-stat-purple">
-                    <strong id="statResources">0</strong>
-                    <span>Resources</span>
-                </div>
-                <div class="advisor-stat-card advisor-stat-green">
-                    <strong id="statStudentClicks">0</strong>
-                    <span>Student clicks</span>
-                </div>
-                <div class="advisor-stat-card advisor-stat-orange">
-                    <strong id="statExpiringSoon">0</strong>
-                    <span>Expiring soon</span>
-                </div>
-            </section>
-            </div><!-- /.welcome-stat-block -->
+            <!-- ── MAIN CONTENT ── -->
+            <div class="ap-main">
 
-            <div class="desktop-action-cards" aria-label="Quick actions">
-                <button class="desktop-action-card desktop-action-bulletin tab-btn active" role="tab" aria-selected="true" aria-controls="postTab" onclick="showTab('post')" onkeydown="handleTabKeydown(event, 'post')">
-                    <span class="desktop-action-icon">📋</span>
-                    <span class="desktop-action-text"><strong>Create a post</strong><small>Bulletin, resource, or event</small></span>
-                </button>
-                <button class="desktop-action-card desktop-action-manage tab-btn" role="tab" aria-selected="false" aria-controls="manageTab" onclick="showTab('manage')" onkeydown="handleTabKeydown(event, 'manage')">
-                    <span class="desktop-action-icon">☰</span>
-                    <span class="desktop-action-text"><strong>Manage content</strong><small>Edit, filter, or remove posts</small></span>
-                </button>
-                <button id="advisorsTabBtn" class="desktop-action-card desktop-action-advisors tab-btn" role="tab" aria-selected="false" aria-controls="advisorsTab" onclick="showTab('advisors')" onkeydown="handleTabKeydown(event, 'advisors')" style="display:none">
-                    <span class="desktop-action-icon">👥</span>
-                    <span class="desktop-action-text"><strong>Advisors</strong><small>Manage advisor accounts</small></span>
-                </button>
-            </div>
+                <!-- Top Bar -->
+                <header class="ap-topbar">
+                    <h1 class="ap-topbar-title" id="apTopbarTitle">Dashboard</h1>
+                    <div class="ap-topbar-actions">
+                        <div class="advisor-status-pill" id="advisorStatusPill" style="font-size:.75rem;padding:5px 12px;">Connecting...</div>
+                        <a href="index.html" class="ap-btn ap-btn-ghost">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                            Student View
+                        </a>
+                        <button id="logoutBtn" class="ap-btn ap-btn-danger" style="display:none;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                            Logout
+                        </button>
+                    </div>
+                </header>
 
+                <!-- ══════════════════════════════════════
+                     PAGE: DASHBOARD
+                     ══════════════════════════════════════ -->
+                <div id="apPageDashboard" class="ap-page active">
 
-            <!-- New Post Tab -->
-            <div id="postTab" class="tab-content active" role="tabpanel" aria-labelledby="post-tab">
+                    <!-- Welcome Banner -->
+                    <div class="ap-welcome-banner">
+                        <div>
+                            <div class="ap-welcome-eyebrow">Advisor Portal · EBHCS</div>
+                            <h2 class="ap-welcome-title" id="welcomeMessage">Good morning, Advisor</h2>
+                            <p class="ap-welcome-sub">Create clear, student-ready updates and see what students click.</p>
+                        </div>
+                        <button class="ap-welcome-cta" onclick="apShowPage('create')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            New Post
+                        </button>
+                    </div>
+
+                    <!-- Stat Cards -->
+                    <div class="ap-stats-grid">
+                        <div class="ap-stat-card ap-stat-blue">
+                            <div class="ap-stat-icon-wrap">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                            </div>
+                            <div class="ap-stat-value" id="statLivePosts">0</div>
+                            <div class="ap-stat-label">Live Posts</div>
+                            <div class="ap-stat-trend ap-trend-up" id="statLivePostsTrend"></div>
+                        </div>
+                        <div class="ap-stat-card ap-stat-purple">
+                            <div class="ap-stat-icon-wrap">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                            </div>
+                            <div class="ap-stat-value" id="statResources">0</div>
+                            <div class="ap-stat-label">Resources</div>
+                        </div>
+                        <div class="ap-stat-card ap-stat-green">
+                            <div class="ap-stat-icon-wrap">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                            </div>
+                            <div class="ap-stat-value" id="statStudentClicks">0</div>
+                            <div class="ap-stat-label">Student Clicks</div>
+                        </div>
+                        <div class="ap-stat-card ap-stat-amber">
+                            <div class="ap-stat-icon-wrap">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                            </div>
+                            <div class="ap-stat-value" id="statExpiringSoon">0</div>
+                            <div class="ap-stat-label">Expiring Soon</div>
+                        </div>
+                    </div>
+
+                    <!-- Dashboard 2-col grid -->
+                    <div class="ap-dash-grid">
+                        <div class="ap-dash-main">
+
+                            <!-- Recent Posts -->
+                            <div class="ap-section-card">
+                                <div class="ap-section-header">
+                                    <h3 class="ap-section-title">Recent Posts</h3>
+                                    <button class="ap-view-all" onclick="apShowPage('posts')">View all</button>
+                                </div>
+                                <div class="ap-section-body" id="dashRecentPosts">
+                                    <p style="color:var(--ap-text-3);font-size:.85rem;">Your recent posts will appear here.</p>
+                                </div>
+                            </div>
+
+                            <!-- Category Performance -->
+                            <div class="ap-section-card">
+                                <div class="ap-section-header">
+                                    <h3 class="ap-section-title">Category Performance</h3>
+                                    <button class="ap-view-all" onclick="apShowPage('stats')">Full stats</button>
+                                </div>
+                                <div class="ap-section-body">
+                                    <div class="ap-bar-chart" id="dashCatChart">
+                                        <div class="ap-bar-row">
+                                            <span class="ap-bar-label">Job Opp.</span>
+                                            <div class="ap-bar-track"><div class="ap-bar-fill ap-bar-fill-blue" style="width:72%"></div></div>
+                                            <span class="ap-bar-val">72</span>
+                                        </div>
+                                        <div class="ap-bar-row">
+                                            <span class="ap-bar-label">Training</span>
+                                            <div class="ap-bar-track"><div class="ap-bar-fill ap-bar-fill-purple" style="width:58%"></div></div>
+                                            <span class="ap-bar-val">58</span>
+                                        </div>
+                                        <div class="ap-bar-row">
+                                            <span class="ap-bar-label">Immigration</span>
+                                            <div class="ap-bar-track"><div class="ap-bar-fill ap-bar-fill-green" style="width:45%"></div></div>
+                                            <span class="ap-bar-val">45</span>
+                                        </div>
+                                        <div class="ap-bar-row">
+                                            <span class="ap-bar-label">College</span>
+                                            <div class="ap-bar-track"><div class="ap-bar-fill ap-bar-fill-amber" style="width:38%"></div></div>
+                                            <span class="ap-bar-val">38</span>
+                                        </div>
+                                        <div class="ap-bar-row">
+                                            <span class="ap-bar-label">Resource</span>
+                                            <div class="ap-bar-track"><div class="ap-bar-fill ap-bar-fill-coral" style="width:29%"></div></div>
+                                            <span class="ap-bar-val">29</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div class="ap-dash-aside">
+                            <!-- Quick Create -->
+                            <div class="ap-quick-create">
+                                <div class="ap-quick-create-label">Share with students</div>
+                                <div class="ap-quick-create-title">What are you posting today?</div>
+                                <div class="ap-quick-btns">
+                                    <button class="ap-quick-btn" onclick="apShowPage('create');apSelectType('bulletin')">
+                                        <div class="ap-quick-btn-icon" style="background:rgba(26,86,219,.3)">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                                        </div>
+                                        Bulletin
+                                    </button>
+                                    <button class="ap-quick-btn" onclick="apShowPage('create');apSelectType('resource')">
+                                        <div class="ap-quick-btn-icon" style="background:rgba(5,150,105,.3)">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                                        </div>
+                                        Resource
+                                    </button>
+                                    <button class="ap-quick-btn" onclick="apShowPage('create');apSelectType('event')">
+                                        <div class="ap-quick-btn-icon" style="background:rgba(124,58,237,.3)">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                                        </div>
+                                        Calendar Event
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Upcoming Events -->
+                            <div class="ap-section-card">
+                                <div class="ap-section-header">
+                                    <h3 class="ap-section-title">Upcoming Events</h3>
+                                </div>
+                                <div class="ap-section-body" id="dashUpcomingEvents">
+                                    <p style="color:var(--ap-text-3);font-size:.82rem;">No upcoming events. Create a calendar event to see it here.</p>
+                                </div>
+                            </div>
+
+                            <!-- Top Posts (analytics) -->
+                            <div class="ap-section-card">
+                                <div class="ap-section-header">
+                                    <h3 class="ap-section-title">Top Posts</h3>
+                                    <button class="ap-view-all" onclick="apShowPage('stats')">Stats</button>
+                                </div>
+                                <div class="ap-section-body">
+                                    <div id="analyticsTopPosts" class="analytics-list">
+                                        <p class="analytics-empty" style="color:var(--ap-text-3);font-size:.82rem;">Most-viewed posts will appear here once students start clicking.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Top Actions -->
+                            <div class="ap-section-card">
+                                <div class="ap-section-header">
+                                    <h3 class="ap-section-title">Top Student Actions</h3>
+                                </div>
+                                <div class="ap-section-body">
+                                    <div id="analyticsActionList" class="analytics-list">
+                                        <p class="analytics-empty" style="color:var(--ap-text-3);font-size:.82rem;">Stats will appear once students start opening posts.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div><!-- /dashboard page -->
+
+                <!-- ══════════════════════════════════════
+                     PAGE: CREATE POST
+                     ══════════════════════════════════════ -->
+                <div id="apPageCreate" class="ap-page" role="main">
+                    <div class="ap-create-header">
+                        <h1>Create a Post</h1>
+                        <p>Share opportunities, events, and resources with your students.</p>
+                    </div>
+
+                    <!-- Quick Post Badge -->
+                    <div class="ap-quick-post-badge" onclick="apOpenQuickPost()" role="button" tabindex="0" aria-label="Open Quick Post">
+                        <div class="ap-quick-post-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                        </div>
+                        <div class="ap-quick-post-text">
+                            <strong>Quick Post</strong>
+                            <small>Title + image only — post in seconds</small>
+                        </div>
+                        <div class="ap-quick-post-arrow">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                        </div>
+                    </div>
+
+                    <div class="ap-create-layout">
+                        <!-- Form Column -->
+                        <div class="ap-create-form-col">
+
+                            <!-- Step 1: Type Selector -->
+                            <div class="ap-type-selector" role="group" aria-label="Choose post type" id="apTypeSelector">
+                                <button class="ap-type-card ap-type-bulletin selected selected-bulletin" type="button" onclick="apSelectType('bulletin')" id="apTypeBulletin" aria-pressed="true">
+                                    <div class="ap-type-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+                                    <div class="ap-type-icon-ring">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                                    </div>
+                                    <div class="ap-type-name">Bulletin</div>
+                                    <div class="ap-type-desc">Announcements, reminders, updates</div>
+                                </button>
+                                <button class="ap-type-card ap-type-resource" type="button" onclick="apSelectType('resource')" id="apTypeResource" aria-pressed="false">
+                                    <div class="ap-type-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+                                    <div class="ap-type-icon-ring">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                                    </div>
+                                    <div class="ap-type-name">Resource</div>
+                                    <div class="ap-type-desc">Jobs, immigration help, housing, health</div>
+                                </button>
+                                <button class="ap-type-card ap-type-event" type="button" onclick="apSelectType('event')" id="apTypeEvent" aria-pressed="false">
+                                    <div class="ap-type-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+                                    <div class="ap-type-icon-ring">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                                    </div>
+                                    <div class="ap-type-name">Calendar Event</div>
+                                    <div class="ap-type-desc">Workshops, meetings, deadlines</div>
+                                </button>
+                            </div>
+
+                            <!-- ORIGINAL FORM (kept for JS compatibility, hidden/wrapped) -->
+                            <div id="postTab" class="tab-content active" role="tabpanel" aria-labelledby="post-tab" style="display:contents">
                 <div class="post-form-container">
                     <h4 id="formHeader">Create New Bulletin</h4>
                     <div class="content-type-switcher" role="tablist" aria-label="Choose content type">
@@ -582,141 +820,492 @@
                         </div>
                     </form>
                 </div>
-            </div>
+            </div><!-- /postTab -->
 
-            <!-- Manage Posts Tab -->
-            <div id="manageTab" class="tab-content">
-                <div class="manage-header">
-                    <h4>Manage Your Content</h4>
-                    <div class="manage-controls">
-                        <input type="text" id="manageSearchInput" placeholder="Search your posts or resources..." class="manage-search">
-                        <select id="manageSortSelect" class="manage-sort">
+                            <!-- ── New v2 form actions bar ── -->
+                            <div class="ap-form-actions">
+                                <button type="button" class="ap-btn-save-draft" onclick="previewBulletin()">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                    Preview
+                                </button>
+                                <button type="button" class="ap-btn-save-draft" onclick="document.querySelector('#bulletinForm').dispatchEvent(new Event('save-draft'))">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                                    Save Draft
+                                </button>
+                                <button type="submit" form="bulletinForm" class="ap-btn-submit">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                                    Post to Students
+                                </button>
+                            </div>
+
+                        </div><!-- /ap-create-form-col -->
+
+                        <!-- ── LIVE PREVIEW COLUMN ── -->
+                        <div class="ap-preview-col">
+                            <!-- Phone mockup preview -->
+                            <div class="ap-preview-frame">
+                                <div class="ap-preview-frame-header">
+                                    <div class="ap-preview-dot"></div>
+                                    <div class="ap-preview-dot"></div>
+                                    <div class="ap-preview-dot"></div>
+                                    <span class="ap-preview-label">Student view</span>
+                                </div>
+                                <div class="ap-preview-device">
+                                    <div class="ap-phone-mockup">
+                                        <div class="ap-phone-status">
+                                            <div class="ap-phone-app-icon">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                                            </div>
+                                            <div>
+                                                <div class="ap-phone-app-name">East Boston Harborside</div>
+                                                <div class="ap-phone-app-sub">Community School</div>
+                                            </div>
+                                            <div class="ap-phone-topnav-icons">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                                            </div>
+                                        </div>
+                                        <div class="ap-preview-card">
+                                            <div class="ap-preview-post-card">
+                                                <div class="ap-preview-post-meta">
+                                                    <span class="ap-preview-type-chip ap-chip-bulletin" id="previewChip">BULLETIN</span>
+                                                    <span class="ap-preview-post-time">Just now</span>
+                                                </div>
+                                                <div class="ap-preview-post-title" id="previewTitle">Your post title will appear here</div>
+                                                <div class="ap-preview-post-img" id="previewImg">
+                                                    <div class="ap-preview-post-img-placeholder">
+                                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                                                        <span>IMAGE / FLYER</span>
+                                                    </div>
+                                                </div>
+                                                <div class="ap-preview-post-body" id="previewBody">Your description will show here.</div>
+                                                <div class="ap-preview-post-footer">
+                                                    <span class="ap-preview-author">
+                                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                                        <span id="previewAdvisor">Advisor</span>
+                                                    </span>
+                                                    <span class="ap-preview-audience">
+                                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                                                        All Students
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="ap-phone-bottomnav">
+                                            <div class="ap-phone-nav-item">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                                                <span>Home</span>
+                                            </div>
+                                            <div class="ap-phone-nav-item">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                                                <span>Resources</span>
+                                            </div>
+                                            <div class="ap-phone-nav-item">
+                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                                                <span>Events</span>
+                                            </div>
+                                            <div class="ap-phone-nav-item active">
+                                                <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z" fill="#1a56db"/></svg>
+                                                <span>Posts</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Posting Tips -->
+                            <div class="ap-tips-card">
+                                <div class="ap-tips-header">
+                                    <div class="ap-tips-icon">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                    </div>
+                                    <div class="ap-tips-title">Posting Tips</div>
+                                </div>
+                                <ul class="ap-tips-list">
+                                    <li class="ap-tip-item">
+                                        <div class="ap-tip-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+                                        Use a short, clear title
+                                    </li>
+                                    <li class="ap-tip-item">
+                                        <div class="ap-tip-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+                                        Add a flyer or image for 2× more clicks
+                                    </li>
+                                    <li class="ap-tip-item">
+                                        <div class="ap-tip-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+                                        Include key dates for events
+                                    </li>
+                                    <li class="ap-tip-item">
+                                        <div class="ap-tip-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+                                        Add a link for easy sign-up
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <!-- Your recent posts mini -->
+                            <div class="ap-recent-preview">
+                                <div class="ap-recent-preview-title">
+                                    Your Recent Posts
+                                    <button class="ap-view-all" onclick="apShowPage('posts')">View all</button>
+                                </div>
+                                <div class="ap-recent-preview-list" id="createRecentPosts">
+                                    <p style="font-size:.78rem;color:var(--ap-text-3);">Your recent posts will appear here.</p>
+                                </div>
+                            </div>
+                        </div><!-- /ap-preview-col -->
+
+                    </div><!-- /ap-create-layout -->
+                </div><!-- /apPageCreate -->
+
+                <!-- ══════════════════════════════════════
+                     PAGE: MY POSTS
+                     ══════════════════════════════════════ -->
+                <div id="apPagePosts" class="ap-page">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+                        <div>
+                            <h1 style="font-family:var(--ap-font-head);font-size:1.5rem;font-weight:800;color:var(--ap-text);margin:0 0 4px;letter-spacing:-.02em;">My Posts</h1>
+                            <p style="font-size:.9rem;color:var(--ap-text-2);margin:0;">All content you've published or drafted.</p>
+                        </div>
+                        <button class="ap-btn ap-btn-blue" onclick="apShowPage('create')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            New Post
+                        </button>
+                    </div>
+
+                    <!-- Toolbar -->
+                    <div class="ap-manage-toolbar">
+                        <div class="ap-search-wrap">
+                            <div class="ap-search-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+                            <input type="text" class="ap-search-input" id="manageSearchInput" placeholder="Search posts and resources…">
+                        </div>
+                        <div class="ap-filter-pills">
+                            <button class="ap-filter-pill active">All</button>
+                            <button class="ap-filter-pill">Live</button>
+                            <button class="ap-filter-pill">Draft</button>
+                            <button class="ap-filter-pill">Expired</button>
+                        </div>
+                        <select id="manageSortSelect" class="ap-select" style="width:auto;min-width:140px;padding:8px 34px 8px 12px;font-size:.82rem;">
                             <option value="newest">Newest First</option>
                             <option value="oldest">Oldest First</option>
                             <option value="category">By Category</option>
                             <option value="deadline">By Deadline</option>
                         </select>
-                        <select id="manageFilterSelect" class="manage-filter">
+                        <select id="manageFilterSelect" class="ap-select" style="width:auto;min-width:130px;padding:8px 34px 8px 12px;font-size:.82rem;">
                             <option value="all">All Content</option>
                             <option value="active">Active</option>
                             <option value="expired">Expired</option>
                         </select>
                     </div>
-                </div>
-                <div id="manageBulletins" class="manage-bulletins-grid">
-                    <!-- Bulletins for management will be loaded here -->
-                </div>
-            </div>
 
-            <!-- Advisors Tab -->
-            <div id="advisorsTab" class="tab-content" role="tabpanel" aria-labelledby="advisors-tab" aria-hidden="true">
-                <div class="manage-header">
-                    <h4>Manage Advisors</h4>
-                </div>
+                    <!-- Posts grid (existing JS populates manageBulletins) -->
+                    <div id="manageBulletins" class="manage-bulletins-grid">
+                        <!-- Bulletins for management loaded here by JS -->
+                    </div>
 
-                <!-- Add new advisor form -->
-                <div class="advisor-add-form manage-card">
-                    <h5>Add New Advisor</h5>
-                    <div class="advisor-form-grid">
-                        <div class="form-group">
-                            <label for="newAdvisorUsername">Username</label>
-                            <input type="text" id="newAdvisorUsername" placeholder="e.g. jsmith" autocomplete="off">
-                            <small class="input-help">Their email prefix (before @ebhcs.org)</small>
+                    <!-- Hidden manage tab (for JS compatibility) -->
+                    <div id="manageTab" class="tab-content" style="display:none" aria-hidden="true"></div>
+                </div><!-- /apPagePosts -->
+
+                <!-- ══════════════════════════════════════
+                     PAGE: STATS
+                     ══════════════════════════════════════ -->
+                <div id="apPageStats" class="ap-page">
+                    <div class="ap-stats-header">
+                        <h1>Your Stats</h1>
+                        <p>See how your posts are performing with students over the last 30 days.</p>
+                    </div>
+
+                    <!-- Big stat cards -->
+                    <div class="ap-stats-grid-big">
+                        <div class="ap-stat-card ap-stat-blue">
+                            <div class="ap-stat-icon-wrap">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                            </div>
+                            <div class="ap-stat-value" id="statsPublished">—</div>
+                            <div class="ap-stat-label">Posts Published</div>
                         </div>
-                        <div class="form-group">
-                            <label for="newAdvisorDisplayName">Display Name</label>
-                            <input type="text" id="newAdvisorDisplayName" placeholder="e.g. Jamie Smith" autocomplete="off">
-                            <small class="input-help">Name students see on bulletins</small>
+                        <div class="ap-stat-card ap-stat-green">
+                            <div class="ap-stat-icon-wrap">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                            </div>
+                            <div class="ap-stat-value" id="statsViews">—</div>
+                            <div class="ap-stat-label">Total Views</div>
                         </div>
-                        <div class="form-group">
-                            <label for="newAdvisorEmail">Email</label>
-                            <input type="email" id="newAdvisorEmail" placeholder="jsmith@ebhcs.org" autocomplete="off">
+                        <div class="ap-stat-card ap-stat-amber">
+                            <div class="ap-stat-icon-wrap">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                            </div>
+                            <div class="ap-stat-value" id="statsClicks">—</div>
+                            <div class="ap-stat-label">Student Clicks</div>
                         </div>
-                        <div class="form-group advisor-admin-toggle">
-                            <label class="toggle-switch-label" for="newAdvisorIsAdmin">
-                                <span class="toggle-switch">
-                                    <input type="checkbox" id="newAdvisorIsAdmin">
-                                    <span class="toggle-track"><span class="toggle-thumb"></span></span>
-                                </span>
-                                <span class="toggle-text">
-                                    <strong>Admin</strong>
-                                    <small>Can manage all posts &amp; advisors</small>
-                                </span>
-                            </label>
+                        <div class="ap-stat-card ap-stat-purple">
+                            <div class="ap-stat-icon-wrap">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            </div>
+                            <div class="ap-stat-value" id="statsReach">—</div>
+                            <div class="ap-stat-label">Students Reached</div>
                         </div>
                     </div>
-                    <div class="manage-actions">
-                        <button class="edit-btn" onclick="adminPanel.addAdvisor()">Add Advisor</button>
+
+                    <!-- Charts grid -->
+                    <div class="ap-chart-grid">
+                        <!-- Views by category (real data) -->
+                        <div class="ap-chart-card">
+                            <div class="ap-chart-card-title">Student Clicks by Category</div>
+                            <div id="statsCatChart" class="ap-bar-chart">
+                                <p style="font-size:.82rem;color:var(--ap-text-3);">Loading…</p>
+                            </div>
+                        </div>
+
+                        <!-- Clicks by device (real data) -->
+                        <div class="ap-chart-card">
+                            <div class="ap-chart-card-title">Clicks by Device</div>
+                            <div class="ap-donut-wrap">
+                                <div class="ap-donut">
+                                    <svg id="statsDonutSvg" viewBox="0 0 36 36">
+                                        <circle cx="18" cy="18" r="15.9" fill="none" stroke="#e2e8f2" stroke-width="4"/>
+                                        <circle data-segment="mobile"  cx="18" cy="18" r="15.9" fill="none" stroke="#1a56db" stroke-width="4" stroke-dasharray="62 38" stroke-dashoffset="-25"/>
+                                        <circle data-segment="tablet"  cx="18" cy="18" r="15.9" fill="none" stroke="#059669" stroke-width="4" stroke-dasharray="25 75" stroke-dashoffset="-87"/>
+                                        <circle data-segment="desktop" cx="18" cy="18" r="15.9" fill="none" stroke="#d97706" stroke-width="4" stroke-dasharray="13 87" stroke-dashoffset="-112"/>
+                                    </svg>
+                                </div>
+                                <div class="ap-donut-legend">
+                                    <div class="ap-donut-item">
+                                        <div class="ap-donut-dot" style="background:#1a56db"></div>
+                                        Mobile
+                                        <span class="ap-donut-item-val" id="statsDevMobile">—</span>
+                                    </div>
+                                    <div class="ap-donut-item">
+                                        <div class="ap-donut-dot" style="background:#059669"></div>
+                                        Tablet
+                                        <span class="ap-donut-item-val" id="statsDevTablet">—</span>
+                                    </div>
+                                    <div class="ap-donut-item">
+                                        <div class="ap-donut-dot" style="background:#d97706"></div>
+                                        Desktop
+                                        <span class="ap-donut-item-val" id="statsDevDesktop">—</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Posts per category (real data) -->
+                        <div class="ap-chart-card">
+                            <div class="ap-chart-card-title">Posts by Category</div>
+                            <div id="statsPostCatChart" class="ap-bar-chart">
+                                <p style="font-size:.82rem;color:var(--ap-text-3);">Loading…</p>
+                            </div>
+                        </div>
+
+                        <!-- Your Impact card (real top category) -->
+                        <div class="ap-chart-card" style="background:linear-gradient(135deg,var(--ap-navy),var(--ap-navy-mid));color:#fff;">
+                            <div class="ap-chart-card-title" style="color:rgba(255,213,93,.8);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;">Your Impact</div>
+                            <div style="margin-top:8px;">
+                                <div style="font-family:var(--ap-font-head);font-size:1.5rem;font-weight:800;letter-spacing:-.03em;line-height:1.2;" id="statsTopCat">—</div>
+                                <div style="font-size:.82rem;color:rgba(255,255,255,.65);margin:6px 0 14px;">your most-clicked category</div>
+                                <div style="font-size:.83rem;color:rgba(255,255,255,.8);line-height:1.55;">Keep sharing opportunities — your posts are reaching students who need this information.</div>
+                            </div>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Advisor list -->
-                <div id="advisorsList" class="manage-bulletins-grid">
-                    <!-- Populated by loadAdvisors() -->
-                </div>
-            </div>
-                </section>
+                    <!-- Top performing posts table (real data) -->
+                    <div class="ap-top-posts">
+                        <div class="ap-top-posts-header">
+                            <h3 class="ap-top-posts-title">Top Performing Posts</h3>
+                            <span style="font-size:.75rem;color:var(--ap-text-3);">Last 30 days · by student clicks</span>
+                        </div>
+                    </div>
+                </div><!-- /apPageStats -->
 
-            <!-- Edit Advisor Modal -->
+                <!-- ══════════════════════════════════════
+                     PAGE: ADVISORS (admin only)
+                     ══════════════════════════════════════ -->
+                <div id="apPageAdvisors" class="ap-page">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+                        <div>
+                            <h1 style="font-family:var(--ap-font-head);font-size:1.5rem;font-weight:800;color:var(--ap-text);margin:0 0 4px;letter-spacing:-.02em;">Manage Advisors</h1>
+                            <p style="font-size:.9rem;color:var(--ap-text-2);margin:0;">Add and manage advisor accounts.</p>
+                        </div>
+                    </div>
+
+                    <!-- Hidden advisors tab for JS compat -->
+                    <div id="advisorsTab" class="tab-content" style="display:contents" role="tabpanel" aria-labelledby="advisors-tab" aria-hidden="true">
+
+                    <!-- Add new advisor form -->
+                    <div class="advisor-add-form manage-card ap-section-card" style="margin-bottom:20px;">
+                        <div class="ap-section-header">
+                            <h3 class="ap-section-title">Add New Advisor</h3>
+                        </div>
+                        <div style="padding:20px 22px;">
+                            <div class="advisor-form-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;">
+                                <div class="form-group">
+                                    <label for="newAdvisorUsername" class="ap-label">Username</label>
+                                    <input type="text" id="newAdvisorUsername" placeholder="e.g. jsmith" autocomplete="off" class="ap-input">
+                                    <small class="ap-field-hint">Their email prefix (before @ebhcs.org)</small>
+                                </div>
+                                <div class="form-group">
+                                    <label for="newAdvisorDisplayName" class="ap-label">Display Name</label>
+                                    <input type="text" id="newAdvisorDisplayName" placeholder="e.g. Jamie Smith" autocomplete="off" class="ap-input">
+                                    <small class="ap-field-hint">Name students see on bulletins</small>
+                                </div>
+                                <div class="form-group">
+                                    <label for="newAdvisorEmail" class="ap-label">Email</label>
+                                    <input type="email" id="newAdvisorEmail" placeholder="jsmith@ebhcs.org" autocomplete="off" class="ap-input">
+                                </div>
+                                <div class="form-group advisor-admin-toggle" style="display:flex;align-items:center;">
+                                    <label class="toggle-switch-label" for="newAdvisorIsAdmin" style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+                                        <span class="toggle-switch">
+                                            <input type="checkbox" id="newAdvisorIsAdmin">
+                                            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                                        </span>
+                                        <span class="toggle-text">
+                                            <strong style="font-family:var(--ap-font-head);font-size:.85rem;">Admin</strong>
+                                            <small style="display:block;color:var(--ap-text-3);font-size:.75rem;">Can manage all posts &amp; advisors</small>
+                                        </span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div style="margin-top:16px;">
+                                <button class="ap-btn ap-btn-blue" onclick="adminPanel.addAdvisor()">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                    Add Advisor
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Advisor list -->
+                    <div id="advisorsList" class="manage-bulletins-grid"></div>
+
+                    </div><!-- /advisorsTab -->
+                </div><!-- /apPageAdvisors -->
+
+            </div><!-- /ap-main -->
+
+            <!-- Edit Advisor Modal (unchanged for JS compat) -->
             <div id="editAdvisorModal" class="img-lightbox" role="dialog" aria-label="Edit advisor" aria-hidden="true" style="display:none; align-items:center; justify-content:center;">
                 <div class="img-lightbox-backdrop" onclick="adminPanel.closeEditAdvisor()"></div>
                 <div class="advisor-edit-modal-inner" style="position:relative;z-index:1;background:#fff;border-radius:16px;padding:28px;width:min(480px,92vw);box-shadow:0 24px 60px rgba(10,29,58,0.18);">
-                    <h4 style="margin:0 0 18px;font:900 16px var(--font-jakarta);color:#0a1d3a;">Edit Advisor</h4>
+                    <h4 style="margin:0 0 18px;font-family:var(--ap-font-head);font-size:1rem;font-weight:800;color:#0a1d3a;">Edit Advisor</h4>
                     <input type="hidden" id="editAdvisorUsername">
-                    <div class="advisor-form-grid">
+                    <div class="advisor-form-grid" style="display:grid;gap:14px;">
                         <div class="form-group">
-                            <label for="editAdvisorDisplayName">Display Name</label>
-                            <input type="text" id="editAdvisorDisplayName" autocomplete="off">
-                            <small class="input-help">Name students see on bulletins</small>
+                            <label for="editAdvisorDisplayName" class="ap-label">Display Name</label>
+                            <input type="text" id="editAdvisorDisplayName" autocomplete="off" class="ap-input">
+                            <small class="ap-field-hint">Name students see on bulletins</small>
                         </div>
                         <div class="form-group">
-                            <label for="editAdvisorEmail">Email</label>
-                            <input type="email" id="editAdvisorEmail" autocomplete="off">
+                            <label for="editAdvisorEmail" class="ap-label">Email</label>
+                            <input type="email" id="editAdvisorEmail" autocomplete="off" class="ap-input">
                         </div>
                         <div class="form-group advisor-admin-toggle">
-                            <label class="toggle-switch-label" for="editAdvisorIsAdmin">
+                            <label class="toggle-switch-label" for="editAdvisorIsAdmin" style="display:flex;align-items:center;gap:10px;cursor:pointer;">
                                 <span class="toggle-switch">
                                     <input type="checkbox" id="editAdvisorIsAdmin">
                                     <span class="toggle-track"><span class="toggle-thumb"></span></span>
                                 </span>
                                 <span class="toggle-text">
-                                    <strong>Admin</strong>
-                                    <small>Can manage all posts &amp; advisors</small>
+                                    <strong style="font-family:var(--ap-font-head);font-size:.85rem;">Admin</strong>
+                                    <small style="display:block;color:var(--ap-text-3);font-size:.75rem;">Can manage all posts &amp; advisors</small>
                                 </span>
                             </label>
                         </div>
                     </div>
-                    <div class="manage-actions" style="margin-top:18px;">
-                        <button class="edit-btn" onclick="adminPanel.saveEditAdvisor()">Save</button>
-                        <button class="delete-btn" onclick="adminPanel.closeEditAdvisor()">Cancel</button>
+                    <div style="margin-top:18px;display:flex;gap:10px;">
+                        <button class="ap-btn ap-btn-blue" onclick="adminPanel.saveEditAdvisor()">Save Changes</button>
+                        <button class="ap-btn ap-btn-ghost" onclick="adminPanel.closeEditAdvisor()">Cancel</button>
                     </div>
                 </div>
             </div>
 
-                <aside class="advisor-insights" aria-label="Student engagement insights">
-                    <div class="insight-panel">
-                        <p class="advisor-eyebrow">Last 30 days</p>
-                        <h4>Top student actions</h4>
-                        <div id="analyticsActionList" class="analytics-list">
-                            <p class="analytics-empty">Stats will appear once students start opening posts. Share the link to get things going!</p>
+        </div><!-- /ap-portal / adminPanel -->
+    </main>
+
+    <!-- ═══════════════════════════════════════════════
+         QUICK POST MODAL
+         ═══════════════════════════════════════════════ -->
+    <div class="ap-modal-overlay" id="apQuickPostModal" role="dialog" aria-modal="true" aria-label="Quick Post">
+        <div class="ap-modal">
+            <div class="ap-modal-header">
+                <div class="ap-modal-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                </div>
+                <div>
+                    <h2 class="ap-modal-title">Quick Post</h2>
+                    <p class="ap-modal-sub">Title + image — post in seconds</p>
+                </div>
+                <button class="ap-modal-close" onclick="apCloseQuickPost()" aria-label="Close">×</button>
+            </div>
+            <div class="ap-modal-body">
+                <div class="ap-field">
+                    <label class="ap-label" for="qpTitle">Title <span class="ap-label-req">*</span></label>
+                    <input type="text" class="ap-input" id="qpTitle" placeholder="e.g., Job Opening: Community Health Worker" maxlength="200" oninput="apQPPreview()">
+                </div>
+                <div class="ap-field">
+                    <label class="ap-label" for="qpCategory">Category <span class="ap-label-req">*</span></label>
+                    <select class="ap-select" id="qpCategory">
+                        <option value="">Select a category…</option>
+                        <option value="job">Job Opportunity</option>
+                        <option value="training">Training/Workshop</option>
+                        <option value="college">College/University</option>
+                        <option value="career-fair">Career Fair</option>
+                        <option value="immigration">Immigration</option>
+                        <option value="announcement">General Announcement</option>
+                        <option value="resource">Resource/Service</option>
+                    </select>
+                </div>
+                <div class="ap-field">
+                    <label class="ap-label">Image / Flyer (recommended)</label>
+                    <div class="ap-upload-zone" id="qpUploadZone" onclick="document.getElementById('qpImageFile').click()">
+                        <div class="ap-upload-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                        </div>
+                        <div class="ap-upload-title">Click to upload image or flyer</div>
+                        <div class="ap-upload-sub">PNG, JPG or PDF · Max 10MB</div>
+                        <div class="ap-upload-cta">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            Choose file
+                        </div>
+                        <div class="ap-upload-tip">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                            Posts with images get 2× more clicks
                         </div>
                     </div>
-                    <div class="insight-panel">
-                        <h4>Top posts</h4>
-                        <div id="analyticsTopPosts" class="analytics-list">
-                            <p class="analytics-empty">Your most-viewed posts will show up here after students start clicking.</p>
+                    <input type="file" id="qpImageFile" accept="image/*,.pdf" style="display:none" onchange="apQPFileSelected(this)">
+                </div>
+                <!-- QP Preview mini -->
+                <div id="qpPreviewWrap" style="display:none;">
+                    <div style="font-family:var(--ap-font-head);font-size:.75rem;font-weight:700;color:var(--ap-text-3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">Preview</div>
+                    <div class="ap-preview-post-card" style="max-width:280px;">
+                        <div class="ap-preview-post-meta">
+                            <span class="ap-preview-type-chip ap-chip-bulletin">BULLETIN</span>
+                            <span class="ap-preview-post-time">Just now</span>
+                        </div>
+                        <div class="ap-preview-post-title" id="qpPreviewTitle">Your title here</div>
+                        <div class="ap-preview-post-img" id="qpPreviewImg" style="height:80px;">
+                            <div class="ap-preview-post-img-placeholder">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                            </div>
                         </div>
                     </div>
-                    <div class="insight-panel">
-                        <h4>Top categories</h4>
-                        <div id="analyticsTopCategories" class="analytics-list">
-                            <p class="analytics-empty">Which topics students click most will appear here.</p>
-                        </div>
-                    </div>
-                </aside>
+                </div>
+            </div>
+            <div class="ap-modal-footer">
+                <button class="ap-btn ap-btn-ghost" onclick="apCloseQuickPost()" style="flex:1;justify-content:center;">Cancel</button>
+                <button class="ap-btn-submit" onclick="apQuickPostSubmit()" style="flex:2;border-radius:var(--ap-r-md);">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                    Post Now
+                </button>
             </div>
         </div>
-    </main>
+    </div>
+
+    <!-- Toast -->
+    <div class="ap-toast" id="apToast">
+        <div class="ap-toast-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <span id="apToastMsg">Post published!</span>
+    </div>
 
     <!-- Preview Modal -->
     <div id="previewModal" class="modal">
@@ -1333,6 +1922,528 @@
                 }
             });
             observer.observe(adminPanel, { attributes: true, attributeFilter: ['style'] });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    })();
+    </script>
+
+    <!-- ═══════════════════════════════════════════════════════
+         ADVISOR PORTAL v2 — Navigation & Live Preview JS
+         ═══════════════════════════════════════════════════════ -->
+    <script>
+    (function() {
+        // ── Page navigation ──────────────────────────────────────────
+        var PAGES = {
+            dashboard: { el: 'apPageDashboard', nav: 'apNavDashboard', title: 'Dashboard' },
+            create:    { el: 'apPageCreate',    nav: 'apNavCreate',    title: 'Create Post' },
+            posts:     { el: 'apPagePosts',     nav: 'apNavPosts',     title: 'My Posts' },
+            stats:     { el: 'apPageStats',     nav: 'apNavStats',     title: 'Stats' },
+            advisors:  { el: 'apPageAdvisors',  nav: 'apNavAdvisors',  title: 'Advisors' },
+        };
+
+        window.apShowPage = function(page) {
+            Object.keys(PAGES).forEach(function(k) {
+                var p = PAGES[k];
+                var el = document.getElementById(p.el);
+                var nav = document.getElementById(p.nav);
+                if (el) el.classList.toggle('active', k === page);
+                if (nav) nav.classList.toggle('active', k === page);
+            });
+            var titleEl = document.getElementById('apTopbarTitle');
+            if (titleEl && PAGES[page]) titleEl.textContent = PAGES[page].title;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        // ── Type selector ─────────────────────────────────────────────
+        var typeMap = {
+            bulletin: { cls: 'selected-bulletin', chipCls: 'ap-chip-bulletin', chipText: 'BULLETIN', contentType: 'post' },
+            resource: { cls: 'selected-resource', chipCls: 'ap-chip-resource', chipText: 'RESOURCE', contentType: 'resource' },
+            event:    { cls: 'selected-event',    chipCls: 'ap-chip-event',    chipText: 'EVENT',    contentType: 'event' },
+        };
+
+        window.apSelectType = function(type) {
+            var map = typeMap[type];
+            if (!map) return;
+            // Update type cards
+            ['bulletin','resource','event'].forEach(function(t) {
+                var card = document.getElementById('apType' + t.charAt(0).toUpperCase() + t.slice(1));
+                if (!card) return;
+                card.classList.remove('selected','selected-bulletin','selected-resource','selected-event');
+                card.setAttribute('aria-pressed', t === type ? 'true' : 'false');
+                if (t === type) card.classList.add('selected', map.cls);
+            });
+            // Update live preview chip
+            var chip = document.getElementById('previewChip');
+            if (chip) {
+                chip.className = 'ap-preview-type-chip ' + map.chipCls;
+                chip.textContent = map.chipText;
+            }
+            // Sync existing content-type-btn for JS compat
+            var btns = document.querySelectorAll('.content-type-btn');
+            btns.forEach(function(btn) {
+                var ct = btn.getAttribute('data-content-type');
+                var match = (ct === map.contentType) || (type === 'bulletin' && ct === 'post');
+                btn.classList.toggle('active', match);
+                if (match) btn.click();
+            });
+        };
+
+        // ── Live preview sync ─────────────────────────────────────────
+        function syncPreview() {
+            var titleInput = document.getElementById('title') || document.getElementById('resourceTitleEn');
+            var descInput  = document.getElementById('description') || document.getElementById('resourceDescription');
+            var advisorSel = document.getElementById('advisorName');
+            var imageInput = document.getElementById('image');
+
+            var prevTitle   = document.getElementById('previewTitle');
+            var prevBody    = document.getElementById('previewBody');
+            var prevAdvisor = document.getElementById('previewAdvisor');
+
+            if (prevTitle && titleInput) {
+                prevTitle.textContent = titleInput.value.trim() || 'Your post title will appear here';
+            }
+            if (prevBody && descInput) {
+                var txt = descInput.value.trim();
+                prevBody.textContent = txt ? (txt.length > 100 ? txt.slice(0,100)+'…' : txt) : 'Your description will show here.';
+                prevBody.style.display = txt ? '' : '';
+            }
+            if (prevAdvisor && advisorSel) {
+                prevAdvisor.textContent = advisorSel.value || 'Advisor';
+            }
+
+            // Image preview
+            if (imageInput && imageInput.files && imageInput.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    var prevImg = document.getElementById('previewImg');
+                    if (prevImg) {
+                        prevImg.innerHTML = '<img src="' + e.target.result + '" alt="Preview" style="width:100%;height:100%;object-fit:cover;">';
+                    }
+                };
+                reader.readAsDataURL(imageInput.files[0]);
+            }
+        }
+
+        // ── Advisor avatar / name init ────────────────────────────────
+        function initAdvisorDisplay() {
+            var sel = document.getElementById('advisorName');
+            var nameEl = document.getElementById('apAdvisorName');
+            var avatarEl = document.getElementById('apAdvisorAvatar');
+            if (!sel) return;
+            function update() {
+                var name = sel.value || 'Advisor';
+                if (nameEl) nameEl.textContent = name;
+                if (avatarEl) avatarEl.textContent = name.charAt(0).toUpperCase();
+            }
+            sel.addEventListener('change', update);
+            // Also sync preview
+            sel.addEventListener('change', syncPreview);
+        }
+
+        // ── Bind live preview to title/desc ──────────────────────────
+        function bindPreviewListeners() {
+            ['title','resourceTitleEn','description','resourceDescription','advisorName'].forEach(function(id) {
+                var el = document.getElementById(id);
+                if (!el) return;
+                el.addEventListener('input', syncPreview);
+                el.addEventListener('change', syncPreview);
+            });
+            var imgEl = document.getElementById('image');
+            if (imgEl) imgEl.addEventListener('change', syncPreview);
+        }
+
+        // ── Filter pills in My Posts ──────────────────────────────────
+        document.querySelectorAll('.ap-filter-pills .ap-filter-pill').forEach(function(pill) {
+            pill.addEventListener('click', function() {
+                document.querySelectorAll('.ap-filter-pills .ap-filter-pill').forEach(function(p) { p.classList.remove('active'); });
+                pill.classList.add('active');
+                var filterMap = { 'All': 'all', 'Live': 'active', 'Draft': 'draft', 'Expired': 'expired' };
+                var sel = document.getElementById('manageFilterSelect');
+                if (sel) {
+                    var val = filterMap[pill.textContent.trim()];
+                    if (val) { sel.value = val; sel.dispatchEvent(new Event('change')); }
+                }
+            });
+        });
+
+        // ── Quick Post Modal ──────────────────────────────────────────
+        window.apOpenQuickPost = function() {
+            var m = document.getElementById('apQuickPostModal');
+            if (m) m.classList.add('open');
+        };
+
+        window.apCloseQuickPost = function() {
+            var m = document.getElementById('apQuickPostModal');
+            if (m) m.classList.remove('open');
+        };
+
+        window.apQPPreview = function() {
+            var titleEl = document.getElementById('qpTitle');
+            var prevTitle = document.getElementById('qpPreviewTitle');
+            var wrap = document.getElementById('qpPreviewWrap');
+            if (prevTitle && titleEl) {
+                var txt = titleEl.value.trim();
+                prevTitle.textContent = txt || 'Your title here';
+                if (wrap) wrap.style.display = txt ? '' : 'none';
+            }
+        };
+
+        window.apQPFileSelected = function(input) {
+            if (!input.files || !input.files[0]) return;
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var zone = document.getElementById('qpUploadZone');
+                if (zone) zone.innerHTML = '<img src="' + e.target.result + '" alt="Selected image" style="width:100%;height:80px;object-fit:cover;border-radius:8px;">';
+                var prevImg = document.getElementById('qpPreviewImg');
+                if (prevImg) prevImg.innerHTML = '<img src="' + e.target.result + '" alt="Preview" style="width:100%;height:80px;object-fit:cover;">';
+                var wrap = document.getElementById('qpPreviewWrap');
+                if (wrap) wrap.style.display = '';
+            };
+            reader.readAsDataURL(input.files[0]);
+        };
+
+        window.apQuickPostSubmit = function() {
+            var titleEl = document.getElementById('qpTitle');
+            var catEl = document.getElementById('qpCategory');
+            if (!titleEl || !titleEl.value.trim()) {
+                titleEl && titleEl.focus();
+                return;
+            }
+            // Populate main form and submit
+            var mainTitle = document.getElementById('title');
+            var mainCat = document.getElementById('category');
+            if (mainTitle) mainTitle.value = titleEl.value.trim();
+            if (mainCat && catEl && catEl.value) mainCat.value = catEl.value;
+            apCloseQuickPost();
+            // Trigger submit
+            var form = document.getElementById('bulletinForm');
+            if (form) form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+        };
+
+        // ── Toast helper ──────────────────────────────────────────────
+        window.apShowToast = function(msg) {
+            var t = document.getElementById('apToast');
+            var m = document.getElementById('apToastMsg');
+            if (!t) return;
+            if (m) m.textContent = msg || 'Done!';
+            t.classList.add('show');
+            setTimeout(function() { t.classList.remove('show'); }, 3000);
+        };
+
+        // ── Hide legacy header/footer in portal ───────────────────────
+        function hidePortalChrome() {
+            var panel = document.getElementById('adminPanel');
+            if (!panel) return;
+            var visible = panel.style.display !== 'none' && panel.style.display !== '';
+            document.body.classList.toggle('ap-portal-active', visible);
+        }
+
+        // ── Bridge: intercept showTab to also route portal pages ─────
+        function installShowTabBridge() {
+            var orig = window.showTab;
+            window.showTab = function(tabName) {
+                var map = { post: 'create', manage: 'posts', advisors: 'advisors' };
+                if (map[tabName]) apShowPage(map[tabName]);
+                if (orig) orig(tabName);
+            };
+        }
+
+        // ── Stats page: real data rendering ───────────────────────────
+        var CAT_COLORS = {
+            'job':          { fill: 'ap-bar-fill-blue',   label: 'Job Opp.' },
+            'training':     { fill: 'ap-bar-fill-purple', label: 'Training' },
+            'college':      { fill: 'ap-bar-fill-amber',  label: 'College' },
+            'career-fair':  { fill: 'ap-bar-fill-teal',   label: 'Career Fair' },
+            'immigration':  { fill: 'ap-bar-fill-green',  label: 'Immigration' },
+            'announcement': { fill: 'ap-bar-fill-teal',   label: 'Announce.' },
+            'resource':     { fill: 'ap-bar-fill-coral',  label: 'Resource' },
+        };
+
+        function renderBarChart(containerId, rows, maxVal) {
+            var el = document.getElementById(containerId);
+            if (!el) return;
+            if (!rows.length) {
+                el.innerHTML = '<p style="font-size:.82rem;color:var(--ap-text-3);">No click data yet.</p>';
+                return;
+            }
+            var max = maxVal || rows[0][1] || 1;
+            el.innerHTML = rows.map(function(r) {
+                var cat = CAT_COLORS[r[0]] || { fill: 'ap-bar-fill-blue', label: r[0] };
+                var pct = Math.round((r[1] / max) * 100);
+                return '<div class="ap-bar-row">' +
+                    '<span class="ap-bar-label">' + cat.label + '</span>' +
+                    '<div class="ap-bar-track"><div class="ap-bar-fill ' + cat.fill + '" style="width:' + pct + '%"></div></div>' +
+                    '<span class="ap-bar-val">' + r[1] + '</span>' +
+                '</div>';
+            }).join('');
+        }
+
+        function renderTopPostsTable(rows) {
+            var container = document.querySelector('#apPageStats .ap-top-posts');
+            if (!container) return;
+            // Remove old static rows (keep header)
+            var header = container.querySelector('.ap-top-posts-header');
+            container.innerHTML = '';
+            if (header) container.appendChild(header);
+
+            if (!rows.length) {
+                container.insertAdjacentHTML('beforeend', '<p style="padding:16px 22px;font-size:.82rem;color:var(--ap-text-3);">No click data yet.</p>');
+                return;
+            }
+            rows.forEach(function(row, i) {
+                var rankStyle = i === 0 ? 'color:var(--ap-gold-accent)' : (i === 1 ? 'color:var(--ap-text-2)' : '');
+                container.insertAdjacentHTML('beforeend',
+                    '<div class="ap-top-post-row">' +
+                        '<div class="ap-top-post-rank" style="' + rankStyle + '">' + (i + 1) + '</div>' +
+                        '<div class="ap-top-post-meta">' +
+                            '<div class="ap-top-post-name">' + escHtml(row.title) + '</div>' +
+                            '<div class="ap-top-post-type">' + escHtml(row.type) + (row.age ? ' · ' + row.age : '') + '</div>' +
+                        '</div>' +
+                        '<div class="ap-top-post-views">' + row.total + ' <small>clicks</small></div>' +
+                    '</div>'
+                );
+            });
+        }
+
+        function escHtml(s) {
+            return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+
+        function timeAgo(date) {
+            if (!date) return '';
+            var now = Date.now();
+            var diff = now - date.getTime();
+            var days = Math.floor(diff / 86400000);
+            if (days < 1) return 'today';
+            if (days === 1) return '1 day ago';
+            if (days < 7) return days + ' days ago';
+            if (days < 14) return '1 week ago';
+            if (days < 30) return Math.floor(days / 7) + ' weeks ago';
+            return Math.floor(days / 30) + ' month' + (days >= 60 ? 's' : '') + ' ago';
+        }
+
+        function renderStatsPage() {
+            var ap = window.adminPanel;
+            if (!ap) return;
+
+            var events    = ap.analyticsEvents   || [];
+            var byPost    = ap.analyticsByPost    || {};
+            var byAction  = ap.analyticsByAction  || {};
+            var byCat     = ap.analyticsByCategory || {};
+            var bulletins = ap.bulletins          || [];
+
+            var studentEvents = events.filter(function(e) { return e.source === 'student'; });
+
+            // ── Top-line stat cards ──────────────────────────────────
+            var posts    = bulletins.filter(function(b) { return b.isActive && !ap.isResourceBulletin(b); });
+            var live     = posts.filter(function(b) { return !ap.isBulletinExpiredAdmin(b); });
+            var totalViews  = (byAction['card_view'] || 0) + (byAction['detail_open'] || 0);
+            var totalClicks = byAction['link_click'] || 0;
+            var uniquePosts = Object.keys(byPost).length;
+
+            setText('statsPublished', live.length);
+            setText('statsViews',    totalViews  || studentEvents.length);
+            setText('statsClicks',   totalClicks);
+            setText('statsReach',    uniquePosts);
+
+            // ── Views by Category ────────────────────────────────────
+            var catRows = Object.entries(byCat).sort(function(a,b){ return b[1]-a[1]; }).slice(0,6);
+            var catMax  = catRows.length ? catRows[0][1] : 1;
+            renderBarChart('statsCatChart', catRows, catMax);
+
+            // ── Top Categories (count of posts) ──────────────────────
+            var catPostCount = {};
+            bulletins.forEach(function(b) {
+                var key = ap.isResourceBulletin(b) ? 'resource' : (b.category || 'uncategorized');
+                catPostCount[key] = (catPostCount[key] || 0) + 1;
+            });
+            var catPostRows = Object.entries(catPostCount).sort(function(a,b){ return b[1]-a[1]; }).slice(0,5);
+            renderBarChart('statsPostCatChart', catPostRows, catPostRows.length ? catPostRows[0][1] : 1);
+
+            // ── Top Performing Posts ─────────────────────────────────
+            var topRows = Object.entries(byPost)
+                .map(function(entry) {
+                    var id = entry[0], metrics = entry[1];
+                    var b = bulletins.find(function(x){ return x.id === id; });
+                    var cat = b ? (ap.isResourceBulletin(b) ? 'Resource' : ap.getCategoryDisplay(b.category)) : 'Unknown';
+                    var datePosted = b && b.datePosted ? (b.datePosted.toDate ? b.datePosted.toDate() : new Date(b.datePosted)) : null;
+                    return {
+                        title: b ? (b.title || b.resourceTitleEn || 'Untitled') : 'Unknown post',
+                        type: cat,
+                        age: timeAgo(datePosted),
+                        total: metrics.total || 0
+                    };
+                })
+                .sort(function(a,b){ return b.total - a.total; })
+                .slice(0, 8);
+            renderTopPostsTable(topRows);
+
+            // ── Your Impact card: top category ───────────────────────
+            var topCatEl = document.getElementById('statsTopCat');
+            if (topCatEl && catRows.length) {
+                var topCatKey = catRows[0][0];
+                var topCatName = ap.getCategoryDisplay(topCatKey);
+                topCatEl.textContent = topCatName;
+            } else if (topCatEl) {
+                topCatEl.textContent = 'Keep posting!';
+            }
+
+            // ── Clicks by Device ─────────────────────────────────────
+            var deviceCounts = { mobile: 0, tablet: 0, desktop: 0 };
+            studentEvents.forEach(function(e) {
+                var d = (e.device || '').toLowerCase();
+                if (d === 'mobile') deviceCounts.mobile++;
+                else if (d === 'tablet') deviceCounts.tablet++;
+                else if (d === 'desktop') deviceCounts.desktop++;
+                else deviceCounts.mobile++; // default unknown to mobile
+            });
+            var devTotal = deviceCounts.mobile + deviceCounts.tablet + deviceCounts.desktop || 1;
+            var mobPct  = Math.round(deviceCounts.mobile  / devTotal * 100);
+            var tabPct  = Math.round(deviceCounts.tablet  / devTotal * 100);
+            var dskPct  = 100 - mobPct - tabPct;
+            updateDonut(mobPct, tabPct, dskPct);
+            setText('statsDevMobile',  mobPct + '%');
+            setText('statsDevTablet',  tabPct + '%');
+            setText('statsDevDesktop', dskPct + '%');
+        }
+
+        function setText(id, val) {
+            var el = document.getElementById(id);
+            if (el) el.textContent = val;
+        }
+
+        function updateDonut(mobPct, tabPct, dskPct) {
+            // SVG circles: circumference = 2π×15.9 ≈ 100
+            var svg = document.getElementById('statsDonutSvg');
+            if (!svg) return;
+            var circles = svg.querySelectorAll('circle[data-segment]');
+            // segments: mobile, tablet, desktop
+            var data = [
+                { pct: mobPct,  color: '#1a56db', offset: 25 },
+                { pct: tabPct,  color: '#059669', offset: 25 - mobPct },
+                { pct: dskPct,  color: '#d97706', offset: 25 - mobPct - tabPct }
+            ];
+            circles.forEach(function(c, i) {
+                var d = data[i];
+                if (!d) return;
+                c.setAttribute('stroke-dasharray', d.pct + ' ' + (100 - d.pct));
+                c.setAttribute('stroke-dashoffset', -d.offset);
+            });
+        }
+
+        // Hook into adminPanel.updateAdvisorDashboard via polling once it exists
+        function installStatsBridge() {
+            function tryPatch() {
+                var ap = window.adminPanel;
+                if (!ap || typeof ap.updateAdvisorDashboard !== 'function') {
+                    setTimeout(tryPatch, 400);
+                    return;
+                }
+                var origUpdate = ap.updateAdvisorDashboard.bind(ap);
+                ap.updateAdvisorDashboard = function() {
+                    origUpdate();
+                    renderStatsPage();
+                    renderDashboardRecents();
+                };
+                // Run once immediately in case data is already loaded
+                renderStatsPage();
+                renderDashboardRecents();
+            }
+            tryPatch();
+        }
+
+        // ── Dashboard: recent posts list ──────────────────────────────
+        function renderDashboardRecents() {
+            var ap = window.adminPanel;
+            if (!ap) return;
+            var bulletins = (ap.bulletins || []).slice().sort(function(a, b) {
+                var ad = a.datePosted ? (a.datePosted.toDate ? a.datePosted.toDate() : new Date(a.datePosted)) : new Date(0);
+                var bd = b.datePosted ? (b.datePosted.toDate ? b.datePosted.toDate() : new Date(b.datePosted)) : new Date(0);
+                return bd - ad;
+            }).slice(0, 5);
+
+            ['dashRecentPosts', 'createRecentPosts'].forEach(function(containerId) {
+                var el = document.getElementById(containerId);
+                if (!el) return;
+                if (!bulletins.length) {
+                    el.innerHTML = '<p style="color:var(--ap-text-3);font-size:.85rem;">No posts yet.</p>';
+                    return;
+                }
+                el.innerHTML = bulletins.map(function(b) {
+                    var title = b.title || b.resourceTitleEn || 'Untitled';
+                    var isLive = b.isActive && !ap.isBulletinExpiredAdmin(b);
+                    var isDraft = !b.isActive;
+                    var badgeCls = isLive ? 'ap-badge-live' : (isDraft ? 'ap-badge-draft' : 'ap-badge-expired');
+                    var badgeText = isLive ? 'Live' : (isDraft ? 'Draft' : 'Expired');
+                    var datePosted = b.datePosted ? (b.datePosted.toDate ? b.datePosted.toDate() : new Date(b.datePosted)) : null;
+                    return '<div class="ap-post-row">' +
+                        '<div class="ap-post-thumb">' +
+                            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>' +
+                        '</div>' +
+                        '<div class="ap-post-meta">' +
+                            '<div class="ap-post-title-text">' + escHtml(title) + '</div>' +
+                            '<div class="ap-post-sub">' + (datePosted ? timeAgo(datePosted) : '') + '</div>' +
+                        '</div>' +
+                        '<span class="ap-badge ' + badgeCls + '">' + badgeText + '</span>' +
+                    '</div>';
+                }).join('');
+            });
+
+            // Dashboard upcoming events
+            var eventsEl = document.getElementById('dashUpcomingEvents');
+            if (eventsEl) {
+                var upcoming = (ap.bulletins || []).filter(function(b) {
+                    if (!b.eventDate && !b.startDate) return false;
+                    var d = new Date(b.eventDate || b.startDate);
+                    return d >= new Date();
+                }).sort(function(a, b) {
+                    return new Date(a.eventDate || a.startDate) - new Date(b.eventDate || b.startDate);
+                }).slice(0, 4);
+
+                if (!upcoming.length) {
+                    eventsEl.innerHTML = '<p style="color:var(--ap-text-3);font-size:.82rem;">No upcoming events.</p>';
+                } else {
+                    eventsEl.innerHTML = upcoming.map(function(b) {
+                        var d = new Date(b.eventDate || b.startDate);
+                        var month = d.toLocaleString('default', { month: 'short' }).toUpperCase();
+                        var day = d.getDate();
+                        var title = b.title || 'Untitled event';
+                        var time = b.startTime ? b.startTime : '';
+                        return '<div class="ap-event-row">' +
+                            '<div class="ap-event-date-block">' +
+                                '<div class="ap-event-month">' + month + '</div>' +
+                                '<div class="ap-event-day">' + day + '</div>' +
+                            '</div>' +
+                            '<div class="ap-event-info">' +
+                                '<div class="ap-event-name">' + escHtml(title) + '</div>' +
+                                '<div class="ap-event-time">' + (time ? time : 'All day') + '</div>' +
+                            '</div>' +
+                        '</div>';
+                    }).join('');
+                }
+            }
+        }
+
+        // ── Init ──────────────────────────────────────────────────────
+        function init() {
+            initAdvisorDisplay();
+            bindPreviewListeners();
+            installShowTabBridge();
+            installStatsBridge();
+            // Watch for adminPanel becoming visible
+            var panel = document.getElementById('adminPanel');
+            if (panel) {
+                var obs = new MutationObserver(hidePortalChrome);
+                obs.observe(panel, { attributes: true, attributeFilter: ['style'] });
+                hidePortalChrome();
+            }
+            // Start on dashboard page
+            apShowPage('dashboard');
         }
 
         if (document.readyState === 'loading') {
