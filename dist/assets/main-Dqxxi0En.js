@@ -348,7 +348,7 @@ import{E as e,S as t,_ as n,m as r,n as i,v as a,w as o,y as s}from"./firebase-B
                     </div>
                 </div>
             </div>
-        `}renderBulletinDetail(e){let t=this.getCatMeta(e.category),n=this.formatPostedDate(e.datePosted),r=this.getDetailImportantDate(e),i=r&&r.kind===`deadline`&&this.isDeadlineClose(r.raw),a=this.isBulletinExpired(e),o=(e.advisorName||`?`).charAt(0).toUpperCase(),s=e.isSchoolCalendarAnchor?`<strong>School Calendar</strong>`:`<strong>${this.escapeHtml(e.advisorName||`Advisor`)}</strong> · ${n}`,c=e.description?this.renderFormattedDescription(e.description,`${e.id}-detail`):``,l=[e.classType?this.getClassTypeDisplay(e.classType):``,e.company||``,e.eventLocation||``].filter(Boolean).slice(0,3),u=this.getDetailContactAction(e),d=e.image?`<img class="post-detail-hero-image lightbox-trigger" data-lightbox-src="${this.escapeAttribute(e.image)}" src="${this.escapeAttribute(e.image)}" alt="">`:`<div class="post-detail-hero-art" style="--detail-accent:${t.accent};--detail-tint:${t.tint}">
+        `}renderBulletinDetail(e){let t=this.getCatMeta(e.category),n=this.formatPostedDate(e.datePosted),r=this.getDetailImportantDate(e),i=r&&r.kind===`deadline`&&this.isDeadlineClose(r.raw),a=this.isBulletinExpired(e),o=(e.advisorName||`?`).charAt(0).toUpperCase(),s=r&&(r.kind===`event`||r.kind===`start`),c=e.isSchoolCalendarAnchor?`<strong>School Calendar</strong>`:s?`<strong>${this.escapeHtml(e.advisorName||`Advisor`)}</strong>`:`<strong>${this.escapeHtml(e.advisorName||`Advisor`)}</strong> · ${n}`,l=e.description?this.renderFormattedDescription(e.description,`${e.id}-detail`):``,u=[e.classType?this.getClassTypeDisplay(e.classType):``,e.company||``,e.eventLocation||``].filter(Boolean).slice(0,3),d=this.getDetailContactAction(e),f=e.image?`<img class="post-detail-hero-image lightbox-trigger" data-lightbox-src="${this.escapeAttribute(e.image)}" src="${this.escapeAttribute(e.image)}" alt="">`:`<div class="post-detail-hero-art" style="--detail-accent:${t.accent};--detail-tint:${t.tint}">
                 <div class="post-detail-sun"></div>
                 <div class="post-detail-wave post-detail-wave-one"></div>
                 <div class="post-detail-wave post-detail-wave-two"></div>
@@ -356,7 +356,7 @@ import{E as e,S as t,_ as n,m as r,n as i,v as a,w as o,y as s}from"./firebase-B
             </div>`;return`
             <article class="post-detail-page" style="--detail-accent:${t.accent};--detail-tint:${t.tint}">
                 <section class="post-detail-hero ${e.image?`post-detail-hero--image`:`post-detail-hero--art-only`}" aria-hidden="true">
-                    ${d}
+                    ${f}
                 </section>
                 <section class="post-detail-panel">
                     <p class="post-detail-category" style="color:${t.accent}">
@@ -367,7 +367,7 @@ import{E as e,S as t,_ as n,m as r,n as i,v as a,w as o,y as s}from"./firebase-B
                     ${a?`<p class="post-detail-expired">Expired</p>`:``}
                     <div class="post-detail-author">
                         <span class="post-detail-avatar" style="background:${t.accent}">${this.escapeHtml(o)}</span>
-                        <span>${s}</span>
+                        <span>${c}</span>
                     </div>
                     ${r?`
                         <div class="post-detail-date ${i&&!a?`post-detail-date--urgent`:``}">
@@ -378,14 +378,14 @@ import{E as e,S as t,_ as n,m as r,n as i,v as a,w as o,y as s}from"./firebase-B
                             </span>
                         </div>
                     `:``}
-                    ${c?`<div class="post-detail-description">${c}</div>`:``}
-                    ${l.length?`<div class="post-detail-tags">${l.map(e=>`<span>${this.escapeHtml(e)}</span>`).join(``)}</div>`:``}
+                    ${l?`<div class="post-detail-description">${l}</div>`:``}
+                    ${u.length?`<div class="post-detail-tags">${u.map(e=>`<span>${this.escapeHtml(e)}</span>`).join(``)}</div>`:``}
                     ${e.contact?`<div class="post-detail-contact-note">${this.escapeHtml(e.contact).replace(/\n/g,`<br>`)}</div>`:``}
                     <div class="post-detail-actions">
-                        ${u?`
-                            <a href="${this.escapeAttribute(u.href)}" class="post-detail-action post-detail-action--primary">
+                        ${d?`
+                            <a href="${this.escapeAttribute(d.href)}" class="post-detail-action post-detail-action--primary">
                                 <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.25 7.75c0 5.1 5.9 11 11 11h1.75a1 1 0 0 0 1-1v-3.2a1 1 0 0 0-.78-.98l-3.14-.7a1 1 0 0 0-.96.29l-.92.98a13.84 13.84 0 0 1-4.34-4.34l.98-.92a1 1 0 0 0 .29-.96l-.7-3.14A1 1 0 0 0 8.45 4H5.25a1 1 0 0 0-1 1v2.75Z"/></svg>
-                                <span><strong>${this.escapeHtml(u.label)}</strong><small>${this.escapeHtml(u.value)}</small></span>
+                                <span><strong>${this.escapeHtml(d.label)}</strong><small>${this.escapeHtml(d.value)}</small></span>
                             </a>
                         `:``}
                         ${e.pdfUrl?`

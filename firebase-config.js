@@ -2374,9 +2374,13 @@ class FirebaseBulletinBoard {
         const isDeadlineClose = importantDate && importantDate.kind === 'deadline' && this.isDeadlineClose(importantDate.raw);
         const isExpired = this.isBulletinExpired(bulletin);
         const initial = (bulletin.advisorName || '?').charAt(0).toUpperCase();
+        const omitAuthorPostedDate =
+            importantDate && (importantDate.kind === 'event' || importantDate.kind === 'start');
         const authorHtml = bulletin.isSchoolCalendarAnchor
             ? '<strong>School Calendar</strong>'
-            : `<strong>${this.escapeHtml(bulletin.advisorName || 'Advisor')}</strong> · ${postedDate}`;
+            : omitAuthorPostedDate
+                ? `<strong>${this.escapeHtml(bulletin.advisorName || 'Advisor')}</strong>`
+                : `<strong>${this.escapeHtml(bulletin.advisorName || 'Advisor')}</strong> · ${postedDate}`;
         const descriptionHtml = bulletin.description ? this.renderFormattedDescription(bulletin.description, `${bulletin.id}-detail`) : '';
         const tagValues = [bulletin.classType ? this.getClassTypeDisplay(bulletin.classType) : '', bulletin.company || '', bulletin.eventLocation || '']
             .filter(Boolean)
