@@ -365,6 +365,7 @@ class FirebaseAdminPanel {
         document.getElementById('loginRequired').style.display = 'none';
         document.getElementById('adminPanel').style.display = 'block';
         document.getElementById('logoutBtn').style.display = 'block';
+        document.body.classList.add('ap-portal-active');
         document.getElementById('welcomeMessage').textContent = `Welcome, ${this.currentUser.name}!`;
 
         // Populate advisor dropdown from Firestore and select current user
@@ -394,6 +395,7 @@ class FirebaseAdminPanel {
     hideAdminPanel() {
         document.getElementById('adminPanel').style.display = 'none';
         document.getElementById('logoutBtn').style.display = 'none';
+        document.body.classList.remove('ap-portal-active');
     }
 
     normalizeBulletin(data) {
