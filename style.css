@@ -12136,6 +12136,10 @@ body:has(#loginRequired) {
     line-height: 1.2;
 }
 
+.resources-back-home-btn {
+    display: none;
+}
+
 .resources-prototype-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -12504,6 +12508,34 @@ body:has(#loginRequired) {
         max-width: 620px;
         margin: 16px auto 0;
         font-size: 22px;
+    }
+
+    .resources-back-home-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        justify-self: center;
+        margin-top: 22px;
+        min-height: 42px;
+        padding: 0 20px;
+        border: 1px solid rgba(255, 255, 255, 0.36);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.09);
+        color: #fff;
+        font: 900 13px var(--font-jakarta);
+        cursor: pointer;
+        transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+    }
+
+    .resources-back-home-btn:hover {
+        background: rgba(255, 255, 255, 0.16);
+        border-color: rgba(255, 255, 255, 0.56);
+        transform: translateY(-1px);
+    }
+
+    .resources-back-home-btn:focus-visible {
+        outline: 3px solid rgba(126, 177, 255, 0.55);
+        outline-offset: 3px;
     }
 
     .resource-category-tile:hover {
