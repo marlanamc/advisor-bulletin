@@ -356,6 +356,10 @@ body:has(#loginRequired) {
     margin: 0 0 16px;
 }
 
+.desktop-action-cards:has(#advisorsTabBtn:not([style*="display:none"]):not([style*="display: none"])) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .desktop-action-card {
     display: flex;
     align-items: center;
@@ -10088,6 +10092,10 @@ body:has(#loginRequired) {
     margin: 0 0 16px;
 }
 
+.desktop-action-cards:has(#advisorsTabBtn:not([style*="display:none"]):not([style*="display: none"])) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .desktop-action-card {
     display: flex;
     align-items: center;
@@ -13874,8 +13882,7 @@ body:has(#loginRequired) {
 }
 
 .desktop-action-advisors {
-    background: linear-gradient(135deg, #f0f4ff, #e8edff);
-    border-color: #c7d4ff;
+    background: linear-gradient(135deg, #6d28d9, #4f46e5);
 }
 
 /* ═══════════════════════════════════════════════════════════
