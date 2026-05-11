@@ -200,7 +200,6 @@ class FirebaseAdminPanel {
                 : 'e.g., School assembly / Family info night';
         }
 
-        this.updateLivePreview();
         document.getElementById('eventDetailsSection')?.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
     }
 
@@ -221,33 +220,9 @@ class FirebaseAdminPanel {
                 select.value = category;
                 select.dispatchEvent(new Event('change', { bubbles: true }));
                 this.syncCategoryPicker(category);
-                this.updateLivePreview();
             });
         });
 
-        const previewFields = [
-            'title',
-            'titleEs',
-            'description',
-            'summaryEs',
-            'category',
-            'eventDate',
-            'dateType',
-            'resourceTitleEn',
-            'resourceTitleEs',
-            'resourceCategory',
-            'resourceDescription'
-        ];
-
-        previewFields.forEach((id) => {
-            const field = document.getElementById(id);
-            if (field) {
-                field.addEventListener('input', () => this.updateLivePreview());
-                field.addEventListener('change', () => this.updateLivePreview());
-            }
-        });
-
-        this.updateLivePreview();
         this.updateAdvisorDashboard();
     }
 
@@ -302,18 +277,17 @@ class FirebaseAdminPanel {
 
     async seedAdvisors() {
         const seed = [
-            { username: 'admin',      displayName: 'Administrator', email: 'admin@ebhcs.org',      isAdmin: true  },
-            { username: 'jorge',      displayName: 'Jorge',         email: 'jorge@ebhcs.org',      isAdmin: false },
-            { username: 'fabiola',    displayName: 'Fabiola',       email: 'fabiola@ebhcs.org',    isAdmin: false },
-            { username: 'leidy',      displayName: 'Leidy',         email: 'leidy@ebhcs.org',      isAdmin: false },
-            { username: 'carmen',     displayName: 'Carmen',        email: 'carmen@ebhcs.org',     isAdmin: false },
-            { username: 'jerome',     displayName: 'Jerome',        email: 'jerome@ebhcs.org',     isAdmin: false },
-            { username: 'felipe',     displayName: 'Felipe',        email: 'felipe@ebhcs.org',     isAdmin: false },
-            { username: 'simonetta',  displayName: 'Simonetta',     email: 'simonetta@ebhcs.org',  isAdmin: false },
-            { username: 'mike',       displayName: 'Mike K.',       email: 'mike@ebhcs.org',       isAdmin: false },
-            { username: 'leah',       displayName: 'Leah',          email: 'leah@ebhcs.org',       isAdmin: true  },
-            { username: 'lgregory',   displayName: 'Leah Gregory',  email: 'lgregory@ebhcs.org',   isAdmin: true  },
-            { username: 'mcreed',     displayName: 'Marlie',        email: 'mcreed@ebhcs.org',     isAdmin: true  },
+            { username: 'admin',        displayName: 'Administrator', email: 'admin@ebhcs.org',        isAdmin: true  },
+            { username: 'rocha',        displayName: 'Jorge',         email: 'rocha@ebhcs.org',        isAdmin: false },
+            { username: 'fvaquerano',   displayName: 'Fabiola',       email: 'fvaquerano@ebhcs.org',   isAdmin: false },
+            { username: 'lalzate',      displayName: 'Leidy',         email: 'lalzate@ebhcs.org',      isAdmin: false },
+            { username: 'vlalin',       displayName: 'Carmen',        email: 'vlalin@ebhcs.org',       isAdmin: false },
+            { username: 'jkiley',       displayName: 'Jerome',        email: 'jkiley@ebhcs.org',       isAdmin: false },
+            { username: 'fgallego',     displayName: 'Felipe',        email: 'fgallego@ebhcs.org',     isAdmin: false },
+            { username: 'spiergentili', displayName: 'Simonetta',     email: 'spiergentili@ebhcs.org', isAdmin: false },
+            { username: 'mkelsen',      displayName: 'Mike K.',       email: 'mkelsen@ebhcs.org',      isAdmin: false },
+            { username: 'lgregory',     displayName: 'Leah',          email: 'lgregory@ebhcs.org',     isAdmin: true  },
+            { username: 'mcreed',       displayName: 'Marlie',        email: 'mcreed@ebhcs.org',       isAdmin: true  },
         ];
         await Promise.all(seed.map(a => {
             const { username, ...data } = a;
@@ -548,8 +522,6 @@ class FirebaseAdminPanel {
         if (!options.silent) {
             this.showTemporaryMessage(`${nextType === 'resource' ? 'Resource' : isEvent ? 'Event date' : 'Post'} mode ready.`, 'info');
         }
-
-        this.updateLivePreview();
 
         if (isEvent) {
             this.applySchoolEventPreset('calendar-only', { keepContentMode: true });
@@ -837,35 +809,6 @@ class FirebaseAdminPanel {
         document.querySelectorAll('[data-category-pick]').forEach((button) => {
             button.classList.toggle('active', button.getAttribute('data-category-pick') === category);
         });
-    }
-
-    updateLivePreview() {
-        const container = document.getElementById('advisorLivePreview');
-        if (!container) return;
-
-        const isResource = (document.getElementById('contentType')?.value || this.contentType) === 'resource';
-        const title = isResource
-            ? (document.getElementById('resourceTitleEn')?.value || 'Resource title')
-            : (document.getElementById('title')?.value || 'Student preview');
-        const summary = isResource
-            ? (document.getElementById('resourceDescription')?.value || 'Add one clear sentence about this resource.')
-            : (document.getElementById('description')?.value || 'Start typing a title and summary to preview what students will see.');
-        const category = isResource
-            ? (document.getElementById('resourceCategory')?.value || 'resource')
-            : (document.getElementById('category')?.value || 'announcement');
-        const meta = this.getCategoryDisplay(category);
-
-        this.syncCategoryPicker(category);
-
-        container.innerHTML = `
-            <div class="preview-phone-card">
-                <span class="preview-category">${this.escapeHtml(isResource ? 'Resource' : meta)}</span>
-                <h4>${this.escapeHtml(title)}</h4>
-                <p>${this.escapeHtml(summary).substring(0, 180)}</p>
-                <div class="translate-chip">Auto-translate coming soon</div>
-                <div class="preview-action-pill">${isResource ? 'Open resource' : 'Read full post'}</div>
-            </div>
-        `;
     }
 
     // Bulletin Management

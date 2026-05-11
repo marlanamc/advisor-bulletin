@@ -73,7 +73,7 @@ test.describe('Advisor redesign', () => {
     await expect(page.locator('.manage-analytics-strip').first()).toContainText('opens');
   });
 
-  test('category picker and bilingual placeholders update the live preview', async ({ page }) => {
+  test('category picker stays in sync with bulletin category field', async ({ page }) => {
     await showSeededAdvisorDashboard(page);
 
     await page.locator('[data-category-pick="job"]').click();
@@ -81,7 +81,7 @@ test.describe('Advisor redesign', () => {
     await page.locator('#description').fill('Bring your resume and meet the hiring manager.');
 
     await expect(page.locator('[data-category-pick="job"]')).toHaveClass(/active/);
-    await expect(page.locator('#advisorLivePreview')).toContainText('Hotel housekeeping interviews');
-    await expect(page.locator('.translate-chip').first()).toContainText('Auto-translate coming soon');
+    await expect(page.locator('#category')).toHaveValue('job');
+    await expect(page.locator('#title')).toHaveValue('Hotel housekeeping interviews');
   });
 });

@@ -9,7 +9,7 @@
 
     --app-text: #1e293b;
     --app-text-light: #f8fafc;
-    --app-muted: #475569; /* Darker for better contrast (was #64748b) */
+    --app-muted: #475569;
 
     --app-blue: #0284c7;
     --app-blue-strong: #0369a1;
@@ -28,23 +28,63 @@
     /* Typography */
     --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
     --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+
+    /* === ADVISOR PORTAL DESIGN TOKENS — Light Nautical === */
+    --adv-bg: #f4f7fb;
+    --adv-rail: #071d3b;
+    --adv-rail-border: rgba(0,0,0,0.08);
+    --adv-surface: #ffffff;
+    --adv-surface-2: #f0f4f9;
+    --adv-border: #dde3ec;
+    --adv-border-bright: #c8d2e0;
+    --adv-text: #0e1e35;
+    --adv-text-2: #4a6080;
+    --adv-text-3: #8da0b8;
+    --adv-cyan: #1a56db;
+    --adv-cyan-dim: rgba(26,86,219,0.08);
+    --adv-cyan-glow: rgba(26,86,219,0.2);
+    --adv-amber: #d97706;
+    --adv-amber-dim: rgba(217,119,6,0.1);
+    --adv-green: #059669;
+    --adv-green-dim: rgba(5,150,105,0.1);
+    --adv-purple: #7c3aed;
+    --adv-purple-dim: rgba(124,58,237,0.1);
+    --adv-red: #dc2626;
+    --adv-gold: #ffd55d;
+    --adv-navy: #071d3b;
+    --adv-font-display: 'Inter', system-ui, sans-serif;
+    --adv-font-body: 'Inter', system-ui, sans-serif;
+    --adv-font-mono: 'DM Mono', ui-monospace, monospace;
 }
 
 /* Advisor portal redesign */
 body:has(.advisor-redesign),
 body:has(#loginRequired) {
-    background: #f0f4f9;
+    background: var(--adv-bg);
+    font-size: 16px;
+}
+
+body:has(.advisor-redesign) header,
+body:has(#loginRequired) header {
+    background: var(--adv-navy);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 2px 12px rgba(7,29,59,0.2);
+}
+
+body:has(.advisor-redesign) .main-content {
+    padding: 0;
+    max-width: none;
 }
 
 .welcome-stat-block {
-    margin-bottom: 16px;
-    border-radius: 24px;
-    background: #f0f4f9;
+    margin-bottom: 20px;
+    border-radius: 20px;
+    background: transparent;
     overflow: visible;
 }
 
 .advisor-redesign {
-    max-width: 1480px;
+    max-width: 1600px;
     margin: 0 auto;
     padding: 0;
     background: transparent;
@@ -54,162 +94,203 @@ body:has(#loginRequired) {
 .login-required {
     min-height: calc(100vh - 132px);
     display: grid;
-    align-items: start;
+    align-items: center;
     padding: 84px 24px;
-    background: linear-gradient(180deg, #071d3b 0 38%, #eef2f7 38% 100%);
+    background: linear-gradient(180deg, var(--adv-navy) 0% 40%, var(--adv-bg) 40% 100%);
 }
 
 .advisor-login-card {
     width: min(420px, calc(100vw - 48px));
     margin: 0 auto;
-    padding: 28px 26px;
-    border-radius: 28px;
+    padding: 36px 32px;
+    border-radius: 20px;
     text-align: center;
-    background: #fff;
-    box-shadow: 0 24px 56px rgba(7, 29, 59, 0.2);
+    background: var(--adv-surface);
+    border: 1px solid var(--adv-border);
+    box-shadow: 0 20px 60px rgba(7,29,59,0.18);
 }
 
 .advisor-login-card > .advisor-app-icon {
-    margin: 0 auto 14px;
+    margin: 0 auto 18px;
 }
 
 .advisor-login-card h3 {
-    margin: 0 0 6px;
-    color: #071d3b;
-    font: 900 2rem "Outfit", sans-serif;
+    margin: 0 0 8px;
+    color: var(--adv-text);
+    font: 700 1.75rem var(--adv-font-display);
+    letter-spacing: -0.02em;
 }
 
 .advisor-login-card p {
-    margin: 0 0 24px;
-    color: #526173;
-    font-weight: 700;
-    line-height: 1.45;
+    margin: 0 0 28px;
+    color: var(--adv-text-2);
+    font-weight: 400;
+    font-family: var(--adv-font-body);
+    line-height: 1.5;
+    font-size: 0.95rem;
 }
 
 .advisor-login-card .admin-btn {
     width: 100%;
-    min-height: 58px;
-    border-radius: 16px;
-    background: #071d3b;
-    color: #ffd55d;
-    font-weight: 900;
+    min-height: 52px;
+    border-radius: 12px;
+    background: var(--adv-gold);
+    color: #071d3b;
+    font-weight: 800;
+    font-family: var(--adv-font-body);
+    letter-spacing: 0.01em;
+    transition: opacity 0.15s, transform 0.15s;
+}
+
+.advisor-login-card .admin-btn:hover {
+    opacity: 0.88;
+    transform: translateY(-1px);
 }
 
 .advisor-login-help {
-    margin-top: 14px;
-    padding: 13px;
-    border-radius: 14px;
-    background: #eef3f9;
-    color: #526173;
-    font-size: 0.85rem;
-    font-weight: 700;
+    margin-top: 16px;
+    padding: 12px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--adv-border);
+    color: var(--adv-text-2);
+    font-size: 0.83rem;
+    font-weight: 500;
+    font-family: var(--adv-font-body);
     text-align: center;
 }
 .advisor-home-link {
     display: inline-block;
-    margin-bottom: 16px;
-    color: #526173;
+    margin-bottom: 20px;
+    color: var(--adv-text-3);
     font-size: 0.82rem;
-    font-weight: 700;
+    font-weight: 600;
+    font-family: var(--adv-font-body);
     text-decoration: none;
+    transition: color 0.15s;
 }
-.advisor-home-link:hover { color: #071d3b; text-decoration: underline; }
+.advisor-home-link:hover { color: var(--adv-cyan); text-decoration: none; }
 
 .advisor-shell {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 320px;
-    gap: 18px;
+    grid-template-columns: 240px minmax(0, 1fr) 296px;
+    gap: 0;
     align-items: start;
-    min-height: calc(100vh - 150px);
+    min-height: calc(100vh - 70px);
 }
 
 .advisor-rail {
-    display: none;
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100vh - 70px);
+    padding: 24px 16px;
+    background: var(--adv-navy);
+    border-right: none;
+    position: sticky;
+    top: 70px;
+    color: #e8f0fc;
+    overflow-y: auto;
 }
 
 .advisor-insights {
     position: sticky;
-    top: 92px;
-}
-
-.advisor-rail {
-    min-height: calc(100vh - 120px);
-    padding: 18px;
-    border-radius: 24px;
-    background: linear-gradient(180deg, #061d3a 0%, #102d56 100%);
-    color: #fff;
-    box-shadow: 0 18px 42px rgba(6, 29, 58, 0.18);
+    top: 70px;
+    max-height: calc(100vh - 70px);
+    overflow-y: auto;
 }
 
 .advisor-rail-brand {
     display: flex;
     gap: 12px;
     align-items: center;
-    margin-bottom: 28px;
+    margin-bottom: 32px;
+    padding: 0 8px;
 }
 
 .advisor-app-icon {
-    width: 58px;
-    height: 58px;
-    border-radius: 18px;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
     display: grid;
     place-items: center;
-    font-size: 28px;
-    background: linear-gradient(135deg, #67a5ff, #2d73ee);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    font-size: 22px;
+    background: rgba(255,213,93,0.15);
+    border: 1px solid rgba(255,213,93,0.3);
+    flex-shrink: 0;
 }
 
 .advisor-eyebrow {
     margin: 0 0 3px;
-    color: #78aaf8;
-    font-size: 0.72rem;
-    font-weight: 800;
-    letter-spacing: 0.08em;
+    color: rgba(255,213,93,0.7);
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
+    font-family: var(--adv-font-body);
 }
 
 .rail-action {
     width: 100%;
-    min-height: 48px;
-    margin-bottom: 10px;
-    padding: 12px 14px;
+    min-height: 46px;
+    margin-bottom: 2px;
+    padding: 10px 14px;
     border: 0;
-    border-radius: 16px;
+    border-radius: 10px;
     display: flex;
-    gap: 10px;
+    gap: 12px;
     align-items: center;
-    background: rgba(255, 255, 255, 0.08);
-    color: #dbeafe;
-    font: 800 0.92rem "Inter", sans-serif;
+    background: transparent;
+    color: rgba(232,240,252,0.65);
+    font: 500 0.9rem var(--adv-font-body);
     text-decoration: none;
     cursor: pointer;
+    transition: background 0.12s, color 0.12s;
 }
 
-.rail-action.active,
 .rail-action:hover {
-    background: #2f73f6;
-    color: #fff;
+    background: rgba(255,255,255,0.07);
+    color: #e8f0fc;
+}
+
+.rail-action.active {
+    background: rgba(255,213,93,0.12);
+    color: var(--adv-gold);
+    font-weight: 600;
 }
 
 .rail-action span {
-    width: 26px;
-    height: 26px;
-    border-radius: 10px;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
     display: grid;
     place-items: center;
-    background: rgba(255, 255, 255, 0.16);
+    background: rgba(255,255,255,0.06);
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.rail-action.active span {
+    background: rgba(255,213,93,0.15);
+}
+
+.rail-separator {
+    height: 1px;
+    background: rgba(255,255,255,0.07);
+    margin: 10px 8px;
 }
 
 .rail-help {
-    margin-top: 28px;
-    padding: 14px;
-    border-radius: 16px;
+    margin-top: auto;
+    padding: 12px;
+    border-radius: 10px;
     display: flex;
     gap: 10px;
-    background: rgba(255, 255, 255, 0.09);
-    color: #cbdaf5;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: rgba(232,240,252,0.45);
     font-size: 0.8rem;
-    line-height: 1.35;
+    line-height: 1.45;
+    font-family: var(--adv-font-body);
 }
 
 .rail-help p {
@@ -217,209 +298,226 @@ body:has(#loginRequired) {
 }
 
 .rail-help-icon {
-    width: 24px;
-    height: 24px;
+    width: 22px;
+    height: 22px;
     flex: 0 0 auto;
     border-radius: 50%;
     display: grid;
     place-items: center;
-    background: #dbeafe;
-    color: #1d4ed8;
-    font-weight: 900;
+    background: rgba(255,255,255,0.1);
+    color: rgba(232,240,252,0.6);
+    font-weight: 700;
+    font-size: 0.78rem;
 }
 
 .advisor-workspace {
     min-width: 0;
+    padding: 24px 28px;
+    background: var(--adv-bg);
+    min-height: calc(100vh - 70px);
 }
 
 .advisor-redesign .welcome-section {
-    margin: 0 0 0;
-    padding: 0 0 36px;
-    border-radius: 24px 24px 0 0;
+    margin: 0 0 20px;
+    padding: 20px 24px;
+    border-radius: 14px;
     display: flex;
-    flex-direction: column;
-    background: linear-gradient(160deg, #071d3b 0%, #0f2e5a 100%);
-    color: #fff;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    background: var(--adv-navy);
+    border: none;
+    color: #e8f0fc;
     overflow: hidden;
 }
 
 .welcome-section-topbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 14px 22px 0;
-    margin-bottom: 18px;
-}
-
-.welcome-topbar-home {
-    color: #78a8f8;
-    font-size: 0.82rem;
-    font-weight: 700;
-    text-decoration: none;
-}
-
-.welcome-topbar-home:hover {
-    color: #a8c8ff;
-    text-decoration: underline;
+    display: none;
 }
 
 .welcome-section-body {
-    padding: 0 26px;
+    padding: 0;
+    flex: 1;
 }
 
 .advisor-redesign .welcome-section h3 {
     margin: 0;
     color: #fff;
-    font: 900 clamp(1.8rem, 2.5vw, 2.6rem) "Outfit", sans-serif;
-    letter-spacing: 0;
-    line-height: 1.1;
+    font: 600 1.6rem var(--adv-font-display);
+    letter-spacing: -0.02em;
+    line-height: 1.2;
 }
 
 .advisor-redesign .welcome-section .advisor-eyebrow {
-    color: #78a8f8;
-    margin: 0 0 4px;
+    color: rgba(255,213,93,0.85);
+    margin: 0 0 6px;
+    font-family: var(--adv-font-body);
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
 }
 
 .advisor-redesign .welcome-section p:not(.advisor-eyebrow) {
-    margin: 5px 0 0;
-    color: #a8c0e8;
-    font-weight: 600;
+    margin: 6px 0 0;
+    color: rgba(232,240,252,0.65);
+    font-weight: 400;
     font-size: 0.9rem;
+    font-family: var(--adv-font-body);
 }
 
 .advisor-status-pill {
-    padding: 10px 14px;
+    padding: 7px 14px;
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.12);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    color: #c9d9f5;
-    font-weight: 800;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.18);
+    color: rgba(232,240,252,0.8);
+    font-weight: 600;
     font-size: 0.78rem;
+    font-family: var(--adv-font-body);
     white-space: nowrap;
+    flex-shrink: 0;
+    letter-spacing: 0.01em;
 }
 
 .advisor-stat-grid {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 8px;
-    padding: 0 10px;
-    margin-top: -18px;
-    margin-bottom: 16px;
+    gap: 10px;
+    padding: 0;
+    margin-top: 0;
+    margin-bottom: 20px;
     position: relative;
     z-index: 1;
 }
 
 .advisor-stat-card {
-    padding: 13px 10px;
-    border-radius: 14px;
-    background: linear-gradient(180deg, #1a3868, #152e57);
-    color: #a8c0e8;
-    box-shadow: 0 4px 16px rgba(6, 29, 58, 0.28);
-    text-align: center;
+    padding: 20px 20px;
+    border-radius: 12px;
+    background: var(--adv-surface);
+    border: 1px solid var(--adv-border);
+    color: var(--adv-text-2);
+    box-shadow: 0 1px 4px rgba(7,29,59,0.06);
+    position: relative;
+    overflow: hidden;
 }
+
+.advisor-stat-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: #1a56db;
+    border-radius: 0 2px 2px 0;
+}
+
+.advisor-stat-purple::before { background: #7c3aed; }
+.advisor-stat-green::before { background: #059669; }
+.advisor-stat-orange::before { background: #d97706; }
 
 .advisor-stat-card strong {
     display: block;
-    color: #62a0ff;
-    font: 900 1.6rem "Outfit", sans-serif;
+    color: #071d3b;
+    font: 500 2.1rem var(--adv-font-mono);
     line-height: 1;
+    letter-spacing: -0.02em;
+    margin-bottom: 6px;
 }
 
 .advisor-stat-purple strong {
-    color: #a78bfa;
+    color: #7c3aed;
 }
 
 .advisor-stat-green strong {
-    color: #2fc288;
+    color: #059669;
 }
 
 .advisor-stat-orange strong {
-    color: #f29b38;
+    color: #d97706;
 }
 
 .advisor-stat-card span {
     display: block;
-    margin-top: 5px;
-    color: #a8c0e8;
-    font-size: 0.65rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
+    color: var(--adv-text-2);
+    font-size: 0.78rem;
+    font-weight: 500;
     line-height: 1.3;
+    font-family: var(--adv-font-body);
 }
 
-/* Desktop action cards */
+/* Desktop action cards → clean tab bar */
 .desktop-action-cards {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
-    margin: 0 0 16px;
+    display: flex;
+    gap: 0;
+    margin: 0 0 24px;
+    border-bottom: 2px solid var(--adv-border);
 }
 
 .desktop-action-cards:has(#advisorsTabBtn:not([style*="display:none"]):not([style*="display: none"])) {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    /* no special grid needed for tab bar */
 }
 
 .desktop-action-card {
     display: flex;
     align-items: center;
-    gap: 14px;
-    padding: 14px 18px;
+    gap: 8px;
+    padding: 14px 22px;
     border: none;
-    border-radius: 18px;
-    color: #fff;
+    border-radius: 0;
+    border-bottom: 2px solid transparent;
+    background: transparent;
+    color: var(--adv-text-2);
     cursor: pointer;
     text-align: left;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
-    transition: transform 0.15s, box-shadow 0.15s, filter 0.15s;
+    font-family: var(--adv-font-body);
+    transition: color 0.15s, border-color 0.15s;
+    margin-bottom: -1px;
+    font-size: 0.95rem;
 }
 
 .desktop-action-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+    color: var(--adv-text);
+    border-bottom-color: var(--adv-border-bright);
 }
 
 .desktop-action-card.active {
-    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.9), 0 6px 20px rgba(0, 0, 0, 0.25);
-    filter: brightness(1.08);
+    color: var(--adv-gold);
+    border-bottom-color: var(--adv-gold);
 }
 
-.desktop-action-bulletin {
-    background: linear-gradient(135deg, #2563eb, #1d4ed8);
-}
-
-.desktop-action-manage {
-    background: linear-gradient(135deg, #0891b2, #0e7490);
+.desktop-action-bulletin,
+.desktop-action-manage,
+.desktop-action-advisors {
+    background: transparent;
 }
 
 .desktop-action-icon {
-    font-size: 1.4rem;
-    width: 40px;
-    height: 40px;
+    font-size: 1rem;
+    width: auto;
+    height: auto;
     flex-shrink: 0;
-    background: rgba(255, 255, 255, 0.18);
-    border-radius: 12px;
-    display: grid;
-    place-items: center;
+    background: transparent;
+    border-radius: 0;
+    display: inline;
 }
 
 .desktop-action-text {
     display: flex;
-    flex-direction: column;
-    gap: 2px;
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
 }
 
 .desktop-action-text strong {
-    font-size: 0.95rem;
-    font-weight: 800;
+    font-size: 0.875rem;
+    font-weight: 700;
     display: block;
+    letter-spacing: 0.01em;
 }
 
 .desktop-action-text small {
-    font-size: 0.78rem;
-    opacity: 0.85;
-    display: block;
-    font-weight: 500;
+    display: none;
 }
 
 /* Hide old pill tabs on desktop — replaced by action cards */
@@ -428,19 +526,40 @@ body:has(#loginRequired) {
 }
 
 .advisor-redesign .tab-btn {
-    border-radius: 14px;
-    font-weight: 900;
-    font-size: 0.88rem;
+    border-radius: 0;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+/* Override generic .tab-btn.active fill — use underline style instead */
+.advisor-redesign .desktop-action-card.tab-btn.active {
+    background: transparent !important;
+    color: var(--adv-navy) !important;
+    border-bottom: 2px solid var(--adv-navy) !important;
+    box-shadow: none !important;
+    filter: none !important;
+}
+
+.advisor-redesign .desktop-action-card.tab-btn:not(.active) {
+    background: transparent !important;
+    color: var(--adv-text-2) !important;
+    box-shadow: none !important;
+}
+
+.advisor-redesign .desktop-action-card.tab-btn:hover:not(.active) {
+    color: var(--adv-text) !important;
+    background: transparent !important;
 }
 
 .advisor-redesign .post-form-container,
 .advisor-redesign .manage-header,
 .advisor-redesign .manage-card,
 .insight-panel {
-    border: 1px solid rgba(148, 163, 184, 0.2);
-    border-radius: 22px;
-    background: #fff;
-    box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06);
+    border: 1px solid var(--adv-border);
+    border-radius: 14px;
+    background: var(--adv-surface);
+    box-shadow: none;
+    color: var(--adv-text);
 }
 
 .advisor-redesign .post-form-container {
@@ -448,30 +567,34 @@ body:has(#loginRequired) {
 }
 
 .advisor-redesign .post-form-container h4 {
-    color: #071d3b;
-    font: 900 1.3rem "Outfit", sans-serif;
+    color: var(--adv-text);
+    font: 800 1.2rem var(--adv-font-display);
     margin: 0 0 16px;
+    letter-spacing: -0.02em;
 }
 
 .advisor-form-steps {
     display: flex;
-    gap: 8px;
+    gap: 6px;
     flex-wrap: wrap;
     margin: 14px 0 18px;
 }
 
 .advisor-form-steps span {
-    padding: 8px 11px;
+    padding: 6px 12px;
     border-radius: 999px;
-    background: #eef3f9;
-    color: #526173;
-    font-size: 0.78rem;
-    font-weight: 900;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--adv-border);
+    color: var(--adv-text-3);
+    font-size: 0.75rem;
+    font-weight: 700;
+    font-family: var(--adv-font-body);
 }
 
 .advisor-form-steps .active {
-    background: #dbeafe;
-    color: #1e4e9b;
+    background: var(--adv-cyan-dim);
+    border-color: rgba(98,160,255,0.3);
+    color: var(--adv-cyan);
 }
 
 .advisor-category-picker {
@@ -482,28 +605,31 @@ body:has(#loginRequired) {
 }
 
 .advisor-category-picker button {
-    min-height: 54px;
-    border: 1.5px solid #d7e0ec;
-    border-radius: 15px;
-    background: #fff;
-    color: #334155;
-    font-weight: 900;
+    min-height: 52px;
+    border: 1px solid var(--adv-border);
+    border-radius: 10px;
+    background: rgba(255,255,255,0.03);
+    color: var(--adv-text-2);
+    font-weight: 700;
+    font-family: var(--adv-font-body);
+    font-size: 0.83rem;
     cursor: pointer;
+    transition: background 0.12s, border-color 0.12s, color 0.12s;
 }
 
 .advisor-category-picker button.active,
 .advisor-category-picker button:hover {
-    border-color: #244f9f;
-    background: #eaf2ff;
-    color: #173b7b;
+    border-color: rgba(98,160,255,0.35);
+    background: var(--adv-cyan-dim);
+    color: var(--adv-cyan);
 }
 
 .advisor-redesign .form-section {
-    border: 1px solid #e8eef6;
-    border-radius: 18px;
-    background: #f8fafc;
+    border: 1px solid var(--adv-border);
+    border-radius: 12px;
+    background: var(--adv-surface-2);
     box-shadow: none;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
 }
 
 
@@ -511,16 +637,31 @@ body:has(#loginRequired) {
     display: flex;
     flex-direction: column;
     gap: 14px;
+    background: var(--adv-bg);
+    border-left: 1px solid var(--adv-border);
+    padding: 24px 20px;
+    min-height: calc(100vh - 70px);
 }
 
 .insight-panel {
-    padding: 17px;
+    padding: 18px;
+    margin-bottom: 0;
+    border: 1px solid var(--adv-border);
+    background: var(--adv-surface);
+    border-radius: 14px;
+    color: var(--adv-text);
+    box-shadow: 0 1px 4px rgba(7,29,59,0.05);
+}
+
+.insight-panel:last-child {
+    margin-bottom: 0;
 }
 
 .insight-panel h4 {
     margin: 0 0 12px;
-    color: #071d3b;
-    font: 900 1rem "Outfit", sans-serif;
+    color: var(--adv-text);
+    font: 600 0.9rem var(--adv-font-body);
+    letter-spacing: 0;
 }
 
 .advisor-live-preview {
@@ -574,33 +715,42 @@ body:has(#loginRequired) {
 .analytics-list {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 0;
 }
 
 .analytics-row {
     display: flex;
     justify-content: space-between;
     gap: 12px;
-    padding: 10px 0;
-    border-bottom: 1px solid #edf2f7;
-    color: #465568;
-    font-size: 0.85rem;
-    font-weight: 750;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--adv-border);
+    color: var(--adv-text-2);
+    font-size: 0.875rem;
+    font-weight: 400;
+    font-family: var(--adv-font-body);
+    line-height: 1.4;
 }
 
 .analytics-row:last-child {
     border-bottom: 0;
+    padding-bottom: 0;
 }
 
 .analytics-row strong {
-    color: #071d3b;
+    color: var(--adv-text);
+    font-family: var(--adv-font-mono);
+    font-weight: 500;
+    font-size: 0.875rem;
+    flex-shrink: 0;
 }
 
 .analytics-empty {
     margin: 0;
-    color: #7c899a;
-    font-size: 0.85rem;
-    font-weight: 650;
+    color: var(--adv-text-3);
+    font-size: 0.875rem;
+    font-weight: 400;
+    font-family: var(--adv-font-body);
+    line-height: 1.55;
 }
 
 .manage-analytics-strip {
@@ -628,14 +778,24 @@ body:has(#loginRequired) {
 
 @media (max-width: 1180px) {
     .advisor-shell {
-        grid-template-columns: minmax(0, 1fr);
+        grid-template-columns: 200px minmax(0, 1fr) 260px;
+    }
+}
+
+@media (max-width: 900px) {
+    .advisor-shell {
+        display: block;
     }
 
     .advisor-insights {
-        grid-column: 1 / -1;
-        position: static;
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
+        min-height: auto;
+        border-left: none;
+        border-top: 1px solid var(--adv-border);
+        padding: 20px;
+        gap: 14px;
+        position: static;
     }
 
     .live-preview-panel {
@@ -655,25 +815,43 @@ body:has(#loginRequired) {
     .advisor-rail {
         position: static;
         min-height: auto;
-        margin-bottom: 14px;
-        border-radius: 0 0 28px 28px;
+        margin-bottom: 0;
+        border-radius: 0;
+        border-right: none;
+        border-bottom: 1px solid var(--adv-rail-border);
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        padding: 12px 16px;
+        gap: 8px;
     }
 
     .advisor-rail-brand {
-        margin-bottom: 18px;
+        margin-bottom: 0;
+        margin-right: auto;
     }
 
     .rail-help {
         display: none;
     }
 
-    .advisor-workspace,
-    .advisor-insights {
-        padding: 0 12px;
+    .advisor-workspace {
+        padding: 16px;
         width: 100%;
         min-width: 0;
         box-sizing: border-box;
         overflow: hidden;
+    }
+
+    .advisor-insights {
+        padding: 16px;
+        width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
+        overflow: hidden;
+        grid-template-columns: 1fr;
+        display: flex;
+        flex-direction: column;
     }
 
     .advisor-redesign .welcome-section {
@@ -734,6 +912,183 @@ body:has(#loginRequired) {
     .manage-analytics-strip {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
+}
+
+/* === Light theme form + UI overrides for advisor portal === */
+.advisor-redesign .form-group label {
+    color: var(--adv-text-2);
+    font-family: var(--adv-font-body);
+    font-size: 0.72rem;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+}
+
+.advisor-redesign .form-group input,
+.advisor-redesign .form-group select,
+.advisor-redesign .form-group textarea {
+    background: #fff;
+    border-color: var(--adv-border);
+    color: var(--adv-text);
+    border-radius: 10px;
+    font-size: 1rem;
+    font-family: var(--adv-font-body);
+}
+
+.advisor-redesign .form-group input:focus,
+.advisor-redesign .form-group select:focus,
+.advisor-redesign .form-group textarea:focus {
+    border-color: #1a56db;
+    box-shadow: 0 0 0 3px rgba(26,86,219,0.1);
+}
+
+.advisor-redesign .form-group input::placeholder,
+.advisor-redesign .form-group textarea::placeholder {
+    color: var(--adv-text-3);
+    font-weight: 400;
+}
+
+.advisor-redesign .input-help {
+    color: var(--adv-text-3);
+    font-family: var(--adv-font-body);
+    font-size: 0.82rem;
+    margin-top: 4px;
+}
+
+.advisor-redesign .form-section-title,
+.advisor-redesign .form-section-header h4 {
+    color: var(--adv-text);
+    font-family: var(--adv-font-display);
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.advisor-redesign .form-section-subtitle {
+    color: var(--adv-text-2);
+    font-family: var(--adv-font-body);
+    font-size: 0.875rem;
+}
+
+.advisor-redesign .manage-header,
+.advisor-redesign .manage-card {
+    background: var(--adv-surface);
+    border-color: var(--adv-border);
+    color: var(--adv-text);
+}
+
+.advisor-redesign .manage-card h3 {
+    color: var(--adv-text);
+    font-family: var(--adv-font-display);
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.advisor-redesign .manage-card .manage-meta,
+.advisor-redesign .manage-card p {
+    color: var(--adv-text-2);
+    font-family: var(--adv-font-body);
+    font-size: 0.875rem;
+}
+
+.advisor-redesign .manage-analytics-strip span {
+    background: var(--adv-surface-2);
+    color: var(--adv-text-2);
+}
+
+.advisor-redesign .manage-analytics-strip strong {
+    color: var(--adv-text);
+    font-family: var(--adv-font-mono);
+    font-size: 1rem;
+}
+
+.advisor-redesign .content-switcher {
+    background: var(--adv-surface-2);
+    border: 1px solid var(--adv-border);
+    border-radius: 10px;
+    padding: 3px;
+}
+
+.advisor-redesign .content-switch-btn {
+    color: var(--adv-text-2);
+    font-family: var(--adv-font-body);
+    border-radius: 8px;
+    font-size: 0.9rem;
+}
+
+.advisor-redesign .content-switch-btn.active {
+    background: var(--adv-surface);
+    color: var(--adv-text);
+    border: 1px solid var(--adv-border);
+    box-shadow: 0 1px 3px rgba(7,29,59,0.08);
+}
+
+/* Section headers in manage tab */
+.advisor-redesign .manage-header h3 {
+    color: var(--adv-text);
+    font-family: var(--adv-font-display);
+    font-weight: 600;
+}
+
+/* Manage card edit/delete buttons */
+.advisor-redesign .edit-btn {
+    background: var(--adv-cyan-dim);
+    color: var(--adv-cyan);
+    border: 1px solid rgba(26,86,219,0.2);
+    border-radius: 8px;
+    font-family: var(--adv-font-body);
+    font-weight: 600;
+}
+
+.advisor-redesign .delete-btn {
+    background: rgba(220,38,38,0.06);
+    color: var(--adv-red);
+    border: 1px solid rgba(220,38,38,0.15);
+    border-radius: 8px;
+    font-family: var(--adv-font-body);
+    font-weight: 600;
+}
+
+/* Rail brand text */
+.advisor-redesign .advisor-rail-brand strong {
+    color: #e8f0fc;
+    font-family: var(--adv-font-display);
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
+.advisor-redesign .advisor-rail-brand .advisor-eyebrow {
+    color: rgba(255,213,93,0.7);
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+}
+
+/* Post form container — light */
+.advisor-redesign .post-form-container {
+    background: var(--adv-surface);
+    border-color: var(--adv-border);
+}
+
+.advisor-redesign .post-form-container h4 {
+    color: var(--adv-text);
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.advisor-redesign .form-section {
+    background: var(--adv-surface-2);
+    border-color: var(--adv-border);
+}
+
+/* Advisor eyebrow in main workspace */
+.advisor-workspace .advisor-eyebrow {
+    color: var(--adv-text-3);
+}
+
+.insight-panel .advisor-eyebrow {
+    color: var(--adv-text-2);
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    margin-bottom: 2px;
 }
 
 /* Global Styles */
@@ -10032,130 +10387,80 @@ body:has(#loginRequired) {
     min-width: 0;
 }
 
-/* duplicate block — see primary styles above */
+/* duplicate stat/tab block removed — primary styles above take effect */
 
-.advisor-stat-grid {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 8px;
-    padding: 0 10px;
-    margin-top: -18px;
-    margin-bottom: 16px;
-    position: relative;
-    z-index: 1;
-}
-
-.advisor-stat-card {
-    padding: 13px 10px;
-    border-radius: 14px;
-    background: linear-gradient(180deg, #1a3868, #152e57);
-    color: #a8c0e8;
-    box-shadow: 0 4px 16px rgba(6, 29, 58, 0.28);
-    text-align: center;
-}
-
-.advisor-stat-card strong {
-    display: block;
-    color: #62a0ff;
-    font: 900 1.6rem "Outfit", sans-serif;
-    line-height: 1;
-}
-
-.advisor-stat-purple strong {
-    color: #a78bfa;
-}
-
-.advisor-stat-green strong {
-    color: #2fc288;
-}
-
-.advisor-stat-orange strong {
-    color: #f29b38;
-}
-
-.advisor-stat-card span {
-    display: block;
-    margin-top: 5px;
-    color: #a8c0e8;
-    font-size: 0.65rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    line-height: 1.3;
-}
-
-/* Desktop action cards */
+/* Desktop action cards → clean tab bar */
 .desktop-action-cards {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
-    margin: 0 0 16px;
+    display: flex;
+    gap: 0;
+    margin: 0 0 24px;
+    border-bottom: 2px solid var(--adv-border);
 }
 
 .desktop-action-cards:has(#advisorsTabBtn:not([style*="display:none"]):not([style*="display: none"])) {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    /* no special grid needed for tab bar */
 }
 
 .desktop-action-card {
     display: flex;
     align-items: center;
-    gap: 14px;
-    padding: 14px 18px;
+    gap: 8px;
+    padding: 14px 22px;
     border: none;
-    border-radius: 18px;
-    color: #fff;
+    border-radius: 0;
+    border-bottom: 2px solid transparent;
+    background: transparent;
+    color: var(--adv-text-2);
     cursor: pointer;
     text-align: left;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
-    transition: transform 0.15s, box-shadow 0.15s, filter 0.15s;
+    font-family: var(--adv-font-body);
+    transition: color 0.15s, border-color 0.15s;
+    margin-bottom: -1px;
+    font-size: 0.95rem;
 }
 
 .desktop-action-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+    color: var(--adv-text);
+    border-bottom-color: var(--adv-border-bright);
 }
 
 .desktop-action-card.active {
-    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.9), 0 6px 20px rgba(0, 0, 0, 0.25);
-    filter: brightness(1.08);
+    color: var(--adv-gold);
+    border-bottom-color: var(--adv-gold);
 }
 
-.desktop-action-bulletin {
-    background: linear-gradient(135deg, #2563eb, #1d4ed8);
-}
-
-.desktop-action-manage {
-    background: linear-gradient(135deg, #0891b2, #0e7490);
+.desktop-action-bulletin,
+.desktop-action-manage,
+.desktop-action-advisors {
+    background: transparent;
 }
 
 .desktop-action-icon {
-    font-size: 1.4rem;
-    width: 40px;
-    height: 40px;
+    font-size: 1rem;
+    width: auto;
+    height: auto;
     flex-shrink: 0;
-    background: rgba(255, 255, 255, 0.18);
-    border-radius: 12px;
-    display: grid;
-    place-items: center;
+    background: transparent;
+    border-radius: 0;
+    display: inline;
 }
 
 .desktop-action-text {
     display: flex;
-    flex-direction: column;
-    gap: 2px;
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
 }
 
 .desktop-action-text strong {
-    font-size: 0.95rem;
-    font-weight: 800;
+    font-size: 0.875rem;
+    font-weight: 700;
     display: block;
+    letter-spacing: 0.01em;
 }
 
 .desktop-action-text small {
-    font-size: 0.78rem;
-    opacity: 0.85;
-    display: block;
-    font-weight: 500;
+    display: none;
 }
 
 /* Hide old pill tabs on desktop — replaced by action cards */
@@ -10164,19 +10469,40 @@ body:has(#loginRequired) {
 }
 
 .advisor-redesign .tab-btn {
-    border-radius: 14px;
-    font-weight: 900;
-    font-size: 0.88rem;
+    border-radius: 0;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+/* Override generic .tab-btn.active fill — use underline style instead */
+.advisor-redesign .desktop-action-card.tab-btn.active {
+    background: transparent !important;
+    color: var(--adv-navy) !important;
+    border-bottom: 2px solid var(--adv-navy) !important;
+    box-shadow: none !important;
+    filter: none !important;
+}
+
+.advisor-redesign .desktop-action-card.tab-btn:not(.active) {
+    background: transparent !important;
+    color: var(--adv-text-2) !important;
+    box-shadow: none !important;
+}
+
+.advisor-redesign .desktop-action-card.tab-btn:hover:not(.active) {
+    color: var(--adv-text) !important;
+    background: transparent !important;
 }
 
 .advisor-redesign .post-form-container,
 .advisor-redesign .manage-header,
 .advisor-redesign .manage-card,
 .insight-panel {
-    border: 1px solid rgba(148, 163, 184, 0.2);
-    border-radius: 22px;
-    background: #fff;
-    box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06);
+    border: 1px solid var(--adv-border);
+    border-radius: 14px;
+    background: var(--adv-surface);
+    box-shadow: none;
+    color: var(--adv-text);
 }
 
 .advisor-redesign .post-form-container {
@@ -10184,30 +10510,34 @@ body:has(#loginRequired) {
 }
 
 .advisor-redesign .post-form-container h4 {
-    color: #071d3b;
-    font: 900 1.3rem "Outfit", sans-serif;
+    color: var(--adv-text);
+    font: 800 1.2rem var(--adv-font-display);
     margin: 0 0 16px;
+    letter-spacing: -0.02em;
 }
 
 .advisor-form-steps {
     display: flex;
-    gap: 8px;
+    gap: 6px;
     flex-wrap: wrap;
     margin: 14px 0 18px;
 }
 
 .advisor-form-steps span {
-    padding: 8px 11px;
+    padding: 6px 12px;
     border-radius: 999px;
-    background: #eef3f9;
-    color: #526173;
-    font-size: 0.78rem;
-    font-weight: 900;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--adv-border);
+    color: var(--adv-text-3);
+    font-size: 0.75rem;
+    font-weight: 700;
+    font-family: var(--adv-font-body);
 }
 
 .advisor-form-steps .active {
-    background: #dbeafe;
-    color: #1e4e9b;
+    background: var(--adv-cyan-dim);
+    border-color: rgba(98,160,255,0.3);
+    color: var(--adv-cyan);
 }
 
 .advisor-category-picker {
@@ -10218,28 +10548,31 @@ body:has(#loginRequired) {
 }
 
 .advisor-category-picker button {
-    min-height: 54px;
-    border: 1.5px solid #d7e0ec;
-    border-radius: 15px;
-    background: #fff;
-    color: #334155;
-    font-weight: 900;
+    min-height: 52px;
+    border: 1px solid var(--adv-border);
+    border-radius: 10px;
+    background: rgba(255,255,255,0.03);
+    color: var(--adv-text-2);
+    font-weight: 700;
+    font-family: var(--adv-font-body);
+    font-size: 0.83rem;
     cursor: pointer;
+    transition: background 0.12s, border-color 0.12s, color 0.12s;
 }
 
 .advisor-category-picker button.active,
 .advisor-category-picker button:hover {
-    border-color: #244f9f;
-    background: #eaf2ff;
-    color: #173b7b;
+    border-color: rgba(98,160,255,0.35);
+    background: var(--adv-cyan-dim);
+    color: var(--adv-cyan);
 }
 
 .advisor-redesign .form-section {
-    border: 1px solid #e8eef6;
-    border-radius: 18px;
-    background: #f8fafc;
+    border: 1px solid var(--adv-border);
+    border-radius: 12px;
+    background: var(--adv-surface-2);
     box-shadow: none;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
 }
 
 
@@ -10247,16 +10580,31 @@ body:has(#loginRequired) {
     display: flex;
     flex-direction: column;
     gap: 14px;
+    background: var(--adv-bg);
+    border-left: 1px solid var(--adv-border);
+    padding: 24px 20px;
+    min-height: calc(100vh - 70px);
 }
 
 .insight-panel {
-    padding: 17px;
+    padding: 18px;
+    margin-bottom: 0;
+    border: 1px solid var(--adv-border);
+    background: var(--adv-surface);
+    border-radius: 14px;
+    color: var(--adv-text);
+    box-shadow: 0 1px 4px rgba(7,29,59,0.05);
+}
+
+.insight-panel:last-child {
+    margin-bottom: 0;
 }
 
 .insight-panel h4 {
     margin: 0 0 12px;
-    color: #071d3b;
-    font: 900 1rem "Outfit", sans-serif;
+    color: var(--adv-text);
+    font: 600 0.9rem var(--adv-font-body);
+    letter-spacing: 0;
 }
 
 .advisor-live-preview {
@@ -10307,76 +10655,7 @@ body:has(#loginRequired) {
     font-weight: 900;
 }
 
-.analytics-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.analytics-row {
-    justify-content: space-between;
-    gap: 12px;
-    padding: 10px 0;
-    border-bottom: 1px solid #edf2f7;
-    color: #465568;
-    font-size: 0.85rem;
-    font-weight: 750;
-}
-
-.analytics-row:last-child {
-    border-bottom: 0;
-}
-
-.analytics-row strong {
-    color: #071d3b;
-}
-
-.analytics-empty {
-    margin: 0;
-    color: #7c899a;
-    font-size: 0.85rem;
-    font-weight: 650;
-}
-
-.manage-analytics-strip {
-    display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 6px;
-    margin: 12px 0;
-}
-
-.manage-analytics-strip span {
-    padding: 8px 6px;
-    border-radius: 10px;
-    background: #eef3f9;
-    color: #526173;
-    text-align: center;
-    font-size: 0.72rem;
-    font-weight: 800;
-}
-
-.manage-analytics-strip strong {
-    display: block;
-    color: #102d56;
-    font-size: 0.95rem;
-}
-
-@media (max-width: 1180px) {
-    .advisor-shell {
-        grid-template-columns: minmax(0, 1fr);
-    }
-
-    .advisor-insights {
-        grid-column: 1 / -1;
-        position: static;
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-
-    .live-preview-panel {
-        grid-column: span 3;
-    }
-}
+/* duplicate analytics/breakpoint block removed — primary styles above take effect */
 
 @media (max-width: 760px) {
     .advisor-shell {
@@ -13946,7 +14225,7 @@ body:has(#loginRequired) {
 }
 
 .desktop-action-advisors {
-    background: linear-gradient(135deg, #6d28d9, #4f46e5);
+    background: transparent;
 }
 
 /* ═══════════════════════════════════════════════════════════

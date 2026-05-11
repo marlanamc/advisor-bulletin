@@ -48,15 +48,15 @@ window.trackStudentEvent = trackStudentEvent;
 
 /** Public advisor directory for the student site. Email local parts match advisor usernames. */
 const STUDENT_ADVISOR_DIRECTORY = [
-    { name: 'Leah', role: 'Coordinator/Educator', username: 'lgregory' },
-    { name: 'Carmen', role: 'Advisor', username: 'vlalin' },
-    { name: 'Fabiola', role: 'Advisor', username: 'fvaquerano' },
-    { name: 'Felipe', role: 'Advisor', username: 'fgallego' },
-    { name: 'Jerome', role: 'Advisor', username: 'jkiley' },
-    { name: 'Jorge', role: 'Advisor', username: 'rocha' },
-    { name: 'Leidy', role: 'Advisor', username: 'lalzate' },
-    { name: 'Mike K.', role: 'Advisor', username: 'mkelsen' },
-    { name: 'Simonetta', role: 'Advisor', username: 'spiergentili' }
+    { name: 'Leah',      role: 'Coordinator/Educator', email: 'lgregory@ebhcs.org' },
+    { name: 'Carmen',    role: 'Advisor',               email: 'vlalin@ebhcs.org' },
+    { name: 'Fabiola',   role: 'Advisor',               email: 'fvaquerano@ebhcs.org' },
+    { name: 'Felipe',    role: 'Advisor',               email: 'fgallego@ebhcs.org' },
+    { name: 'Jerome',    role: 'Advisor',               email: 'jkiley@ebhcs.org' },
+    { name: 'Jorge',     role: 'Advisor',               email: 'rocha@ebhcs.org' },
+    { name: 'Leidy',     role: 'Advisor',               email: 'lalzate@ebhcs.org' },
+    { name: 'Mike K.',   role: 'Advisor',               email: 'mkelsen@ebhcs.org' },
+    { name: 'Simonetta', role: 'Advisor',               email: 'spiergentili@ebhcs.org' }
 ];
 
 /** Optional synthetic items merged into student calendar / upcoming — not stored in Firestore. */
