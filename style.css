@@ -10134,7 +10134,7 @@ button.about-action-card {
 /* ── Desktop: full-width student layout ─────────────────────────── */
 @media (min-width: 768px) {
     :root {
-        --app-header-offset: 64px;
+        --app-header-offset: 100px;
     }
 
     html {
@@ -10922,11 +10922,26 @@ body:has(#loginRequired) {
     display: none;
 }
 
+.cat-bar-resource-hint {
+    display: none;
+}
+
 @media (min-width: 768px) {
     .topbar-cat-row {
         display: block;
         border-top: 1px solid rgba(255,255,255,0.1);
         padding: 0 16px;
+    }
+
+    .cat-bar-resource-hint {
+        display: block;
+        margin: 0;
+        padding: 8px 32px 2px;
+        font-size: 11px;
+        font-weight: 600;
+        color: rgba(255,255,255,0.45);
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
     }
 
     .topbar-cat-row .cat-bar {
@@ -11489,7 +11504,7 @@ body:has(#loginRequired) {
 
 @media (min-width: 1100px) {
     :root {
-        --app-header-offset: 100px;
+        --app-header-offset: 136px;
     }
 
     body {
@@ -11907,15 +11922,17 @@ body:has(#loginRequired) {
         --urgent-accent-2: #fb923c;
         --urgent-tint: #fff3d3;
         display: grid;
-        grid-template-columns: 58px minmax(0, 1fr) 154px;
-        gap: 12px;
-        align-items: center;
-        min-height: 112px;
-        padding: 12px;
-        border: 1px solid rgba(226, 232, 240, 0.82);
-        border-radius: 18px;
-        background: rgba(255, 255, 255, 0.92);
-        box-shadow: 0 14px 30px rgba(15, 23, 42, 0.08);
+        grid-template-columns: 42px minmax(0, 1fr);
+        grid-template-rows: auto auto;
+        column-gap: 12px;
+        row-gap: 0;
+        align-items: start;
+        padding: 14px;
+        border: 1px solid color-mix(in srgb, var(--urgent-accent) 18%, #e2e8f0);
+        border-left: 3px solid var(--urgent-accent);
+        border-radius: 14px;
+        background: color-mix(in srgb, var(--urgent-tint) 40%, #ffffff);
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
     }
 
     .urgent-support-card--mental {
@@ -11931,58 +11948,62 @@ body:has(#loginRequired) {
     }
 
     .urgent-support-icon {
-        width: 58px;
-        height: 58px;
+        grid-column: 1;
+        grid-row: 1 / 3;
+        width: 42px;
+        height: 42px;
         display: grid;
         place-items: center;
-        border-radius: 50%;
-        background: var(--urgent-tint);
+        border-radius: 12px;
+        background: color-mix(in srgb, var(--urgent-tint) 80%, #ffffff);
         color: var(--urgent-accent);
-        font-size: 30px;
+        font-size: 22px;
         line-height: 1;
-        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.78);
+        align-self: start;
+        margin-top: 1px;
+    }
+
+    .urgent-support-copy {
+        grid-column: 2;
+        grid-row: 1;
+        min-width: 0;
     }
 
     .urgent-support-org {
         margin: 0;
         color: #0a1d3a;
-        font: 900 17px/1.08 var(--font-jakarta);
+        font: 900 15px/1.15 var(--font-jakarta);
         letter-spacing: 0;
     }
 
     .urgent-support-blurb {
-        margin: 6px 0 0;
+        margin: 3px 0 0;
         color: #617089;
-        font: 800 11px/1.35 var(--font-jakarta);
+        font: 700 11px/1.4 var(--font-jakarta);
     }
 
     .urgent-support-actions {
-        min-height: 88px;
-        padding-left: 12px;
-        border-left: 1px solid #dfe5ee;
+        grid-column: 2;
+        grid-row: 2;
+        margin-top: 8px;
         display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: flex-start;
-        gap: 7px;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px 8px;
         min-width: 0;
     }
 
     .urgent-support-label {
-        margin: 0;
-        color: var(--urgent-accent);
-        font: 900 12px/1 var(--font-jakarta);
-        letter-spacing: 0.05em;
-        text-transform: uppercase;
+        display: none;
     }
 
     .urgent-tel-num {
         color: var(--urgent-accent);
-        font: 900 19px/1 var(--font-jakarta);
+        font: 900 14px/1 var(--font-jakarta);
         font-variant-numeric: tabular-nums;
         letter-spacing: 0;
         text-decoration: none;
-        word-break: keep-all;
         white-space: nowrap;
     }
 
@@ -11993,28 +12014,29 @@ body:has(#loginRequired) {
     .urgent-action-row {
         display: flex;
         flex-wrap: wrap;
-        gap: 8px;
+        gap: 6px;
     }
 
     .urgent-action-btn {
-        min-height: 34px;
+        min-height: 28px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        gap: 7px;
-        padding: 0 15px;
+        gap: 5px;
+        padding: 0 11px;
         border-radius: 999px;
         background: linear-gradient(135deg, var(--urgent-accent), var(--urgent-accent-2));
         color: #fff;
-        font: 900 13px/1 var(--font-jakarta);
+        font: 900 11px/1 var(--font-jakarta);
         text-decoration: none;
-        box-shadow: 0 10px 18px rgba(15, 23, 42, 0.12);
+        box-shadow: 0 3px 8px color-mix(in srgb, var(--urgent-accent) 30%, transparent);
     }
 
     .urgent-action-btn--soft {
-        background: color-mix(in srgb, var(--urgent-accent) 13%, #ffffff);
+        background: color-mix(in srgb, var(--urgent-accent) 12%, #ffffff);
         color: var(--urgent-accent);
         box-shadow: none;
+        border: 1px solid color-mix(in srgb, var(--urgent-accent) 25%, transparent);
     }
 
     .urgent-action-btn:hover {
@@ -12030,10 +12052,10 @@ body:has(#loginRequired) {
     .urgent-support-hours {
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 5px;
         margin: 0;
-        color: #55627a;
-        font: 850 12px/1.1 var(--font-jakarta);
+        color: #8898b0;
+        font: 700 11px/1 var(--font-jakarta);
     }
 
     .urgent-note {
@@ -12055,6 +12077,53 @@ body:has(#loginRequired) {
     .urgent-note strong {
         color: #ef3f3f;
         font-weight: 950;
+    }
+
+    /* Resource chips panel */
+    .side-panel--resources {
+        padding-bottom: 14px;
+    }
+
+    .side-resource-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        padding: 4px 16px 0;
+    }
+
+    .side-resource-chip {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 10px;
+        background: #fff;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 12px;
+        cursor: pointer;
+        font: 600 12.5px/1.2 var(--font-jakarta, 'Plus Jakarta Sans', sans-serif);
+        color: #0a1d3a;
+        text-align: left;
+        transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+    }
+
+    .side-resource-chip:hover {
+        border-color: #b6c6e0;
+        background: #f8fafc;
+        box-shadow: 0 2px 8px rgba(10,29,58,0.07);
+    }
+
+    .side-resource-chip:active {
+        background: #f1f5f9;
+    }
+
+    .side-resource-chip-icon {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
     }
 
     .side-panel--advisor {
@@ -12132,59 +12201,6 @@ body:has(#loginRequired) {
         max-width: min(48vw, 380px);
     }
 
-    .side-panel--urgent {
-        padding: 16px;
-    }
-
-    .urgent-support-top {
-        grid-template-columns: 44px minmax(0, 1fr) 28px;
-        gap: 12px;
-        margin: 0;
-    }
-
-    .urgent-support-disclosure[open] .urgent-support-top {
-        margin-bottom: 14px;
-    }
-
-    .urgent-support-mark {
-        width: 44px;
-        height: 44px;
-        border-radius: 15px;
-        font-size: 25px;
-    }
-
-    .urgent-support-card {
-        grid-template-columns: 58px minmax(0, 1fr);
-        min-height: 0;
-        padding: 14px;
-        gap: 12px;
-    }
-
-    .urgent-support-icon {
-        width: 58px;
-        height: 58px;
-        font-size: 30px;
-    }
-
-    .urgent-support-org {
-        font-size: 18px;
-    }
-
-    .urgent-support-blurb {
-        font-size: 12px;
-    }
-
-    .urgent-support-actions {
-        grid-column: 1 / -1;
-        min-height: 0;
-        padding: 12px 0 0;
-        border-left: 0;
-        border-top: 1px solid #dfe5ee;
-    }
-
-    .urgent-tel-num {
-        font-size: 18px;
-    }
 }
 
 /* Condensed desktop widths: keep topbar and category strip usable */

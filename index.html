@@ -92,6 +92,10 @@
         </div>
         <!-- ─── CATEGORY BAR (desktop, inside header) ─────────── -->
         <div class="topbar-cat-row" id="topbarCatRow">
+            <p class="cat-bar-resource-hint">
+                <span class="en-text">Click a category for resources</span>
+                <span class="es-text">Haz clic en una categoría para recursos</span>
+            </p>
             <div class="cat-bar" id="catBar">
                 <button class="cat-chip cat-chip--all active" data-cat-filter="all" type="button">
                     <span class="cat-chip-count" id="catAllCount">0</span>
@@ -507,6 +511,7 @@
                 </div>
 
                 <aside class="desktop-home-aside" aria-label="Helpful information">
+
                     <section class="side-panel side-panel--events">
                         <div class="side-panel-header">
                             <h2>
@@ -1475,10 +1480,17 @@
             });
         });
 
-        // ── Cat bar chips (desktop) → category detail for resource-type cats
-        // (keep existing feed filter behavior, but also support detail view
-        //  when user long-presses or on specific resource categories)
-        // For now: clicking a cat chip still filters the feed as before.
+        // ── Desktop aside resource chips → category detail modal ──────
+        document.querySelectorAll('.side-resource-chip[data-resource-cat]').forEach(function (chip) {
+            chip.addEventListener('click', function () {
+                var cat = this.getAttribute('data-resource-cat');
+                if (window.bulletinBoard && typeof window.bulletinBoard.openResourceShortcut === 'function') {
+                    window.bulletinBoard.openResourceShortcut(cat);
+                } else {
+                    openCategoryDetail(cat);
+                }
+            });
+        });
     })();
     </script>
 </body>

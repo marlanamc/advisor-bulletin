@@ -7,10 +7,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Lexend:wght@300;400;500;600;700;800&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
-  <script type="module" crossorigin src="/assets/admin-t5zklY5g.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/firebase-C5d_3qgE.js">
-  <link rel="stylesheet" crossorigin href="/assets/firebase-B0NwyDcj.css">
-  <link rel="stylesheet" crossorigin href="/assets/admin-D1yso1OK.css">
+  <script type="module" crossorigin src="/assets/admin-CuEpB8__.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/firebase-CGUiwdO-.js">
+  <link rel="stylesheet" crossorigin href="/assets/firebase-CYC6-ciz.css">
+  <link rel="stylesheet" crossorigin href="/assets/admin-CR5exn-N.css">
 </head>
 <body>
     <header>
@@ -199,12 +199,19 @@
                 </nav>
 
                 <div class="ap-sidebar-footer">
-                    <div class="ap-advisor-card">
+                    <div class="ap-advisor-card" id="apAdvisorCard" onclick="apToggleUserMenu()" role="button" tabindex="0" style="cursor:pointer;position:relative;">
                         <div class="ap-advisor-avatar" id="apAdvisorAvatar">A</div>
-                        <div>
+                        <div style="flex:1;min-width:0;">
                             <div class="ap-advisor-name" id="apAdvisorName">Advisor</div>
                             <div class="ap-advisor-role">EBHCS Staff</div>
                         </div>
+                        <svg id="apUserMenuChevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;flex-shrink:0;color:rgba(255,255,255,.4);transition:transform .2s;"><polyline points="18 15 12 9 6 15"/></svg>
+                    </div>
+                    <div id="apUserMenu" class="ap-user-menu" style="display:none;">
+                        <button class="ap-user-menu-item ap-user-menu-logout" id="sidebarLogoutBtn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                            Log out
+                        </button>
                     </div>
                 </div>
             </nav>
@@ -1938,6 +1945,36 @@
          ADVISOR PORTAL v2 — Navigation & Live Preview JS
          ═══════════════════════════════════════════════════════ -->
     <script>
+    // ── Sidebar user menu ────────────────────────────────────────────
+    window.apToggleUserMenu = function() {
+        var menu = document.getElementById('apUserMenu');
+        var chevron = document.getElementById('apUserMenuChevron');
+        var open = menu.style.display === 'none' || menu.style.display === '';
+        menu.style.display = open ? 'block' : 'none';
+        if (chevron) chevron.style.transform = open ? 'rotate(180deg)' : 'rotate(0deg)';
+    };
+
+    document.addEventListener('click', function(e) {
+        var card = document.getElementById('apAdvisorCard');
+        var menu = document.getElementById('apUserMenu');
+        if (!card || !menu) return;
+        if (!card.contains(e.target) && !menu.contains(e.target)) {
+            menu.style.display = 'none';
+            var chevron = document.getElementById('apUserMenuChevron');
+            if (chevron) chevron.style.transform = 'rotate(0deg)';
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        var sidebarLogout = document.getElementById('sidebarLogoutBtn');
+        var mainLogout = document.getElementById('logoutBtn');
+        if (sidebarLogout && mainLogout) {
+            sidebarLogout.addEventListener('click', function() { mainLogout.click(); });
+        }
+    });
+    </script>
+
+    <script>
     (function() {
         // ── Page navigation ──────────────────────────────────────────
         var PAGES = {
@@ -2036,6 +2073,24 @@
             var sel = document.getElementById('advisorName');
             var nameEl = document.getElementById('apAdvisorName');
             var avatarEl = document.getElementById('apAdvisorAvatar');
+
+            function setAdvisorCard(name) {
+                if (!name || name === 'Advisor') return;
+                if (nameEl) nameEl.textContent = name;
+                if (avatarEl) avatarEl.textContent = name.charAt(0).toUpperCase();
+            }
+
+            // Sync from the welcome message whenever it changes (set on login)
+            var welcomeEl = document.getElementById('welcomeMessage');
+            if (welcomeEl) {
+                var wmObs = new MutationObserver(function() {
+                    var raw = welcomeEl.textContent || '';
+                    var name = raw.replace('Welcome, ', '').replace('Hi, ', '').replace('!', '').trim();
+                    setAdvisorCard(name);
+                });
+                wmObs.observe(welcomeEl, { childList: true, characterData: true, subtree: true });
+            }
+
             if (!sel) return;
             function update() {
                 var name = sel.value || 'Advisor';
@@ -2043,7 +2098,6 @@
                 if (avatarEl) avatarEl.textContent = name.charAt(0).toUpperCase();
             }
             sel.addEventListener('change', update);
-            // Also sync preview
             sel.addEventListener('change', syncPreview);
         }
 

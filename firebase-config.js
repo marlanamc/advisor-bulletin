@@ -658,10 +658,15 @@ class FirebaseBulletinBoard {
         });
 
         // Category bar (single-select)
+        // On desktop (≥640px), non-"all" chips open the resource detail modal
         document.querySelectorAll('.cat-chip').forEach(chip => {
             chip.addEventListener('click', () => {
                 const filter = chip.getAttribute('data-cat-filter');
-                this.setFeedCategory(filter === 'all' ? 'all' : filter);
+                if (filter !== 'all' && window.matchMedia('(min-width: 640px)').matches) {
+                    this.openResourceShortcut(filter);
+                } else {
+                    this.setFeedCategory(filter === 'all' ? 'all' : filter);
+                }
             });
         });
 
