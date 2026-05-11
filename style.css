@@ -3678,6 +3678,10 @@ button[disabled] {
     letter-spacing: -0.02em;
 }
 
+.calendar-back-home-btn {
+    display: none;
+}
+
 @media (min-width: 640px) {
     #calendarView .dates-view-toggle,
     #calendarView #bulletinCalendar {
@@ -3699,10 +3703,47 @@ button[disabled] {
 
 @media (min-width: 768px) {
     #calendarView .view-hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        column-gap: 18px;
         margin: 0 auto 14px;
         padding: 14px 20px 16px;
         max-width: min(900px, calc(100% - 48px));
         border-radius: 16px;
+    }
+
+    #calendarView .view-hero-eyebrow,
+    #calendarView .view-hero h1 {
+        grid-column: 1;
+    }
+
+    .calendar-back-home-btn {
+        grid-column: 2;
+        grid-row: 1 / span 2;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 38px;
+        padding: 0 18px;
+        border: 1px solid rgba(255, 255, 255, 0.34);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.09);
+        color: #fff;
+        font: 900 13px var(--font-jakarta);
+        cursor: pointer;
+        transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+    }
+
+    .calendar-back-home-btn:hover {
+        background: rgba(255, 255, 255, 0.16);
+        border-color: rgba(255, 255, 255, 0.56);
+        transform: translateY(-1px);
+    }
+
+    .calendar-back-home-btn:focus-visible {
+        outline: 3px solid rgba(126, 177, 255, 0.55);
+        outline-offset: 3px;
     }
 
     #calendarView .view-hero h1 {
