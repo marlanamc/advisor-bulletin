@@ -29,6 +29,7 @@ class FirebaseAdminPanel {
         this.pendingImageData = null;
         this.isSubmitting = false;
         this.contentType = 'post';
+        this.contentMode = 'post';
         this.analyticsEvents = [];
         this.analyticsByPost = {};
         this.analyticsUnsubscribe = null;
@@ -164,8 +165,10 @@ class FirebaseAdminPanel {
         });
     }
 
-    applySchoolEventPreset(mode) {
-        this.setContentType('post', { preserveFields: true, silent: true });
+    applySchoolEventPreset(mode, options = {}) {
+        if (!options.keepContentMode) {
+            this.setContentType('post', { preserveFields: true, silent: true });
+        }
 
         const categorySelect = document.getElementById('category');
         if (categorySelect) {
@@ -177,8 +180,10 @@ class FirebaseAdminPanel {
         const dateTypeSelect = document.getElementById('dateType');
         if (dateTypeSelect) {
             dateTypeSelect.value = 'event';
-            if (typeof window.toggleDateFields === 'function') {
-                window.toggleDateFields();
+            toggleDateFields();
+            if (this.contentMode === 'event') {
+                const eventDateLabel = document.querySelector('label[for="eventDate"]');
+                if (eventDateLabel) eventDateLabel.textContent = 'Date';
             }
         }
 
@@ -395,11 +400,18 @@ class FirebaseAdminPanel {
     setContentType(type, options = {}) {
         const isEvent = type === 'event';
         const nextType = type === 'resource' ? 'resource' : 'post';
+        const nextMode = isEvent ? 'event' : nextType;
         this.contentType = nextType;
+        this.contentMode = nextMode;
 
         const hiddenInput = document.getElementById('contentType');
         if (hiddenInput) {
             hiddenInput.value = nextType;
+        }
+
+        const form = document.getElementById('bulletinForm');
+        if (form) {
+            form.dataset.contentMode = nextMode;
         }
 
         document.querySelectorAll('.content-type-btn').forEach((button) => {
@@ -411,7 +423,7 @@ class FirebaseAdminPanel {
 
         document.querySelectorAll('.content-mode-section').forEach((section) => {
             const mode = section.getAttribute('data-content-mode');
-            const isVisible = mode === nextType;
+            const isVisible = String(mode || '').split(/\s+/).includes(nextMode);
             section.style.display = isVisible ? '' : 'none';
         });
 
@@ -422,9 +434,9 @@ class FirebaseAdminPanel {
         const titleInput = document.getElementById('title');
         const categoryInput = document.getElementById('category');
         const advisorNameInput = document.getElementById('advisorName');
-        if (titleInput) titleInput.required = nextType === 'post';
-        if (categoryInput) categoryInput.required = nextType === 'post';
-        if (advisorNameInput) advisorNameInput.required = nextType === 'post';
+        if (titleInput) titleInput.required = nextMode === 'post' || nextMode === 'event';
+        if (categoryInput) categoryInput.required = nextMode === 'post';
+        if (advisorNameInput) advisorNameInput.required = nextMode === 'post' || nextMode === 'event';
 
         const helper = document.getElementById('contentTypeHelper');
         if (helper) {
@@ -433,6 +445,31 @@ class FirebaseAdminPanel {
                 : isEvent
                     ? 'Add a date to the student calendar without creating a bulletin post. Great for holidays, no-school days, and school events.'
                     : 'Use Posts for announcements, events, trainings, and opportunities.';
+        }
+
+        const requiredTitle = document.querySelector('.form-section.required .form-section-title');
+        const requiredSubtitle = document.querySelector('.form-section.required .form-section-subtitle');
+        const titleLabel = document.querySelector('label[for="title"]');
+        const titleHelp = document.querySelector('.title-field-group .input-help');
+        if (requiredTitle) {
+            requiredTitle.textContent = isEvent ? 'Event Label' : 'Required Information';
+        }
+        if (requiredSubtitle) {
+            requiredSubtitle.textContent = isEvent
+                ? 'Add the label students will see on the calendar.'
+                : 'These fields are mandatory for all bulletins';
+        }
+        if (titleLabel) {
+            titleLabel.textContent = isEvent ? 'Label' : 'Title';
+        }
+        if (titleHelp) {
+            titleHelp.textContent = isEvent
+                ? 'Use the exact wording students should see, like “No School” or “Registration Deadline”.'
+                : 'A clear, descriptive title helps students understand the opportunity';
+        }
+        if (!isEvent) {
+            const eventDateLabel = document.querySelector('label[for="eventDate"]');
+            if (eventDateLabel) eventDateLabel.textContent = 'Event Date';
         }
 
         const heading = document.querySelector('.post-form-container h4');
@@ -448,14 +485,14 @@ class FirebaseAdminPanel {
         }
 
         if (previewBtn) {
-            previewBtn.textContent = nextType === 'resource' ? 'Preview Resource' : 'Preview Post';
+            previewBtn.textContent = nextType === 'resource' ? 'Preview Resource' : isEvent ? 'Preview Event' : 'Preview Post';
         }
 
         if (submitBtn) {
             if (this.isEditMode) {
                 submitBtn.textContent = nextType === 'resource' ? 'Update Resource' : 'Update Bulletin';
             } else {
-                submitBtn.textContent = nextType === 'resource' ? 'Publish Resource' : 'Post Bulletin';
+                submitBtn.textContent = nextType === 'resource' ? 'Publish Resource' : isEvent ? 'Add Event Date' : 'Post Bulletin';
             }
         }
 
@@ -468,13 +505,13 @@ class FirebaseAdminPanel {
         }
 
         if (!options.silent) {
-            this.showTemporaryMessage(`${nextType === 'resource' ? 'Resource' : 'Post'} mode ready.`, 'info');
+            this.showTemporaryMessage(`${nextType === 'resource' ? 'Resource' : isEvent ? 'Event date' : 'Post'} mode ready.`, 'info');
         }
 
         this.updateLivePreview();
 
         if (isEvent) {
-            this.applySchoolEventPreset('calendar-only');
+            this.applySchoolEventPreset('calendar-only', { keepContentMode: true });
         }
     }
 
@@ -804,8 +841,18 @@ class FirebaseAdminPanel {
 
         try {
             const formData = new FormData(e.target);
+            if (this.contentMode === 'event') {
+                const hasEndDate = Boolean((formData.get('endDate') || '').trim());
+                formData.set('contentType', 'post');
+                formData.set('category', 'announcement');
+                formData.set('hideFromMainFeed', 'on');
+                formData.set('dateType', hasEndDate ? 'range' : 'event');
+                if (hasEndDate && !formData.get('startDate')) {
+                    formData.set('startDate', formData.get('eventDate') || '');
+                }
+            }
             const submittedType = (formData.get('contentType') || this.contentType || 'post') === 'resource' ? 'resource' : 'post';
-            const submittedLabel = submittedType === 'resource' ? 'Resource' : 'Bulletin';
+            const submittedLabel = this.contentMode === 'event' ? 'Event date' : submittedType === 'resource' ? 'Resource' : 'Bulletin';
 
             let newBulletinId = null;
             if (this.isEditMode && this.editingBulletinId) {
@@ -2724,4 +2771,10 @@ document.addEventListener('DOMContentLoaded', () => {
     adminPanel = new FirebaseAdminPanel();
     // Expose for global access after initialization
     window.adminPanel = adminPanel;
+    window.showTab = showTab;
+    window.handleTabKeydown = handleTabKeydown;
+    window.previewBulletin = previewBulletin;
+    window.closePreview = closePreview;
+    window.submitFromPreview = submitFromPreview;
+    window.toggleDateFields = toggleDateFields;
 });

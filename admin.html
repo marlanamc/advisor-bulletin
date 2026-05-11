@@ -250,7 +250,7 @@
                         </div>
                         
                         <!-- Required Information Section -->
-                        <div class="form-section required content-mode-section" data-content-mode="post">
+                        <div class="form-section required content-mode-section" data-content-mode="post event">
                             <div class="form-section-header">
                                 <div class="form-section-icon">📋</div>
                                 <div>
@@ -260,14 +260,14 @@
                             </div>
                             
                             <div class="field-group double">
-                                <div class="form-group required-field">
+                                <div class="form-group required-field title-field-group">
                                     <label for="title" class="required">Title</label>
                                     <input type="text" id="title" name="title" required placeholder="e.g., Job Opening: Customer Service Representative" maxlength="200" class="required">
                                     <div class="field-feedback" id="titleFeedback"></div>
                                     <small class="input-help required">A clear, descriptive title helps students understand the opportunity</small>
                                 </div>
 
-                                <div class="form-group required-field">
+                                <div class="form-group required-field category-field-group">
                                     <label for="category" class="required">Category</label>
                                     <div class="advisor-category-picker" aria-label="Quick category picker">
                                         <button type="button" data-category-pick="job">💼 Job Opportunity</button>
@@ -310,7 +310,7 @@
                                 <small class="input-help required">This helps students know who posted the information</small>
                             </div>
 
-                            <div class="form-group">
+                            <div class="form-group title-es-field-group">
                                 <label for="titleEs">Spanish Title (optional)</label>
                                 <input type="text" id="titleEs" name="titleEs" maxlength="200" placeholder="Título en español (opcional)">
                                 <small class="input-help">Optional — if left blank, the English title will show for Spanish speakers</small>
@@ -460,7 +460,7 @@
                         </div>
 
                         <!-- Event Details Section -->
-                        <div class="form-section event-details content-mode-section" id="eventDetailsSection" data-content-mode="post">
+                        <div class="form-section event-details content-mode-section" id="eventDetailsSection" data-content-mode="post event">
                             <div class="form-section-header">
                                 <div class="form-section-icon">📅</div>
                                 <div>
@@ -469,15 +469,15 @@
                                 </div>
                             </div>
 
-                            <p class="input-help" style="margin: 0 0 12px;">
+                            <p class="input-help event-post-helper" style="margin: 0 0 12px;">
                                 <strong>Tip:</strong> choose <strong>Event date</strong> (or deadline / range) below. Use shortcuts for typical school posts.
                             </p>
-                            <div class="advisor-category-picker" aria-label="School event shortcuts" style="margin-bottom: 14px;">
+                            <div class="advisor-category-picker event-post-helper" aria-label="School event shortcuts" style="margin-bottom: 14px;">
                                 <button type="button" data-school-event-preset="with-feed">School post + calendar</button>
                                 <button type="button" data-school-event-preset="calendar-only">Calendar / sidebar only</button>
                             </div>
 
-                            <div class="form-group" style="margin-bottom: 16px;">
+                            <div class="form-group event-feed-toggle" style="margin-bottom: 16px;">
                                 <label class="checkbox-row" style="display:flex; gap:10px; align-items:flex-start; cursor:pointer;">
                                     <input type="checkbox" id="hideFromMainFeed" name="hideFromMainFeed" value="on" style="margin-top:3px;">
                                     <span>
@@ -486,7 +486,7 @@
                                 </label>
                             </div>
 
-                            <div class="field-group double">
+                            <div class="field-group double event-date-type-row">
                                 <div class="form-group event-field">
                                     <label for="dateType">Date Type</label>
                                     <select id="dateType" name="dateType" onchange="toggleDateFields()" class="recommended">
@@ -498,7 +498,7 @@
                                     <small class="input-help">What type of date information is most relevant?</small>
                                 </div>
 
-                                <div class="form-group event-field">
+                                <div class="form-group event-field event-format-field">
                                     <label for="eventLocation">Event Format</label>
                                     <select id="eventLocation" name="eventLocation" class="recommended">
                                         <option value="">Select format (if applicable)</option>
@@ -527,7 +527,7 @@
                                 </div>
                             </div>
 
-                            <div class="field-group double">
+                            <div class="field-group double event-time-row">
                                 <div class="form-group event-field">
                                     <label for="startTime">Start Time (optional)</label>
                                     <input type="time" id="startTime" name="startTime" class="recommended">

@@ -7868,6 +7868,54 @@ h3, .section-header-row h3 {
     line-height: 1.5;
 }
 
+.post-form-container:has(#bulletinForm[data-content-mode="event"]) .advisor-form-steps,
+#bulletinForm[data-content-mode="event"] .category-field-group,
+#bulletinForm[data-content-mode="event"] .title-es-field-group,
+#bulletinForm[data-content-mode="event"] .event-post-helper,
+#bulletinForm[data-content-mode="event"] .event-feed-toggle,
+#bulletinForm[data-content-mode="event"] .event-date-type-row,
+#bulletinForm[data-content-mode="event"] .event-format-field,
+#bulletinForm[data-content-mode="event"] .event-time-row,
+#bulletinForm[data-content-mode="event"] .preview-btn {
+    display: none !important;
+}
+
+#bulletinForm[data-content-mode="event"] .title-field-group,
+#bulletinForm[data-content-mode="event"] .event-details {
+    grid-column: 1 / -1;
+}
+
+#bulletinForm[data-content-mode="event"] #hideFromMainFeed {
+    pointer-events: none;
+}
+
+#bulletinForm[data-content-mode="event"] #hideFromMainFeed:checked + span {
+    color: #475569;
+}
+
+#bulletinForm[data-content-mode="event"] #dateFields {
+    display: flex !important;
+}
+
+#bulletinForm[data-content-mode="event"] #singleDateGroup,
+#bulletinForm[data-content-mode="event"] #endDateGroup {
+    display: block !important;
+}
+
+#bulletinForm[data-content-mode="event"] #startDateGroup {
+    display: none !important;
+}
+
+#bulletinForm[data-content-mode="event"] label[for="eventDate"]::after {
+    content: "";
+}
+
+#bulletinForm[data-content-mode="event"] label[for="endDate"]::after {
+    content: " (optional)";
+    font-weight: 600;
+    color: #64748b;
+}
+
 .form-section.resource-quickstart,
 .form-section.resource-primary {
     border-left: 4px solid #0ea5e9;
