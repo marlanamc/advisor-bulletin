@@ -551,6 +551,10 @@ class FirebaseBulletinBoard {
             this.displayBulletins();
         }, (error) => {
             console.error('Error loading bulletins:', error);
+            const grid = document.getElementById('bulletinGrid');
+            if (grid) {
+                grid.innerHTML = '<div class="feed-load-error" role="alert"><p>Could not load posts. Check your connection and try again.</p><p class="empty-state-bilingual">No se pudieron cargar las publicaciones. Comprueba tu conexión.</p></div>';
+            }
         });
     }
 

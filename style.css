@@ -1102,7 +1102,7 @@ body {
     font-family: var(--font-body);
     line-height: 1.6;
     color: var(--app-text);
-    background: var(--app-bg);
+    background: #f4f6fb;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     min-height: 100vh;
@@ -6180,23 +6180,6 @@ footer {
         padding: calc(8px + env(safe-area-inset-top)) 0 0 0;
     }
 
-    header.collapsed {
-        padding: calc(7px + env(safe-area-inset-top)) 0 0 0;
-    }
-
-    header.collapsed .header-content {
-        padding: 0 16px 10px 16px;
-    }
-
-    header.collapsed h1 {
-        font-size: 1.02rem;
-        margin-bottom: 0;
-    }
-
-    header.collapsed h2 {
-        display: none;
-    }
-
     .header-content {
         flex-direction: row;
         align-items: center;
@@ -6301,40 +6284,6 @@ footer {
         font-size: 0.65rem;
         color: rgba(191, 219, 254, 0.9);
         white-space: nowrap;
-    }
-
-    header.collapsed .header-resource-strip {
-        padding: 0 16px 6px;
-    }
-
-    header.collapsed .header-resource-row {
-        gap: 0;
-        justify-content: center; /* Center the bubbles when labels hidden */
-    }
-
-    header.collapsed .header-resource-strip .resource-story-bubble {
-        flex: 0 0 auto; /* Don't stretch, keep natural size */
-        min-width: 0;
-        max-width: none;
-        gap: 0;
-        padding: 0 8px; /* Add spacing between bubbles */
-    }
-
-    /* Keep same ring size as expanded state - just hide labels */
-    header.collapsed .header-resource-strip .resource-story-ring {
-        width: 64px;
-        height: 64px;
-        padding: 3px;
-        box-shadow: 0 8px 16px rgba(15, 23, 42, 0.2);
-    }
-
-    header.collapsed .header-resource-strip .resource-story-icon svg {
-        width: 26px;
-        height: 26px;
-    }
-
-    header.collapsed .header-resource-strip .resource-story-copy {
-        display: none;
     }
 
     header h1 {
@@ -7161,8 +7110,8 @@ a {
 
 @keyframes viewFade {
     from {
-        opacity: 0;
-        transform: translateY(10px);
+        opacity: 0.98;
+        transform: translateY(6px);
     }
     to {
         opacity: 1;
@@ -8406,42 +8355,6 @@ h3, .section-header-row h3 {
         color: rgba(255, 255, 255, 0.6);
     }
 
-    /* Desktop condensed header on scroll */
-    header.collapsed {
-        padding: 10px 0;
-        transition: padding 0.24s ease;
-    }
-
-    header.collapsed .header-content {
-        padding: 0 20px 8px 20px;
-    }
-
-    header.collapsed h1 {
-        font-size: 1.15rem;
-        margin-bottom: 0;
-    }
-
-    header.collapsed h2 {
-        display: none;
-    }
-
-    header.collapsed .header-nav-row {
-        padding: 6px 24px;
-    }
-
-    /* Collapsed header: slightly tighter pill strip */
-    header.collapsed .header-resource-strip-inline {
-        padding: 4px 12px;
-    }
-
-    header.collapsed .header-resource-strip-inline .resource-story-bubble {
-        gap: 4px;
-    }
-
-    header.collapsed .header-resource-strip-inline .resource-story-copy strong {
-        font-size: 0.75rem;
-    }
-
     /* Main content - no top nav (it's in header now) */
 
     /* Desktop: search icon opens overlay (same as mobile) */
@@ -9252,21 +9165,6 @@ h3, .section-header-row h3 {
         font-size: 0.58rem;
     }
 
-    header.collapsed .header-resource-strip {
-        padding: 0 14px 6px;
-    }
-
-    /* Keep same size on small screens too - just hide labels */
-    header.collapsed .header-resource-strip .resource-story-ring {
-        width: 56px;
-        height: 56px;
-    }
-
-    header.collapsed .header-resource-strip .resource-story-icon svg {
-        width: 24px;
-        height: 24px;
-    }
-
     .mobile-tab {
         padding: 8px 3px;
     }
@@ -9472,23 +9370,6 @@ body:not([data-lang="ES"]) .en-text { display: inline; }
     transition: padding 0.24s ease;
 }
 
-.app-topbar.collapsed {
-    padding: 6px 16px;
-}
-
-.app-topbar.collapsed .topbar-brand-logo {
-    height: 32px;
-}
-
-.app-topbar.collapsed .topbar-badge svg {
-    width: 30px;
-    height: 37px;
-}
-
-.app-topbar.collapsed .topbar-brand-name {
-    font-size: 15px;
-}
-
 .topbar-inner {
     max-width: 700px;
     margin: 0 auto;
@@ -9620,6 +9501,45 @@ body:not([data-lang="ES"]) .en-text { display: inline; }
 .app-main {
     background: #f4f6fb;
     padding-bottom: 80px;
+}
+
+/* Initial feed placeholder (removed when Firestore delivers first snapshot) */
+.feed-grid-skeleton {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 4px 0 8px;
+}
+
+.feed-skeleton-card {
+    height: 118px;
+    border-radius: 16px;
+    background: linear-gradient(90deg, #e8edf5 0%, #f4f6fb 45%, #e2e8f0 90%);
+    background-size: 200% 100%;
+    animation: feedSkeletonShimmer 1.1s ease-in-out infinite;
+    box-shadow: 0 1px 0 rgba(15, 23, 42, 0.06);
+}
+
+@keyframes feedSkeletonShimmer {
+    0% { background-position: 100% 0; }
+    100% { background-position: -100% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .feed-skeleton-card {
+        animation: none;
+        background: #e8edf5;
+    }
+}
+
+.feed-load-error {
+    padding: 20px 16px;
+    border-radius: 14px;
+    background: #fff1f2;
+    border: 1px solid #fecdd3;
+    color: #9f1239;
+    font: 600 0.95rem var(--font-jakarta, 'Plus Jakarta Sans', system-ui, sans-serif);
+    line-height: 1.45;
 }
 
 /* ── Feed search bar ─────────────────────────────────────── */
@@ -11518,10 +11438,6 @@ body:has(#loginRequired) {
         border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         box-shadow: 0 10px 30px rgba(5, 18, 42, 0.22);
         padding: 12px 24px;
-    }
-
-    .app-topbar.collapsed {
-        padding: 8px 24px;
     }
 
     .topbar-inner {

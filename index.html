@@ -3,8 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#f4f6fb">
     <meta name="google-site-verification" content="1HrLriZzzFuXUMylxwiYP26DsVb2tDpZsi8-Lez9QRU">
     <title>East Boston Harborside Community School Bulletin Board</title>
+    <!-- First paint: match feed shell so PWA / slow network does not flash dark slate before CSS loads -->
+    <style>
+        html { background-color: #f4f6fb; }
+        body { margin: 0; background-color: #f4f6fb; }
+    </style>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -438,7 +444,11 @@
                     <!-- Bulletin grid -->
                     <div class="bulletin-container">
                         <div class="bulletin-grid" id="bulletinGrid">
-                            <!-- Feed bulletins render here -->
+                            <div class="feed-grid-skeleton" aria-hidden="true">
+                                <div class="feed-skeleton-card"></div>
+                                <div class="feed-skeleton-card"></div>
+                                <div class="feed-skeleton-card"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1007,17 +1017,7 @@
     (function () {
         'use strict';
 
-        // ── Header collapse on scroll ──────────────────────────
         var header = document.querySelector('.app-topbar');
-        if (header) {
-            window.addEventListener('scroll', function () {
-                if ((window.pageYOffset || document.documentElement.scrollTop) > 50) {
-                    header.classList.add('collapsed');
-                } else {
-                    header.classList.remove('collapsed');
-                }
-            }, { passive: true });
-        }
 
         // ── Keep --app-header-offset in sync with actual topbar height ──
         if (header) {
