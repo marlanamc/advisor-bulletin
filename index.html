@@ -1089,6 +1089,8 @@
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <path d="M15 18l-6-6 6-6"/>
                 </svg>
+                <span class="en-text">Back</span>
+                <span class="es-text">Atrás</span>
             </button>
             <div class="cat-detail-topbar-icon" id="catDetailIcon"></div>
             <div style="flex:1;min-width:0">
@@ -1099,7 +1101,7 @@
         <!-- Scrollable body -->
         <div class="cat-detail-scroll">
             <div class="cat-detail-section-label en-text">Organizations near you</div>
-            <div class="cat-detail-section-label es-text" style="display:none">Organizaciones cerca de ti</div>
+            <div class="cat-detail-section-label es-text">Organizaciones cerca de ti</div>
             <div id="catOrgList"></div>
 
             <div class="cat-detail-note" style="margin:4px 12px 0;padding:14px;background:#fff;border-radius:14px;border:1.5px solid #e2e8f0;display:flex;gap:10px;align-items:flex-start">
@@ -1474,8 +1476,11 @@
             if (!sheet) return;
 
             // Set title + icon
-            var lang = document.body.getAttribute('data-lang') === 'ES' ? 'es' : 'en';
-            if (titleEl) titleEl.textContent = data.label[lang];
+            if (titleEl) {
+                titleEl.innerHTML =
+                    '<span class="en-text">' + data.label.en + '</span>' +
+                    '<span class="es-text">' + data.label.es + '</span>';
+            }
             if (iconEl) {
                 iconEl.style.background = data.color;
                 iconEl.innerHTML = data.iconSvg;

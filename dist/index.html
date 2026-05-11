@@ -8,9 +8,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <script type="module" crossorigin src="/assets/main-BUzR8b_8.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/firebase-CfSQP72K.js">
-  <link rel="stylesheet" crossorigin href="/assets/firebase-XIy5oJlu.css">
+  <script type="module" crossorigin src="/assets/main-B1vrxRfR.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/firebase-jBtqir6W.js">
+  <link rel="stylesheet" crossorigin href="/assets/firebase-St3ncDEU.css">
 </head>
 <body>
 
@@ -1091,6 +1091,8 @@
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <path d="M15 18l-6-6 6-6"/>
                 </svg>
+                <span class="en-text">Back</span>
+                <span class="es-text">Atrás</span>
             </button>
             <div class="cat-detail-topbar-icon" id="catDetailIcon"></div>
             <div style="flex:1;min-width:0">
@@ -1101,7 +1103,7 @@
         <!-- Scrollable body -->
         <div class="cat-detail-scroll">
             <div class="cat-detail-section-label en-text">Organizations near you</div>
-            <div class="cat-detail-section-label es-text" style="display:none">Organizaciones cerca de ti</div>
+            <div class="cat-detail-section-label es-text">Organizaciones cerca de ti</div>
             <div id="catOrgList"></div>
 
             <div class="cat-detail-note" style="margin:4px 12px 0;padding:14px;background:#fff;border-radius:14px;border:1.5px solid #e2e8f0;display:flex;gap:10px;align-items:flex-start">
@@ -1476,8 +1478,11 @@
             if (!sheet) return;
 
             // Set title + icon
-            var lang = document.body.getAttribute('data-lang') === 'ES' ? 'es' : 'en';
-            if (titleEl) titleEl.textContent = data.label[lang];
+            if (titleEl) {
+                titleEl.innerHTML =
+                    '<span class="en-text">' + data.label.en + '</span>' +
+                    '<span class="es-text">' + data.label.es + '</span>';
+            }
             if (iconEl) {
                 iconEl.style.background = data.color;
                 iconEl.innerHTML = data.iconSvg;

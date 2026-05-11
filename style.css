@@ -12281,10 +12281,6 @@ body:has(#loginRequired) {
     gap: 6px;
 }
 
-.cat-detail-back::after {
-    content: "Back";
-}
-
 .cat-detail-back:hover {
     background: rgba(255, 255, 255, 0.32);
 }

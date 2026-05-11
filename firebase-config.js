@@ -69,7 +69,7 @@ function withSchoolCalendarAnchors(bulletins) {
 const RESOURCE_CATEGORY_CONFIG = {
     immigration: {
         labelEn: 'Immigration',
-        labelEs: 'Inmigracion',
+        labelEs: 'Inmigración',
         icon: 'globe',
         color: '#0d9488'
     },
@@ -105,7 +105,7 @@ const RESOURCE_CATEGORY_CONFIG = {
     },
     esol: {
         labelEn: 'English class',
-        labelEs: 'Ingles',
+        labelEs: 'Inglés',
         icon: 'abc',
         color: '#8050d1'
     },
@@ -123,7 +123,7 @@ const RESOURCE_CATEGORY_CONFIG = {
     },
     money: {
         labelEn: 'Money help',
-        labelEs: 'Ayuda',
+        labelEs: 'Dinero',
         icon: 'money',
         color: '#1fa77e'
     },
@@ -1636,13 +1636,12 @@ class FirebaseBulletinBoard {
 
         const resources = this.getPublishedResources()
             .filter((resource) => this.getResourceCategoryKey(resource) === category);
-        const lang = document.body.getAttribute('data-lang') === 'ES' ? 'es' : 'en';
-        const title = lang === 'es' ? config.labelEs : config.labelEn;
         const iconSvg = RESOURCE_ICON_SVGS[config.icon] || RESOURCE_ICON_SVGS.globe;
 
         if (titleEl) {
             titleEl.innerHTML = `
-                <span>${this.escapeHtml(title)}</span>
+                <span class="en-text">${this.escapeHtml(config.labelEn)}</span>
+                <span class="es-text">${this.escapeHtml(config.labelEs)}</span>
                 <small>
                     <span class="en-text">${resources.length} ${resources.length === 1 ? 'resource' : 'resources'}</span>
                     <span class="es-text">${resources.length} ${resources.length === 1 ? 'recurso' : 'recursos'}</span>
