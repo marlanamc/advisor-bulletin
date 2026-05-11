@@ -101,37 +101,45 @@
                     <span class="cat-chip-count" id="catAllCount">0</span>
                     <span class="en-text">All</span><span class="es-text">Todo</span>
                 </button>
-                <button class="cat-chip" data-cat-filter="job" type="button">
+                <button class="cat-chip" data-cat-filter="jobs" type="button">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
                     <span class="en-text">Jobs</span><span class="es-text">Empleos</span>
+                    <span class="cat-chip-count" style="display:none;"></span>
                 </button>
                 <button class="cat-chip" data-cat-filter="immigration" type="button">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
                     <span class="en-text">Immigration</span><span class="es-text">Inmigración</span>
+                    <span class="cat-chip-count" style="display:none;"></span>
                 </button>
                 <button class="cat-chip" data-cat-filter="housing" type="button">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
                     <span class="en-text">Housing</span><span class="es-text">Vivienda</span>
+                    <span class="cat-chip-count" style="display:none;"></span>
                 </button>
                 <button class="cat-chip" data-cat-filter="health" type="button">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>
                     <span class="en-text">Health</span><span class="es-text">Salud</span>
+                    <span class="cat-chip-count" style="display:none;"></span>
                 </button>
                 <button class="cat-chip" data-cat-filter="food" type="button">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
                     <span class="en-text">Food</span><span class="es-text">Comida</span>
+                    <span class="cat-chip-count" style="display:none;"></span>
                 </button>
                 <button class="cat-chip" data-cat-filter="esol" type="button">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                     <span class="en-text">English class</span><span class="es-text">Inglés</span>
+                    <span class="cat-chip-count" style="display:none;"></span>
                 </button>
                 <button class="cat-chip" data-cat-filter="college" type="button">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
                     <span class="en-text">College &amp; GED</span><span class="es-text">Colegio</span>
+                    <span class="cat-chip-count" style="display:none;"></span>
                 </button>
                 <button class="cat-chip" data-cat-filter="money" type="button">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
                     <span class="en-text">Money help</span><span class="es-text">Dinero</span>
+                    <span class="cat-chip-count" style="display:none;"></span>
                 </button>
             </div>
         </div>
@@ -164,72 +172,46 @@
                 <div class="search-bar">
                     <input type="text" id="searchInput" placeholder="Search the feed / Buscar publicaciones" class="search-input">
                     <button id="searchBtn" class="search-btn" aria-label="Search the feed">🔍</button>
-                    <button id="toggleFilters" class="toggle-filters-btn" type="button">
-                        <span>🔧</span>
-                        <span class="en-text">Filters</span>
-                        <span class="es-text">Filtros</span>
-                        <span id="activeFiltersCount" class="active-filters-count" style="display: none;">
-                            (<span id="filterCount">0</span>)
-                        </span>
-                    </button>
                 </div>
-                <div class="filter-controls-new" id="filterControls" style="display: none;">
-                    <div class="filter-row">
-                        <div class="filter-group">
-                            <h4 class="filter-group-title"><span class="en-text">Categories</span><span class="es-text">Categorías</span></h4>
-                            <div class="filter-chips" id="categoryChips">
-                                <button class="filter-chip category-career-fair" data-category="career-fair" type="button">🎪 <span class="en-text">Career Fair</span><span class="es-text">Feria de Empleo</span></button>
-                                <button class="filter-chip category-college" data-category="college" type="button">🎓 <span class="en-text">College</span><span class="es-text">Universidad</span></button>
-                                <button class="filter-chip category-immigration" data-category="immigration" type="button">🗽 <span class="en-text">Immigration</span><span class="es-text">Inmigración</span></button>
-                                <button class="filter-chip category-job" data-category="job" type="button">💼 <span class="en-text">Jobs</span><span class="es-text">Empleos</span></button>
-                                <button class="filter-chip category-training" data-category="training" type="button">📚 <span class="en-text">Training</span><span class="es-text">Capacitación</span></button>
-                            </div>
-                        </div>
-                        <div class="filter-group">
-                            <h4 class="filter-group-title"><span class="en-text">Posted Date</span><span class="es-text">Fecha</span></h4>
-                            <div class="filter-chips" id="postedDateChips">
-                                <button class="filter-chip posted-chip" data-posted="today" type="button">🆕 <span class="en-text">Today</span><span class="es-text">Hoy</span></button>
-                                <button class="filter-chip posted-chip" data-posted="thisweek" type="button">📅 <span class="en-text">This Week</span><span class="es-text">Esta semana</span></button>
-                                <button class="filter-chip posted-chip" data-posted="lastweek" type="button">📆 <span class="en-text">Last Week</span><span class="es-text">Semana pasada</span></button>
-                                <button class="filter-chip posted-chip" data-posted="thismonth" type="button">🗓️ <span class="en-text">This Month</span><span class="es-text">Este mes</span></button>
-                                <button class="filter-chip posted-chip" data-posted="lastmonth" type="button">📋 <span class="en-text">Last Month</span><span class="es-text">Mes pasado</span></button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="filter-row">
-                        <div class="filter-group">
-                            <h4 class="filter-group-title"><span class="en-text">Deadlines</span><span class="es-text">Fechas límite</span></h4>
-                            <div class="filter-chips" id="deadlineChips">
-                                <button class="filter-chip deadline-chip" data-deadline="soon" type="button">⚡ <span class="en-text">Due Soon (7 days)</span><span class="es-text">Próximamente (7 días)</span></button>
-                                <button class="filter-chip deadline-chip" data-deadline="thisweek" type="button">📆 <span class="en-text">This Week</span><span class="es-text">Esta semana</span></button>
-                                <button class="filter-chip deadline-chip" data-deadline="thismonth" type="button">📅 <span class="en-text">This Month</span><span class="es-text">Este mes</span></button>
-                                <button class="filter-chip deadline-chip" data-deadline="nodate" type="button">🔄 <span class="en-text">No Deadline</span><span class="es-text">Sin fecha límite</span></button>
-                            </div>
-                        </div>
-                        <div class="filter-group">
-                            <h4 class="filter-group-title"><span class="en-text">Class Types</span><span class="es-text">Tipos de clase</span></h4>
-                            <div class="filter-chips" id="classTypeChips">
-                                <button class="filter-chip classtype-chip" data-classtype="esol" type="button">🌎 ESOL</button>
-                                <button class="filter-chip classtype-chip" data-classtype="hse" type="button">📝 HSE</button>
-                                <button class="filter-chip classtype-chip" data-classtype="famlit" type="button">👨‍👩‍👧 FamLit</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="filter-row">
-                        <div class="filter-group" style="grid-column: 1 / -1;">
-                            <h4 class="filter-group-title"><span class="en-text">Posted By Advisor</span><span class="es-text">Publicado por asesor</span></h4>
-                            <div class="filter-chips" id="postedByChips"></div>
-                        </div>
-                    </div>
-                    <div class="filter-actions">
-                        <div class="expired-toggle-container">
-                            <label class="toggle-switch">
-                                <input type="checkbox" id="showExpiredToggle">
-                                <span class="toggle-slider"></span>
-                            </label>
-                            <span class="toggle-label"><span class="en-text">Show Expired</span><span class="es-text">Mostrar vencidos</span></span>
-                        </div>
-                        <button id="clearFilters" class="clear-btn" type="button">🗑️ <span class="en-text">Clear All Filters</span><span class="es-text">Borrar filtros</span></button>
+                <div class="search-layer-cats" id="searchLayerCats">
+                    <p class="search-layer-cats-label"><span class="en-text">Or browse by category:</span><span class="es-text">O busca por categoría:</span></p>
+                    <div class="search-layer-cat-grid">
+                        <button class="sl-cat-btn sl-cat-btn--all active" data-cat-filter="all" type="button">
+                            <span class="sl-cat-icon">✨</span>
+                            <span class="en-text">All</span><span class="es-text">Todo</span>
+                        </button>
+                        <button class="sl-cat-btn" data-cat-filter="jobs" type="button">
+                            <span class="sl-cat-icon">💼</span>
+                            <span class="en-text">Jobs</span><span class="es-text">Empleos</span>
+                        </button>
+                        <button class="sl-cat-btn" data-cat-filter="immigration" type="button">
+                            <span class="sl-cat-icon">🌎</span>
+                            <span class="en-text">Immigration</span><span class="es-text">Inmigración</span>
+                        </button>
+                        <button class="sl-cat-btn" data-cat-filter="housing" type="button">
+                            <span class="sl-cat-icon">🏠</span>
+                            <span class="en-text">Housing</span><span class="es-text">Vivienda</span>
+                        </button>
+                        <button class="sl-cat-btn" data-cat-filter="health" type="button">
+                            <span class="sl-cat-icon">❤️</span>
+                            <span class="en-text">Health</span><span class="es-text">Salud</span>
+                        </button>
+                        <button class="sl-cat-btn" data-cat-filter="food" type="button">
+                            <span class="sl-cat-icon">🍽️</span>
+                            <span class="en-text">Food</span><span class="es-text">Comida</span>
+                        </button>
+                        <button class="sl-cat-btn" data-cat-filter="esol" type="button">
+                            <span class="sl-cat-icon">📚</span>
+                            <span class="en-text">English class</span><span class="es-text">Inglés</span>
+                        </button>
+                        <button class="sl-cat-btn" data-cat-filter="college" type="button">
+                            <span class="sl-cat-icon">🎓</span>
+                            <span class="en-text">College &amp; GED</span><span class="es-text">Colegio</span>
+                        </button>
+                        <button class="sl-cat-btn" data-cat-filter="money" type="button">
+                            <span class="sl-cat-icon">💵</span>
+                            <span class="en-text">Money help</span><span class="es-text">Dinero</span>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -493,7 +475,7 @@
                             <span class="en-text">Latest Posts</span>
                             <span class="es-text">Publicaciones</span>
                         </h1>
-                        <button class="desktop-filter-open" type="button" onclick="(function(){ var t=document.getElementById('mobileSearchTrigger'); if(t) t.click(); setTimeout(function(){ var f=document.getElementById('filterControls'); if(f && f.style.display==='none'){ var btn=document.getElementById('toggleFilters'); if(btn) btn.click(); } },120); })()">
+                        <button class="desktop-filter-open" type="button" onclick="var t=document.getElementById('mobileSearchTrigger'); if(t) t.click();">
                             <svg class="desktop-filter-open-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                 <path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/>
                             </svg>

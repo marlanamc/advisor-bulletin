@@ -91,69 +91,21 @@ class BulletinBoard {
         // Filter and search controls
         document.getElementById('searchInput').addEventListener('input', () => this.applyFilters());
         document.getElementById('searchBtn').addEventListener('click', () => this.applyFilters());
-        document.getElementById('clearFilters').addEventListener('click', () => this.clearFilters());
-        
-        // Toggle filters button
-        const toggleFiltersBtn = document.getElementById('toggleFilters');
-        console.log('🔧 Toggle filters button found:', toggleFiltersBtn);
-        if (toggleFiltersBtn) {
-            // Test if button is clickable
-            toggleFiltersBtn.style.background = 'red'; // Temporary visual test
-            setTimeout(() => {
-                toggleFiltersBtn.style.background = '';
-            }, 2000);
-            
-            toggleFiltersBtn.addEventListener('click', (e) => {
-                console.log('🔧 Button clicked!', e);
-                alert('Filters button clicked!'); // Temporary alert for testing
-                this.toggleFiltersPanel();
-            });
-            console.log('✅ Toggle filters event listener added');
-        } else {
-            console.error('❌ Toggle filters button not found during initialization');
-        }
 
-        // Multi-select filter chips
-        this.selectedCategories = [];
-        this.selectedPostedDates = [];
-        this.selectedDeadlines = [];
-        this.selectedClassTypes = [];
+        // Category bar single-select filter
+        this.activeCategory = null;
+        this.showExpired = false;
 
-        // Bind filter chip events
-        document.querySelectorAll('.filter-chip[data-category]').forEach(chip => {
-            chip.addEventListener('click', (e) => this.toggleFilterChip(e.target, 'category'));
-        });
-
-        document.querySelectorAll('.filter-chip[data-posted]').forEach(chip => {
-            chip.addEventListener('click', (e) => this.toggleFilterChip(e.target, 'posted'));
-        });
-
-        document.querySelectorAll('.filter-chip[data-deadline]').forEach(chip => {
-            chip.addEventListener('click', (e) => this.toggleFilterChip(e.target, 'deadline'));
-        });
-
-        document.querySelectorAll('.filter-chip[data-classtype]').forEach(chip => {
-            chip.addEventListener('click', (e) => this.toggleFilterChip(e.target, 'classtype'));
+        document.querySelectorAll('.cat-chip[data-cat-filter]').forEach(chip => {
+            chip.addEventListener('click', () => this.selectCategoryChip(chip));
         });
 
         // View toggle controls
         const galleryBtn = document.getElementById('galleryViewBtn');
         const calendarBtn = document.getElementById('calendarViewBtn');
 
-        console.log('View buttons found:', { galleryBtn: !!galleryBtn, calendarBtn: !!calendarBtn });
-
         if (galleryBtn) galleryBtn.addEventListener('click', () => this.switchView('gallery'));
         if (calendarBtn) calendarBtn.addEventListener('click', () => this.switchView('calendar'));
-
-        // Show expired toggle
-        const showExpiredToggle = document.getElementById('showExpiredToggle');
-        if (showExpiredToggle) {
-            this.showExpired = false;
-            showExpiredToggle.addEventListener('change', (e) => {
-                this.showExpired = e.target.checked;
-                this.applyFilters();
-            });
-        }
 
         // Notification controls (optional)
         const notificationBtn = document.getElementById('notificationBtn');
@@ -780,56 +732,33 @@ class BulletinBoard {
 
     // View Management Methods
     switchView(view) {
-        console.log('Switching to view:', view);
-        // Update active button
         document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
         const targetButton = document.querySelector(`[data-view="${view}"]`);
-        if (targetButton) {
-            targetButton.classList.add('active');
-            console.log('Activated button for view:', view);
-        } else {
-            console.error('Button not found for view:', view);
-        }
-
-        // Update current view
+        if (targetButton) targetButton.classList.add('active');
         this.currentView = view;
-
-        // Display bulletins in the selected view
         this.displayBulletins();
     }
 
     // Display Methods
     displayBulletins(filteredBulletins = null) {
-        console.log('📋 displayBulletins called with:', filteredBulletins ? filteredBulletins.length : 'null', 'filtered bulletins');
-        console.log('📋 Total bulletins in memory:', this.bulletins.length);
-        console.log('📋 Active bulletins:', this.bulletins.filter(b => b.isActive).length);
+        document.querySelectorAll('.bulletin-view').forEach(view => view.classList.remove('active'));
 
-        // Hide all views first
-        document.querySelectorAll('.bulletin-view').forEach(view => {
-            view.classList.remove('active');
-            console.log('🔍 Hiding view:', view.id);
-        });
-
-        // Use filtered bulletins if provided, otherwise show all active bulletins
         let bulletinsToShow = filteredBulletins || this.bulletins
             .filter(b => b.isActive)
             .sort((a, b) => new Date(b.datePosted) - new Date(a.datePosted));
 
-        console.log('📋 Bulletins to show after filtering:', bulletinsToShow.length);
-        console.log('📋 All bulletin details:', this.bulletins.map(b => ({
-            title: b.title,
-            isActive: b.isActive,
-            datePosted: b.datePosted,
-            category: b.category
-        })));
-
         // Update results info
         const resultsInfo = document.getElementById('resultsInfo');
-        const totalBulletins = this.bulletins.filter(b => b.isActive).length;
+        const totalBulletins = this.bulletins.filter(b => b.isActive && !this.isExpired(b.deadline)).length;
         const shownBulletins = bulletinsToShow.length;
 
-        if (filteredBulletins) {
-            resultsInfo.textContent = `Showing ${shownBulletins} of ${totalBulletins} bulletins`;
+        if (filteredBulletins && (this.activeCategory || document.getElementById('searchInput').value.trim())) {
+            const catLabel = this.activeCategory
+                ? (RESOURCE_CATEGORY_CONFIG[this.activeCategory]?.labelEn || this.activeCategory)
+                : null;
+            resultsInfo.textContent = catLabel
+                ? `Showing ${shownBulletins} ${catLabel} post${shownBulletins !== 1 ? 's' : ''}`
+                : `Showing ${shownBulletins} of ${totalBulletins} posts`;
             resultsInfo.style.display = 'block';
         } else {
             resultsInfo.style.display = 'none';
@@ -838,72 +767,38 @@ class BulletinBoard {
         if (bulletinsToShow.length === 0) {
             const emptyState = document.getElementById('emptyState');
             const debugControls = document.getElementById('debugControls');
-
-            // Check if we have bulletins in memory but they're not showing
-            const totalActive = this.bulletins.filter(b => b.isActive).length;
-
-            if (totalActive > 0) {
-                // We have active bulletins but they're not showing - show debug controls
-                emptyState.innerHTML = '<h3>No bulletins found</h3><p>We detected active bulletins in the system but they\'re not displaying. Use the debug tools below to investigate.</p>';
-                if (debugControls) debugControls.style.display = 'block';
-                console.warn('⚠️  Active bulletins exist but not showing. Check console for details.');
-            } else if (filteredBulletins) {
+            if (filteredBulletins) {
                 emptyState.innerHTML = '<h3>No bulletins found</h3><p>Try adjusting your search or filter criteria.</p>';
-                if (debugControls) debugControls.style.display = 'none';
             } else {
                 emptyState.innerHTML = '<h3>No bulletins posted yet</h3><p>Advisors can log in to post job opportunities, training sessions, and important announcements.</p>';
-                if (debugControls) debugControls.style.display = 'none';
             }
-
+            if (debugControls) debugControls.style.display = 'none';
             emptyState.style.display = 'block';
             return;
         }
 
-        // Hide debug controls if bulletins are showing
         const debugControls = document.getElementById('debugControls');
         if (debugControls) debugControls.style.display = 'none';
-
-        // Hide empty state
         document.getElementById('emptyState').style.display = 'none';
 
-        // Display bulletins in the selected view
-        console.log('Current view:', this.currentView);
-        console.log('Bulletins to show:', bulletinsToShow.length);
         switch(this.currentView) {
             case 'gallery':
-                console.log('Switching to gallery view');
                 this.displayGalleryView(bulletinsToShow);
                 break;
             case 'calendar':
-                console.log('Switching to calendar view');
                 this.displayCalendarView(bulletinsToShow);
                 break;
-            default:
-                console.error('Unknown view:', this.currentView);
         }
     }
 
     displayGalleryView(bulletins) {
-        console.log('🎨 Displaying gallery view with', bulletins.length, 'bulletins');
-        console.log('🎨 Bulletin titles:', bulletins.map(b => b.title));
-
-        // Hide skeleton loaders
         const skeletons = document.getElementById('feedSkeletons');
-        if (skeletons) {
-            skeletons.style.display = 'none';
-        }
+        if (skeletons) skeletons.style.display = 'none';
 
         const grid = document.getElementById('bulletinGrid');
         if (grid) {
-            console.log('🎨 Adding active class to gallery view');
             grid.classList.add('active');
-            const html = bulletins.map(bulletin => this.createBulletinCard(bulletin)).join('');
-            console.log('🎨 Generated HTML length:', html.length, 'characters');
-            grid.innerHTML = html;
-            console.log('🎨 Gallery view updated successfully');
-            console.log('🎨 Gallery view classes:', grid.className);
-        } else {
-            console.error('❌ Gallery view container not found');
+            grid.innerHTML = bulletins.map(bulletin => this.createBulletinCard(bulletin)).join('');
         }
     }
 
@@ -923,16 +818,10 @@ class BulletinBoard {
     // }
 
     displayCalendarView(bulletins) {
-        console.log('📅 Displaying calendar view with', bulletins.length, 'bulletins');
         const calendar = document.getElementById('bulletinCalendar');
         if (calendar) {
-            console.log('📅 Adding active class to calendar view');
             calendar.classList.add('active');
             calendar.innerHTML = this.createCalendarView(bulletins);
-            console.log('📅 Calendar view updated successfully');
-            console.log('📅 Calendar view classes:', calendar.className);
-        } else {
-            console.error('❌ Calendar view container not found');
         }
     }
 
@@ -1113,93 +1002,20 @@ class BulletinBoard {
         `;
     }
 
-    // Multi-select filter chip handler
-    toggleFilterChip(chip, type) {
-        chip.classList.toggle('active');
+    selectCategoryChip(chip) {
+        const val = chip.dataset.catFilter;
 
-        const value = chip.dataset[type];
+        document.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('active'));
 
-        if (type === 'category') {
-            const index = this.selectedCategories.indexOf(value);
-            if (index > -1) {
-                this.selectedCategories.splice(index, 1);
-            } else {
-                this.selectedCategories.push(value);
-            }
-        } else if (type === 'posted') {
-            const index = this.selectedPostedDates.indexOf(value);
-            if (index > -1) {
-                this.selectedPostedDates.splice(index, 1);
-            } else {
-                this.selectedPostedDates.push(value);
-            }
-        } else if (type === 'deadline') {
-            const index = this.selectedDeadlines.indexOf(value);
-            if (index > -1) {
-                this.selectedDeadlines.splice(index, 1);
-            } else {
-                this.selectedDeadlines.push(value);
-            }
-        } else if (type === 'classtype') {
-            const index = this.selectedClassTypes.indexOf(value);
-            if (index > -1) {
-                this.selectedClassTypes.splice(index, 1);
-            } else {
-                this.selectedClassTypes.push(value);
-            }
-        }
-
-        this.updateFilterCount();
-        this.applyFilters();
-    }
-
-    updateFilterCount() {
-        const total = this.selectedCategories.length + this.selectedPostedDates.length + this.selectedDeadlines.length + this.selectedClassTypes.length;
-        const countElement = document.getElementById('filterCount');
-        const countContainer = document.getElementById('activeFiltersCount');
-        const toggleBtn = document.getElementById('toggleFilters');
-
-        if (countElement && countContainer) {
-            countElement.textContent = total;
-            countContainer.style.display = total > 0 ? 'inline' : 'none';
-        }
-
-        // Update toggle button state
-        if (toggleBtn) {
-            if (total > 0) {
-                toggleBtn.classList.add('active');
-            } else {
-                toggleBtn.classList.remove('active');
-            }
-        }
-    }
-
-    toggleFiltersPanel() {
-        const filterControls = document.getElementById('filterControls');
-        const toggleBtn = document.getElementById('toggleFilters');
-        
-        console.log('🔧 Toggle filters clicked');
-        console.log('Filter controls element:', filterControls);
-        console.log('Toggle button element:', toggleBtn);
-        
-        if (filterControls && toggleBtn) {
-            const currentDisplay = filterControls.style.display;
-            console.log('Current display:', currentDisplay);
-            
-            const isVisible = currentDisplay !== 'none';
-            
-            if (isVisible) {
-                console.log('Hiding filters');
-                filterControls.style.display = 'none';
-                toggleBtn.innerHTML = '<span>🔧</span> Filters' + (this.selectedCategories.length + this.selectedPostedDates.length + this.selectedDeadlines.length + this.selectedClassTypes.length > 0 ? ' <span id="activeFiltersCount" class="active-filters-count" style="display: inline;">(<span id="filterCount">' + (this.selectedCategories.length + this.selectedPostedDates.length + this.selectedDeadlines.length + this.selectedClassTypes.length) + '</span>)</span>' : '');
-            } else {
-                console.log('Showing filters');
-                filterControls.style.display = 'block';
-                toggleBtn.innerHTML = '<span>🔧</span> Hide Filters';
-            }
+        if (val === 'all' || val === this.activeCategory) {
+            this.activeCategory = null;
+            document.querySelector('.cat-chip--all').classList.add('active');
         } else {
-            console.error('❌ Filter controls or toggle button not found');
+            this.activeCategory = val;
+            chip.classList.add('active');
         }
+
+        this.applyFilters();
     }
 
     // Filter and Search Methods
@@ -1210,82 +1026,12 @@ class BulletinBoard {
             .filter(b => b.isActive)
             .sort((a, b) => new Date(b.datePosted) - new Date(a.datePosted));
 
-        // Filter out expired items unless "Show Expired" is toggled on
-        if (!this.showExpired) {
-            filteredBulletins = filteredBulletins.filter(b => !this.isExpired(b.deadline));
-        }
+        // Filter out expired items
+        filteredBulletins = filteredBulletins.filter(b => !this.isExpired(b.deadline));
 
-        // Apply category filters (multi-select)
-        if (this.selectedCategories.length > 0) {
-            filteredBulletins = filteredBulletins.filter(b => this.selectedCategories.includes(b.category));
-        }
-
-        // Apply posted date filters (multi-select)
-        if (this.selectedPostedDates.length > 0) {
-            const now = new Date();
-            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
-            filteredBulletins = filteredBulletins.filter(b => {
-                return this.selectedPostedDates.some(postedFilter => {
-                    const postedDate = new Date(b.datePosted);
-                    const postedDateOnly = new Date(postedDate.getFullYear(), postedDate.getMonth(), postedDate.getDate());
-                    const timeDiff = today.getTime() - postedDateOnly.getTime();
-                    const daysDiff = Math.floor(timeDiff / (1000 * 3600 * 24));
-
-                    switch (postedFilter) {
-                        case 'today':
-                            return daysDiff === 0;
-                        case 'thisweek':
-                            return daysDiff <= 7 && daysDiff >= 0;
-                        case 'lastweek':
-                            return daysDiff > 7 && daysDiff <= 14;
-                        case 'thismonth':
-                            return daysDiff <= 30 && daysDiff >= 0;
-                        case 'lastmonth':
-                            return daysDiff > 30 && daysDiff <= 60;
-                        default:
-                            return true;
-                    }
-                });
-            });
-        }
-
-        // Apply deadline filters (multi-select)
-        if (this.selectedDeadlines.length > 0) {
-            const now = new Date();
-            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
-            filteredBulletins = filteredBulletins.filter(b => {
-                return this.selectedDeadlines.some(deadlineFilter => {
-                    if (deadlineFilter === 'nodate') {
-                        return !b.deadline;
-                    }
-
-                    if (!b.deadline) return false;
-
-                    const deadline = new Date(b.deadline);
-                    const timeDiff = deadline.getTime() - today.getTime();
-                    const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
-
-                    switch (deadlineFilter) {
-                        case 'soon':
-                            return daysDiff <= 7 && daysDiff >= 0;
-                        case 'thisweek':
-                            return daysDiff <= 7 && daysDiff >= 0;
-                        case 'thismonth':
-                            return daysDiff <= 30 && daysDiff >= 0;
-                        default:
-                            return true;
-                    }
-                });
-            });
-        }
-
-        // Apply class type filters (multi-select)
-        if (this.selectedClassTypes.length > 0) {
-            filteredBulletins = filteredBulletins.filter(b => {
-                return this.selectedClassTypes.includes(b.classType);
-            });
+        // Apply category bar filter
+        if (this.activeCategory) {
+            filteredBulletins = filteredBulletins.filter(b => b.category === this.activeCategory);
         }
 
         // Apply search filter
@@ -1306,26 +1052,33 @@ class BulletinBoard {
 
     clearFilters() {
         document.getElementById('searchInput').value = '';
+        this.activeCategory = null;
 
-        // Clear multi-select filters
-        this.selectedCategories = [];
-        this.selectedPostedDates = [];
-        this.selectedDeadlines = [];
-        this.selectedClassTypes = [];
+        document.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('active'));
+        const allChip = document.querySelector('.cat-chip--all');
+        if (allChip) allChip.classList.add('active');
 
-        // Remove active class from all chips
-        document.querySelectorAll('.filter-chip').forEach(chip => {
-            chip.classList.remove('active');
-        });
-
-        this.updateFilterCount();
         this.displayBulletins();
-        
-        // Update toggle button text
-        const toggleBtn = document.getElementById('toggleFilters');
-        if (toggleBtn) {
-            toggleBtn.innerHTML = '<span>🔧</span> Filters';
-        }
+    }
+
+    updateCatCounts() {
+        const active = this.bulletins.filter(b => b.isActive && !this.isExpired(b.deadline));
+        const allCountEl = document.getElementById('catAllCount');
+        if (allCountEl) allCountEl.textContent = active.length;
+
+        document.querySelectorAll('.cat-chip[data-cat-filter]').forEach(chip => {
+            const cat = chip.dataset.catFilter;
+            if (cat === 'all') return;
+            const countEl = chip.querySelector('.cat-chip-count');
+            if (!countEl) return;
+            const n = active.filter(b => b.category === cat).length;
+            if (n > 0) {
+                countEl.textContent = n;
+                countEl.style.display = '';
+            } else {
+                countEl.style.display = 'none';
+            }
+        });
     }
 
     // Notification Methods
@@ -2012,8 +1765,8 @@ class BulletinBoard {
                       datePosted: data.datePosted?.toDate ? data.datePosted.toDate().toISOString() : data.datePosted
                   });
               });
-              console.log('📊 Loaded bulletins from Firebase:', this.bulletins.length, 'bulletins');
               this.displayBulletins();
+              this.updateCatCounts();
           }, (error) => {
               console.error('❌ Firebase listener error:', error);
               // Fallback to localStorage if Firebase fails
@@ -2022,7 +1775,6 @@ class BulletinBoard {
     }
 
     loadFromLocalStorage() {
-        console.log('📊 Falling back to localStorage');
         const saved = localStorage.getItem('ebhcs_bulletins');
         if (saved) {
             const parsedData = JSON.parse(saved);
@@ -2030,12 +1782,11 @@ class BulletinBoard {
                 ...bulletin,
                 isActive: bulletin.isActive !== undefined ? bulletin.isActive : true
             }));
-            console.log('📊 Loaded from localStorage:', this.bulletins.length, 'bulletins');
         } else {
             this.bulletins = this.getSampleData();
-            console.log('📊 Using sample data:', this.bulletins.length, 'bulletins');
         }
         this.displayBulletins();
+        this.updateCatCounts();
     }
 
     saveBulletins() {
@@ -2183,8 +1934,7 @@ class BulletinBoard {
         // Test 1: Check if all required elements exist
         console.log('Test 1: Element existence check');
         const requiredElements = [
-            'searchInput', 'searchBtn', 'categoryFilter', 'deadlineFilter',
-            'dateFilter', 'classTypeFilter', 'clearFilters', 'resultsInfo',
+            'searchInput', 'searchBtn', 'resultsInfo',
             'bulletinGrid', 'bulletinList', 'bulletinCalendar', 'emptyState',
             'adminBtn', 'logoutBtn', 'loginForm', 'bulletinForm', 'image',
             'imagePreview', 'notificationBtn', 'helpBtn'

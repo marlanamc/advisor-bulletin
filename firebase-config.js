@@ -691,6 +691,16 @@ class FirebaseBulletinBoard {
             closeSearchLayer.addEventListener('click', () => this.closeSearchLayer());
         }
 
+        // Search layer category buttons — filter feed and close the panel
+        document.querySelectorAll('.sl-cat-btn[data-cat-filter]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const cat = btn.getAttribute('data-cat-filter') || 'all';
+                this.setFeedCategory(cat);
+                this.updateSearchLayerCatState(cat);
+                this.closeSearchLayer();
+            });
+        });
+
         this.selectedCategories = [];
         this.selectedPostedDates = [];
         this.selectedDeadlines = [];
@@ -1049,16 +1059,16 @@ class FirebaseBulletinBoard {
         if (resources.length === 0) {
             return `
                 <div class="feed-category-resource-empty">
-                    <strong>Ask an advisor for help with this topic.</strong>
-                    <span>More trusted places can be added here.</span>
+                    <strong>No resources listed yet for this topic.</strong>
+                    <span>Ask your advisor — they can point you to trusted places.</span>
                 </div>
             `;
         }
 
         return `
             <div class="feed-category-resource-heading">
-                <span>Trusted places</span>
-                <small>Call, visit, or open the website</small>
+                <span>Trusted places nearby</span>
+                <small>Call or visit for free help</small>
             </div>
             <div class="feed-category-resource-grid">
                 ${resources.map((resource) => this.createFeedCategoryResourceCard(resource)).join('')}
@@ -1088,6 +1098,16 @@ class FirebaseBulletinBoard {
                 </div>
             </article>
         `;
+    }
+
+    updateSearchLayerCatState(category) {
+        const normalized = this.normalizeFeedCategory(category);
+        document.querySelectorAll('.sl-cat-btn[data-cat-filter]').forEach(btn => {
+            const val = btn.getAttribute('data-cat-filter');
+            const isAll = val === 'all';
+            const matches = isAll ? normalized === 'all' : this.normalizeFeedCategory(val) === normalized;
+            btn.classList.toggle('active', matches);
+        });
     }
 
     updateActiveCategoryState() {
