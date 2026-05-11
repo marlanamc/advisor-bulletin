@@ -13828,6 +13828,56 @@ body:has(#loginRequired) {
     cursor: zoom-in;
 }
 
+/* ═══ Advisor Management ════════════════════════════════════ */
+
+.advisor-add-form {
+    margin-bottom: 18px;
+}
+
+.advisor-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 18px;
+    margin-bottom: 14px;
+}
+
+@media (max-width: 600px) {
+    .advisor-form-grid { grid-template-columns: 1fr; }
+}
+
+.advisor-admin-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font: 700 13px var(--font-jakarta);
+    color: #0a1d3a;
+}
+
+.advisor-admin-toggle label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.advisor-admin-badge {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 999px;
+    background: #e0e8ff;
+    color: #2d4db5;
+    font: 800 11px var(--font-jakarta);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-left: 8px;
+    vertical-align: middle;
+}
+
+.desktop-action-advisors {
+    background: linear-gradient(135deg, #f0f4ff, #e8edff);
+    border-color: #c7d4ff;
+}
+
 /* ═══════════════════════════════════════════════════════════
    MOBILE APP SHELL  (≤ 768px only)
    ═══════════════════════════════════════════════════════════ */

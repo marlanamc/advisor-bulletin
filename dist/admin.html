@@ -7,9 +7,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <script type="module" crossorigin src="/assets/admin-DcIHvQjN.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/firebase-Do5FeDj3.js">
-  <link rel="stylesheet" crossorigin href="/assets/firebase-C33F1hD_.css">
+  <script type="module" crossorigin src="/assets/admin-CaMq-cjd.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/firebase-BUvv90CD.js">
+  <link rel="stylesheet" crossorigin href="/assets/firebase-szT0eGqZ.css">
 </head>
 <body>
     <header>
@@ -150,6 +150,10 @@
                         <span>☰</span>
                         Manage content
                     </button>
+                    <button id="advisorsRailBtn" class="rail-action" type="button" data-admin-tab-target="advisors" style="display:none">
+                        <span>👥</span>
+                        Advisors
+                    </button>
                     <a class="rail-action rail-link" href="index.html">
                         <span>↗</span>
                         Student view
@@ -204,6 +208,10 @@
                 <button class="desktop-action-card desktop-action-manage tab-btn" role="tab" aria-selected="false" aria-controls="manageTab" onclick="showTab('manage')" onkeydown="handleTabKeydown(event, 'manage')">
                     <span class="desktop-action-icon">☰</span>
                     <span class="desktop-action-text"><strong>Manage content</strong><small>Edit, filter, or remove posts</small></span>
+                </button>
+                <button id="advisorsTabBtn" class="desktop-action-card desktop-action-advisors tab-btn" role="tab" aria-selected="false" aria-controls="advisorsTab" onclick="showTab('advisors')" onkeydown="handleTabKeydown(event, 'advisors')" style="display:none">
+                    <span class="desktop-action-icon">👥</span>
+                    <span class="desktop-action-text"><strong>Advisors</strong><small>Manage advisor accounts</small></span>
                 </button>
             </div>
 
@@ -602,7 +610,73 @@
                     <!-- Bulletins for management will be loaded here -->
                 </div>
             </div>
+
+            <!-- Advisors Tab -->
+            <div id="advisorsTab" class="tab-content" role="tabpanel" aria-labelledby="advisors-tab" aria-hidden="true">
+                <div class="manage-header">
+                    <h4>Manage Advisors</h4>
+                </div>
+
+                <!-- Add new advisor form -->
+                <div class="advisor-add-form manage-card">
+                    <h5>Add New Advisor</h5>
+                    <div class="advisor-form-grid">
+                        <div class="form-group">
+                            <label for="newAdvisorUsername">Username</label>
+                            <input type="text" id="newAdvisorUsername" placeholder="e.g. jsmith" autocomplete="off">
+                            <small class="input-help">Their email prefix (before @ebhcs.org)</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="newAdvisorDisplayName">Display Name</label>
+                            <input type="text" id="newAdvisorDisplayName" placeholder="e.g. Jamie Smith" autocomplete="off">
+                            <small class="input-help">Name students see on bulletins</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="newAdvisorEmail">Email</label>
+                            <input type="email" id="newAdvisorEmail" placeholder="jsmith@ebhcs.org" autocomplete="off">
+                        </div>
+                        <div class="form-group advisor-admin-toggle">
+                            <label><input type="checkbox" id="newAdvisorIsAdmin"> Admin — can manage all posts</label>
+                        </div>
+                    </div>
+                    <div class="manage-actions">
+                        <button class="edit-btn" onclick="adminPanel.addAdvisor()">Add Advisor</button>
+                    </div>
+                </div>
+
+                <!-- Advisor list -->
+                <div id="advisorsList" class="manage-bulletins-grid">
+                    <!-- Populated by loadAdvisors() -->
+                </div>
+            </div>
                 </section>
+
+            <!-- Edit Advisor Modal -->
+            <div id="editAdvisorModal" class="img-lightbox" role="dialog" aria-label="Edit advisor" aria-hidden="true" style="display:none; align-items:center; justify-content:center;">
+                <div class="img-lightbox-backdrop" onclick="adminPanel.closeEditAdvisor()"></div>
+                <div class="advisor-edit-modal-inner" style="position:relative;z-index:1;background:#fff;border-radius:16px;padding:28px;width:min(480px,92vw);box-shadow:0 24px 60px rgba(10,29,58,0.18);">
+                    <h4 style="margin:0 0 18px;font:900 16px var(--font-jakarta);color:#0a1d3a;">Edit Advisor</h4>
+                    <input type="hidden" id="editAdvisorUsername">
+                    <div class="advisor-form-grid">
+                        <div class="form-group">
+                            <label for="editAdvisorDisplayName">Display Name</label>
+                            <input type="text" id="editAdvisorDisplayName" autocomplete="off">
+                            <small class="input-help">Name students see on bulletins</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="editAdvisorEmail">Email</label>
+                            <input type="email" id="editAdvisorEmail" autocomplete="off">
+                        </div>
+                        <div class="form-group advisor-admin-toggle">
+                            <label><input type="checkbox" id="editAdvisorIsAdmin"> Admin — can manage all posts</label>
+                        </div>
+                    </div>
+                    <div class="manage-actions" style="margin-top:18px;">
+                        <button class="edit-btn" onclick="adminPanel.saveEditAdvisor()">Save</button>
+                        <button class="delete-btn" onclick="adminPanel.closeEditAdvisor()">Cancel</button>
+                    </div>
+                </div>
+            </div>
 
                 <aside class="advisor-insights" aria-label="Student engagement insights">
                     <div class="insight-panel live-preview-panel">

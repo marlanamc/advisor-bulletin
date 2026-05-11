@@ -1,5 +1,5 @@
 import { db, auth, storage } from './src/firebase.js'
-import { collection, doc, query, where, orderBy, limit, onSnapshot, getDoc, addDoc, updateDoc, serverTimestamp, Timestamp } from 'firebase/firestore'
+import { collection, doc, query, where, orderBy, limit, onSnapshot, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, serverTimestamp, Timestamp } from 'firebase/firestore'
 import { onAuthStateChanged, signOut } from 'firebase/auth'
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage'
 
@@ -33,6 +33,7 @@ class FirebaseAdminPanel {
         this.analyticsEvents = [];
         this.analyticsByPost = {};
         this.analyticsUnsubscribe = null;
+        this.advisors = [];
         this.init();
     }
 
@@ -274,21 +275,51 @@ class FirebaseAdminPanel {
     }
 
     getUserDisplayName(username) {
-        const names = {
-            'admin': 'Administrator',
-            'jorge': 'Jorge',
-            'fabiola': 'Fabiola',
-            'leidy': 'Leidy',
-            'carmen': 'Carmen',
-            'jerome': 'Jerome',
-            'felipe': 'Felipe',
-            'simonetta': 'Simonetta',
-            'mike': 'Mike K.',
-            'leah': 'Leah',
-            'lgregory': 'Leah Gregory',
-            'mcreed': 'Marlie'
+        const fromFirestore = this.advisors.find(a => a.username === username);
+        if (fromFirestore) return fromFirestore.displayName;
+        // Fallback during initial load before Firestore resolves
+        const fallback = {
+            'admin': 'Administrator', 'jorge': 'Jorge', 'fabiola': 'Fabiola',
+            'leidy': 'Leidy', 'carmen': 'Carmen', 'jerome': 'Jerome',
+            'felipe': 'Felipe', 'simonetta': 'Simonetta', 'mike': 'Mike K.',
+            'leah': 'Leah', 'lgregory': 'Leah Gregory', 'mcreed': 'Marlie'
         };
-        return names[username] || username;
+        return fallback[username] || username;
+    }
+
+    async loadAdvisorsFromFirestore() {
+        try {
+            const snap = await getDocs(collection(db, 'advisors'));
+            if (snap.empty) {
+                await this.seedAdvisors();
+            } else {
+                this.advisors = snap.docs.map(d => ({ username: d.id, ...d.data() }));
+            }
+        } catch (e) {
+            console.error('Error loading advisors:', e);
+        }
+    }
+
+    async seedAdvisors() {
+        const seed = [
+            { username: 'admin',      displayName: 'Administrator', email: 'admin@ebhcs.org',      isAdmin: true  },
+            { username: 'jorge',      displayName: 'Jorge',         email: 'jorge@ebhcs.org',      isAdmin: false },
+            { username: 'fabiola',    displayName: 'Fabiola',       email: 'fabiola@ebhcs.org',    isAdmin: false },
+            { username: 'leidy',      displayName: 'Leidy',         email: 'leidy@ebhcs.org',      isAdmin: false },
+            { username: 'carmen',     displayName: 'Carmen',        email: 'carmen@ebhcs.org',     isAdmin: false },
+            { username: 'jerome',     displayName: 'Jerome',        email: 'jerome@ebhcs.org',     isAdmin: false },
+            { username: 'felipe',     displayName: 'Felipe',        email: 'felipe@ebhcs.org',     isAdmin: false },
+            { username: 'simonetta',  displayName: 'Simonetta',     email: 'simonetta@ebhcs.org',  isAdmin: false },
+            { username: 'mike',       displayName: 'Mike K.',       email: 'mike@ebhcs.org',       isAdmin: false },
+            { username: 'leah',       displayName: 'Leah',          email: 'leah@ebhcs.org',       isAdmin: true  },
+            { username: 'lgregory',   displayName: 'Leah Gregory',  email: 'lgregory@ebhcs.org',   isAdmin: true  },
+            { username: 'mcreed',     displayName: 'Marlie',        email: 'mcreed@ebhcs.org',     isAdmin: true  },
+        ];
+        await Promise.all(seed.map(a => {
+            const { username, ...data } = a;
+            return setDoc(doc(db, 'advisors', username), { ...data, createdAt: serverTimestamp() });
+        }));
+        this.advisors = seed;
     }
 
     checkAutoLogin() {
@@ -314,10 +345,12 @@ class FirebaseAdminPanel {
                     console.error('Error checking user password status:', error);
                 }
 
+                await this.loadAdvisorsFromFirestore();
                 this.currentUser = {
                     username: username,
                     email: user.email,
-                    name: this.getUserDisplayName(username)
+                    name: this.getUserDisplayName(username),
+                    isAdmin: this.advisors.find(a => a.username === username)?.isAdmin ?? ['admin','leah','lgregory','mcreed'].includes(username)
                 };
                 this.showAdminPanel();
                 this.setupAnalyticsListener();
@@ -360,11 +393,19 @@ class FirebaseAdminPanel {
         document.getElementById('logoutBtn').style.display = 'block';
         document.getElementById('welcomeMessage').textContent = `Welcome, ${this.currentUser.name}!`;
 
-        // Set the advisor name dropdown based on logged-in user
+        // Populate advisor dropdown from Firestore and select current user
         const advisorSelect = document.getElementById('advisorName');
-        if ([...advisorSelect.options].some(option => option.value === this.currentUser.name)) {
-            advisorSelect.value = this.currentUser.name;
+        if (advisorSelect) {
+            const sorted = [...this.advisors].sort((a, b) => a.displayName.localeCompare(b.displayName));
+            advisorSelect.innerHTML = '<option value="">Select your name</option>' +
+                sorted.map(a => `<option value="${this.escapeHtml(a.displayName)}"${a.displayName === this.currentUser.name ? ' selected' : ''}>${this.escapeHtml(a.displayName)}</option>`).join('');
         }
+
+        // Show advisors tab only for admins
+        const advisorsTabBtn = document.getElementById('advisorsTabBtn');
+        if (advisorsTabBtn) advisorsTabBtn.style.display = this.currentUser.isAdmin ? '' : 'none';
+        const advisorsRailBtn = document.getElementById('advisorsRailBtn');
+        if (advisorsRailBtn) advisorsRailBtn.style.display = this.currentUser.isAdmin ? '' : 'none';
 
         // Sync mobile app shell
         const mobName = document.getElementById('mobWelcomeName');
@@ -561,6 +602,9 @@ class FirebaseAdminPanel {
 
         if (tabName === 'manage') {
             this.loadManageBulletins();
+        }
+        if (tabName === 'advisors') {
+            this.loadAdvisors();
         }
 
         document.querySelectorAll('[data-admin-tab-target]').forEach((button) => {
@@ -1491,7 +1535,126 @@ class FirebaseAdminPanel {
     }
 
     canManageAllPosts() {
-        return this.currentUser && ['admin', 'leah', 'lgregory', 'mcreed'].includes(this.currentUser.username);
+        return this.currentUser?.isAdmin === true;
+    }
+
+    // ── Advisor Management ────────────────────────────────────────────
+
+    loadAdvisors() {
+        const container = document.getElementById('advisorsList');
+        if (!container) return;
+        if (!this.advisors.length) {
+            container.innerHTML = '<p class="manage-empty">No advisors found.</p>';
+            return;
+        }
+        const sorted = [...this.advisors].sort((a, b) => a.displayName.localeCompare(b.displayName));
+        container.innerHTML = sorted.map(a => `
+            <div class="manage-card advisor-card" data-username="${this.escapeHtml(a.username)}">
+                <div class="manage-card-header">
+                    <h5>${this.escapeHtml(a.displayName)}</h5>
+                    ${a.isAdmin ? '<span class="advisor-admin-badge">Admin</span>' : ''}
+                </div>
+                <div class="manage-card-body">
+                    <p><strong>Username:</strong> ${this.escapeHtml(a.username)}</p>
+                    <p><strong>Email:</strong> ${this.escapeHtml(a.email || a.username + '@ebhcs.org')}</p>
+                </div>
+                <div class="manage-actions">
+                    <button class="edit-btn" onclick="adminPanel.openEditAdvisor('${this.escapeHtml(a.username)}')">Edit</button>
+                    ${a.username !== this.currentUser.username ? `<button class="delete-btn" onclick="adminPanel.deleteAdvisor('${this.escapeHtml(a.username)}')">Remove</button>` : ''}
+                </div>
+            </div>
+        `).join('');
+    }
+
+    openEditAdvisor(username) {
+        const advisor = this.advisors.find(a => a.username === username);
+        if (!advisor) return;
+        document.getElementById('editAdvisorUsername').value = advisor.username;
+        document.getElementById('editAdvisorDisplayName').value = advisor.displayName;
+        document.getElementById('editAdvisorEmail').value = advisor.email || '';
+        document.getElementById('editAdvisorIsAdmin').checked = advisor.isAdmin || false;
+        document.getElementById('editAdvisorModal').style.display = 'flex';
+    }
+
+    closeEditAdvisor() {
+        document.getElementById('editAdvisorModal').style.display = 'none';
+    }
+
+    async saveEditAdvisor() {
+        const username = document.getElementById('editAdvisorUsername').value.trim();
+        const displayName = document.getElementById('editAdvisorDisplayName').value.trim();
+        const email = document.getElementById('editAdvisorEmail').value.trim();
+        const isAdmin = document.getElementById('editAdvisorIsAdmin').checked;
+        if (!username || !displayName) {
+            this.showToast('Display name is required.', 'error'); return;
+        }
+        try {
+            await updateDoc(doc(db, 'advisors', username), { displayName, email, isAdmin });
+            const idx = this.advisors.findIndex(a => a.username === username);
+            if (idx !== -1) this.advisors[idx] = { ...this.advisors[idx], displayName, email, isAdmin };
+            // Keep current user's name in sync
+            if (this.currentUser.username === username) {
+                this.currentUser.name = displayName;
+                this.currentUser.isAdmin = isAdmin;
+                document.getElementById('welcomeMessage').textContent = `Welcome, ${displayName}!`;
+            }
+            this.closeEditAdvisor();
+            this.loadAdvisors();
+            this.refreshAdvisorDropdown();
+            this.showToast('Advisor updated.', 'success');
+        } catch (e) {
+            this.showToast('Error saving advisor: ' + e.message, 'error');
+        }
+    }
+
+    async addAdvisor() {
+        const username = document.getElementById('newAdvisorUsername').value.trim().toLowerCase();
+        const displayName = document.getElementById('newAdvisorDisplayName').value.trim();
+        const email = document.getElementById('newAdvisorEmail').value.trim();
+        const isAdmin = document.getElementById('newAdvisorIsAdmin').checked;
+        if (!username || !displayName) {
+            this.showToast('Username and display name are required.', 'error'); return;
+        }
+        if (this.advisors.find(a => a.username === username)) {
+            this.showToast('An advisor with that username already exists.', 'error'); return;
+        }
+        try {
+            await setDoc(doc(db, 'advisors', username), { displayName, email, isAdmin, createdAt: serverTimestamp() });
+            this.advisors.push({ username, displayName, email, isAdmin });
+            document.getElementById('newAdvisorUsername').value = '';
+            document.getElementById('newAdvisorDisplayName').value = '';
+            document.getElementById('newAdvisorEmail').value = '';
+            document.getElementById('newAdvisorIsAdmin').checked = false;
+            this.loadAdvisors();
+            this.refreshAdvisorDropdown();
+            this.showToast(`${displayName} added as advisor.`, 'success');
+        } catch (e) {
+            this.showToast('Error adding advisor: ' + e.message, 'error');
+        }
+    }
+
+    async deleteAdvisor(username) {
+        const advisor = this.advisors.find(a => a.username === username);
+        if (!advisor) return;
+        if (!confirm(`Remove ${advisor.displayName} as an advisor? This won't delete their login account.`)) return;
+        try {
+            await deleteDoc(doc(db, 'advisors', username));
+            this.advisors = this.advisors.filter(a => a.username !== username);
+            this.loadAdvisors();
+            this.refreshAdvisorDropdown();
+            this.showToast(`${advisor.displayName} removed.`, 'success');
+        } catch (e) {
+            this.showToast('Error removing advisor: ' + e.message, 'error');
+        }
+    }
+
+    refreshAdvisorDropdown() {
+        const advisorSelect = document.getElementById('advisorName');
+        if (!advisorSelect) return;
+        const current = advisorSelect.value;
+        const sorted = [...this.advisors].sort((a, b) => a.displayName.localeCompare(b.displayName));
+        advisorSelect.innerHTML = '<option value="">Select your name</option>' +
+            sorted.map(a => `<option value="${this.escapeHtml(a.displayName)}"${a.displayName === current ? ' selected' : ''}>${this.escapeHtml(a.displayName)}</option>`).join('');
     }
 
     loadManageBulletins() {
