@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EBHCS Bulletin Board — Redesign</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  html, body { margin: 0; padding: 0; background: #f0eee9; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; }
+  * { box-sizing: border-box; }
+  /* Hide scrollbars inside artboards */
+  .scrollshell::-webkit-scrollbar { width: 0; height: 0; }
+  .scrollshell { scrollbar-width: none; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script src="src/data.js"></script>
+<script type="text/babel" src="ios-frame.jsx"></script>
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="src/illustrations.jsx"></script>
+<script type="text/babel" src="src/components.jsx"></script>
+<script type="text/babel" src="src/screens.jsx"></script>
+<script type="text/babel" src="src/admin.jsx"></script>
+
+<script type="text/babel" data-presets="env,react">
+const { useState } = React;
+
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "lang": "EN",
+  "textSize": "normal",
+  "highContrast": false
+}/*EDITMODE-END*/;
+
+// PhoneScreen — host one screen with state, wrapped in IOSDevice
+function PhoneScreen({ initial = 'feed', children }) {
+  return null;
+}
+
+// Screen container that holds a working flow
+function FlowApp({ start = 'feed', forceLang }) {
+  const [view, setView] = useState(start);
+  const [selectedPost, setSelectedPost] = useState(null);
+  const [selectedCat, setSelectedCat] = useState(null);
+  const [stack, setStack] = useState([]);
+  const [lang, setLang] = useState(forceLang || 'EN');
+  React.useEffect(() => { if (forceLang) setLang(forceLang); }, [forceLang]);
+
+  const goCategory = (c) => { setSelectedCat(c); setStack([...stack, view]); setView('resourceCat'); };
+  const goPost = (p) => { setSelectedPost(p); setStack([...stack, view]); setView('postDetail'); };
+  const back = () => {
+    const prev = stack[stack.length - 1] || 'feed';
+    setStack(stack.slice(0, -1));
+    setView(prev);
+  };
+  const setTab = (t) => { setStack([]); setView(t); };
+
+  let body;
+  if (view === 'feed')      body = <FeedScreen lang={lang} posts={POSTS} onOpenPost={goPost} onOpenCategory={goCategory} />;
+  else if (view === 'resources') body = <ResourcesScreen lang={lang} onOpenCategory={goCategory} />;
+  else if (view === 'calendar')  body = <CalendarScreen lang={lang} onOpenPost={goPost} />;
+  else if (view === 'about')     body = <AboutScreen lang={lang} />;
+  else if (view === 'postDetail')   body = <PostDetailScreen post={selectedPost} lang={lang} onBack={back} />;
+  else if (view === 'resourceCat')  body = <ResourceCategoryScreen cat={selectedCat} lang={lang} onBack={back} />;
+
+  const showNav = !['postDetail', 'resourceCat'].includes(view);
+  const showTopBar = ['feed'].includes(view);
+
+  return (
+    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: '#f4f6fb' }}>
+      {showTopBar && <PhoneTopBar lang={lang} setLang={setLang} title="EBHCS" sub="Harborside" />}
+      <div className="scrollshell" style={{
+        position: 'absolute',
+        top: showTopBar ? 60 : 0,
+        bottom: showNav ? 0 : 0,
+        left: 0, right: 0, overflowY: 'auto',
+      }}>{body}</div>
+      {showNav && <BottomNav active={view === 'postDetail' || view === 'resourceCat' ? 'feed' : view} onChange={setTab} lang={lang} />}
+    </div>
+  );
+}
+
+// Admin flow
+function AdminFlow() {
+  const [view, setView] = useState('login');
+  if (view === 'login')     return <AdminLoginScreen onLogin={() => setView('dashboard')} />;
+  if (view === 'dashboard') return <AdminDashboardScreen onCompose={() => setView('compose')} onBack={() => setView('login')} />;
+  if (view === 'compose')   return <AdminComposeScreen onBack={() => setView('dashboard')} onPreview={() => setView('dashboard')} />;
+  return null;
+}
+
+// Wrap a flow in an iOS device frame
+function PhoneArtboard({ children, scale = 1 }) {
+  // iPhone ~ 393×852
+  return (
+    <div style={{
+      width: 393, height: 852, position: 'relative',
+      background: '#000', borderRadius: 50, padding: 12,
+      boxShadow: '0 30px 60px rgba(10,29,58,0.25), 0 0 0 1px rgba(0,0,0,0.05)',
+      overflow: 'hidden',
+    }}>
+      <div style={{
+        position: 'absolute', inset: 12,
+        borderRadius: 38, overflow: 'hidden', background: '#f4f6fb',
+      }}>
+        {/* Status bar */}
+        <div style={{
+          position: 'absolute', top: 0, left: 0, right: 0, height: 44,
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '0 28px', zIndex: 50, color: '#fff',
+          background: 'transparent', pointerEvents: 'none',
+          fontFamily: '-apple-system, system-ui, sans-serif',
+          fontSize: 14, fontWeight: 700,
+        }}>
+          <span>9:41</span>
+          <div style={{
+            position: 'absolute', left: '50%', top: 8, transform: 'translateX(-50%)',
+            width: 110, height: 32, borderRadius: 999, background: '#000',
+          }} />
+          <span style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+            <svg width="18" height="11" viewBox="0 0 18 11"><rect x="0" y="6" width="3" height="5" rx="0.6" fill="#fff"/><rect x="5" y="4" width="3" height="7" rx="0.6" fill="#fff"/><rect x="10" y="2" width="3" height="9" rx="0.6" fill="#fff"/><rect x="15" y="0" width="3" height="11" rx="0.6" fill="#fff"/></svg>
+            <svg width="22" height="11" viewBox="0 0 24 12"><rect x="1" y="1" width="20" height="10" rx="2" stroke="#fff" fill="none"/><rect x="3" y="3" width="16" height="6" fill="#fff"/></svg>
+          </span>
+        </div>
+        <div style={{ position: 'absolute', top: 44, left: 0, right: 0, bottom: 0 }}>
+          {children}
+        </div>
+        {/* Home indicator */}
+        <div style={{
+          position: 'absolute', bottom: 8, left: '50%', transform: 'translateX(-50%)',
+          width: 120, height: 5, borderRadius: 999, background: 'rgba(0,0,0,0.4)', zIndex: 60,
+        }} />
+      </div>
+    </div>
+  );
+}
+
+function App() {
+  const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+  const lang = t.lang;
+
+  return (
+    <>
+      <DesignCanvas>
+        <DCSection id="overview" title="EBHCS Bulletin Board · Student-First Redesign"
+          subtitle="Mobile-first · Instagram-feel · Big illustrated icons · No hidden menus · Bilingual EN / ES">
+
+          <DCArtboard id="feed" label="01 · Home (Feed)" width={420} height={880}>
+            <PhoneArtboard><FlowApp start="feed" forceLang={lang} /></PhoneArtboard>
+          </DCArtboard>
+
+          <DCArtboard id="resources" label="02 · Resources hub" width={420} height={880}>
+            <PhoneArtboard><FlowApp start="resources" forceLang={lang} /></PhoneArtboard>
+          </DCArtboard>
+
+          <DCArtboard id="resourceCat" label="03 · Category detail" width={420} height={880}>
+            <PhoneArtboard><FlowAppWithStart start="immigration" forceLang={lang} /></PhoneArtboard>
+          </DCArtboard>
+
+          <DCArtboard id="calendar" label="04 · Important dates" width={420} height={880}>
+            <PhoneArtboard><FlowApp start="calendar" forceLang={lang} /></PhoneArtboard>
+          </DCArtboard>
+
+          <DCArtboard id="postDetail" label="05 · Post detail" width={420} height={880}>
+            <PhoneArtboard><PostDetailDirect lang={lang} /></PhoneArtboard>
+          </DCArtboard>
+
+          <DCArtboard id="about" label="06 · About + Advisor entry" width={420} height={880}>
+            <PhoneArtboard><FlowApp start="about" forceLang={lang} /></PhoneArtboard>
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="admin" title="Advisor portal · Redesign"
+          subtitle="Plain-language, live preview, fewer clicks">
+
+          <DCArtboard id="adminLogin" label="A1 · Sign in" width={420} height={880}>
+            <PhoneArtboard><AdminLoginScreen onLogin={() => {}} /></PhoneArtboard>
+          </DCArtboard>
+
+          <DCArtboard id="adminDash" label="A2 · Dashboard" width={420} height={880}>
+            <PhoneArtboard><AdminDashboardScreen onCompose={() => {}} onBack={() => {}} /></PhoneArtboard>
+          </DCArtboard>
+
+          <DCArtboard id="adminCompose" label="A3 · Write a bulletin (with live preview)" width={420} height={880}>
+            <PhoneArtboard><AdminComposeScreen onBack={() => {}} onPreview={() => {}} /></PhoneArtboard>
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection id="design" title="System · Illustrated category icons"
+          subtitle="Custom geometric duotone — replaces emoji throughout the site">
+
+          <DCArtboard id="iconset" label="Icon set · 11 categories" width={760} height={420}>
+            <IconShowcase />
+          </DCArtboard>
+
+          <DCArtboard id="tokens" label="Color & type tokens" width={760} height={420}>
+            <TokenShowcase />
+          </DCArtboard>
+        </DCSection>
+      </DesignCanvas>
+
+      <TweaksPanel>
+        <TweakSection label="Language">
+          <TweakRadio label="Show site in" value={lang} options={['EN', 'ES']}
+            onChange={v => setTweak('lang', v)} />
+        </TweakSection>
+      </TweaksPanel>
+    </>
+  );
+}
+
+// Helper: jump straight to a category detail in a flow
+function FlowAppWithStart({ start, forceLang }) {
+  const [view, setView] = useState('resourceCat');
+  const [cat, setCat] = useState(start);
+  const [selectedPost, setSelectedPost] = useState(null);
+  const [lang] = useState(forceLang || 'EN');
+  const back = () => setView('resources');
+
+  let body;
+  if (view === 'resourceCat') body = <ResourceCategoryScreen cat={cat} lang={forceLang || lang} onBack={back} />;
+  else if (view === 'resources') body = <ResourcesScreen lang={forceLang || lang} onOpenCategory={(c) => { setCat(c); setView('resourceCat'); }} />;
+  else if (view === 'postDetail') body = <PostDetailScreen post={selectedPost} lang={forceLang || lang} onBack={back} />;
+
+  return (
+    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: '#f4f6fb' }}>
+      <div className="scrollshell" style={{ position: 'absolute', inset: 0, bottom: 0, overflowY: 'auto' }}>{body}</div>
+      <BottomNav active="resources" onChange={() => {}} lang={forceLang || lang} />
+    </div>
+  );
+}
+
+function PostDetailDirect({ lang }) {
+  return (
+    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: '#f4f6fb' }}>
+      <div className="scrollshell" style={{ position: 'absolute', inset: 0, overflowY: 'auto' }}>
+        <PostDetailScreen post={POSTS[0]} lang={lang} onBack={() => {}} />
+      </div>
+    </div>
+  );
+}
+
+// Showcases for design section
+function IconShowcase() {
+  const all = ['job','immigration','housing','health','food','childcare','esol','college','career-fair','money','announcement'];
+  return (
+    <div style={{ width: '100%', height: '100%', background: '#fff', padding: 28, overflow: 'auto', boxSizing: 'border-box' }}>
+      <div style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 800, fontSize: 22, color: '#0a1d3a' }}>
+        Custom illustrated category icons
+      </div>
+      <div style={{ fontSize: 13, color: '#475569', marginTop: 4, marginBottom: 20 }}>
+        Geometric duotone style. Squircle base, simple subject. Replaces all emoji across student-facing screens.
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 16 }}>
+        {all.map(c => {
+          const m = CAT_META[c];
+          return (
+            <div key={c} style={{ textAlign: 'center' }}>
+              <div style={{ width: 80, height: 80, margin: '0 auto' }}><CategoryIcon id={c} size={80} /></div>
+              <div style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 800, fontSize: 13, color: '#0a1d3a', marginTop: 8 }}>{m.en}</div>
+              <div style={{ fontSize: 11, color: '#64748b', fontWeight: 600 }}>{m.es}</div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function TokenShowcase() {
+  const colors = [
+    ['#0a1d3a', 'Navy / Ink'],
+    ['#15315e', 'Navy 2'],
+    ['#2e7af0', 'Brand blue'],
+    ['#7eb1ff', 'Sky'],
+    ['#dde9ff', 'Sky tint'],
+    ['#ffc857', 'Gold accent'],
+    ['#e88a2a', 'Urgent / Soon'],
+    ['#1aa37a', 'Money / OK'],
+    ['#e0497d', 'Health'],
+    ['#7b4ec7', 'ESOL'],
+  ];
+  return (
+    <div style={{ width: '100%', height: '100%', background: '#fff', padding: 28, overflow: 'auto', boxSizing: 'border-box' }}>
+      <div style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 800, fontSize: 22, color: '#0a1d3a' }}>Color & type</div>
+      <div style={{ fontSize: 13, color: '#475569', marginTop: 4, marginBottom: 20 }}>
+        Harborside palette: deep navy + bright blue, warm gold accent for urgency / sun.
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 10 }}>
+        {colors.map(([hex, name]) => (
+          <div key={hex}>
+            <div style={{ background: hex, height: 64, borderRadius: 12, border: '1px solid rgba(0,0,0,0.06)' }} />
+            <div style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 800, fontSize: 12, color: '#0a1d3a', marginTop: 6 }}>{name}</div>
+            <div style={{ fontSize: 10, color: '#64748b', fontFamily: 'monospace' }}>{hex}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{ marginTop: 28, display: 'flex', gap: 24, alignItems: 'flex-end' }}>
+        <div>
+          <div style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 800, fontSize: 36, color: '#0a1d3a', lineHeight: 1 }}>Outfit</div>
+          <div style={{ fontSize: 11, color: '#64748b', marginTop: 4 }}>Headings · 700 / 800 · Friendly geometric</div>
+        </div>
+        <div>
+          <div style={{ fontFamily: 'Plus Jakarta Sans, sans-serif', fontWeight: 600, fontSize: 22, color: '#0a1d3a', lineHeight: 1 }}>Plus Jakarta Sans</div>
+          <div style={{ fontSize: 11, color: '#64748b', marginTop: 4 }}>Body · 500 / 700 · Humanist, very legible</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

@@ -1,0 +1,157 @@
+/* Import Professional Font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* Global Styles */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    line-height: 1.6;
+    color: #1e293b;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #334155 50%, #475569 75%, #64748b 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
+    font-weight: 400;
+}
+
+@media (max-width: 768px) {
+    body {
+        background-attachment: scroll;
+    }
+}
+
+body.modal-open {
+    overflow: hidden;
+}
+
+/* Header */
+header {
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.98) 100%);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+    padding: 12px 0 0 0;
+    box-shadow: 0 4px 20px rgba(15, 23, 42, 0.3);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    overflow: hidden;
+    transition: padding 0.3s ease;
+}
+
+/* Collapsed header state when scrolled */
+header.collapsed {
+    padding: 6px 0 0 0;
+}
+
+header.collapsed .header-content {
+    padding: 0 20px 6px 20px;
+}
+
+header.collapsed h1 {
+    font-size: 1.1rem;
+    margin-bottom: 0;
+}
+
+header.collapsed h2 {
+    display: none;
+}
+
+header.collapsed .wave-decoration {
+    height: 3px;
+}
+
+.wave-decoration {
+    height: 6px;
+    background: linear-gradient(90deg, transparent 0%, rgba(14, 165, 233, 0.3) 25%, rgba(2, 132, 199, 0.4) 50%, rgba(3, 105, 161, 0.3) 75%, transparent 100%);
+    position: relative;
+    overflow: hidden;
+    transition: height 0.3s ease;
+}
+
+.wave-decoration::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    right: -100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent 0%, rgba(59, 130, 246, 0.2) 50%, transparent 100%);
+    animation: wave 8s ease-in-out infinite;
+}
+
+@keyframes wave {
+    0%, 100% { transform: translateX(-50px); }
+    50% { transform: translateX(50px); }
+}
+
+.header-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px 12px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-align: center;
+    transition: padding 0.3s ease;
+}
+
+.header-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+}
+
+.header-right {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+header h1 {
+    color: #f8fafc;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+    letter-spacing: -0.025em;
+    transition: font-size 0.3s ease, margin 0.3s ease;
+}
+
+header h2 {
+    color: #cbd5e1;
+    font-size: 0.95rem;
+    font-weight: 400;
+    opacity: 0.9;
+    transition: opacity 0.3s ease;
+}
+
+.admin-btn {
+    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+    color: white;
+    border: none;
+    padding: 16px 32px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 16px rgba(14, 165, 233, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    min-width: 140px;
+}
+
+.admin-btn:hover {
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(14, 165, 233, 0.4);
+}
+

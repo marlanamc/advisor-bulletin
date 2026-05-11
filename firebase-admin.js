@@ -1,3 +1,26 @@
+import { db, auth, storage } from './src/firebase.js'
+import { collection, doc, query, where, orderBy, limit, onSnapshot, getDoc, addDoc, updateDoc, serverTimestamp, Timestamp } from 'firebase/firestore'
+import { onAuthStateChanged, signOut } from 'firebase/auth'
+import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage'
+
+const ADMIN_RESOURCE_CATEGORY_LABELS = {
+    immigration: 'Immigration / Inmigracion',
+    jobs: 'Jobs / Empleos',
+    housing: 'Housing / Vivienda',
+    health: 'Health / Salud',
+    'legal-aid': 'Legal Aid / Ayuda Legal'
+};
+
+const ADMIN_RESOURCE_ICON_LABELS = {
+    auto: 'Auto',
+    shield: 'Shield',
+    briefcase: 'Briefcase',
+    home: 'Home',
+    heart: 'Health',
+    scale: 'Legal Aid',
+    globe: 'Globe'
+};
+
 // Firebase-enabled Admin Panel
 class FirebaseAdminPanel {
     constructor() {
@@ -5,6 +28,10 @@ class FirebaseAdminPanel {
         this.bulletins = [];
         this.pendingImageData = null;
         this.isSubmitting = false;
+        this.contentType = 'post';
+        this.analyticsEvents = [];
+        this.analyticsByPost = {};
+        this.analyticsUnsubscribe = null;
         this.init();
     }
 
@@ -13,20 +40,20 @@ class FirebaseAdminPanel {
         this.checkAutoLogin();
         this.setupRealtimeListener();
         this.setupOfflineHandling();
+        this.setupRedesignEnhancements();
     }
 
     setupRealtimeListener() {
-        db.collection('bulletins')
-          .where('isActive', '==', true)
-          .orderBy('datePosted', 'desc')
-          .onSnapshot((snapshot) => {
+        const q = query(collection(db, 'bulletins'), where('isActive', '==', true), orderBy('datePosted', 'desc'))
+        onSnapshot(q, (snapshot) => {
             this.bulletins = [];
             snapshot.forEach((doc) => {
                 this.bulletins.push({
                     id: doc.id,
-                    ...doc.data()
+                    ...this.normalizeBulletin(doc.data())
                 });
             });
+            this.updateAdvisorDashboard();
             if (this.currentUser) {
                 this.loadManageBulletins();
             }
@@ -89,6 +116,18 @@ class FirebaseAdminPanel {
         // Bulletin form
         document.getElementById('bulletinForm').addEventListener('submit', (e) => this.handleBulletinSubmit(e));
 
+        document.querySelectorAll('.content-type-btn').forEach((button) => {
+            button.addEventListener('click', () => {
+                const nextType = button.getAttribute('data-content-type');
+                this.setContentType(nextType);
+            });
+        });
+
+        const resourceCategory = document.getElementById('resourceCategory');
+        if (resourceCategory) {
+            resourceCategory.addEventListener('change', (event) => this.handleResourceCategoryChange(event.target.value));
+        }
+
         // Form validation
         this.setupFormValidation();
 
@@ -105,6 +144,105 @@ class FirebaseAdminPanel {
                 this.closePreview();
             }
         });
+
+        this.setContentType('post', { preserveFields: true, silent: true });
+
+        // Manage tab: search, sort, filter
+        const manageSearch = document.getElementById('manageSearchInput');
+        const manageSort = document.getElementById('manageSortSelect');
+        const manageFilter = document.getElementById('manageFilterSelect');
+        const rerender = () => this.loadManageBulletins();
+        if (manageSearch) manageSearch.addEventListener('input', rerender);
+        if (manageSort) manageSort.addEventListener('change', rerender);
+        if (manageFilter) manageFilter.addEventListener('change', rerender);
+
+        document.querySelectorAll('[data-school-event-preset]').forEach((button) => {
+            button.addEventListener('click', () => {
+                const mode = button.getAttribute('data-school-event-preset');
+                this.applySchoolEventPreset(mode);
+            });
+        });
+    }
+
+    applySchoolEventPreset(mode) {
+        this.setContentType('post', { preserveFields: true, silent: true });
+
+        const categorySelect = document.getElementById('category');
+        if (categorySelect) {
+            categorySelect.value = 'announcement';
+            categorySelect.dispatchEvent(new Event('change', { bubbles: true }));
+            this.syncCategoryPicker('announcement');
+        }
+
+        const dateTypeSelect = document.getElementById('dateType');
+        if (dateTypeSelect) {
+            dateTypeSelect.value = 'event';
+            if (typeof window.toggleDateFields === 'function') {
+                window.toggleDateFields();
+            }
+        }
+
+        const hideToggle = document.getElementById('hideFromMainFeed');
+        if (hideToggle) {
+            hideToggle.checked = mode === 'calendar-only';
+        }
+
+        const titleField = document.getElementById('title');
+        if (titleField && !titleField.value.trim()) {
+            titleField.placeholder = mode === 'calendar-only'
+                ? 'e.g., Memorial Day — No School'
+                : 'e.g., School assembly / Family info night';
+        }
+
+        this.updateLivePreview();
+        document.getElementById('eventDetailsSection')?.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
+    }
+
+    setupRedesignEnhancements() {
+        document.querySelectorAll('[data-admin-tab-target]').forEach((button) => {
+            button.addEventListener('click', (event) => {
+                const tabName = event.currentTarget.getAttribute('data-admin-tab-target');
+                this.showTab(tabName);
+            });
+        });
+
+        document.querySelectorAll('[data-category-pick]').forEach((button) => {
+            button.addEventListener('click', (event) => {
+                const category = event.currentTarget.getAttribute('data-category-pick');
+                const select = document.getElementById('category');
+                if (!select) return;
+
+                select.value = category;
+                select.dispatchEvent(new Event('change', { bubbles: true }));
+                this.syncCategoryPicker(category);
+                this.updateLivePreview();
+            });
+        });
+
+        const previewFields = [
+            'title',
+            'titleEs',
+            'description',
+            'summaryEs',
+            'category',
+            'eventDate',
+            'dateType',
+            'resourceTitleEn',
+            'resourceTitleEs',
+            'resourceCategory',
+            'resourceDescription'
+        ];
+
+        previewFields.forEach((id) => {
+            const field = document.getElementById(id);
+            if (field) {
+                field.addEventListener('input', () => this.updateLivePreview());
+                field.addEventListener('change', () => this.updateLivePreview());
+            }
+        });
+
+        this.updateLivePreview();
+        this.updateAdvisorDashboard();
     }
 
     // Authentication Methods
@@ -126,6 +264,7 @@ class FirebaseAdminPanel {
         this.showAdminPanel();
         this.hideLoginModal();
         this.clearLoginForm();
+        this.setupAnalyticsListener();
         this.loadManageBulletins();
     }
 
@@ -141,7 +280,8 @@ class FirebaseAdminPanel {
             'simonetta': 'Simonetta',
             'mike': 'Mike K.',
             'leah': 'Leah',
-            'lgregory': 'Leah Gregory'
+            'lgregory': 'Leah Gregory',
+            'mcreed': 'Marlie'
         };
         return names[username] || username;
     }
@@ -151,14 +291,14 @@ class FirebaseAdminPanel {
             console.error('Firebase auth not initialized');
             return;
         }
-        auth.onAuthStateChanged(async (user) => {
+        onAuthStateChanged(auth, async (user) => {
             if (user) {
                 const username = user.email.split('@')[0];
 
                 // Check if user needs to change password
                 try {
-                    const userDoc = await db.collection('users').doc(username).get();
-                    if (userDoc.exists && userDoc.data().requirePasswordChange === true) {
+                    const userDoc = await getDoc(doc(db, 'users', username));
+                    if (userDoc.exists() && userDoc.data().requirePasswordChange === true) {
                         // User needs to change password, show password change modal
                         if (window.enhancedAuth) {
                             window.enhancedAuth.showPasswordChangeModal(username);
@@ -175,6 +315,7 @@ class FirebaseAdminPanel {
                     name: this.getUserDisplayName(username)
                 };
                 this.showAdminPanel();
+                this.setupAnalyticsListener();
                 this.loadManageBulletins();
             } else {
                 document.getElementById('loginRequired').style.display = 'block';
@@ -187,8 +328,14 @@ class FirebaseAdminPanel {
             if (typeof auth === 'undefined') {
                 throw new Error('Firebase auth not initialized');
             }
-            await auth.signOut();
+            await signOut(auth);
             this.currentUser = null;
+            if (this.analyticsUnsubscribe) {
+                this.analyticsUnsubscribe();
+                this.analyticsUnsubscribe = null;
+            }
+            this.analyticsEvents = [];
+            this.analyticsByPost = {};
             this.hideAdminPanel();
             this.clearLoginForm();
             document.getElementById('loginRequired').style.display = 'block';
@@ -213,11 +360,139 @@ class FirebaseAdminPanel {
         if ([...advisorSelect.options].some(option => option.value === this.currentUser.name)) {
             advisorSelect.value = this.currentUser.name;
         }
+
+        // Sync mobile app shell
+        const mobName = document.getElementById('mobWelcomeName');
+        if (mobName) mobName.textContent = `Hi, ${this.currentUser.name} 👋`;
+        const mobLogged = document.getElementById('mobLoggedAs');
+        if (mobLogged) mobLogged.textContent = `Logged in as ${this.currentUser.name}`;
+        this.syncMobDashboard();
+
+        this.setContentType(this.contentType || 'post', { preserveFields: true, silent: true });
     }
 
     hideAdminPanel() {
         document.getElementById('adminPanel').style.display = 'none';
         document.getElementById('logoutBtn').style.display = 'none';
+    }
+
+    normalizeBulletin(data) {
+        return {
+            ...data,
+            type: data.type || 'post',
+            isPublished: data.isPublished !== false
+        };
+    }
+
+    isResourceBulletin(bulletin) {
+        return bulletin && bulletin.type === 'resource';
+    }
+
+    getCurrentContentLabel() {
+        return this.contentType === 'resource' ? 'Resource' : 'Bulletin';
+    }
+
+    setContentType(type, options = {}) {
+        const isEvent = type === 'event';
+        const nextType = type === 'resource' ? 'resource' : 'post';
+        this.contentType = nextType;
+
+        const hiddenInput = document.getElementById('contentType');
+        if (hiddenInput) {
+            hiddenInput.value = nextType;
+        }
+
+        document.querySelectorAll('.content-type-btn').forEach((button) => {
+            const btnType = button.getAttribute('data-content-type');
+            const isActive = isEvent ? btnType === 'event' : btnType === nextType;
+            button.classList.toggle('active', isActive);
+            button.setAttribute('aria-pressed', String(isActive));
+        });
+
+        document.querySelectorAll('.content-mode-section').forEach((section) => {
+            const mode = section.getAttribute('data-content-mode');
+            const isVisible = mode === nextType;
+            section.style.display = isVisible ? '' : 'none';
+        });
+
+        document.querySelectorAll('[data-resource-required="true"]').forEach((field) => {
+            field.required = nextType === 'resource';
+        });
+
+        const titleInput = document.getElementById('title');
+        const categoryInput = document.getElementById('category');
+        const advisorNameInput = document.getElementById('advisorName');
+        if (titleInput) titleInput.required = nextType === 'post';
+        if (categoryInput) categoryInput.required = nextType === 'post';
+        if (advisorNameInput) advisorNameInput.required = nextType === 'post';
+
+        const helper = document.getElementById('contentTypeHelper');
+        if (helper) {
+            helper.textContent = nextType === 'resource'
+                ? 'Use Resources for important links students may need again later.'
+                : isEvent
+                    ? 'Add a date to the student calendar without creating a bulletin post. Great for holidays, no-school days, and school events.'
+                    : 'Use Posts for announcements, events, trainings, and opportunities.';
+        }
+
+        const heading = document.querySelector('.post-form-container h4');
+        const previewBtn = document.querySelector('.preview-btn');
+        const submitBtn = document.getElementById('postBulletinBtn');
+
+        if (heading) {
+            if (this.isEditMode) {
+                heading.textContent = nextType === 'resource' ? 'Edit Resource' : 'Edit Bulletin';
+            } else {
+                heading.textContent = nextType === 'resource' ? 'Create New Resource' : isEvent ? 'Add Event Date' : 'Create New Bulletin';
+            }
+        }
+
+        if (previewBtn) {
+            previewBtn.textContent = nextType === 'resource' ? 'Preview Resource' : 'Preview Post';
+        }
+
+        if (submitBtn) {
+            if (this.isEditMode) {
+                submitBtn.textContent = nextType === 'resource' ? 'Update Resource' : 'Update Bulletin';
+            } else {
+                submitBtn.textContent = nextType === 'resource' ? 'Publish Resource' : 'Post Bulletin';
+            }
+        }
+
+        if (!options.preserveFields && nextType === 'resource') {
+            document.getElementById('image').value = '';
+            document.getElementById('pdf').value = '';
+            document.getElementById('imagePreview').innerHTML = '';
+            document.getElementById('pdfPreview').innerHTML = '';
+            this.pendingImageData = null;
+        }
+
+        if (!options.silent) {
+            this.showTemporaryMessage(`${nextType === 'resource' ? 'Resource' : 'Post'} mode ready.`, 'info');
+        }
+
+        this.updateLivePreview();
+
+        if (isEvent) {
+            this.applySchoolEventPreset('calendar-only');
+        }
+    }
+
+    handleResourceCategoryChange(category) {
+        const iconSelect = document.getElementById('resourceIcon');
+        if (!iconSelect || !category || iconSelect.value !== 'auto') {
+            return;
+        }
+
+        const defaultIcons = {
+            immigration: 'shield',
+            jobs: 'briefcase',
+            housing: 'home',
+            health: 'heart',
+            'legal-aid': 'scale'
+        };
+
+        iconSelect.dataset.suggestedIcon = defaultIcons[category] || 'globe';
     }
 
     // Tab Management
@@ -250,6 +525,266 @@ class FirebaseAdminPanel {
         if (tabName === 'manage') {
             this.loadManageBulletins();
         }
+
+        document.querySelectorAll('[data-admin-tab-target]').forEach((button) => {
+            button.classList.toggle('active', button.getAttribute('data-admin-tab-target') === tabName);
+        });
+    }
+
+    setupAnalyticsListener() {
+        if (!this.currentUser || typeof db === 'undefined' || this.analyticsUnsubscribe) {
+            return;
+        }
+
+        const since = new Date();
+        since.setDate(since.getDate() - 30);
+
+        const analyticsQuery = query(
+            collection(db, 'analyticsEvents'),
+            where('createdAt', '>=', Timestamp.fromDate(since)),
+            orderBy('createdAt', 'desc'),
+            limit(1000)
+        )
+        this.analyticsUnsubscribe = onSnapshot(analyticsQuery, (snapshot) => {
+                this.analyticsEvents = snapshot.docs.map((doc) => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                this.aggregateAnalytics();
+                this.updateAdvisorDashboard();
+                if (this.currentUser) {
+                    this.loadManageBulletins();
+                }
+            }, (error) => {
+                console.error('Error loading analytics:', error);
+                const status = document.getElementById('advisorStatusPill');
+                if (status) status.textContent = 'Analytics unavailable';
+            });
+    }
+
+    aggregateAnalytics() {
+        const byPost = {};
+        const byAction = {};
+        const byCategory = {};
+
+        // Only count genuine student interactions — exclude advisor preview sessions
+        const studentEvents = this.analyticsEvents.filter((e) => e.source === 'student');
+
+        studentEvents.forEach((event) => {
+            const action = event.action || 'unknown';
+            const postId = event.postId || '';
+            const category = event.category || 'uncategorized';
+
+            byAction[action] = (byAction[action] || 0) + 1;
+            byCategory[category] = (byCategory[category] || 0) + 1;
+
+            if (postId) {
+                if (!byPost[postId]) {
+                    byPost[postId] = {
+                        total: 0,
+                        card_view: 0,
+                        detail_open: 0,
+                        link_click: 0,
+                        pdf_open: 0,
+                        share_click: 0,
+                        resource_open: 0,
+                        category_click: 0
+                    };
+                }
+                byPost[postId].total += 1;
+                byPost[postId][action] = (byPost[postId][action] || 0) + 1;
+            }
+        });
+
+        this.analyticsByPost = byPost;
+        this.analyticsByAction = byAction;
+        this.analyticsByCategory = byCategory;
+    }
+
+    updateAdvisorDashboard() {
+        const posts = this.bulletins.filter((bulletin) => !this.isResourceBulletin(bulletin) && bulletin.isActive);
+        const livePosts = posts.filter((bulletin) => !this.isBulletinExpiredAdmin(bulletin));
+        const expiringSoon = posts.filter((bulletin) => bulletin.deadline && this.isDeadlineClose(bulletin.deadline) && !this.isBulletinExpiredAdmin(bulletin));
+        const resources = this.bulletins.filter((bulletin) => this.isResourceBulletin(bulletin) && bulletin.isActive);
+
+        this.setText('statLivePosts', livePosts.length);
+        this.setText('statResources', resources.length);
+        const studentEventCount = this.analyticsEvents.filter((e) => e.source === 'student').length;
+        this.setText('statStudentClicks', studentEventCount);
+        this.setText('statExpiringSoon', expiringSoon.length);
+
+        this.renderAnalyticsList('analyticsActionList', this.analyticsByAction || {}, (key) => this.formatAnalyticsAction(key));
+        this.renderAnalyticsList('analyticsTopCategories', this.analyticsByCategory || {}, (key) => this.getCategoryDisplay(key));
+        this.renderTopPosts();
+        if (this.currentUser) this.syncMobDashboard();
+    }
+
+    syncMobDashboard() {
+        const isAdmin = this.canManageAllPosts();
+        const studentEventCount = this.analyticsEvents.filter((e) => e.source === 'student').length;
+
+        if (isAdmin) {
+            // ── ADMIN VIEW: school-wide counts ──────────────────────────
+            const allPosts = this.bulletins.filter(b => b.isActive && !this.isResourceBulletin(b));
+            const allLive = allPosts.filter(b => !this.isBulletinExpiredAdmin(b));
+            const allExpiring = allPosts.filter(b => b.deadline && this.isDeadlineClose(b.deadline) && !this.isBulletinExpiredAdmin(b));
+            const allResources = this.bulletins.filter(b => b.isActive && this.isResourceBulletin(b));
+
+            this.setMobStat('mobStatPosts', allLive.length, 'All live posts');
+            this.setMobStat('mobStatResources', allResources.length, 'Resources');
+            this.setMobStat('mobStatClicks', studentEventCount, 'Student clicks');
+            this.setMobStat('mobStatExp', allExpiring.length, 'Expiring soon');
+
+            const eyebrow = document.getElementById('mobAdminEyebrow');
+            if (eyebrow) { eyebrow.textContent = 'ADMIN VIEW · ALL ADVISORS'; eyebrow.classList.add('admin-mode'); }
+
+            const sectionLabel = document.getElementById('mobPostsSectionLabel');
+            if (sectionLabel) sectionLabel.textContent = 'ALL POSTS';
+
+            const sorted = allPosts.concat(allResources).sort((a, b) => {
+                const aDate = a.datePosted ? (a.datePosted.toDate ? a.datePosted.toDate() : new Date(a.datePosted)) : new Date(0);
+                const bDate = b.datePosted ? (b.datePosted.toDate ? b.datePosted.toDate() : new Date(b.datePosted)) : new Date(0);
+                return bDate - aDate;
+            });
+            this.syncMobPostsList(sorted, true);
+
+        } else {
+            // ── ADVISOR VIEW: own posts only ────────────────────────────
+            const mine = this.bulletins.filter(b => b.isActive && this.isMineOrManaged(b));
+            const myPosts = mine.filter(b => !this.isResourceBulletin(b));
+            const myLive = myPosts.filter(b => !this.isBulletinExpiredAdmin(b));
+            const myExpiring = myPosts.filter(b => b.deadline && this.isDeadlineClose(b.deadline) && !this.isBulletinExpiredAdmin(b));
+            const myResources = mine.filter(b => this.isResourceBulletin(b));
+
+            this.setMobStat('mobStatPosts', myLive.length, 'Live posts');
+            this.setMobStat('mobStatResources', myResources.length, 'Resources');
+            this.setMobStat('mobStatClicks', studentEventCount, 'Student clicks');
+            this.setMobStat('mobStatExp', myExpiring.length, 'Expiring soon');
+
+            const eyebrow = document.getElementById('mobAdminEyebrow');
+            if (eyebrow) eyebrow.textContent = 'WELCOME BACK';
+
+            const sectionLabel = document.getElementById('mobPostsSectionLabel');
+            if (sectionLabel) sectionLabel.textContent = 'YOUR POSTS';
+
+            const sorted = mine.sort((a, b) => {
+                const aDate = a.datePosted ? (a.datePosted.toDate ? a.datePosted.toDate() : new Date(a.datePosted)) : new Date(0);
+                const bDate = b.datePosted ? (b.datePosted.toDate ? b.datePosted.toDate() : new Date(b.datePosted)) : new Date(0);
+                return bDate - aDate;
+            });
+            this.syncMobPostsList(sorted, false);
+        }
+    }
+
+    setMobStat(id, value, label) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.textContent = value;
+        const span = el.nextElementSibling;
+        if (span) span.innerHTML = label.replace(' ', '<br>');
+    }
+
+    setText(id, value) {
+        const element = document.getElementById(id);
+        if (element) element.textContent = String(value);
+    }
+
+    renderAnalyticsList(containerId, data, labelFormatter) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        const rows = Object.entries(data || {})
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 5);
+
+        if (rows.length === 0) {
+            container.innerHTML = '<p class="analytics-empty">No click data yet.</p>';
+            return;
+        }
+
+        container.innerHTML = rows.map(([key, value]) => `
+            <div class="analytics-row">
+                <span>${this.escapeHtml(labelFormatter(key))}</span>
+                <strong>${value}</strong>
+            </div>
+        `).join('');
+    }
+
+    renderTopPosts() {
+        const container = document.getElementById('analyticsTopPosts');
+        if (!container) return;
+
+        const rows = Object.entries(this.analyticsByPost || {})
+            .map(([postId, metrics]) => {
+                const bulletin = this.bulletins.find((item) => item.id === postId);
+                return {
+                    postId,
+                    title: bulletin ? this.getManageCardTitle(bulletin) : 'Unknown post',
+                    total: metrics.total || 0
+                };
+            })
+            .sort((a, b) => b.total - a.total)
+            .slice(0, 5);
+
+        if (rows.length === 0) {
+            container.innerHTML = '<p class="analytics-empty">Student engagement will appear here.</p>';
+            return;
+        }
+
+        container.innerHTML = rows.map((row) => `
+            <div class="analytics-row">
+                <span>${this.escapeHtml(row.title)}</span>
+                <strong>${row.total}</strong>
+            </div>
+        `).join('');
+    }
+
+    formatAnalyticsAction(action) {
+        const labels = {
+            card_view: 'Card views',
+            detail_open: 'Detail opens',
+            link_click: 'Link clicks',
+            pdf_open: 'PDF opens',
+            share_click: 'Shares',
+            category_click: 'Category taps',
+            resource_open: 'Resource opens'
+        };
+        return labels[action] || action;
+    }
+
+    syncCategoryPicker(category) {
+        document.querySelectorAll('[data-category-pick]').forEach((button) => {
+            button.classList.toggle('active', button.getAttribute('data-category-pick') === category);
+        });
+    }
+
+    updateLivePreview() {
+        const container = document.getElementById('advisorLivePreview');
+        if (!container) return;
+
+        const isResource = (document.getElementById('contentType')?.value || this.contentType) === 'resource';
+        const title = isResource
+            ? (document.getElementById('resourceTitleEn')?.value || 'Resource title')
+            : (document.getElementById('title')?.value || 'Student preview');
+        const summary = isResource
+            ? (document.getElementById('resourceDescription')?.value || 'Add one clear sentence about this resource.')
+            : (document.getElementById('description')?.value || 'Start typing a title and summary to preview what students will see.');
+        const category = isResource
+            ? (document.getElementById('resourceCategory')?.value || 'resource')
+            : (document.getElementById('category')?.value || 'announcement');
+        const meta = this.getCategoryDisplay(category);
+
+        this.syncCategoryPicker(category);
+
+        container.innerHTML = `
+            <div class="preview-phone-card">
+                <span class="preview-category">${this.escapeHtml(isResource ? 'Resource' : meta)}</span>
+                <h4>${this.escapeHtml(title)}</h4>
+                <p>${this.escapeHtml(summary).substring(0, 180)}</p>
+                <div class="translate-chip">Auto-translate coming soon</div>
+                <div class="preview-action-pill">${isResource ? 'Open resource' : 'Read full post'}</div>
+            </div>
+        `;
     }
 
     // Bulletin Management
@@ -264,23 +799,36 @@ class FirebaseAdminPanel {
 
         // Show loading state
         const submitBtn = e.target.querySelector('button[type="submit"]');
-        const originalText = submitBtn.textContent;
         submitBtn.classList.add('btn-loading');
         submitBtn.disabled = true;
 
         try {
             const formData = new FormData(e.target);
+            const submittedType = (formData.get('contentType') || this.contentType || 'post') === 'resource' ? 'resource' : 'post';
+            const submittedLabel = submittedType === 'resource' ? 'Resource' : 'Bulletin';
 
+            let newBulletinId = null;
             if (this.isEditMode && this.editingBulletinId) {
+                newBulletinId = this.editingBulletinId;
                 await this.updateBulletin(formData, this.editingBulletinId);
             } else {
-                await this.createBulletin(formData);
+                newBulletinId = await this.createBulletin(formData);
             }
 
             // Reset form after successful submission
+            this.pendingHighlightId = newBulletinId;
             this.resetForm();
 
-            this.showTemporaryMessage(this.isEditMode ? 'Bulletin updated successfully!' : 'Bulletin posted successfully!', 'success');
+            // Return to mobile home screen on success
+            const mobForm = document.getElementById('mobFormScreen');
+            const mobHome = document.getElementById('mobHome');
+            if (mobForm && mobHome) {
+                mobForm.classList.remove('active');
+                mobHome.classList.add('active');
+                window.scrollTo(0, 0);
+            }
+
+            this.showTemporaryMessage(this.isEditMode ? `${submittedLabel} updated successfully!` : `${submittedLabel} saved successfully! Check the Manage tab.`, 'success');
         } catch (error) {
             if (error && error.code === 'user-cancelled') {
                 this.showTemporaryMessage('Post cancelled. You can review the content and try again.', 'info');
@@ -288,7 +836,7 @@ class FirebaseAdminPanel {
                 
             }
             console.error('Error submitting bulletin:', error);
-            let errorMessage = 'Error posting bulletin. Please try again.';
+            let errorMessage = `Error saving ${this.getCurrentContentLabel().toLowerCase()}. Please try again.`;
 
             if (error.code === 'permission-denied') {
                 errorMessage = 'You don\'t have permission to perform this action. Please check your login status.';
@@ -303,7 +851,9 @@ class FirebaseAdminPanel {
             // Reset loading state
             submitBtn.classList.remove('btn-loading');
             submitBtn.disabled = false;
-            submitBtn.textContent = originalText;
+            submitBtn.textContent = this.isEditMode
+                ? (this.contentType === 'resource' ? 'Update Resource' : 'Update Bulletin')
+                : (this.contentType === 'resource' ? 'Publish Resource' : 'Post Bulletin');
             this.isSubmitting = false;
         }
     }
@@ -328,7 +878,7 @@ class FirebaseAdminPanel {
 
             // Update the document with just the image field
             if (editingId) {
-                await db.collection('bulletins').doc(editingId).update({
+                await updateDoc(doc(db, 'bulletins', editingId), {
                     image: processedImage.dataUrl
                 });
             } else {
@@ -357,15 +907,6 @@ class FirebaseAdminPanel {
 
     async handlePdfUpload(file, bulletin, editingId = null) {
         try {
-            // Debug logging to help diagnose upload issues
-            console.log('PDF Upload Debug:', {
-                fileName: file.name,
-                fileSize: file.size,
-                fileType: file.type,
-                bulletinId: editingId,
-                userAuthenticated: !!firebase.auth().currentUser,
-                userEmail: firebase.auth().currentUser?.email
-            });
 
             // Check file size (10MB limit)
             if (file.size > 10 * 1024 * 1024) {
@@ -378,7 +919,7 @@ class FirebaseAdminPanel {
             }
 
             // Ensure user is still authenticated and refresh token
-            const currentUser = firebase.auth().currentUser;
+            const currentUser = auth.currentUser;
             if (!currentUser) {
                 throw 'Session expired. Please log in again.';
             }
@@ -392,16 +933,16 @@ class FirebaseAdminPanel {
             const filename = `pdfs/${bulletinId}_${timestamp}.pdf`;
 
             // Create storage reference and upload with explicit content-type
-            const storageRef = firebase.storage().ref().child(filename);
+            const fileRef = storageRef(storage, filename);
             const metadata = { contentType: 'application/pdf' };
-            const snapshot = await storageRef.put(file, metadata);
+            const snapshot = await uploadBytes(fileRef, file, metadata);
 
             // Get download URL
-            const downloadUrl = await snapshot.ref.getDownloadURL();
+            const downloadUrl = await getDownloadURL(snapshot.ref);
 
             // Update the document with the PDF URL
             if (editingId) {
-                await db.collection('bulletins').doc(editingId).update({
+                await updateDoc(doc(db, 'bulletins', editingId), {
                     pdfUrl: downloadUrl
                 });
                 this.showTemporaryMessage('PDF uploaded successfully!', 'success');
@@ -438,6 +979,7 @@ class FirebaseAdminPanel {
             }
             
             this.showTemporaryMessage(message, 'error');
+            throw error; // re-throw so the submit handler's finally block restores the button
         }
     }
 
@@ -730,79 +1272,138 @@ class FirebaseAdminPanel {
     }
 
 
-    async deleteBulletin(bulletinId, buttonElement = null) {
-        if (confirm('Are you sure you want to delete this bulletin?')) {
-            try {
-                await db.collection('bulletins').doc(bulletinId).update({
-                    isActive: false
-                });
-                this.showSuccessMessage('Bulletin deleted successfully!');
-            } catch (error) {
-                console.error('Error deleting bulletin:', error);
-                const message = this.getFirestoreErrorMessage(error, 'delete this bulletin');
-                this.showTemporaryMessage(message, 'error');
+    deleteBulletin(bulletinId) {
+        this.showConfirmDialog(
+            'Delete this bulletin?',
+            'It will be hidden from students right away. This cannot be undone.',
+            async () => {
+                try {
+                    await updateDoc(doc(db, 'bulletins', bulletinId), { isActive: false });
+                    this.showTemporaryMessage('Bulletin deleted.', 'success');
+                } catch (error) {
+                    console.error('Error deleting bulletin:', error);
+                    this.showTemporaryMessage(this.getFirestoreErrorMessage(error, 'delete this bulletin'), 'error');
+                }
             }
-        }
+        );
+    }
+
+    showConfirmDialog(title, body, onConfirm) {
+        const existing = document.getElementById('inlineConfirmDialog');
+        if (existing) existing.remove();
+
+        const dialog = document.createElement('div');
+        dialog.id = 'inlineConfirmDialog';
+        dialog.style.cssText = `
+            position: fixed; inset: 0; z-index: 2000;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(15,23,42,0.55); backdrop-filter: blur(4px);
+            padding: 20px;
+        `;
+        dialog.innerHTML = `
+            <div style="background:#fff;border-radius:20px;padding:28px 24px;max-width:360px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.2);text-align:center">
+                <div style="font-size:32px;margin-bottom:12px">🗑️</div>
+                <h3 style="font-family:'Outfit',sans-serif;font-size:18px;font-weight:800;color:#0a1d3a;margin:0 0 8px">${title}</h3>
+                <p style="font-size:14px;color:#475569;margin:0 0 24px;line-height:1.5">${body}</p>
+                <div style="display:flex;gap:10px">
+                    <button id="confirmDialogCancel" style="flex:1;padding:12px;border:1.5px solid #e2e8f0;background:#fff;border-radius:12px;font-size:14px;font-weight:700;color:#475569;cursor:pointer">Keep it</button>
+                    <button id="confirmDialogOk" style="flex:1;padding:12px;border:none;background:#dc2626;border-radius:12px;font-size:14px;font-weight:700;color:#fff;cursor:pointer">Yes, delete</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(dialog);
+
+        const close = () => dialog.remove();
+        dialog.querySelector('#confirmDialogCancel').addEventListener('click', close);
+        dialog.querySelector('#confirmDialogOk').addEventListener('click', () => { close(); onConfirm(); });
+        dialog.addEventListener('click', (e) => { if (e.target === dialog) close(); });
     }
 
     editBulletin(bulletinId) {
         const bulletin = this.bulletins.find(b => b.id === bulletinId);
         if (!bulletin) {
-            alert('Bulletin not found');
+            this.showTemporaryMessage('Could not find that bulletin. Try refreshing the page.', 'error');
             return;
+        }
+
+        // On mobile, switch to form screen
+        const mobHome = document.getElementById('mobHome');
+        const mobForm = document.getElementById('mobFormScreen');
+        if (mobHome && mobForm && window.innerWidth <= 768) {
+            mobHome.classList.remove('active');
+            mobForm.classList.add('active');
+            window.scrollTo(0, 0);
         }
 
         // Switch to post tab
         this.showTab('post');
+        document.getElementById('bulletinForm').reset();
+        document.getElementById('imagePreview').innerHTML = '';
+        document.getElementById('pdfPreview').innerHTML = '';
+        this.pendingImageData = null;
 
         // Set edit mode
         this.isEditMode = true;
         this.editingBulletinId = bulletinId;
 
-        // Update form title and button text
-        document.querySelector('.post-form-container h4').textContent = 'Edit Bulletin';
-        document.getElementById('postBulletinBtn').textContent = 'Update Bulletin';
+        const isResource = this.isResourceBulletin(bulletin);
+        this.setContentType(isResource ? 'resource' : 'post', { preserveFields: true, silent: true });
 
-        // Populate form with existing data
-        document.getElementById('title').value = bulletin.title;
-        document.getElementById('category').value = bulletin.category;
-        document.getElementById('description').value = bulletin.description;
-        document.getElementById('company').value = bulletin.company || '';
-        document.getElementById('contact').value = bulletin.contact || '';
-        // Handle new date fields
-        if (bulletin.dateType) {
-            document.getElementById('dateType').value = bulletin.dateType;
-            toggleDateFields(); // This function should be available globally
-
-            if (bulletin.dateType === 'deadline' || bulletin.dateType === 'event') {
-                document.getElementById('eventDate').value = bulletin.eventDate || '';
-            } else if (bulletin.dateType === 'range') {
-                document.getElementById('startDate').value = bulletin.startDate || '';
-                document.getElementById('endDate').value = bulletin.endDate || '';
-            }
+        if (isResource) {
+            document.getElementById('resourceTitleEn').value = bulletin.titleEn || bulletin.title || '';
+            document.getElementById('resourceTitleEs').value = bulletin.titleEs || '';
+            document.getElementById('resourceCategory').value = bulletin.resourceCategory || '';
+            document.getElementById('resourceIcon').value = bulletin.resourceIcon || 'auto';
+            document.getElementById('resourceUrl').value = bulletin.url || bulletin.eventLink || '';
+            document.getElementById('resourceDescription').value = bulletin.description || '';
+            document.getElementById('resourceHighlights').value = bulletin.highlights || '';
+            document.getElementById('resourcePublished').checked = bulletin.isPublished !== false;
+            document.getElementById('resourceOrder').value = bulletin.resourceOrder ?? '';
         } else {
-            // Backward compatibility - convert old deadline to new format
-            document.getElementById('dateType').value = bulletin.deadline ? 'deadline' : '';
-            if (bulletin.deadline) {
+            document.getElementById('title').value = bulletin.title;
+            document.getElementById('titleEs').value = bulletin.titleEs || '';
+            document.getElementById('category').value = bulletin.category;
+            document.getElementById('description').value = bulletin.description;
+            document.getElementById('summaryEs').value = bulletin.summaryEs || '';
+            document.getElementById('company').value = bulletin.company || '';
+            document.getElementById('contact').value = bulletin.contact || '';
+            if (bulletin.dateType) {
+                document.getElementById('dateType').value = bulletin.dateType;
                 toggleDateFields();
-                document.getElementById('eventDate').value = bulletin.deadline;
-            }
-        }
-        document.getElementById('classType').value = bulletin.classType || '';
-        document.getElementById('startTime').value = bulletin.startTime || '';
-        document.getElementById('endTime').value = bulletin.endTime || '';
-        document.getElementById('eventLocation').value = bulletin.eventLocation || '';
-        document.getElementById('eventLink').value = bulletin.eventLink || '';
-        document.getElementById('advisorName').value = bulletin.advisorName;
 
-        // Show image if exists
-        if (bulletin.image) {
-            document.getElementById('imagePreview').innerHTML = `
-                <div class="preview-container">
-                    <img src="${bulletin.image}" alt="Preview" class="preview-image">
-                    <button type="button" class="remove-image" onclick="adminPanel.removeImagePreview()">&times;</button>
-                </div>
-            `;
+                if (bulletin.dateType === 'deadline' || bulletin.dateType === 'event') {
+                    document.getElementById('eventDate').value = bulletin.eventDate || '';
+                } else if (bulletin.dateType === 'range') {
+                    document.getElementById('startDate').value = bulletin.startDate || '';
+                    document.getElementById('endDate').value = bulletin.endDate || '';
+                }
+            } else {
+                document.getElementById('dateType').value = bulletin.deadline ? 'deadline' : '';
+                if (bulletin.deadline) {
+                    toggleDateFields();
+                    document.getElementById('eventDate').value = bulletin.deadline;
+                }
+            }
+            document.getElementById('classType').value = bulletin.classType || '';
+            document.getElementById('startTime').value = bulletin.startTime || '';
+            document.getElementById('endTime').value = bulletin.endTime || '';
+            document.getElementById('eventLocation').value = bulletin.eventLocation || '';
+            document.getElementById('eventLink').value = bulletin.eventLink || '';
+            document.getElementById('advisorName').value = bulletin.advisorName;
+            const hideField = document.getElementById('hideFromMainFeed');
+            if (hideField) {
+                hideField.checked = bulletin.hideFromMainFeed === true;
+            }
+
+            if (bulletin.image) {
+                document.getElementById('imagePreview').innerHTML = `
+                    <div class="preview-container">
+                        <img src="${bulletin.image}" alt="Preview" class="preview-image">
+                        <button type="button" class="remove-image" onclick="adminPanel.removeImagePreview()">&times;</button>
+                    </div>
+                `;
+            }
         }
 
         // Store the bulletin ID for updating
@@ -810,7 +1411,36 @@ class FirebaseAdminPanel {
 
         // Change submit button text
         const submitBtn = document.querySelector('#bulletinForm button[type="submit"]');
-        submitBtn.textContent = 'Update Bulletin';
+        submitBtn.textContent = isResource ? 'Update Resource' : 'Update Bulletin';
+
+        // Show edit mode banner
+        const formHeader = document.getElementById('formHeader');
+        if (formHeader) {
+            let banner = document.getElementById('editModeBanner');
+            if (!banner) {
+                banner = document.createElement('div');
+                banner.id = 'editModeBanner';
+                banner.style.cssText = `
+                    display:flex;align-items:center;gap:10px;
+                    background:linear-gradient(90deg,#fffbeb,#fef3c7);
+                    border:1.5px solid #f59e0b;border-radius:12px;
+                    padding:10px 14px;margin-bottom:16px;font-size:13px;
+                    font-weight:700;color:#92400e;font-family:'Plus Jakarta Sans',sans-serif;
+                `;
+                formHeader.insertAdjacentElement('afterend', banner);
+            }
+            const shortTitle = (bulletin.title || bulletin.titleEn || 'this item').slice(0, 50);
+            banner.innerHTML = `✏️ Editing: <span style="font-weight:500;color:#78350f">"${shortTitle}"</span> &nbsp;<button type="button" onclick="adminPanel.resetForm()" style="margin-left:auto;background:none;border:none;color:#b45309;font-size:12px;font-weight:700;cursor:pointer;text-decoration:underline">Cancel edit</button>`;
+            banner.style.display = 'flex';
+        }
+
+        // Mirror bulletin into mobile shell fields (separate DOM from #bulletinForm)
+        if (typeof window.populateMobAdminEdit === 'function' && window.innerWidth <= 768) {
+            window.populateMobAdminEdit(bulletin);
+        }
+
+        // Scroll form into view
+        document.getElementById('bulletinForm')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     canManageAllPosts() {
@@ -819,36 +1449,83 @@ class FirebaseAdminPanel {
 
     loadManageBulletins() {
         const container = document.getElementById('manageBulletins');
-        const userBulletins = this.bulletins
-            .filter(b => (this.canManageAllPosts() || b.postedBy === this.currentUser.username) && b.isActive)
-            .sort((a, b) => {
-                const aDate = a.datePosted
-                    ? (a.datePosted.toDate ? a.datePosted.toDate() : new Date(a.datePosted))
-                    : new Date();
-                const bDate = b.datePosted
-                    ? (b.datePosted.toDate ? b.datePosted.toDate() : new Date(b.datePosted))
-                    : new Date();
-                return bDate - aDate;
+
+        const searchQuery = (document.getElementById('manageSearchInput')?.value || '').toLowerCase().trim();
+        const sortMode = document.getElementById('manageSortSelect')?.value || 'newest';
+        const filterMode = document.getElementById('manageFilterSelect')?.value || 'all';
+
+        let userBulletins = this.bulletins
+            .filter(b => (this.canManageAllPosts() || b.postedBy === this.currentUser.username) && b.isActive);
+
+        // Apply filter
+        if (filterMode === 'active') {
+            userBulletins = userBulletins.filter(b => !this.isBulletinExpiredAdmin(b));
+        } else if (filterMode === 'expired') {
+            userBulletins = userBulletins.filter(b => this.isBulletinExpiredAdmin(b));
+        }
+
+        // Apply search
+        if (searchQuery) {
+            userBulletins = userBulletins.filter(b => {
+                const title = (b.title || b.titleEn || '').toLowerCase();
+                const cat = (b.category || b.resourceCategory || '').toLowerCase();
+                const advisor = (b.advisorName || '').toLowerCase();
+                const desc = (b.description || '').toLowerCase();
+                return title.includes(searchQuery) || cat.includes(searchQuery) || advisor.includes(searchQuery) || desc.includes(searchQuery);
             });
+        }
+
+        // Apply sort
+        userBulletins.sort((a, b) => {
+            if (sortMode === 'category') {
+                return (a.category || a.resourceCategory || '').localeCompare(b.category || b.resourceCategory || '');
+            }
+            if (sortMode === 'deadline') {
+                const aD = a.deadline || a.eventDate || a.endDate || '';
+                const bD = b.deadline || b.eventDate || b.endDate || '';
+                return aD.localeCompare(bD);
+            }
+            const aDate = a.datePosted ? (a.datePosted.toDate ? a.datePosted.toDate() : new Date(a.datePosted)) : new Date(0);
+            const bDate = b.datePosted ? (b.datePosted.toDate ? b.datePosted.toDate() : new Date(b.datePosted)) : new Date(0);
+            return sortMode === 'oldest' ? aDate - bDate : bDate - aDate;
+        });
 
         if (userBulletins.length === 0) {
-            container.innerHTML = this.canManageAllPosts()
-                ? '<p>There are no active bulletins to manage right now.</p>'
-                : '<p>You haven\'t posted any bulletins yet.</p>';
+            if (searchQuery) {
+                container.innerHTML = `<p>No posts match "<strong>${this.escapeHtml(searchQuery)}</strong>". Try a different search.</p>`;
+            } else if (filterMode === 'expired') {
+                container.innerHTML = '<p>No expired posts. Great — everything is still active!</p>';
+            } else if (filterMode === 'active') {
+                container.innerHTML = '<p>No active posts right now.</p>';
+            } else {
+                container.innerHTML = this.canManageAllPosts()
+                    ? '<p>There are no bulletins to manage right now.</p>'
+                    : '<p>You haven\'t posted anything yet. Use the <strong>New Content</strong> tab to create your first bulletin!</p>';
+            }
             return;
         }
 
         container.innerHTML = userBulletins.map(bulletin => `
-            <div class="manage-card">
-                <h5>${this.escapeHtml(bulletin.title)}</h5>
-                <p><strong>Category:</strong> ${this.getCategoryDisplay(bulletin.category)}</p>
+            <div class="manage-card" data-bulletin-id="${bulletin.id}" id="manage-card-${bulletin.id}">
+                <h5>${this.escapeHtml(this.getManageCardTitle(bulletin))}</h5>
+                <p><strong>Type:</strong> ${this.isResourceBulletin(bulletin) ? 'Resource' : 'Post'}</p>
+                <p><strong>Category:</strong> ${this.isResourceBulletin(bulletin) ? this.getResourceCategoryLabel(bulletin.resourceCategory) : this.getCategoryDisplay(bulletin.category)}</p>
+                ${!this.isResourceBulletin(bulletin) && bulletin.hideFromMainFeed ? `<p><strong>Main feed:</strong> Hidden (calendar &amp; upcoming only)</p>` : ''}
                 ${this.canManageAllPosts() && bulletin.postedBy !== this.currentUser.username ? `
                     <p><strong>Advisor:</strong> ${this.escapeHtml(bulletin.advisorName)} (${this.escapeHtml(bulletin.postedBy)})</p>
                 ` : ''}
                 <p><strong>Posted:</strong> ${bulletin.datePosted
                     ? new Date(bulletin.datePosted.toDate ? bulletin.datePosted.toDate() : bulletin.datePosted).toLocaleDateString()
                     : 'Unknown'}</p>
+                ${this.isResourceBulletin(bulletin) ? `
+                    <p><strong>Spanish Title:</strong> ${this.escapeHtml(bulletin.titleEs || bulletin.titleEn || bulletin.title || '')}</p>
+                    <p><strong>Published:</strong> ${bulletin.isPublished !== false ? 'Yes' : 'No'}</p>
+                    ${bulletin.url || bulletin.eventLink ? `<p><strong>Link:</strong> <a href="${this.escapeAttribute(bulletin.url || bulletin.eventLink)}" target="_blank" rel="noopener">Open resource</a></p>` : ''}
+                    ${bulletin.description ? `<p><strong>Description:</strong> ${this.escapeHtml(bulletin.description)}</p>` : ''}
+                    ${bulletin.resourceOrder !== '' && bulletin.resourceOrder !== undefined && bulletin.resourceOrder !== null ? `<p><strong>Display Order:</strong> ${this.escapeHtml(String(bulletin.resourceOrder))}</p>` : ''}
+                ` : ''}
                 ${this.renderManageDateInfo(bulletin)}
+                ${this.renderManageAnalytics(bulletin.id)}
                 <div class="manage-actions">
                     <button class="edit-btn" onclick="adminPanel.editBulletin('${bulletin.id}')">
                         Edit
@@ -859,13 +1536,72 @@ class FirebaseAdminPanel {
                 </div>
             </div>
         `).join('');
+
+        // Scroll to and briefly highlight the card that was just posted/edited
+        if (this.pendingHighlightId) {
+            const highlightId = this.pendingHighlightId;
+            this.pendingHighlightId = null;
+            requestAnimationFrame(() => {
+                const card = document.getElementById(`manage-card-${highlightId}`);
+                if (!card) return;
+                card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                card.style.transition = 'box-shadow 0.3s ease, outline 0.3s ease';
+                card.style.outline = '2.5px solid #22c55e';
+                card.style.boxShadow = '0 0 0 6px rgba(34,197,94,0.15)';
+                setTimeout(() => {
+                    card.style.outline = '';
+                    card.style.boxShadow = '';
+                }, 2500);
+            });
+        }
     }
 
     // Preview functionality
     previewBulletin() {
+        const contentType = document.getElementById('contentType')?.value || this.contentType || 'post';
+
+        if (contentType === 'resource') {
+            const titleEn = document.getElementById('resourceTitleEn').value.trim();
+            const titleEs = document.getElementById('resourceTitleEs').value.trim();
+            const resourceCategory = document.getElementById('resourceCategory').value;
+            const rawUrl = document.getElementById('resourceUrl').value.trim();
+            const description = document.getElementById('resourceDescription').value.trim();
+            const highlights = document.getElementById('resourceHighlights').value.trim();
+            const resourceIcon = document.getElementById('resourceIcon').value;
+            const resourceOrder = document.getElementById('resourceOrder').value.trim();
+            const isPublished = document.getElementById('resourcePublished').checked;
+
+            if (!titleEn || !resourceCategory || !rawUrl) {
+                this.showTemporaryMessage('Please fill in the English title, category, and URL before previewing.', 'warning');
+                return;
+            }
+
+            const url = /^https?:\/\//i.test(rawUrl) ? rawUrl : `https://${rawUrl}`;
+
+            this.showPreview({
+                type: 'resource',
+                title: titleEn,
+                titleEn,
+                titleEs: titleEs || titleEn,
+                resourceCategory,
+                resourceIcon,
+                url,
+                eventLink: url,
+                description,
+                highlights,
+                resourceOrder,
+                isPublished,
+                advisorName: this.currentUser?.name || document.getElementById('advisorName').value || 'Advisor',
+                datePosted: new Date()
+            });
+            return;
+        }
+
         const title = document.getElementById('title').value;
         const category = document.getElementById('category').value;
         const description = document.getElementById('description').value;
+        const titleEs = document.getElementById('titleEs')?.value || '';
+        const summaryEs = document.getElementById('summaryEs')?.value || '';
         const company = document.getElementById('company').value;
         const contact = document.getElementById('contact').value;
         const classType = document.getElementById('classType').value;
@@ -882,14 +1618,16 @@ class FirebaseAdminPanel {
         const eventLocation = document.getElementById('eventLocation')?.value || '';
 
         if (!title || !category || !advisorName) {
-            alert('Please fill in all required fields before previewing.');
+            this.showTemporaryMessage('Please fill in the title, category, and your name before previewing.', 'warning');
             return;
         }
 
         const bulletin = {
             title,
+            titleEs,
             category,
             description,
+            summaryEs,
             company,
             contact,
             dateType,
@@ -912,6 +1650,12 @@ class FirebaseAdminPanel {
 
     showPreview(bulletin) {
         const previewContent = document.getElementById('previewContent');
+        if (this.isResourceBulletin(bulletin)) {
+            previewContent.innerHTML = this.createResourcePreviewCard(bulletin);
+            document.getElementById('previewModal').style.display = 'block';
+            return;
+        }
+
         const isDeadlineClose = bulletin.deadline && this.isDeadlineClose(bulletin.deadline);
         const descriptionHtml = this.renderPreviewDescription(bulletin.description || '');
 
@@ -978,6 +1722,32 @@ class FirebaseAdminPanel {
         document.getElementById('previewModal').style.display = 'block';
     }
 
+    createResourcePreviewCard(resource) {
+        const titleEn = resource.titleEn || resource.title || '';
+        const titleEs = resource.titleEs || titleEn;
+        const categoryLabel = this.getResourceCategoryLabel(resource.resourceCategory);
+        const iconLabel = ADMIN_RESOURCE_ICON_LABELS[resource.resourceIcon] || ADMIN_RESOURCE_ICON_LABELS.auto;
+
+        return `
+            <div class="bulletin-card resource-preview-card">
+                <div class="bulletin-header">
+                    <span class="category-badge category-resource">Resource</span>
+                    <div class="bulletin-title">${this.escapeHtml(titleEn)}</div>
+                </div>
+                <div class="resource-preview-meta">
+                    <p><strong>Spanish Title:</strong> ${this.escapeHtml(titleEs)}</p>
+                    <p><strong>Category:</strong> ${this.escapeHtml(categoryLabel)}</p>
+                    <p><strong>Icon:</strong> ${this.escapeHtml(iconLabel)}</p>
+                    <p><strong>Published:</strong> ${resource.isPublished !== false ? 'Yes' : 'No'}</p>
+                    <p><strong>Link:</strong> <a href="${this.escapeAttribute(resource.url || resource.eventLink)}" target="_blank" rel="noopener">Open resource</a></p>
+                    ${resource.description ? `<p><strong>Description:</strong> ${this.escapeHtml(resource.description)}</p>` : ''}
+                    ${resource.resourceOrder !== '' && resource.resourceOrder !== undefined && resource.resourceOrder !== null ? `<p><strong>Display Order:</strong> ${this.escapeHtml(String(resource.resourceOrder))}</p>` : ''}
+                    <p><strong>Posted by:</strong> ${this.escapeHtml(resource.advisorName || '')}</p>
+                </div>
+            </div>
+        `;
+    }
+
     closePreview() {
         document.getElementById('previewModal').style.display = 'none';
     }
@@ -1023,14 +1793,27 @@ class FirebaseAdminPanel {
     }
 
     // Utility Methods
+    getManageCardTitle(bulletin) {
+        if (this.isResourceBulletin(bulletin)) {
+            return bulletin.titleEn || bulletin.title || 'Untitled Resource';
+        }
+
+        return bulletin.title || 'Untitled Bulletin';
+    }
+
+    getResourceCategoryLabel(category) {
+        return ADMIN_RESOURCE_CATEGORY_LABELS[category] || 'Resource / Recurso';
+    }
+
     getCategoryDisplay(category) {
         const categories = {
             'job': 'Job Opportunity',
-            'training': 'Training',
+            'training': 'Training/Workshop',
             'college': 'College/University',
-            'classtype': 'Class Type',
-            'announcement': 'Announcement',
-            'resource': 'Resource'
+            'career-fair': 'Career Fair',
+            'immigration': 'Immigration',
+            'announcement': 'General Announcement',
+            'resource': 'Resource/Service'
         };
         return categories[category] || category;
     }
@@ -1078,6 +1861,7 @@ class FirebaseAdminPanel {
             'training': 'Training Link',
             'college': 'College/University Link',
             'career-fair': 'Event Link',
+            'immigration': 'More Information',
             'announcement': 'More Information',
             'resource': 'Resource Link'
         };
@@ -1156,6 +1940,22 @@ class FirebaseAdminPanel {
         const timeDiff = deadlineDate.getTime() - today.getTime();
         const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
         return daysDiff <= 7 && daysDiff >= 0;
+    }
+
+    isBulletinExpiredAdmin(bulletin) {
+        if (!bulletin || !bulletin.deadline) {
+            return false;
+        }
+
+        const deadlineDate = new Date(bulletin.deadline);
+        if (Number.isNaN(deadlineDate.getTime())) {
+            return false;
+        }
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        deadlineDate.setHours(23, 59, 59, 999);
+        return deadlineDate < today;
     }
 
     escapeHtml(text) {
@@ -1406,13 +2206,19 @@ class FirebaseAdminPanel {
     async createBulletin(formData) {
         const bulletin = this.buildBulletinObject(formData);
         bulletin.postedBy = this.currentUser.username;
-        bulletin.datePosted = firebase.firestore.FieldValue.serverTimestamp();
+        bulletin.datePosted = serverTimestamp();
+        bulletin.createdAt = serverTimestamp();
+        bulletin.updatedAt = serverTimestamp();
 
         // Create the Firestore document FIRST to get an ID
-        const docRef = await db.collection('bulletins').add(bulletin);
+        const docRef = await addDoc(collection(db, 'bulletins'), bulletin);
         const bulletinId = docRef.id;
 
-        // Handle file uploads (image and PDF) using the real bulletin ID
+        if (this.isResourceBulletin(bulletin)) {
+            this.loadManageBulletins();
+            return bulletinId;
+        }
+
         const imageFile = formData.get('image');
         const pdfFile = formData.get('pdf');
 
@@ -1424,21 +2230,28 @@ class FirebaseAdminPanel {
 
         // Reload bulletins to show the new one
         this.loadManageBulletins();
+        return bulletinId;
     }
 
     async updateBulletin(formData, bulletinId) {
         const bulletin = this.buildBulletinObject(formData);
+        bulletin.updatedAt = serverTimestamp();
 
         // Preserve existing data
         const existingBulletin = this.bulletins.find(b => b.id === bulletinId);
         if (existingBulletin) {
             bulletin.postedBy = existingBulletin.postedBy;
             bulletin.datePosted = existingBulletin.datePosted;
-            bulletin.image = existingBulletin.image; // Preserve existing image unless replaced
-            bulletin.pdfUrl = existingBulletin.pdfUrl; // Preserve existing PDF unless replaced
+            bulletin.createdAt = existingBulletin.createdAt || existingBulletin.datePosted;
+            bulletin.image = this.isResourceBulletin(bulletin) ? null : existingBulletin.image;
+            bulletin.pdfUrl = this.isResourceBulletin(bulletin) ? null : existingBulletin.pdfUrl;
         }
 
-        // Handle file uploads (image and PDF)
+        if (this.isResourceBulletin(bulletin)) {
+            await this.saveBulletin(bulletin, bulletinId);
+            return;
+        }
+
         const imageFile = formData.get('image');
         const pdfFile = formData.get('pdf');
         
@@ -1453,10 +2266,85 @@ class FirebaseAdminPanel {
     }
 
     buildBulletinObject(formData) {
+        const contentType = (formData.get('contentType') || this.contentType || 'post') === 'resource' ? 'resource' : 'post';
+
+        if (contentType === 'resource') {
+            const titleEn = (formData.get('resourceTitleEn') || '').trim();
+            const titleEs = (formData.get('resourceTitleEs') || '').trim();
+            const resourceCategory = (formData.get('resourceCategory') || '').trim();
+            let url = (formData.get('resourceUrl') || '').trim();
+            const rawOrder = (formData.get('resourceOrder') || '').trim();
+
+            if (!titleEn) {
+                throw new Error('English title is required for resources.');
+            }
+
+            if (!resourceCategory) {
+                throw new Error('Resource category is required.');
+            }
+
+            if (!url) {
+                throw new Error('Resource link is required.');
+            }
+
+            if (!/^https?:\/\//i.test(url)) {
+                url = `https://${url}`;
+            }
+
+            try {
+                new URL(url);
+            } catch (error) {
+                throw new Error('Please enter a valid resource URL.');
+            }
+
+            const resourceOrder = rawOrder === '' ? null : Number(rawOrder);
+            if (rawOrder !== '' && !Number.isFinite(resourceOrder)) {
+                throw new Error('Display order must be a number.');
+            }
+
+            const suggestedIcon = document.getElementById('resourceIcon')?.dataset?.suggestedIcon || 'globe';
+            const selectedIcon = (formData.get('resourceIcon') || 'auto').trim();
+
+            return {
+                type: 'resource',
+                title: titleEn,
+                titleEn,
+                titleEs: titleEs || titleEn,
+                category: 'resource',
+                resourceCategory,
+                resourceIcon: selectedIcon === 'auto' ? suggestedIcon : selectedIcon,
+                url,
+                eventLink: url,
+                description: (formData.get('resourceDescription') || '').trim(),
+                highlights: (formData.get('resourceHighlights') || '').trim(),
+                advisorName: (formData.get('advisorName') || this.currentUser?.name || '').trim(),
+                isActive: true,
+                isPublished: formData.get('resourcePublished') === 'on',
+                isPinned: false,
+                resourceOrder,
+                company: '',
+                contact: '',
+                dateType: '',
+                eventDate: '',
+                startDate: '',
+                endDate: '',
+                deadline: '',
+                startTime: '',
+                endTime: '',
+                eventLocation: '',
+                classType: '',
+                image: null,
+                pdfUrl: null
+            };
+        }
+
         const bulletin = {
-            title: formData.get('title'),
+            type: 'post',
+            title: (formData.get('title') || '').trim(),
+            titleEs: (formData.get('titleEs') || '').trim(),
             category: formData.get('category'),
-            description: formData.get('description'),
+            description: (formData.get('description') || '').trim(),
+            summaryEs: (formData.get('summaryEs') || '').trim(),
             company: (formData.get('company') || '').trim(),
             contact: (formData.get('contact') || '').trim(),
             dateType: formData.get('dateType') || '',
@@ -1469,8 +2357,10 @@ class FirebaseAdminPanel {
             eventLocation: formData.get('eventLocation') || '',
             eventLink: (formData.get('eventLink') || '').trim(),
             classType: formData.get('classType') || '',
-            advisorName: formData.get('advisorName'),
+            advisorName: (formData.get('advisorName') || this.currentUser?.name || '').trim(),
             isActive: true,
+            isPublished: true,
+            hideFromMainFeed: formData.get('hideFromMainFeed') === 'on',
             image: null,
             pdfUrl: null
         };
@@ -1496,9 +2386,9 @@ class FirebaseAdminPanel {
             }
 
             if (editingId) {
-                await db.collection('bulletins').doc(editingId).update(bulletin);
+                await updateDoc(doc(db, 'bulletins', editingId), bulletin);
             } else {
-                await db.collection('bulletins').add(bulletin);
+                await addDoc(collection(db, 'bulletins'), bulletin);
             }
 
             // Reload bulletins to show updated data
@@ -1516,9 +2406,9 @@ class FirebaseAdminPanel {
         this.isEditMode = false;
         this.editingBulletinId = null;
 
-        // Reset form title and button
-        document.querySelector('.post-form-container h4').textContent = 'Create New Bulletin';
-        document.getElementById('postBulletinBtn').textContent = 'Post Bulletin';
+        // Hide edit banner
+        const banner = document.getElementById('editModeBanner');
+        if (banner) banner.style.display = 'none';
 
         // Clear form
         document.getElementById('bulletinForm').reset();
@@ -1526,6 +2416,8 @@ class FirebaseAdminPanel {
         // Clear image preview and cached data
         const imagePreview = document.getElementById('imagePreview');
         if (imagePreview) imagePreview.innerHTML = '';
+        const pdfPreview = document.getElementById('pdfPreview');
+        if (pdfPreview) pdfPreview.innerHTML = '';
         this.pendingImageData = null;
 
         // Reset advisor name dropdown to current user
@@ -1537,9 +2429,97 @@ class FirebaseAdminPanel {
         // Reset date fields
         document.getElementById('dateType').value = '';
         toggleDateFields();
+        const hideFromMainFeed = document.getElementById('hideFromMainFeed');
+        if (hideFromMainFeed) {
+            hideFromMainFeed.checked = false;
+        }
+        this.setContentType('post', { preserveFields: true, silent: true });
+        document.getElementById('resourcePublished').checked = true;
+        delete document.getElementById('resourceIcon').dataset.suggestedIcon;
 
         // Switch back to manage tab
         this.showTab('manage');
+    }
+
+    isMineOrManaged(bulletin) {
+        if (!this.currentUser) return false;
+        const u = this.currentUser.username;
+        const n = this.currentUser.name;
+        return bulletin.postedBy === u ||
+               bulletin.postedBy === n ||
+               bulletin.advisorName === n ||
+               bulletin.advisorName === u;
+    }
+
+    syncMobPostsList(bulletins, isAdmin = false) {
+        const container = document.getElementById('mobPostsList');
+        if (!container) return;
+        const catIconMap = {
+            job: '💼', training: '🔤', announcement: '📣', immigration: '🌐',
+            college: '🎓', 'career-fair': '🎪', resource: '🏠', health: '❤️', food: '🗑️',
+            jobs: '💼', housing: '🏠', 'legal-aid': '⚖️'
+        };
+
+        const resources = bulletins.filter(b => this.isResourceBulletin(b));
+        const events = bulletins.filter(b => !this.isResourceBulletin(b) && b.hideFromMainFeed);
+        const posts = bulletins.filter(b => !this.isResourceBulletin(b) && !b.hideFromMainFeed);
+
+        if (posts.length === 0 && resources.length === 0 && events.length === 0) {
+            container.innerHTML = '<p class="mob-empty-posts">No posts yet. Write your first bulletin!</p>';
+            return;
+        }
+
+        const renderItem = (b) => {
+            const fullTitle = this.getManageCardTitle(b);
+            const title = fullTitle;
+            const cat = b.category || b.resourceCategory || '';
+            const icon = catIconMap[cat] || (this.isResourceBulletin(b) ? '🔗' : b.hideFromMainFeed ? '📅' : '📋');
+            const isExpired = this.isBulletinExpiredAdmin(b);
+            const posted = b.datePosted ? new Date(b.datePosted.toDate ? b.datePosted.toDate() : b.datePosted) : null;
+            const timeAgo = posted ? this.formatTimeAgo(posted) : '';
+            const status = isExpired
+                ? '<span class="mob-status-expired">expired</span>'
+                : '<span class="mob-status-live">live</span>';
+            const advisorTag = isAdmin && b.advisorName
+                ? ` · ${this.escapeHtml(b.advisorName)}`
+                : '';
+            return `<div class="mob-post-item">
+                <span class="mob-post-icon">${icon}</span>
+                <div class="mob-post-info">
+                    <p class="mob-post-title">${this.escapeHtml(title)}</p>
+                    <p class="mob-post-meta">${timeAgo ? timeAgo + ' · ' : ''}${status}${advisorTag}</p>
+                </div>
+                <button class="mob-post-edit-btn" type="button" onclick="adminPanel.editBulletin('${b.id}')">Edit</button>
+            </div>`;
+        };
+
+        const postsLabel = isAdmin ? 'ALL POSTS' : 'YOUR POSTS';
+        const resourcesLabel = isAdmin ? 'ALL RESOURCES' : 'YOUR RESOURCES';
+        const eventsLabel = isAdmin ? 'ALL EVENTS' : 'YOUR EVENTS';
+
+        let html = '';
+        if (posts.length > 0) {
+            html += (isAdmin ? posts : posts.slice(0, 8)).map(renderItem).join('');
+        }
+        if (resources.length > 0) {
+            html += `<p class="mob-section-label" style="margin-top:18px">${resourcesLabel}</p>`;
+            html += (isAdmin ? resources : resources.slice(0, 6)).map(renderItem).join('');
+        }
+        if (events.length > 0) {
+            html += `<p class="mob-section-label" style="margin-top:18px">${eventsLabel}</p>`;
+            html += events.map(renderItem).join('');
+        }
+        container.innerHTML = html;
+    }
+
+    formatTimeAgo(date) {
+        const diff = Date.now() - date.getTime();
+        const mins = Math.floor(diff / 60000);
+        if (mins < 60) return mins + 'm ago';
+        const hrs = Math.floor(mins / 60);
+        if (hrs < 24) return hrs + 'h ago';
+        const days = Math.floor(hrs / 24);
+        return days + 'd ago';
     }
 
     renderManageDateInfo(bulletin) {
@@ -1565,8 +2545,6 @@ class FirebaseAdminPanel {
                                    bulletin.eventLocation === 'hybrid' ? 'Hybrid (In-Person & Online)' : bulletin.eventLocation;
                 html += `<p><strong>Format:</strong> ${locationText}</p>`;
             }
-
-            return html;
         }
 
         // Backward compatibility
@@ -1575,6 +2553,21 @@ class FirebaseAdminPanel {
         }
 
         return '';
+    }
+
+    renderManageAnalytics(bulletinId) {
+        const metrics = this.analyticsByPost[bulletinId] || {};
+        const total = metrics.total || 0;
+
+        return `
+            <div class="manage-analytics-strip" aria-label="Student engagement">
+                <span><strong>${total}</strong> total</span>
+                <span><strong>${metrics.detail_open || 0}</strong> opens</span>
+                <span><strong>${metrics.link_click || 0}</strong> links</span>
+                <span><strong>${metrics.pdf_open || 0}</strong> PDFs</span>
+                <span><strong>${metrics.share_click || 0}</strong> shares</span>
+            </div>
+        `;
     }
 
     formatDateLocalAdmin(dateString) {
@@ -1668,7 +2661,6 @@ function previewBulletin() {
         window.adminPanel.previewBulletin();
     } else {
         console.error('Admin panel not initialized yet');
-        alert('Please wait for the page to fully load before previewing.');
     }
 }
 

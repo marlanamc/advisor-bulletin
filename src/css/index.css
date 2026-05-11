@@ -1,0 +1,11 @@
+/* Component CSS imports — replaces the monolithic style.css */
+@import './base.css';
+@import './layout.css';
+@import './filters.css';
+@import './cards.css';
+@import './modals.css';
+@import './forms.css';
+@import './interactions.css';
+@import './calendar.css';
+@import './detail.css';
+@import './admin-auth.css';

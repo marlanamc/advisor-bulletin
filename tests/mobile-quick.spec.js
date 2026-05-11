@@ -1,102 +1,85 @@
 const { test, expect } = require('@playwright/test');
 
-// Quick mobile tests to verify CSS improvements
-test.describe('Mobile CSS Improvements', () => {
+async function seedDemoContent(page) {
+  await page.waitForFunction(() => window.bulletinBoard);
+  await page.evaluate(() => {
+    const now = new Date().toISOString();
+    const post = {
+      id: 'post-quick',
+      type: 'post',
+      title: 'Housing Workshop',
+      category: 'announcement',
+      description: 'Bring your questions for a short housing information session.',
+      advisorName: 'Fabiola',
+      postedBy: 'fabiola',
+      datePosted: now,
+      isActive: true,
+      isPublished: true,
+      dateType: 'event',
+      eventDate: '2026-03-24',
+      startTime: '09:30',
+      endTime: '10:30'
+    };
+
+    const resource = {
+      id: 'resource-quick',
+      type: 'resource',
+      title: 'Legal Help',
+      titleEn: 'Legal Help',
+      titleEs: 'Ayuda Legal',
+      category: 'resource',
+      resourceCategory: 'legal-aid',
+      resourceIcon: 'scale',
+      url: 'https://example.org/legal',
+      eventLink: 'https://example.org/legal',
+      description: 'Know-your-rights information and referrals.',
+      advisorName: 'Fabiola',
+      postedBy: 'fabiola',
+      datePosted: now,
+      isActive: true,
+      isPublished: true
+    };
+
+    window.bulletinBoard.bulletins = [post, resource];
+    window.bulletinBoard.populateAdvisorFilters();
+    window.bulletinBoard.displayBulletins([post]);
+  });
+}
+
+test.describe('Quick mobile checks', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
-    await page.waitForSelector('.bulletin-grid', { timeout: 10000 });
+    await seedDemoContent(page);
   });
 
-  test('calendar should have single column on mobile @mobile', async ({ page }) => {
-    // Switch to calendar view
-    await page.click('button[data-view="calendar"]');
-    await page.waitForTimeout(1000);
-
-    // Check if calendar grid exists
-    const calendarView = page.locator('.bulletin-calendar.active, .monthly-calendar');
-    await expect(calendarView.first()).toBeVisible({ timeout: 10000 });
-
-    // Take a screenshot for manual verification
-    await page.screenshot({ path: 'test-results/mobile-calendar.png', fullPage: true });
-
-    console.log('✅ Calendar view rendered on mobile');
+  test('resources view shows category chips and cards', async ({ page }) => {
+    await page.locator('.mobile-tab[data-app-view="resources"]').click();
+    await expect(page.locator('.resource-category-tile')).toHaveCount(10);
+    await expect(page.locator('.resource-card').first()).toBeVisible();
+    await expect(page.locator('#resourcesList')).toContainText('Legal Help');
   });
 
-  test('modal should be fullscreen on mobile @mobile', async ({ page }) => {
-    // Try to open a modal programmatically
+  test('feed bulletin detail modal still opens on mobile', async ({ page }) => {
     await page.evaluate(() => {
-      if (window.bulletinBoard && window.bulletinBoard.bulletins.length > 0) {
-        const firstBulletin = window.bulletinBoard.bulletins[0];
-        window.bulletinBoard.showBulletinDetail(firstBulletin.id);
-      }
+      window.bulletinBoard.showBulletinDetail('post-quick');
     });
 
-    await page.waitForTimeout(1000);
-
-    // Check if modal is visible
-    const modal = page.locator('#bulletinDetailModal');
-    const isVisible = await modal.evaluate((el) => {
-      return window.getComputedStyle(el).display !== 'none';
-    });
-
-    if (isVisible) {
-      // Take screenshot
-      await page.screenshot({ path: 'test-results/mobile-modal.png' });
-
-      // Check modal content dimensions
-      const modalContent = page.locator('.bulletin-detail-content');
-      const box = await modalContent.boundingBox();
-      const viewport = page.viewportSize();
-
-      console.log('Modal dimensions:', box);
-      console.log('Viewport:', viewport);
-
-      if (box && viewport) {
-        // On mobile (390px), modal should be close to full width
-        expect(box.width).toBeGreaterThan(viewport.width - 40);
-      }
-
-      console.log('✅ Modal is fullscreen on mobile');
-    } else {
-      console.log('ℹ️  Could not open modal - may need bulletins to be loaded');
-    }
+    await expect(page.locator('#bulletinDetailModal')).toBeVisible();
+    await expect(page.locator('#bulletinDetailBody')).toContainText('Housing Workshop');
   });
 
-  test('close button should be positioned correctly @mobile', async ({ page }) => {
-    // Open modal
-    await page.evaluate(() => {
-      if (window.bulletinBoard && window.bulletinBoard.bulletins.length > 0) {
-        window.bulletinBoard.showBulletinDetail(window.bulletinBoard.bulletins[0].id);
-      }
-    });
-
-    await page.waitForTimeout(500);
-
-    // Check close button
-    const closeBtn = page.locator('#closeBulletinDetail');
-    const isVisible = await closeBtn.isVisible().catch(() => false);
-
-    if (isVisible) {
-      const box = await closeBtn.boundingBox();
-
-      // Button should be at least 44x44 (iOS touch target guidelines)
-      if (box) {
-        expect(box.width).toBeGreaterThanOrEqual(44);
-        expect(box.height).toBeGreaterThanOrEqual(44);
-        console.log('✅ Close button size:', box.width, 'x', box.height);
-      }
-    }
+  test('mobile header search opens the search sheet', async ({ page }) => {
+    await page.locator('#mobileSearchTrigger').click();
+    await expect(page.locator('#searchLayer')).toHaveClass(/open/);
+    await expect(page.locator('#searchInput')).toBeVisible();
   });
 
-  test('view toggle buttons should be visible @mobile', async ({ page }) => {
-    const galleryBtn = page.locator('button[data-view="gallery"]');
-    const listBtn = page.locator('button[data-view="list"]');
-    const calendarBtn = page.locator('button[data-view="calendar"]');
+  test('mobile tab bar keeps touch-size buttons', async ({ page }) => {
+    const firstTab = page.locator('.mobile-tab').first();
+    const box = await firstTab.boundingBox();
 
-    await expect(galleryBtn).toBeVisible();
-    await expect(listBtn).toBeVisible();
-    await expect(calendarBtn).toBeVisible();
-
-    console.log('✅ All view toggle buttons are visible');
+    expect(box).toBeTruthy();
+    expect(box.width).toBeGreaterThanOrEqual(44);
+    expect(box.height).toBeGreaterThanOrEqual(44);
   });
 });

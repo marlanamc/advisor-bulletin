@@ -11,7 +11,7 @@
   "hosting": [
     {
       "target": "ebhcsjobboard",
-      "public": ".",
+      "public": "dist",
       "ignore": [
         "firebase.json",
         "**/.*",

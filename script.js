@@ -296,72 +296,54 @@ class BulletinBoard {
     }
 
     createBulletinDetailContent(bulletin) {
-        const postedDate = new Date(bulletin.datePosted).toLocaleDateString();
+        const meta = this.getCatMeta(bulletin.category);
         const isDeadlineClose = bulletin.deadline && this.isDeadlineClose(bulletin.deadline);
+        const deadlineDisplay = bulletin.deadline ? new Date(bulletin.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : null;
 
         return `
-            <div class="bulletin-detail-header">
-                <h2>${this.escapeHtml(bulletin.title)}</h2>
-                <span class="category-badge category-${bulletin.category}">
-                    ${this.getCategoryDisplay(bulletin.category)}
-                </span>
+    <div style="background:#f4f6fb;min-height:100%">
+      <div style="position:relative;height:200px;overflow:hidden">
+        ${bulletin.image ? `<img src="${bulletin.image}" alt="" class="lightbox-trigger" data-lightbox-src="${bulletin.image}" style="width:100%;height:100%;object-fit:cover;display:block">` : this.createHeroSvg(bulletin.category)}
+      </div>
+      <div style="background:#fff;margin-top:-20px;border-radius:20px 20px 0 0;padding:20px 16px 24px;position:relative">
+        <div style="font-size:11px;font-weight:800;letter-spacing:0.5px;color:${meta.accent};text-transform:uppercase;font-family:'Plus Jakarta Sans',sans-serif">${this.escapeHtml(meta.label)}</div>
+        <h2 style="font-family:'Outfit',sans-serif;font-size:24px;font-weight:800;color:#0a1d3a;line-height:1.15;margin:4px 0 12px">${this.escapeHtml(bulletin.title)}</h2>
+
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+          <div style="width:32px;height:32px;border-radius:50%;background:${meta.accent};color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Outfit',sans-serif;font-weight:800;font-size:13px;flex-shrink:0">${(bulletin.advisorName || '?').charAt(0).toUpperCase()}</div>
+          <div style="font-size:13px;color:#475569"><strong style="color:#0a1d3a">${this.escapeHtml(bulletin.advisorName || 'Advisor')}</strong> · ${this.getTimeAgo(bulletin.datePosted)}</div>
+        </div>
+
+        ${deadlineDisplay ? `
+          <div style="padding:12px 14px;background:${isDeadlineClose ? 'linear-gradient(90deg,#fff5e8,#ffe2c2)' : '#f1f5f9'};border:1.5px solid ${isDeadlineClose ? '#e88a2a' : '#e2e8f0'};border-radius:14px;margin-bottom:14px;display:flex;align-items:center;gap:10px">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="${isDeadlineClose ? '#c2410c' : '#475569'}" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7 v5 l3 2"/></svg>
+            <div>
+              <div style="font-size:11px;font-weight:700;color:${isDeadlineClose ? '#9a3412' : '#475569'};text-transform:uppercase;letter-spacing:0.4px">Important date</div>
+              <div style="font-size:15px;font-weight:800;color:${isDeadlineClose ? '#7c2d12' : '#0a1d3a'}">${this.escapeHtml(deadlineDisplay)}</div>
             </div>
+          </div>
+        ` : ''}
 
-            ${bulletin.image ? `
-                <div class="bulletin-detail-image">
-                    <img src="${bulletin.image}" alt="Bulletin image" class="detail-image">
-                </div>
-            ` : ''}
+        <p style="font-size:15px;color:#334155;line-height:1.55;margin:0 0 14px">${this.escapeHtml(bulletin.description).replace(/\n/g,'<br>')}</p>
 
-            <div class="bulletin-detail-description">
-                ${this.escapeHtml(bulletin.description).replace(/\n/g, '<br>')}
-            </div>
+        ${bulletin.company ? `<p style="font-size:14px;color:#475569;margin:0 0 10px"><strong>Organization:</strong> ${this.escapeHtml(bulletin.company)}</p>` : ''}
+        ${bulletin.contact ? `<p style="font-size:14px;color:#475569;margin:0 0 10px"><strong>Contact:</strong> ${this.escapeHtml(bulletin.contact).replace(/\n/g,'<br>')}</p>` : ''}
+        ${bulletin.classType ? `<p style="font-size:14px;color:#475569;margin:0 0 10px"><strong>Class Type:</strong> ${this.getClassTypeDisplay(bulletin.classType)}</p>` : ''}
 
-            <div class="bulletin-detail-meta">
-                ${bulletin.company ? `
-                    <div class="detail-meta-item">
-                        <strong>Organization:</strong> ${this.escapeHtml(bulletin.company)}
-                    </div>
-                ` : ''}
-
-                ${bulletin.classType ? `
-                    <div class="detail-meta-item">
-                        <strong>Class Type:</strong> ${this.getClassTypeDisplay(bulletin.classType)}
-                    </div>
-                ` : ''}
-
-                ${bulletin.contact ? `
-                    <div class="detail-meta-item">
-                        <strong>Contact:</strong> ${this.escapeHtml(bulletin.contact).replace(/\n/g, '<br>')}
-                    </div>
-                ` : ''}
-
-                ${bulletin.deadline ? `
-                    <div class="detail-meta-item ${isDeadlineClose ? 'deadline-warning' : ''}">
-                        <strong>Deadline:</strong> ${new Date(bulletin.deadline).toLocaleDateString()}
-                        ${isDeadlineClose ? ' (Soon!)' : ''}
-                    </div>
-                ` : ''}
-
-                <div class="detail-meta-item">
-                    <strong>Posted:</strong> ${postedDate}
-                </div>
-
-                <div class="detail-meta-item">
-                    <strong>Posted by:</strong> ${this.escapeHtml(bulletin.advisorName)}
-                </div>
-            </div>
-
-            <div class="bulletin-detail-actions">
-                ${bulletin.pdf ? `
-                    <a href="${bulletin.pdf}" download="${bulletin.pdfName || 'bulletin.pdf'}" class="pdf-btn" title="Download PDF" style="margin-right: 10px;">
-                        📄 Download PDF
-                    </a>
-                ` : ''}
-                <button class="share-btn" onclick="shareBulletin('${bulletin.id}', '${this.escapeHtml(bulletin.title).replace(/'/g, "&#39;")}')">
-                    📤 Share This Opportunity
-                </button>
-            </div>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:16px">
+          ${bulletin.pdf ? `
+            <a href="${bulletin.pdf}" download="${bulletin.pdfName || 'bulletin.pdf'}" style="display:flex;align-items:center;gap:10px;padding:14px;background:${meta.accent};color:#fff;border-radius:14px;text-decoration:none;font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:14px;box-shadow:0 4px 12px ${meta.accent}40">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+              Download PDF
+            </a>
+          ` : ''}
+          <button onclick="shareBulletin('${bulletin.id}','${this.escapeHtml(bulletin.title || '').replace(/'/g,"&#39;")}')" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;background:#fff;border:1.5px solid #e2e8f0;border-radius:14px;color:#475569;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:14px;cursor:pointer">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+            Share with a friend
+          </button>
+        </div>
+      </div>
+    </div>
         `;
     }
 
@@ -903,6 +885,12 @@ class BulletinBoard {
     displayGalleryView(bulletins) {
         console.log('🎨 Displaying gallery view with', bulletins.length, 'bulletins');
         console.log('🎨 Bulletin titles:', bulletins.map(b => b.title));
+
+        // Hide skeleton loaders
+        const skeletons = document.getElementById('feedSkeletons');
+        if (skeletons) {
+            skeletons.style.display = 'none';
+        }
 
         const grid = document.getElementById('bulletinGrid');
         if (grid) {
@@ -1620,93 +1608,127 @@ class BulletinBoard {
         }
     }
 
+    getTimeAgo(datePosted) {
+        if (!datePosted) return '';
+        const date = new Date(datePosted);
+        const now = new Date();
+        const diff = Math.floor((now - date) / 1000);
+        if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+        if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+        return `${Math.floor(diff / 86400)}d ago`;
+    }
+
+    getCatMeta(category) {
+        const map = {
+            job:           { accent: '#1f3d7a', tint: '#e1e9f7', label: 'Job Opportunity' },
+            training:      { accent: '#7b4ec7', tint: '#ece4f9', label: 'Training/Workshop' },
+            college:       { accent: '#0a1d3a', tint: '#dde2eb', label: 'College/University' },
+            immigration:   { accent: '#0d8a7a', tint: '#cfeee8', label: 'Immigration' },
+            housing:       { accent: '#d96a4a', tint: '#fbdcd1', label: 'Housing' },
+            health:        { accent: '#e0497d', tint: '#fbd6e3', label: 'Health' },
+            food:          { accent: '#2d8a4a', tint: '#cfead9', label: 'Food' },
+            childcare:     { accent: '#c08a3e', tint: '#f5e3c4', label: 'Family' },
+            esol:          { accent: '#7b4ec7', tint: '#ece4f9', label: 'ESOL' },
+            'career-fair': { accent: '#e88a2a', tint: '#fbe6cc', label: 'Career Fair' },
+            money:         { accent: '#1aa37a', tint: '#cfeee0', label: 'Money Help' },
+            announcement:  { accent: '#2e7af0', tint: '#dde9ff', label: 'General Announcement' },
+            resource:      { accent: '#2e7af0', tint: '#dde9ff', label: 'Resource/Service' },
+        };
+        return map[category] || { accent: '#2e7af0', tint: '#dde9ff', label: category };
+    }
+
+    createHeroSvg(category) {
+        const palettes = {
+            job:           { top: '#7eb1ff', bot: '#e1e9f7', sun: '#ffc857', fg1: '#1f3d7a',  fg2: '#5a7bb7' },
+            training:      { top: '#b89bea', bot: '#ece4f9', sun: '#fff',    fg1: '#7b4ec7',  fg2: '#c4afe7' },
+            college:       { top: '#5a7bb7', bot: '#dde2eb', sun: '#ffc857', fg1: '#0a1d3a',  fg2: '#3a4f78' },
+            immigration:   { top: '#5fc4b3', bot: '#cfeee8', sun: '#fff',    fg1: '#0d8a7a',  fg2: '#7fd4c6' },
+            housing:       { top: '#f0a78f', bot: '#fbdcd1', sun: '#fff8eb', fg1: '#d96a4a',  fg2: '#f5b7a3' },
+            health:        { top: '#f0a3bd', bot: '#fbd6e3', sun: '#fff',    fg1: '#e0497d',  fg2: '#f0a3bd' },
+            food:          { top: '#7cc795', bot: '#cfead9', sun: '#ffc857', fg1: '#2d8a4a',  fg2: '#9bd5af' },
+            childcare:     { top: '#e0bb7a', bot: '#f5e3c4', sun: '#fff',    fg1: '#c08a3e',  fg2: '#e0bb7a' },
+            esol:          { top: '#b89bea', bot: '#ece4f9', sun: '#fff',    fg1: '#7b4ec7',  fg2: '#c4afe7' },
+            'career-fair': { top: '#f5c285', bot: '#fbe6cc', sun: '#fff',    fg1: '#e88a2a',  fg2: '#f5c285' },
+            money:         { top: '#6dcfa9', bot: '#cfeee0', sun: '#ffc857', fg1: '#1aa37a',  fg2: '#9fdcc4' },
+            announcement:  { top: '#a9c8ff', bot: '#dde9ff', sun: '#fff8eb', fg1: '#7eb1ff',  fg2: '#dde9ff' },
+            resource:      { top: '#a9c8ff', bot: '#dde9ff', sun: '#fff8eb', fg1: '#7eb1ff',  fg2: '#dde9ff' },
+        };
+        const p = palettes[category] || palettes.announcement;
+        const id = `hg-${category}-${Math.random().toString(36).slice(2, 6)}`;
+        return `<svg viewBox="0 0 400 160" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%;height:100%" preserveAspectRatio="xMidYMid slice">
+    <defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${p.top}"/><stop offset="100%" stop-color="${p.bot}"/></linearGradient></defs>
+    <rect width="400" height="160" fill="url(#${id})"/>
+    <circle cx="320" cy="44" r="22" fill="${p.sun}" opacity="0.9"/>
+    <path d="M0 110 Q80 88 160 104 T320 104 T480 100 L480 160 L0 160 Z" fill="${p.fg1}"/>
+    <path d="M0 128 Q100 112 200 122 T400 118 L400 160 L0 160 Z" fill="${p.fg2}"/>
+  </svg>`;
+    }
+
     createBulletinCard(bulletin) {
-        const postedDate = new Date(bulletin.datePosted).toLocaleDateString();
+        const meta = this.getCatMeta(bulletin.category);
         const isDeadlineClose = bulletin.deadline && this.isDeadlineClose(bulletin.deadline);
         const isExpired = bulletin.deadline && this.isExpired(bulletin.deadline);
+        const initial = (bulletin.advisorName || '?').charAt(0).toUpperCase();
+        const postedAgo = this.getTimeAgo(bulletin.datePosted);
+        const deadlineDisplay = bulletin.deadline ? new Date(bulletin.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : null;
 
         return `
-            <div class="bulletin-card ${isExpired ? 'expired' : ''}">
-                ${isExpired ? '<div class="expired-banner">EXPIRED</div>' : ''}
-                <div class="bulletin-header">
-                    <div>
-                        <div class="bulletin-title">${this.escapeHtml(bulletin.title)}</div>
-                    </div>
-                    <span class="category-badge category-${bulletin.category}">
-                        ${this.getCategoryDisplay(bulletin.category)}
-                    </span>
-                </div>
+    <article class="bulletin-card-v2 ${isExpired ? 'expired' : ''}" data-bulletin-id="${bulletin.id}">
+      ${isExpired ? '<div class="expired-banner">EXPIRED</div>' : ''}
+      <div class="card-header-strip">
+        <div class="advisor-circle" style="background:${meta.accent}">${this.escapeHtml(initial)}</div>
+        <div style="flex:1;min-width:0">
+          <div class="card-meta-name">${this.escapeHtml(bulletin.advisorName || 'Advisor')} · <span style="color:${meta.accent}">${this.escapeHtml(meta.label)}</span></div>
+          <div class="card-meta-time">${postedAgo}</div>
+        </div>
+        <button class="save-btn-v2" aria-label="Share" onclick="shareBulletin('${bulletin.id}','${this.escapeHtml(bulletin.title || '').replace(/'/g,"&#39;")}')">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+          </svg>
+        </button>
+      </div>
 
-                ${bulletin.image ? `
-                    <div class="bulletin-image">
-                        <img src="${bulletin.image}" alt="Bulletin image" class="card-image">
-                    </div>
-                ` : ''}
+      <div class="card-hero-wrap">
+        ${bulletin.image ? `<img src="${bulletin.image}" alt="" class="card-hero-img lightbox-trigger" data-lightbox-src="${bulletin.image}">` : this.createHeroSvg(bulletin.category)}
+        ${isDeadlineClose && !isExpired ? `<div class="soon-badge"><span style="width:6px;height:6px;border-radius:99px;background:#ffc857;display:inline-block"></span>&nbsp;Soon</div>` : ''}
+      </div>
 
-                <div class="bulletin-description">
-                    ${this.escapeHtml(bulletin.description).replace(/\n/g, '<br>')}
-                </div>
+      <div class="card-body-v2">
+        <h3 class="card-title-v2">${this.escapeHtml(bulletin.title)}</h3>
+        <p class="card-summary-v2">${this.escapeHtml(bulletin.description).substring(0, 120).replace(/\n/g, '<br>')}${bulletin.description && bulletin.description.length > 120 ? '…' : ''}</p>
 
-                <div class="bulletin-meta">
-                    ${bulletin.company ? `
-                        <div class="meta-item">
-                            <strong>Organization:</strong> ${this.escapeHtml(bulletin.company)}
-                        </div>
-                    ` : ''}
+        ${deadlineDisplay ? `
+          <div class="deadline-chip-v2 ${isDeadlineClose && !isExpired ? 'urgent' : 'normal'}">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="${isDeadlineClose && !isExpired ? '#c2410c' : '#475569'}" stroke-width="2" stroke-linecap="round">
+              <circle cx="12" cy="12" r="9"/><path d="M12 7 v5 l3 2"/>
+            </svg>
+            <span>${this.escapeHtml(deadlineDisplay)}</span>
+          </div>
+        ` : ''}
 
-                    ${bulletin.classType ? `
-                        <div class="meta-item">
-                            <strong>Class Type:</strong> ${this.getClassTypeDisplay(bulletin.classType)}
-                        </div>
-                    ` : ''}
+        ${bulletin.company ? `<div style="font-size:12px;color:#64748b;margin-top:8px;font-weight:600">${this.escapeHtml(bulletin.company)}</div>` : ''}
 
-                    ${bulletin.contact ? `
-                        <div class="meta-item">
-                            <strong>Contact:</strong> ${this.escapeHtml(bulletin.contact).replace(/\n/g, '<br>')}
-                        </div>
-                    ` : ''}
+        <div class="card-actions-v2">
+          ${bulletin.pdf ? `
+            <a href="${bulletin.pdf}" download="${bulletin.pdfName || 'bulletin.pdf'}" class="action-btn-v2 primary" style="background:${meta.accent};color:#fff;text-decoration:none;box-shadow:0 4px 12px ${meta.accent}40">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+              <div><div style="font-weight:800;font-size:14px">Download PDF</div></div>
+            </a>
+          ` : ''}
+          ${bulletin.contact ? `
+            <button class="action-btn-v2 secondary" style="border-color:${meta.accent};color:${meta.accent}" onclick="this.closest('article').querySelector('.read-more-btn-v2').click()">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5a2 2 0 0 1 2-2h2l2 5-2.5 1.5a11 11 0 0 0 6 6L14 13l5 2v2a2 2 0 0 1-2 2A16 16 0 0 1 3 5Z"/></svg>
+              <div><div style="font-weight:800;font-size:14px">Contact</div><div style="font-size:11px;opacity:0.85;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:80px">${this.escapeHtml(bulletin.contact).substring(0, 20)}</div></div>
+            </button>
+          ` : ''}
+        </div>
 
-                    ${bulletin.deadline ? `
-                        <div class="meta-item ${isDeadlineClose ? 'deadline-warning' : ''}">
-                            <strong>Deadline:</strong> ${new Date(bulletin.deadline).toLocaleDateString()}
-                            ${isDeadlineClose ? ' (Soon!)' : ''}
-                        </div>
-                    ` : ''}
-
-                    <div class="meta-item">
-                        <strong>Posted:</strong> ${postedDate}
-                    </div>
-
-                    <div class="posted-by">
-                        Posted by ${this.escapeHtml(bulletin.advisorName)}
-                    </div>
-                </div>
-
-                <div class="bulletin-actions">
-                    <div class="bulletin-tags">
-                        ${bulletin.classType ? `
-                            <span class="info-tag class-type-tag">
-                                ${this.getClassTypeDisplay(bulletin.classType)}
-                            </span>
-                        ` : ''}
-                        ${bulletin.company ? `
-                            <span class="info-tag company-tag">
-                                🏢 ${this.escapeHtml(bulletin.company)}
-                            </span>
-                        ` : ''}
-                    </div>
-                    <div class="bulletin-action-buttons">
-                        ${bulletin.pdf ? `
-                            <a href="${bulletin.pdf}" download="${bulletin.pdfName || 'bulletin.pdf'}" class="pdf-btn" title="Download PDF">
-                                📄 View PDF
-                            </a>
-                        ` : ''}
-                        <button class="share-btn" onclick="shareBulletin('${bulletin.id}', '${this.escapeHtml(bulletin.title).replace(/'/g, "&#39;")}')">
-                            📤 Share
-                        </button>
-                    </div>
-                </div>
-            </div>
+        <button class="read-more-btn-v2" onclick="window.bulletinBoard && window.bulletinBoard.showBulletinDetail('${bulletin.id}')">
+          Read full post →
+        </button>
+      </div>
+    </article>
         `;
     }
 
@@ -1870,12 +1892,13 @@ class BulletinBoard {
     getCategoryDisplay(category) {
         const categories = {
             'job': 'Job Opportunity',
-            'training': 'Training',
+            'training': 'Training/Workshop',
             'college': 'College/University',
             'classtype': 'Class Type',
             'immigration': 'Immigration',
-            'announcement': 'Announcement',
-            'resource': 'Resource'
+            'career-fair': 'Career Fair',
+            'announcement': 'General Announcement',
+            'resource': 'Resource/Service'
         };
         return categories[category] || category;
     }
@@ -2716,3 +2739,40 @@ console.log('Running comprehensive tests...');
 setTimeout(() => {
     bulletinBoard.testAllFunctions();
 }, 1000);
+
+// ── Image Lightbox ────────────────────────────────────────────
+(function () {
+    const lightbox = document.getElementById('imgLightbox');
+    const lightboxImg = document.getElementById('imgLightboxImg');
+    const closeBtn = document.getElementById('imgLightboxClose');
+    const backdrop = document.getElementById('imgLightboxBackdrop');
+
+    function openLightbox(src) {
+        lightboxImg.src = src;
+        lightbox.classList.add('open');
+        lightbox.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox() {
+        lightbox.classList.remove('open');
+        lightbox.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+        lightboxImg.src = '';
+    }
+
+    // Delegate click to any .lightbox-trigger image
+    document.addEventListener('click', function (e) {
+        const trigger = e.target.closest('.lightbox-trigger');
+        if (trigger && trigger.dataset.lightboxSrc) {
+            openLightbox(trigger.dataset.lightboxSrc);
+        }
+    });
+
+    closeBtn && closeBtn.addEventListener('click', closeLightbox);
+    backdrop && backdrop.addEventListener('click', closeLightbox);
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeLightbox();
+    });
+})();

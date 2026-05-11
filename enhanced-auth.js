@@ -1,3 +1,7 @@
+import { db, auth } from './src/firebase.js'
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore'
+import { signInWithEmailAndPassword, EmailAuthProvider, reauthenticateWithCredential, updatePassword, sendPasswordResetEmail } from 'firebase/auth'
+
 // Enhanced Authentication System for EBHCS Bulletin Board
 class EnhancedAuth {
     constructor() {
@@ -70,7 +74,7 @@ class EnhancedAuth {
             if (typeof auth === 'undefined') {
                 throw new Error('Firebase authentication not initialized');
             }
-            await auth.signInWithEmailAndPassword(email, password);
+            await signInWithEmailAndPassword(auth, email, password);
 
             // Clear login attempts on successful login
             this.clearLoginAttempts(username);
@@ -79,10 +83,10 @@ class EnhancedAuth {
             if (password === 'ebhcs123' && username !== 'admin') {
                 // Set requirePasswordChange flag in Firestore
                 try {
-                    await db.collection('users').doc(username).set({
+                    await setDoc(doc(db, 'users', username), {
                         requirePasswordChange: true,
                         email: email,
-                        lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+                        lastLogin: serverTimestamp()
                     }, { merge: true });
                 } catch (error) {
                     console.error('Error setting password change flag:', error);
@@ -167,20 +171,20 @@ class EnhancedAuth {
 
         try {
             const user = auth.currentUser;
-            const credential = firebase.auth.EmailAuthProvider.credential(user.email, currentPassword);
+            const credential = EmailAuthProvider.credential(user.email, currentPassword);
 
             // Re-authenticate user
-            await user.reauthenticateWithCredential(credential);
+            await reauthenticateWithCredential(user, credential);
 
             // Update password
-            await user.updatePassword(newPassword);
+            await updatePassword(user, newPassword);
 
             // Clear requirePasswordChange flag in Firestore
             const username = user.email.split('@')[0];
             try {
-                await db.collection('users').doc(username).set({
+                await setDoc(doc(db, 'users', username), {
                     requirePasswordChange: false,
-                    passwordLastChanged: firebase.firestore.FieldValue.serverTimestamp()
+                    passwordLastChanged: serverTimestamp()
                 }, { merge: true });
             } catch (error) {
                 console.error('Error clearing password change flag:', error);
@@ -254,7 +258,7 @@ class EnhancedAuth {
 
         try {
             // Use Firebase's built-in password reset email
-            await firebase.auth().sendPasswordResetEmail(email);
+            await sendPasswordResetEmail(auth, email);
             
             this.showMessage('forgotPasswordSuccess',
                 `Password reset email sent to ${email}! Please check your inbox and spam folder. Click the link in the email to reset your password.`
@@ -466,7 +470,9 @@ class EnhancedAuth {
             'felipe': 'Felipe',
             'simonetta': 'Simonetta',
             'mike': 'Mike K.',
-            'leah': 'Leah'
+            'leah': 'Leah',
+            'lgregory': 'Leah Gregory',
+            'mcreed': 'Marlie'
         };
         return names[username] || username;
     }

@@ -3,30 +3,33 @@ service cloud.firestore {
   match /databases/{database}/documents {
     match /bulletins/{bulletinId} {
 
-      // Anyone can read active bulletins (for student viewing)
-      allow read: if resource.data.isActive == true;
+      // Students can read active content. Unpublished resources stay visible only to staff.
+      allow read: if isAdvisor(request.auth)
+        || (resource.data.isActive == true
+          && (!('type' in resource.data)
+            || resource.data.type != 'resource'
+            || !('isPublished' in resource.data)
+            || resource.data.isPublished == true));
 
-      // Only authenticated advisors can create bulletins
+      // Only authenticated advisors can create content
       allow create: if request.auth != null
         && request.auth.token.email.matches('.*@ebhcs\\.org')
         && validateBulletinData(request.resource.data)
         && request.resource.data.postedBy == getUsername(request.auth.token.email);
 
-      // Original authors can update their own bulletins; admin/leah may update any bulletin
+      // Original authors can update their own content; admin/leah may update any content.
       allow update: if request.auth != null
         && request.auth.token.email.matches('.*@ebhcs\\.org')
         && (isPrivilegedAdvisor(request.auth.token.email)
           || resource.data.postedBy == getUsername(request.auth.token.email))
+        && validateBulletinData(request.resource.data)
         && (!('postedBy' in request.resource.data) || request.resource.data.postedBy == resource.data.postedBy)
-        && (!('datePosted' in request.resource.data) || request.resource.data.datePosted == resource.data.datePosted);
+        && (!('datePosted' in request.resource.data) || request.resource.data.datePosted == resource.data.datePosted)
+        && (!('createdAt' in request.resource.data) || !('createdAt' in resource.data) || request.resource.data.createdAt == resource.data.createdAt);
 
-      // Original authors (or admin/leah) can delete by setting isActive: false
-      allow update: if request.auth != null
-        && request.auth.token.email.matches('.*@ebhcs\\.org')
-        && (isPrivilegedAdvisor(request.auth.token.email)
-          || resource.data.postedBy == getUsername(request.auth.token.email))
-        && request.resource.data.isActive == false
-        && request.resource.data.keys().hasAll(resource.data.keys());
+      // Privileged advisors can permanently delete bulletins (e.g. to remove sensitive content).
+      allow delete: if request.auth != null
+        && isPrivilegedAdvisor(request.auth.token.email);
     }
 
     match /users/{username} {
@@ -40,24 +43,37 @@ service cloud.firestore {
         && request.auth.token.email == 'admin@ebhcs.org';
     }
 
+    match /analyticsEvents/{eventId} {
+      // Anonymous students can write only sanitized aggregate events.
+      allow create: if validateAnalyticsEvent(request.resource.data);
+
+      // Advisors can read aggregate engagement data.
+      allow read: if isAdvisor(request.auth);
+
+      // Analytics events are append-only from the public client.
+      allow update, delete: if false;
+    }
+
     function getUsername(email) {
       return email.split('@')[0];
     }
 
+    function isAdvisor(authInfo) {
+      return authInfo != null
+        && authInfo.token.email.matches('.*@ebhcs\\.org');
+    }
+
     function isPrivilegedAdvisor(email) {
-      return email == 'admin@ebhcs.org' || email == 'leah@ebhcs.org';
+      return email == 'admin@ebhcs.org' || email == 'leah@ebhcs.org' || email == 'mcreed@ebhcs.org';
     }
 
     function validateBulletinData(data) {
-      // Required fields
-      let hasRequired = data.keys().hasAll(['title', 'category', 'advisorName', 'postedBy', 'isActive'])
-        && data.title is string && data.title.size() > 0 && data.title.size() <= 200
-        && data.category is string && data.category in ['job', 'training', 'college', 'career-fair', 'announcement', 'resource', 'immigration']
+      let hasCommonRequired = data.keys().hasAll(['type', 'advisorName', 'postedBy', 'isActive'])
+        && data.type is string && data.type in ['post', 'resource']
         && data.advisorName is string && data.advisorName.size() > 0
         && data.postedBy is string && data.postedBy.size() > 0
         && data.isActive is bool;
 
-      // Optional string fields - allow if not present, empty, or valid string
       let validOptionalFields =
         (!('description' in data) || data.description is string)
         && (!('company' in data) || data.company is string)
@@ -74,9 +90,89 @@ service cloud.firestore {
         && (!('eventLocation' in data) || data.eventLocation is string)
         && (!('classType' in data) || data.classType is string)
         && (!('image' in data) || data.image == null || data.image is string)
-        && (!('pdfUrl' in data) || data.pdfUrl == null || data.pdfUrl is string);
+        && (!('pdfUrl' in data) || data.pdfUrl == null || data.pdfUrl is string)
+        && (!('createdAt' in data) || data.createdAt is timestamp)
+        && (!('updatedAt' in data) || data.updatedAt is timestamp)
+        && (!('isPublished' in data) || data.isPublished is bool)
+        && (!('isPinned' in data) || data.isPinned is bool)
+        && (!('hideFromMainFeed' in data) || data.hideFromMainFeed is bool)
+        && (!('resourceCategory' in data) || data.resourceCategory is string)
+        && (!('resourceIcon' in data) || data.resourceIcon is string)
+        && (!('titleEn' in data) || data.titleEn is string)
+        && (!('titleEs' in data) || data.titleEs is string)
+        && (!('summaryEs' in data) || data.summaryEs is string)
+        && (!('url' in data) || data.url is string)
+        && (!('resourceOrder' in data) || data.resourceOrder == null || data.resourceOrder is int || data.resourceOrder is float);
 
-      return hasRequired && validOptionalFields;
+      let validPost = data.type == 'post'
+        && data.keys().hasAll(['title', 'category'])
+        && data.title is string && data.title.size() > 0 && data.title.size() <= 200
+        && data.category is string && data.category in ['job', 'training', 'college', 'career-fair', 'announcement', 'resource', 'immigration'];
+
+      let validResource = data.type == 'resource'
+        && data.keys().hasAll(['title', 'titleEn', 'category', 'resourceCategory', 'url', 'isPublished'])
+        && data.title is string && data.title.size() > 0 && data.title.size() <= 200
+        && data.titleEn is string && data.titleEn.size() > 0 && data.titleEn.size() <= 200
+        && (!('titleEs' in data) || data.titleEs.size() <= 200)
+        && data.category == 'resource'
+        && data.resourceCategory in ['immigration', 'jobs', 'housing', 'health', 'legal-aid']
+        && data.url is string && data.url.size() > 0;
+
+      return hasCommonRequired && validOptionalFields && (validPost || validResource);
+    }
+
+    function validateAnalyticsEvent(data) {
+      let validActions = [
+        'card_view',
+        'detail_open',
+        'link_click',
+        'pdf_open',
+        'share_click',
+        'category_click',
+        'resource_open'
+      ];
+
+      let validCategories = [
+        'job',
+        'training',
+        'college',
+        'career-fair',
+        'immigration',
+        'announcement',
+        'resource',
+        'housing',
+        'health',
+        'legal-aid',
+        'jobs',
+        'food',
+        'home',
+        'fair',
+        'esol'
+      ];
+
+      let postActions = [
+        'card_view',
+        'detail_open',
+        'link_click',
+        'pdf_open',
+        'share_click',
+        'resource_open'
+      ];
+
+      return data.keys().hasAll(['action', 'createdAt', 'dayKey', 'source', 'contentType'])
+        && data.keys().hasOnly(['postId', 'category', 'action', 'createdAt', 'dayKey', 'source', 'contentType'])
+        && data.action is string
+        && data.action in validActions
+        && data.createdAt is timestamp
+        && data.dayKey is string
+        && data.dayKey.matches('^\\d{4}-\\d{2}-\\d{2}$')
+        && data.source is string
+        && data.source in ['student', 'advisor-preview']
+        && data.contentType is string
+        && data.contentType in ['post', 'resource', 'category']
+        && (!('category' in data) || (data.category is string && data.category in validCategories))
+        && (!('postId' in data) || (data.postId is string && data.postId.size() > 0 && data.postId.size() <= 160))
+        && (data.action == 'category_click' || ('postId' in data && data.postId.size() > 0));
     }
   }
 }

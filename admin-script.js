@@ -101,6 +101,12 @@ class AdminPanel {
         if ([...advisorSelect.options].some(option => option.value === this.currentUser.name)) {
             advisorSelect.value = this.currentUser.name;
         }
+
+        // Sync mobile app shell welcome name
+        const mobName = document.getElementById('mobWelcomeName');
+        if (mobName) mobName.textContent = `Hi, ${this.currentUser.name} 👋`;
+        const mobLogged = document.getElementById('mobLoggedAs');
+        if (mobLogged) mobLogged.textContent = `Logged in as ${this.currentUser.name}`;
     }
 
     hideAdminPanel() {

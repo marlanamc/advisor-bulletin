@@ -11,6 +11,12 @@ node_modules/
 firebase-debug.log
 firebase-debug.*.log
 
+# Generated QA/debug artifacts
+.playwright-mcp/
+playwright-report/
+test-results/
+.cursor/debug-*.log
+
 # IDE
 .vscode/
 .idea/
