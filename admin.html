@@ -1521,6 +1521,16 @@
             var titleEl = document.getElementById('apTopbarTitle');
             if (titleEl && PAGES[page]) titleEl.textContent = PAGES[page].title;
             window.scrollTo({ top: 0, behavior: 'smooth' });
+            // Advisor list is filled by adminPanel.loadAdvisors(); legacy tab switch called that,
+            // but rail navigation only uses apShowPage — refresh list when opening this page.
+            if (page === 'advisors' && window.adminPanel) {
+                var ap = window.adminPanel;
+                if (typeof ap.loadAdvisorsFromFirestore === 'function') {
+                    ap.loadAdvisorsFromFirestore().then(function() { ap.loadAdvisors(); }).catch(function() { ap.loadAdvisors(); });
+                } else {
+                    ap.loadAdvisors();
+                }
+            }
         };
 
         // ── Type selector ─────────────────────────────────────────────
