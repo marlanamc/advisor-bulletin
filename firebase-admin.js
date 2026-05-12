@@ -1,5 +1,5 @@
 import { db, auth, storage } from './src/firebase.js'
-import { collection, doc, query, where, orderBy, limit, onSnapshot, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, serverTimestamp, Timestamp } from 'firebase/firestore'
+import { collection, doc, query, where, orderBy, onSnapshot, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, serverTimestamp, Timestamp } from 'firebase/firestore'
 import { onAuthStateChanged, signOut } from 'firebase/auth'
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage'
 
@@ -21,18 +21,23 @@ const ADMIN_RESOURCE_ICON_LABELS = {
     globe: 'Globe'
 };
 
+const HIGH_INTENT_ANALYTICS_ACTIONS = new Set(['link_click', 'pdf_open', 'resource_open']);
+const ENGAGEMENT_ANALYTICS_ACTIONS = new Set(['detail_open', 'link_click', 'pdf_open', 'resource_open', 'share_click']);
+
 // Firebase-enabled Admin Panel
 class FirebaseAdminPanel {
     constructor() {
         this.currentUser = null;
         this.bulletins = [];
         this.pendingImageData = null;
+        this.pendingImageEsData = null;
         this.isSubmitting = false;
         this.contentType = 'post';
         this.contentMode = 'post';
         this.analyticsEvents = [];
         this.analyticsByPost = {};
         this.analyticsUnsubscribe = null;
+        this.analyticsRangeDays = 30;
         this.advisors = [];
         this.init();
     }
@@ -134,7 +139,8 @@ class FirebaseAdminPanel {
         this.setupFormValidation();
 
         // Image upload preview
-        document.getElementById('image').addEventListener('change', (e) => this.handleImagePreview(e));
+        document.getElementById('image').addEventListener('change', (e) => this.handleImagePreview(e, 'image'));
+        document.getElementById('imageEs').addEventListener('change', (e) => this.handleImagePreview(e, 'imageEs'));
         
         // PDF upload preview
         document.getElementById('pdf').addEventListener('change', (e) => this.handlePdfPreview(e));
@@ -157,6 +163,14 @@ class FirebaseAdminPanel {
         if (manageSearch) manageSearch.addEventListener('input', rerender);
         if (manageSort) manageSort.addEventListener('change', rerender);
         if (manageFilter) manageFilter.addEventListener('change', rerender);
+
+        const analyticsRangeSelect = document.getElementById('analyticsRangeSelect');
+        if (analyticsRangeSelect) {
+            analyticsRangeSelect.value = String(this.analyticsRangeDays);
+            analyticsRangeSelect.addEventListener('change', (event) => {
+                this.setAnalyticsRange(Number(event.target.value));
+            });
+        }
 
         document.querySelectorAll('[data-school-event-preset]').forEach((button) => {
             button.addEventListener('click', () => {
@@ -226,6 +240,56 @@ class FirebaseAdminPanel {
         this.updateAdvisorDashboard();
     }
 
+    toggleAccordion(header) {
+        const section = header.closest('.ap-accordion-section');
+        const isOpen = section.classList.contains('open');
+        
+        if (isOpen) {
+            section.classList.remove('open');
+        } else {
+            section.classList.add('open');
+        }
+    }
+
+    autoExpandAccordions() {
+        // Check sections for values and expand if they have data
+        // 3. Event Details
+        const dateType = document.getElementById('dateType')?.value;
+        const hideFeed = document.getElementById('hideFromMainFeed')?.checked;
+        if (dateType || hideFeed) {
+            document.getElementById('eventDetailsAccordion')?.classList.add('open');
+        }
+
+        // 4. Spanish Translation
+        const titleEs = document.getElementById('titleEs')?.value;
+        const summaryEs = document.getElementById('summaryEs')?.value;
+        const hasImageEs = document.getElementById('imageEsPreview')?.querySelector('img');
+        if (titleEs || summaryEs || hasImageEs) {
+            const step4 = [...document.querySelectorAll('.ap-accordion-section')].find(s => s.querySelector('.ap-step-number')?.textContent === '4');
+            if (step4) step4.classList.add('open');
+        }
+
+        // 5. Contact & Location
+        const company = document.getElementById('company')?.value;
+        const contact = document.getElementById('contact')?.value;
+        const location = document.getElementById('location')?.value;
+        const phone = document.getElementById('contactPhone')?.value;
+        const hours = document.getElementById('contactHours')?.value;
+        const languages = document.getElementById('contactLanguages')?.value;
+        if (company || contact || location || phone || hours || languages) {
+            const step5 = [...document.querySelectorAll('.ap-accordion-section')].find(s => s.querySelector('.ap-step-number')?.textContent === '5');
+            if (step5) step5.classList.add('open');
+        }
+
+        // 6. Advanced Settings
+        const classType = document.getElementById('classType')?.value;
+        const hasPdf = document.getElementById('pdfPreview')?.querySelector('.pdf-preview-container');
+        if (classType || hasPdf) {
+            const step6 = [...document.querySelectorAll('.ap-accordion-section')].find(s => s.querySelector('.ap-step-number')?.textContent === '6');
+            if (step6) step6.classList.add('open');
+        }
+    }
+
     // Authentication Methods
     showLoginModal() {
         document.getElementById('loginModal').style.display = 'block';
@@ -235,11 +299,14 @@ class FirebaseAdminPanel {
         document.getElementById('loginModal').style.display = 'none';
     }
 
-    handleUserAuthenticated(userDetails) {
+    async handleUserAuthenticated(userDetails) {
+        await this.loadAdvisorsFromFirestore();
+        const advisor = this.advisors.find(a => a.username === userDetails.username);
         this.currentUser = {
             username: userDetails.username,
             email: userDetails.email,
-            name: userDetails.name
+            name: advisor?.displayName || userDetails.username,
+            isAdmin: advisor?.isAdmin === true
         };
 
         this.showAdminPanel();
@@ -252,48 +319,17 @@ class FirebaseAdminPanel {
     getUserDisplayName(username) {
         const fromFirestore = this.advisors.find(a => a.username === username);
         if (fromFirestore) return fromFirestore.displayName;
-        // Fallback during initial load before Firestore resolves
-        const fallback = {
-            'admin': 'Administrator', 'jorge': 'Jorge', 'fabiola': 'Fabiola',
-            'leidy': 'Leidy', 'carmen': 'Carmen', 'jerome': 'Jerome',
-            'felipe': 'Felipe', 'simonetta': 'Simonetta', 'mike': 'Mike K.',
-            'leah': 'Leah', 'lgregory': 'Leah Gregory', 'mcreed': 'Marlie'
-        };
-        return fallback[username] || username;
+        return username;
     }
 
     async loadAdvisorsFromFirestore() {
         try {
             const snap = await getDocs(collection(db, 'advisors'));
-            if (snap.empty) {
-                await this.seedAdvisors();
-            } else {
-                this.advisors = snap.docs.map(d => ({ username: d.id, ...d.data() }));
-            }
+            this.advisors = snap.docs.map(d => ({ username: d.id, ...d.data() }));
         } catch (e) {
             console.error('Error loading advisors:', e);
+            this.advisors = [];
         }
-    }
-
-    async seedAdvisors() {
-        const seed = [
-            { username: 'admin',        displayName: 'Administrator', email: 'admin@ebhcs.org',        isAdmin: true  },
-            { username: 'rocha',        displayName: 'Jorge',         email: 'rocha@ebhcs.org',        isAdmin: false },
-            { username: 'fvaquerano',   displayName: 'Fabiola',       email: 'fvaquerano@ebhcs.org',   isAdmin: false },
-            { username: 'lalzate',      displayName: 'Leidy',         email: 'lalzate@ebhcs.org',      isAdmin: false },
-            { username: 'vlalin',       displayName: 'Carmen',        email: 'vlalin@ebhcs.org',       isAdmin: false },
-            { username: 'jkiley',       displayName: 'Jerome',        email: 'jkiley@ebhcs.org',       isAdmin: false },
-            { username: 'fgallego',     displayName: 'Felipe',        email: 'fgallego@ebhcs.org',     isAdmin: false },
-            { username: 'spiergentili', displayName: 'Simonetta',     email: 'spiergentili@ebhcs.org', isAdmin: false },
-            { username: 'mkelsen',      displayName: 'Mike K.',       email: 'mkelsen@ebhcs.org',      isAdmin: false },
-            { username: 'lgregory',     displayName: 'Leah',          email: 'lgregory@ebhcs.org',     isAdmin: true  },
-            { username: 'mcreed',       displayName: 'Marlie',        email: 'mcreed@ebhcs.org',       isAdmin: true  },
-        ];
-        await Promise.all(seed.map(a => {
-            const { username, ...data } = a;
-            return setDoc(doc(db, 'advisors', username), { ...data, createdAt: serverTimestamp() });
-        }));
-        this.advisors = seed;
     }
 
     checkAutoLogin() {
@@ -324,7 +360,7 @@ class FirebaseAdminPanel {
                     username: username,
                     email: user.email,
                     name: this.getUserDisplayName(username),
-                    isAdmin: this.advisors.find(a => a.username === username)?.isAdmin ?? ['admin','leah','lgregory','mcreed'].includes(username)
+                    isAdmin: this.advisors.find(a => a.username === username)?.isAdmin === true
                 };
                 this.showAdminPanel();
                 this.setupAnalyticsListener();
@@ -580,18 +616,23 @@ class FirebaseAdminPanel {
     }
 
     setupAnalyticsListener() {
-        if (!this.currentUser || typeof db === 'undefined' || this.analyticsUnsubscribe) {
+        if (!this.currentUser || typeof db === 'undefined') {
             return;
         }
 
+        if (this.analyticsUnsubscribe) {
+            this.analyticsUnsubscribe();
+            this.analyticsUnsubscribe = null;
+        }
+
         const since = new Date();
-        since.setDate(since.getDate() - 30);
+        since.setDate(since.getDate() - this.analyticsRangeDays);
 
         const analyticsQuery = query(
+            // Advisor analytics read directly from Firestore analyticsEvents.
             collection(db, 'analyticsEvents'),
             where('createdAt', '>=', Timestamp.fromDate(since)),
-            orderBy('createdAt', 'desc'),
-            limit(1000)
+            orderBy('createdAt', 'desc')
         )
         this.analyticsUnsubscribe = onSnapshot(analyticsQuery, (snapshot) => {
                 this.analyticsEvents = snapshot.docs.map((doc) => ({
@@ -600,6 +641,9 @@ class FirebaseAdminPanel {
                 }));
                 this.aggregateAnalytics();
                 this.updateAdvisorDashboard();
+                this.updateAnalyticsRangeLabels();
+                const status = document.getElementById('advisorStatusPill');
+                if (status) status.textContent = `Live analytics · ${this.getAnalyticsRangeLabel()}`;
                 if (this.currentUser) {
                     this.loadManageBulletins();
                 }
@@ -610,10 +654,46 @@ class FirebaseAdminPanel {
             });
     }
 
+    setAnalyticsRange(days) {
+        const allowedDays = [7, 30, 90, 365];
+        this.analyticsRangeDays = allowedDays.includes(days) ? days : 30;
+        const select = document.getElementById('analyticsRangeSelect');
+        if (select) select.value = String(this.analyticsRangeDays);
+        this.analyticsEvents = [];
+        this.aggregateAnalytics();
+        this.updateAdvisorDashboard();
+        this.updateAnalyticsRangeLabels();
+        if (this.currentUser) {
+            this.setupAnalyticsListener();
+        }
+    }
+
+    getAnalyticsRangeLabel() {
+        if (this.analyticsRangeDays === 365) return 'last year';
+        return `last ${this.analyticsRangeDays} days`;
+    }
+
+    updateAnalyticsRangeLabels() {
+        const label = this.getAnalyticsRangeLabel();
+        this.setText('analyticsRangeInlineLabel', label);
+        this.setText('analyticsRangeStatsLabel', label);
+        const titleLabel = label.charAt(0).toUpperCase() + label.slice(1);
+        this.setText('analyticsRangeTopPostsLabel', titleLabel);
+    }
+
     aggregateAnalytics() {
         const byPost = {};
         const byAction = {};
         const byCategory = {};
+        const byEngagedCategory = {};
+        const summary = {
+            impressions: 0,
+            postOpens: 0,
+            highIntentClicks: 0,
+            shares: 0,
+            engagedPosts: 0,
+            rawEvents: 0
+        };
 
         // Only count genuine student interactions — exclude advisor preview sessions
         const studentEvents = this.analyticsEvents.filter((e) => e.source === 'student');
@@ -623,13 +703,24 @@ class FirebaseAdminPanel {
             const postId = event.postId || '';
             const category = event.category || 'uncategorized';
 
+            summary.rawEvents += 1;
+            if (action === 'card_view') summary.impressions += 1;
+            if (action === 'detail_open') summary.postOpens += 1;
+            if (action === 'share_click') summary.shares += 1;
+            if (HIGH_INTENT_ANALYTICS_ACTIONS.has(action)) summary.highIntentClicks += 1;
+
             byAction[action] = (byAction[action] || 0) + 1;
-            byCategory[category] = (byCategory[category] || 0) + 1;
+            if (ENGAGEMENT_ANALYTICS_ACTIONS.has(action)) {
+                byCategory[category] = (byCategory[category] || 0) + 1;
+                byEngagedCategory[category] = (byEngagedCategory[category] || 0) + 1;
+            }
 
             if (postId) {
                 if (!byPost[postId]) {
                     byPost[postId] = {
                         total: 0,
+                        engagement: 0,
+                        highIntentClicks: 0,
                         card_view: 0,
                         detail_open: 0,
                         link_click: 0,
@@ -640,13 +731,22 @@ class FirebaseAdminPanel {
                     };
                 }
                 byPost[postId].total += 1;
+                if (ENGAGEMENT_ANALYTICS_ACTIONS.has(action)) {
+                    byPost[postId].engagement += 1;
+                }
+                if (HIGH_INTENT_ANALYTICS_ACTIONS.has(action)) {
+                    byPost[postId].highIntentClicks += 1;
+                }
                 byPost[postId][action] = (byPost[postId][action] || 0) + 1;
             }
         });
 
+        summary.engagedPosts = Object.values(byPost).filter((metrics) => (metrics.engagement || 0) > 0).length;
         this.analyticsByPost = byPost;
         this.analyticsByAction = byAction;
         this.analyticsByCategory = byCategory;
+        this.analyticsByEngagedCategory = byEngagedCategory;
+        this.analyticsSummary = summary;
     }
 
     updateAdvisorDashboard() {
@@ -657,8 +757,7 @@ class FirebaseAdminPanel {
 
         this.setText('statLivePosts', livePosts.length);
         this.setText('statResources', resources.length);
-        const studentEventCount = this.analyticsEvents.filter((e) => e.source === 'student').length;
-        this.setText('statStudentClicks', studentEventCount);
+        this.setText('statStudentClicks', this.analyticsSummary?.highIntentClicks || 0);
         this.setText('statExpiringSoon', expiringSoon.length);
 
         this.renderAnalyticsList('analyticsActionList', this.analyticsByAction || {}, (key) => this.formatAnalyticsAction(key));
@@ -702,9 +801,10 @@ class FirebaseAdminPanel {
                 return {
                     postId,
                     title: bulletin ? this.getManageCardTitle(bulletin) : 'Unknown post',
-                    total: metrics.total || 0
+                    total: metrics.engagement || 0
                 };
             })
+            .filter((row) => row.total > 0)
             .sort((a, b) => b.total - a.total)
             .slice(0, 5);
 
@@ -812,14 +912,15 @@ class FirebaseAdminPanel {
         }
     }
 
-    async handleImageUpload(file, bulletin, pdfFile = null, editingId = null) {
+    async handleImageUpload(file, bulletin, pdfFile = null, editingId = null, fieldName = 'image') {
         try {
             const signature = this.getFileSignature(file);
             let processedImage = null;
             let usedCachedImage = false;
+            const pendingKey = fieldName === 'image' ? 'pendingImageData' : 'pendingImageEsData';
 
-            if (this.pendingImageData && this.pendingImageData.signature === signature) {
-                processedImage = this.pendingImageData;
+            if (this[pendingKey] && this[pendingKey].signature === signature) {
+                processedImage = this[pendingKey];
                 usedCachedImage = true;
             } else {
                 processedImage = await this.prepareImageForUpload(file);
@@ -827,22 +928,22 @@ class FirebaseAdminPanel {
 
             // Ensure final encoded image is within safety limits (~4MB)
             if (processedImage.finalBytes > 4 * 1024 * 1024) {
-                throw 'Optimized image is still larger than 4MB. Please upload a smaller image.';
+                throw `Optimized ${fieldName === 'image' ? 'English' : 'Spanish'} image is still larger than 4MB. Please upload a smaller image.`;
             }
 
             // Update the document with just the image field
             if (editingId) {
-                await updateDoc(doc(db, 'bulletins', editingId), {
-                    image: processedImage.dataUrl
-                });
+                const updateData = {};
+                updateData[fieldName] = processedImage.dataUrl;
+                await updateDoc(doc(db, 'bulletins', editingId), updateData);
             } else {
                 // For new bulletins, add the image to the bulletin object
-                bulletin.image = processedImage.dataUrl;
+                bulletin[fieldName] = processedImage.dataUrl;
                 await this.saveBulletin(bulletin, null);
             }
 
-            // Handle PDF upload if provided
-            if (pdfFile && pdfFile.size > 0) {
+            // Handle PDF upload if provided (only for primary image upload to avoid duplicate calls)
+            if (fieldName === 'image' && pdfFile && pdfFile.size > 0) {
                 await this.handlePdfUpload(pdfFile, bulletin, editingId);
             }
 
@@ -937,9 +1038,11 @@ class FirebaseAdminPanel {
         }
     }
 
-    async handleImagePreview(e) {
+    async handleImagePreview(e, fieldName = 'image') {
         const file = e.target.files[0];
-        const preview = document.getElementById('imagePreview');
+        const previewId = fieldName === 'image' ? 'imagePreview' : 'imageEsPreview';
+        const preview = document.getElementById(previewId);
+        const pendingKey = fieldName === 'image' ? 'pendingImageData' : 'pendingImageEsData';
 
         if (file) {
             // Comprehensive image validation
@@ -949,7 +1052,7 @@ class FirebaseAdminPanel {
                 this.showTemporaryMessage(validation.error, 'error');
                 e.target.value = '';
                 preview.innerHTML = '';
-                this.pendingImageData = null;
+                this[pendingKey] = null;
                 return;
             }
 
@@ -964,7 +1067,7 @@ class FirebaseAdminPanel {
                 const processed = await this.prepareImageForUpload(file);
                 const signature = this.getFileSignature(file);
 
-                this.pendingImageData = {
+                this[pendingKey] = {
                     ...processed,
                     signature
                 };
@@ -974,7 +1077,7 @@ class FirebaseAdminPanel {
                 preview.innerHTML = `
                     <div class="preview-container">
                         <img src="${processed.dataUrl}" alt="Preview" class="preview-image">
-                        <button type="button" class="remove-image" onclick="adminPanel.removeImagePreview()" aria-label="Remove image">&times;</button>
+                        <button type="button" class="remove-image" onclick="adminPanel.removeImagePreview('${fieldName}')" aria-label="Remove image">&times;</button>
                         <div class="image-info">
                             <small>${processed.width} × ${processed.height} pixels</small>
                             <small>${this.formatFileSize(processed.finalBytes)}</small>
@@ -993,11 +1096,11 @@ class FirebaseAdminPanel {
                 this.showTemporaryMessage('Could not process this image. Please try a smaller JPG or PNG.', 'error');
                 e.target.value = '';
                 preview.innerHTML = '';
-                this.pendingImageData = null;
+                this[pendingKey] = null;
             }
         } else {
             preview.innerHTML = '';
-            this.pendingImageData = null;
+            this[pendingKey] = null;
         }
     }
 
@@ -1176,10 +1279,15 @@ class FirebaseAdminPanel {
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     }
 
-    removeImagePreview() {
-        document.getElementById('image').value = '';
-        document.getElementById('imagePreview').innerHTML = '';
-        this.pendingImageData = null;
+    removeImagePreview(fieldName = 'image') {
+        const previewId = fieldName === 'image' ? 'imagePreview' : 'imageEsPreview';
+        const input = document.getElementById(fieldName);
+        const preview = document.getElementById(previewId);
+        const pendingKey = fieldName === 'image' ? 'pendingImageData' : 'pendingImageEsData';
+
+        if (input) input.value = '';
+        if (preview) preview.innerHTML = '';
+        this[pendingKey] = null;
     }
 
     handlePdfPreview(e) {
@@ -1285,8 +1393,10 @@ class FirebaseAdminPanel {
         this.showTab('post');
         document.getElementById('bulletinForm').reset();
         document.getElementById('imagePreview').innerHTML = '';
+        document.getElementById('imageEsPreview').innerHTML = '';
         document.getElementById('pdfPreview').innerHTML = '';
         this.pendingImageData = null;
+        this.pendingImageEsData = null;
 
         // Set edit mode
         this.isEditMode = true;
@@ -1305,6 +1415,18 @@ class FirebaseAdminPanel {
             document.getElementById('resourceHighlights').value = bulletin.highlights || '';
             document.getElementById('resourcePublished').checked = bulletin.isPublished !== false;
             document.getElementById('resourceOrder').value = bulletin.resourceOrder ?? '';
+            document.getElementById('resourceAdvisorName').value = bulletin.advisorName || '';
+            document.getElementById('resourceAddress').value = bulletin.address || '';
+            document.getElementById('resourcePhone').value = bulletin.phone || '';
+            if (bulletin.phoneMode) {
+                const radio = document.querySelector(`input[name="resourcePhoneMode"][value="${bulletin.phoneMode}"]`);
+                if (radio) radio.checked = true;
+            }
+            document.getElementById('resourceHours').value = bulletin.hours || '';
+            const resLangs = Array.isArray(bulletin.languages) ? bulletin.languages : (bulletin.languages || '').split(',').map(s => s.trim()).filter(Boolean);
+            document.querySelectorAll('input[name="resourceLanguages"]').forEach(cb => {
+                cb.checked = resLangs.includes(cb.value);
+            });
         } else {
             document.getElementById('title').value = bulletin.title;
             document.getElementById('titleEs').value = bulletin.titleEs || '';
@@ -1313,6 +1435,16 @@ class FirebaseAdminPanel {
             document.getElementById('summaryEs').value = bulletin.summaryEs || '';
             document.getElementById('company').value = bulletin.company || '';
             document.getElementById('contact').value = bulletin.contact || '';
+            document.getElementById('contactPhone').value = bulletin.phone || '';
+            if (bulletin.phoneMode) {
+                const radio = document.querySelector(`input[name="contactPhoneMode"][value="${bulletin.phoneMode}"]`);
+                if (radio) radio.checked = true;
+            }
+            document.getElementById('contactHours').value = bulletin.hours || '';
+            const conLangs = Array.isArray(bulletin.languages) ? bulletin.languages : (bulletin.languages || '').split(',').map(s => s.trim()).filter(Boolean);
+            document.querySelectorAll('input[name="contactLanguages"]').forEach(cb => {
+                cb.checked = conLangs.includes(cb.value);
+            });
             if (bulletin.dateType) {
                 document.getElementById('dateType').value = bulletin.dateType;
                 toggleDateFields();
@@ -1345,10 +1477,20 @@ class FirebaseAdminPanel {
                 document.getElementById('imagePreview').innerHTML = `
                     <div class="preview-container">
                         <img src="${bulletin.image}" alt="Preview" class="preview-image">
-                        <button type="button" class="remove-image" onclick="adminPanel.removeImagePreview()">&times;</button>
+                        <button type="button" class="remove-image" onclick="adminPanel.removeImagePreview('image')">&times;</button>
                     </div>
                 `;
             }
+
+            if (bulletin.imageEs) {
+                document.getElementById('imageEsPreview').innerHTML = `
+                    <div class="preview-container">
+                        <img src="${bulletin.imageEs}" alt="Spanish Preview" class="preview-image">
+                        <button type="button" class="remove-image" onclick="adminPanel.removeImagePreview('imageEs')">&times;</button>
+                    </div>
+                `;
+            }
+            this.autoExpandAccordions();
         }
 
         // Store the bulletin ID for updating
@@ -1701,6 +1843,7 @@ class FirebaseAdminPanel {
             advisorName,
             datePosted: new Date(),
             image: document.getElementById('imagePreview')?.querySelector('img')?.src || null,
+            imageEs: document.getElementById('imageEsPreview')?.querySelector('img')?.src || null,
             pdfUrl: document.getElementById('pdfPreview').querySelector('.pdf-preview-container') ? 'preview-pdf' : null
         };
 
@@ -1729,7 +1872,15 @@ class FirebaseAdminPanel {
 
                 ${bulletin.image ? `
                     <div class="bulletin-image">
+                        ${bulletin.imageEs ? '<small style="color:#64748b;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;display:block">English Version</small>' : ''}
                         <img src="${bulletin.image}" alt="Bulletin image" class="card-image">
+                    </div>
+                ` : ''}
+
+                ${bulletin.imageEs ? `
+                    <div class="bulletin-image" style="margin-top:12px">
+                        <small style="color:#64748b;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;display:block">Spanish Version</small>
+                        <img src="${bulletin.imageEs}" alt="Spanish bulletin image" class="card-image">
                     </div>
                 ` : ''}
 
@@ -2279,12 +2430,17 @@ class FirebaseAdminPanel {
         }
 
         const imageFile = formData.get('image');
+        const imageEsFile = formData.get('imageEs');
         const pdfFile = formData.get('pdf');
 
         if (imageFile && imageFile.size > 0) {
-            await this.handleImageUpload(imageFile, bulletin, pdfFile, bulletinId);
+            await this.handleImageUpload(imageFile, bulletin, pdfFile, bulletinId, 'image');
         } else if (pdfFile && pdfFile.size > 0) {
             await this.handlePdfUpload(pdfFile, bulletin, bulletinId);
+        }
+        
+        if (imageEsFile && imageEsFile.size > 0) {
+            await this.handleImageUpload(imageEsFile, bulletin, null, bulletinId, 'imageEs');
         }
 
         // Reload bulletins to show the new one
@@ -2312,13 +2468,24 @@ class FirebaseAdminPanel {
         }
 
         const imageFile = formData.get('image');
+        const imageEsFile = formData.get('imageEs');
         const pdfFile = formData.get('pdf');
         
+        let fileProcessed = false;
         if (imageFile && imageFile.size > 0) {
-            await this.handleImageUpload(imageFile, bulletin, pdfFile, bulletinId);
+            await this.handleImageUpload(imageFile, bulletin, pdfFile, bulletinId, 'image');
+            fileProcessed = true;
         } else if (pdfFile && pdfFile.size > 0) {
             await this.handlePdfUpload(pdfFile, bulletin, bulletinId);
-        } else {
+            fileProcessed = true;
+        }
+        
+        if (imageEsFile && imageEsFile.size > 0) {
+            await this.handleImageUpload(imageEsFile, bulletin, null, bulletinId, 'imageEs');
+            fileProcessed = true;
+        }
+
+        if (!fileProcessed) {
             // Only save if there are no files (file upload handlers save it)
             await this.saveBulletin(bulletin, bulletinId);
         }
@@ -2364,6 +2531,11 @@ class FirebaseAdminPanel {
             const suggestedIcon = document.getElementById('resourceIcon')?.dataset?.suggestedIcon || 'globe';
             const selectedIcon = (formData.get('resourceIcon') || 'auto').trim();
 
+            const advisorName = (formData.get('resourceAdvisorName') || '').trim();
+            if (!advisorName) {
+                throw new Error('Please select who is posting this resource.');
+            }
+
             return {
                 type: 'resource',
                 title: titleEn,
@@ -2376,7 +2548,12 @@ class FirebaseAdminPanel {
                 eventLink: url,
                 description: (formData.get('resourceDescription') || '').trim(),
                 highlights: (formData.get('resourceHighlights') || '').trim(),
-                advisorName: (formData.get('advisorName') || this.currentUser?.name || '').trim(),
+                advisorName: advisorName,
+                address: (formData.get('resourceAddress') || '').trim(),
+                phone: (formData.get('resourcePhone') || '').trim(),
+                phoneMode: (formData.get('resourcePhoneMode') || 'call').trim(),
+                hours: (formData.get('resourceHours') || '').trim(),
+                languages: formData.getAll('resourceLanguages'),
                 isActive: true,
                 isPublished: formData.get('resourcePublished') === 'on',
                 isPinned: false,
@@ -2417,6 +2594,11 @@ class FirebaseAdminPanel {
             eventLink: (formData.get('eventLink') || '').trim(),
             classType: formData.get('classType') || '',
             advisorName: (formData.get('advisorName') || this.currentUser?.name || '').trim(),
+            address: (formData.get('eventLocation') || '').trim(),
+            phone: (formData.get('contactPhone') || '').trim(),
+            phoneMode: (formData.get('contactPhoneMode') || 'call').trim(),
+            hours: (formData.get('contactHours') || '').trim(),
+            languages: formData.getAll('contactLanguages'),
             isActive: true,
             isPublished: true,
             hideFromMainFeed: formData.get('hideFromMainFeed') === 'on',
@@ -2475,15 +2657,32 @@ class FirebaseAdminPanel {
         // Clear image preview and cached data
         const imagePreview = document.getElementById('imagePreview');
         if (imagePreview) imagePreview.innerHTML = '';
+        const imageEsPreview = document.getElementById('imageEsPreview');
+        if (imageEsPreview) imageEsPreview.innerHTML = '';
         const pdfPreview = document.getElementById('pdfPreview');
         if (pdfPreview) pdfPreview.innerHTML = '';
         this.pendingImageData = null;
+        this.pendingImageEsData = null;
 
         // Reset advisor name dropdown to current user
         const advisorSelect = document.getElementById('advisorName');
         if (advisorSelect && this.currentUser && [...advisorSelect.options].some(option => option.value === this.currentUser.name)) {
             advisorSelect.value = this.currentUser.name;
         }
+
+        const resourceAdvisorSelect = document.getElementById('resourceAdvisorName');
+        if (resourceAdvisorSelect && this.currentUser && [...resourceAdvisorSelect.options].some(option => option.value === this.currentUser.name)) {
+            resourceAdvisorSelect.value = this.currentUser.name;
+        }
+
+        // Reset phone mode radios
+        document.querySelectorAll('input[name="resourcePhoneMode"][value="call"]').forEach(r => r.checked = true);
+        document.querySelectorAll('input[name="contactPhoneMode"][value="call"]').forEach(r => r.checked = true);
+
+        // Reset language chips
+        document.querySelectorAll('input[name="resourceLanguages"], input[name="contactLanguages"]').forEach(cb => {
+            cb.checked = false;
+        });
 
         // Reset date fields
         document.getElementById('dateType').value = '';
@@ -2495,6 +2694,11 @@ class FirebaseAdminPanel {
         this.setContentType('post', { preserveFields: true, silent: true });
         document.getElementById('resourcePublished').checked = true;
         delete document.getElementById('resourceIcon').dataset.suggestedIcon;
+        
+        // Collapse all accordions
+        document.querySelectorAll('.ap-accordion-section').forEach(section => {
+            section.classList.remove('open');
+        });
 
         // Switch back to manage tab
         this.showTab('manage');
@@ -2555,11 +2759,10 @@ class FirebaseAdminPanel {
 
     renderManageAnalytics(bulletinId) {
         const metrics = this.analyticsByPost[bulletinId] || {};
-        const total = metrics.total || 0;
 
         return `
             <div class="manage-analytics-strip" aria-label="Student engagement">
-                <span><strong>${total}</strong> total</span>
+                <span><strong>${metrics.engagement || 0}</strong> engaged</span>
                 <span><strong>${metrics.detail_open || 0}</strong> opens</span>
                 <span><strong>${metrics.link_click || 0}</strong> links</span>
                 <span><strong>${metrics.pdf_open || 0}</strong> PDFs</span>

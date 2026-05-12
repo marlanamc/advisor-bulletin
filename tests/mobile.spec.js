@@ -43,7 +43,7 @@ async function seedDemoContent(page) {
 
     window.bulletinBoard.bulletins = [post, resource];
     window.bulletinBoard.populateAdvisorFilters();
-    window.bulletinBoard.displayBulletins([post]);
+    window.bulletinBoard.displayBulletins([post, resource]);
   });
 }
 
@@ -80,7 +80,11 @@ test.describe('Mobile app shell', () => {
   });
 
   test('collapses the mobile header on scroll without hiding story shortcuts', async ({ page }) => {
-    await page.evaluate(() => window.scrollTo(0, 300));
+    await page.evaluate(() => {
+      document.body.style.minHeight = '1200px';
+      window.scrollTo(0, 300);
+      window.dispatchEvent(new Event('scroll'));
+    });
 
     await expect(page.locator('header')).toHaveClass(/collapsed/);
     await expect(page.locator('#feedStoryCats .story-bubble').first()).toBeVisible();
@@ -103,6 +107,7 @@ test.describe('Mobile app shell', () => {
 
   test('switches to the dedicated resources view from bottom nav', async ({ page }) => {
     await page.locator('.mobile-tab[data-app-view="resources"]').click();
+    await page.evaluate(() => window.bulletinBoard.switchResourceCategory('health'));
 
     await expect(page.locator('#resourcesView')).toHaveClass(/active/);
     await expect(page.locator('#resourcesList .resource-card').first()).toBeVisible();

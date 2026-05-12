@@ -460,21 +460,7 @@ class EnhancedAuth {
 
     // Utility methods
     getUserDisplayName(username) {
-        const names = {
-            'admin': 'Administrator',
-            'jorge': 'Jorge',
-            'fabiola': 'Fabiola',
-            'leidy': 'Leidy',
-            'carmen': 'Carmen',
-            'jerome': 'Jerome',
-            'felipe': 'Felipe',
-            'simonetta': 'Simonetta',
-            'mike': 'Mike K.',
-            'leah': 'Leah',
-            'lgregory': 'Leah Gregory',
-            'mcreed': 'Marlie'
-        };
-        return names[username] || username;
+        return username;
     }
 
     showError(elementId, message) {

@@ -42,8 +42,10 @@ async function showSeededAdvisorDashboard(page) {
     ];
 
     window.adminPanel.analyticsEvents = [
+      { postId: 'post-1', category: 'training', action: 'card_view', source: 'student' },
       { postId: 'post-1', category: 'training', action: 'detail_open', source: 'student' },
       { postId: 'post-1', category: 'training', action: 'link_click', source: 'student' },
+      { postId: 'post-1', category: 'training', action: 'pdf_open', source: 'student' },
       { postId: 'post-2', category: 'job', action: 'share_click', source: 'student' },
     ];
 
@@ -67,10 +69,23 @@ test.describe('Advisor redesign', () => {
 
     await expect(page.locator('.ap-portal')).toBeVisible();
     await expect(page.locator('#statLivePosts')).toBeVisible();
-    await expect(page.locator('#statStudentClicks')).toContainText('3');
+    await expect(page.locator('#statStudentClicks')).toContainText('2');
     await expect(page.locator('#analyticsActionList')).toContainText('Detail opens');
     await expect(page.locator('#analyticsTopPosts')).toContainText('Free CNA class starts in June');
-    await expect(page.locator('.manage-analytics-strip').first()).toContainText('opens');
+    await expect(page.locator('.manage-analytics-strip').first()).toContainText('3');
+    await expect(page.locator('.manage-analytics-strip').first()).toContainText('engaged');
+  });
+
+  test('lets advisors change the analytics time period', async ({ page }) => {
+    await showSeededAdvisorDashboard(page);
+
+    await expect(page.locator('#analyticsRangeInlineLabel')).toContainText('last 30 days');
+    await page.locator('#analyticsRangeSelect').selectOption('90');
+
+    await expect(page.locator('#analyticsRangeInlineLabel')).toContainText('last 90 days');
+    await expect(page.locator('#analyticsRangeStatsLabel')).toContainText('last 90 days');
+    await expect(page.locator('#analyticsRangeTopPostsLabel')).toContainText('Last 90 days');
+    await expect(page.locator('#statStudentClicks')).toContainText('0');
   });
 
   test('category picker stays in sync with bulletin category field', async ({ page }) => {

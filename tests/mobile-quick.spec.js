@@ -42,7 +42,7 @@ async function seedDemoContent(page) {
 
     window.bulletinBoard.bulletins = [post, resource];
     window.bulletinBoard.populateAdvisorFilters();
-    window.bulletinBoard.displayBulletins([post]);
+    window.bulletinBoard.displayBulletins([post, resource]);
   });
 }
 
@@ -55,6 +55,7 @@ test.describe('Quick mobile checks', () => {
   test('resources view shows category chips and cards', async ({ page }) => {
     await page.locator('.mobile-tab[data-app-view="resources"]').click();
     await expect(page.locator('.resource-category-tile')).toHaveCount(10);
+    await page.evaluate(() => window.bulletinBoard.switchResourceCategory('legal-aid'));
     await expect(page.locator('.resource-card').first()).toBeVisible();
     await expect(page.locator('#resourcesList')).toContainText('Legal Help');
   });

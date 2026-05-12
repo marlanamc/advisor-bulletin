@@ -221,6 +221,15 @@
                 <header class="ap-topbar">
                     <h1 class="ap-topbar-title" id="apTopbarTitle">Dashboard</h1>
                     <div class="ap-topbar-actions">
+                        <label class="ap-analytics-range" for="analyticsRangeSelect">
+                            <span>Analytics</span>
+                            <select id="analyticsRangeSelect" class="ap-select" aria-label="Analytics time period">
+                                <option value="7">7 days</option>
+                                <option value="30" selected>30 days</option>
+                                <option value="90">90 days</option>
+                                <option value="365">1 year</option>
+                            </select>
+                        </label>
                         <div class="advisor-status-pill" id="advisorStatusPill" style="font-size:.75rem;padding:5px 12px;">Connecting...</div>
                         <a href="index.html" class="ap-btn ap-btn-ghost">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
@@ -243,7 +252,7 @@
                         <div>
                             <div class="ap-welcome-eyebrow">Advisor Portal · EBHCS</div>
                             <h2 class="ap-welcome-title" id="welcomeMessage">Good morning, Advisor</h2>
-                            <p class="ap-welcome-sub">Create clear, student-ready updates and see what students click.</p>
+                            <p class="ap-welcome-sub">Create clear, student-ready updates and see what students click in the <span id="analyticsRangeInlineLabel">last 30 days</span>.</p>
                         </div>
                         <button class="ap-welcome-cta" onclick="apShowPage('create')">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -273,7 +282,7 @@
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
                             </div>
                             <div class="ap-stat-value" id="statStudentClicks">0</div>
-                            <div class="ap-stat-label">Student Clicks</div>
+                            <div class="ap-stat-label">Link/PDF Clicks</div>
                         </div>
                         <div class="ap-stat-card ap-stat-amber">
                             <div class="ap-stat-icon-wrap">
@@ -302,7 +311,7 @@
                             <!-- Category Performance -->
                             <div class="ap-section-card">
                                 <div class="ap-section-header">
-                                    <h3 class="ap-section-title">Category Performance</h3>
+                                    <h3 class="ap-section-title">Engaged Categories</h3>
                                     <button class="ap-view-all" onclick="apShowPage('stats')">Full stats</button>
                                 </div>
                                 <div class="ap-section-body">
@@ -391,7 +400,7 @@
                             <!-- Top Actions -->
                             <div class="ap-section-card">
                                 <div class="ap-section-header">
-                                    <h3 class="ap-section-title">Top Student Actions</h3>
+                                    <h3 class="ap-section-title">Student Actions</h3>
                                 </div>
                                 <div class="ap-section-body">
                                     <div id="analyticsActionList" class="analytics-list">
@@ -430,7 +439,10 @@
                         <!-- Form Column -->
                         <div class="ap-create-form-col">
 
-                            <!-- Step 1: Type Selector -->
+                            <div class="ap-step-header">
+                                <div class="ap-step-number">1</div>
+                                <h3 class="ap-step-title">What are you posting?</h3>
+                            </div>
                             <div class="ap-type-selector" role="group" aria-label="Choose post type" id="apTypeSelector">
                                 <button class="ap-type-card ap-type-bulletin selected selected-bulletin" type="button" onclick="apSelectType('bulletin')" id="apTypeBulletin" aria-pressed="true">
                                     <div class="ap-type-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
@@ -501,35 +513,38 @@
                             <p class="resource-helper-copy">Examples: immigration help, jobs, housing, clinics, legal aid.</p>
                         </div>
                         
-                        <!-- Required Information Section -->
-                        <div class="form-section required content-mode-section" data-content-mode="post event">
-                            <div class="form-section-header">
+                        <!-- Step 2: Basic Information -->
+                        <div class="ap-step-header" style="margin-top: 24px;">
+                            <div class="ap-step-number">2</div>
+                            <h3 class="ap-step-title">Basic Information</h3>
+                        </div>
+
+                        <div class="form-section required content-mode-section" data-content-mode="post event" style="border: none; background: transparent; box-shadow: none; margin-bottom: 0;">
+                            <div class="form-section-header" style="display: none;">
                                 <div class="form-section-icon">📋</div>
                                 <div>
-                                    <h3 class="form-section-title">Required Information</h3>
+                                    <h3 class="form-section-title">Basic Information</h3>
                                     <p class="form-section-subtitle">These fields are mandatory for all bulletins</p>
                                 </div>
                             </div>
                             
-                            <div class="field-group double">
-                                <div class="form-group required-field title-field-group">
-                                    <label for="title" class="required">Title</label>
-                                    <input type="text" id="title" name="title" required placeholder="e.g., Job Opening: Customer Service Representative" maxlength="200" class="required">
-                                    <div class="field-feedback" id="titleFeedback"></div>
-                                    <small class="input-help required">A clear, descriptive title helps students understand the opportunity</small>
-                                </div>
+                            <div class="form-group required-field title-field-group">
+                                <label for="title" class="required">Title</label>
+                                <input type="text" id="title" name="title" required placeholder="e.g., Job Opening: Community Health Worker" maxlength="200" class="required">
+                                <div class="field-feedback" id="titleFeedback"></div>
+                                <small class="input-help required">Keep it short and clear. This is what students will see first.</small>
+                            </div>
 
+                            <div class="form-group required-field">
+                                <label for="description" class="required">Description</label>
+                                <textarea id="description" name="description" rows="4" placeholder="Share the details about this opportunity..." maxlength="2000" class="required" required></textarea>
+                                <div class="field-feedback" id="descriptionFeedback"></div>
+                                <small class="input-help required">Add details so students know why this opportunity matters to them.</small>
+                            </div>
+
+                            <div class="field-group double">
                                 <div class="form-group required-field category-field-group">
                                     <label for="category" class="required">Category</label>
-                                    <div class="advisor-category-picker" aria-label="Quick category picker">
-                                        <button type="button" data-category-pick="job">💼 Job Opportunity</button>
-                                        <button type="button" data-category-pick="training">🔤 Training/Workshop</button>
-                                        <button type="button" data-category-pick="college">🎓 College/University</button>
-                                        <button type="button" data-category-pick="career-fair">🎪 Career Fair</button>
-                                        <button type="button" data-category-pick="immigration">🌐 Immigration</button>
-                                        <button type="button" data-category-pick="announcement">📣 General Announcement</button>
-                                        <button type="button" data-category-pick="resource">🏠 Resource/Service</button>
-                                    </div>
                                     <select id="category" name="category" required class="required">
                                         <option value="">Select a category</option>
                                         <option value="job">Job Opportunity</option>
@@ -540,32 +555,59 @@
                                         <option value="announcement">General Announcement</option>
                                         <option value="resource">Resource/Service</option>
                                     </select>
-                                    <small class="input-help required">Choose the most appropriate category for this bulletin</small>
+                                    <div class="advisor-category-picker" aria-label="Quick category picker" style="margin-top: 8px;">
+                                        <button type="button" data-category-pick="job">💼 Job</button>
+                                        <button type="button" data-category-pick="training">🔤 Training</button>
+                                        <button type="button" data-category-pick="college">🎓 College</button>
+                                        <button type="button" data-category-pick="career-fair">🎪 Fair</button>
+                                        <button type="button" data-category-pick="immigration">🌐 Immigration</button>
+                                        <button type="button" data-category-pick="announcement">📣 News</button>
+                                    </div>
+                                </div>
+
+                                <div class="form-group required-field advisor-field-group">
+                                    <label for="advisorName" class="required">Posted by</label>
+                                    <select id="advisorName" name="advisorName" required class="required">
+                                        <option value="">Select your name</option>
+                                        <option value="Jorge">Jorge</option>
+                                        <option value="Fabiola">Fabiola</option>
+                                        <option value="Leidy">Leidy</option>
+                                        <option value="Carmen">Carmen</option>
+                                        <option value="Jerome">Jerome</option>
+                                        <option value="Felipe">Felipe</option>
+                                        <option value="Simonetta">Simonetta</option>
+                                        <option value="Mike K.">Mike K.</option>
+                                        <option value="Leah">Leah</option>
+                                        <option value="Administrator">Administrator</option>
+                                    </select>
+                                    <small class="input-help required">Select your name so students know who to contact.</small>
                                 </div>
                             </div>
 
-                            <div class="form-group required-field">
-                                <label for="advisorName" class="required">Posted by</label>
-                                <select id="advisorName" name="advisorName" required class="required">
-                                    <option value="">Select your name</option>
-                                    <option value="Jorge">Jorge</option>
-                                    <option value="Fabiola">Fabiola</option>
-                                    <option value="Leidy">Leidy</option>
-                                    <option value="Carmen">Carmen</option>
-                                    <option value="Jerome">Jerome</option>
-                                    <option value="Felipe">Felipe</option>
-                                    <option value="Simonetta">Simonetta</option>
-                                    <option value="Mike K.">Mike K.</option>
-                                    <option value="Leah">Leah</option>
-                                    <option value="Administrator">Administrator</option>
-                                </select>
-                                <small class="input-help required">This helps students know who posted the information</small>
+                            <div class="form-group enhancement-field" style="padding: 0 22px; margin-bottom: 20px;">
+                                <label for="image">Add Image or Flyer (optional)</label>
+                                <div style="display: flex; gap: 12px; align-items: center; padding: 16px; border: 1.5px dashed var(--ap-border-mid); border-radius: var(--ap-r-md); background: var(--ap-surface-2); cursor: pointer;" onclick="document.getElementById('image').click()">
+                                    <div style="width: 44px; height: 44px; border-radius: 10px; background: #fff; display: grid; place-items: center; color: var(--ap-blue);">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 24px; height: 24px;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                                    </div>
+                                    <div>
+                                        <div style="font-weight: 700; font-size: 0.88rem; color: var(--ap-text);">Upload image or flyer</div>
+                                        <div style="font-size: 0.74rem; color: var(--ap-text-3);">PNG, JPG (Max 10MB)</div>
+                                    </div>
+                                </div>
+                                <input type="file" id="image" name="image" accept="image/*" class="file-input recommended" style="display: none;">
+                                <div id="imagePreview" class="image-preview" style="margin-top: 10px;"></div>
                             </div>
 
-                            <div class="form-group title-es-field-group">
-                                <label for="titleEs">Spanish Title (optional)</label>
-                                <input type="text" id="titleEs" name="titleEs" maxlength="200" placeholder="Título en español (opcional)">
-                                <small class="input-help">Optional — if left blank, the English title will show for Spanish speakers</small>
+                            <div class="form-group optional-field">
+                                <label for="eventLink">Link (optional)</label>
+                                <div style="position: relative;">
+                                    <div style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--ap-text-3);">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                                    </div>
+                                    <input type="url" id="eventLink" name="eventLink" placeholder="https://example.com" class="recommended" style="padding-left: 38px;">
+                                </div>
+                                <small class="input-help">Add a website or registration link for more information.</small>
                             </div>
                         </div>
 
@@ -631,6 +673,65 @@
                                 <textarea id="resourceDescription" name="resourceDescription" rows="3" maxlength="240" placeholder="One sentence about what students will find or who should use it."></textarea>
                             </div>
 
+                            <div class="field-group double">
+                                <div class="form-group">
+                                    <label for="resourceAddress">Physical Address</label>
+                                    <input type="text" id="resourceAddress" name="resourceAddress" placeholder="e.g., 10 Gove St, East Boston, MA">
+                                </div>
+                                <div class="form-group">
+                                    <label for="resourcePhone">Phone Number</label>
+                                    <input type="tel" id="resourcePhone" name="resourcePhone" placeholder="e.g., 617-568-4000">
+                                    <div class="phone-mode-selector">
+                                        <label>
+                                            <input type="radio" name="resourcePhoneMode" value="call" checked> Call
+                                        </label>
+                                        <label>
+                                            <input type="radio" name="resourcePhoneMode" value="text"> Text
+                                        </label>
+                                        <label>
+                                            <input type="radio" name="resourcePhoneMode" value="both"> Call or Text
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="field-group double">
+                                <div class="form-group">
+                                    <label for="resourceHours">Hours of Operation</label>
+                                    <input type="text" id="resourceHours" name="resourceHours" placeholder="e.g., Mon-Fri 9am-5pm">
+                                </div>
+                                <div class="form-group">
+                                    <label>Languages Spoken</label>
+                                    <div class="language-chip-picker" data-field="resourceLanguages">
+                                        <label class="lang-chip-input"><input type="checkbox" name="resourceLanguages" value="ENG"><span>ENG</span></label>
+                                        <label class="lang-chip-input"><input type="checkbox" name="resourceLanguages" value="ESP"><span>ESP</span></label>
+                                        <label class="lang-chip-input"><input type="checkbox" name="resourceLanguages" value="POR"><span>POR</span></label>
+                                        <label class="lang-chip-input"><input type="checkbox" name="resourceLanguages" value="KRE"><span>KRE</span></label>
+                                        <label class="lang-chip-input"><input type="checkbox" name="resourceLanguages" value="ARA"><span>ARA</span></label>
+                                        <label class="lang-chip-input"><input type="checkbox" name="resourceLanguages" value="VIE"><span>VIE</span></label>
+                                        <label class="lang-chip-input"><input type="checkbox" name="resourceLanguages" value="CHI"><span>CHI</span></label>
+                                    </div>
+                                    <small class="input-help">Select all languages available for this resource.</small>
+                                </div>
+                            </div>
+
+                            <div class="form-group required-field">
+                                <label for="resourceAdvisorName" class="required">Posted by</label>
+                                <select id="resourceAdvisorName" name="resourceAdvisorName" required class="required">
+                                    <option value="">Select your name</option>
+                                    <option value="Jorge">Jorge</option>
+                                    <option value="Fabiola">Fabiola</option>
+                                    <option value="Leidy">Leidy</option>
+                                    <option value="Carmen">Carmen</option>
+                                    <option value="Jerome">Jerome</option>
+                                    <option value="Felipe">Felipe</option>
+                                    <option value="Simonetta">Simonetta</option>
+                                    <option value="Mike K.">Mike K.</option>
+                                    <option value="Leah">Leah</option>
+                                    <option value="Administrator">Administrator</option>
+                                </select>
+                            </div>
+
                             <div class="form-group">
                                 <label for="resourceHighlights">Quick Highlights (optional)</label>
                                 <input type="text" id="resourceHighlights" name="resourceHighlights" maxlength="150" placeholder="e.g., Free consultation, Legal help, Workshops">
@@ -656,168 +757,186 @@
                             </div>
                         </div>
 
-                        <!-- Recommended Information Section -->
-                        <div class="form-section optional content-mode-section" data-content-mode="post">
-                            <div class="form-section-header">
-                                <div class="form-section-icon">✨</div>
-                                <div>
-                                    <h3 class="form-section-title">Recommended Details</h3>
-                                    <p class="form-section-subtitle">These fields make your bulletin more helpful and engaging</p>
+                        <!-- Step 3: Event Details -->
+                        <div class="ap-accordion-section content-mode-section" id="eventDetailsAccordion" data-content-mode="post event">
+                            <div class="ap-accordion-header" onclick="adminPanel.toggleAccordion(this)">
+                                <div class="ap-step-number">3</div>
+                                <h3 class="ap-accordion-title">Event Details <span style="font-weight: 400; color: var(--ap-text-3); font-size: 0.85rem; margin-left: 4px;">(optional)</span></h3>
+                                <div class="ap-accordion-chevron">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
                                 </div>
                             </div>
-
-                            <div class="form-group optional-field">
-                                <label for="description">Description</label>
-                                <textarea id="description" name="description" rows="4" placeholder="Provide details about the opportunity or announcement..." maxlength="2000" class="recommended"></textarea>
-                                <div class="field-feedback" id="descriptionFeedback"></div>
-                                <small class="input-help recommended">Add details so students know why this opportunity matters to them</small>
-                            </div>
-
-                            <div class="form-group optional-field">
-                                <label for="summaryEs">Spanish Summary (optional)</label>
-                                <textarea id="summaryEs" name="summaryEs" rows="3" maxlength="600" placeholder="Resumen en español (opcional)"></textarea>
-                                <small class="input-help">Optional — if left blank, the English description will show for Spanish speakers</small>
-                            </div>
-
-                            <div class="field-group double">
-                                <div class="form-group optional-field">
-                                    <label for="company">Company/Organization</label>
-                                    <input type="text" id="company" name="company" placeholder="e.g., Boston Medical Center" class="recommended">
-                                    <small class="input-help">The organization offering the opportunity</small>
+                            <div class="ap-accordion-content">
+                                <div class="form-group event-feed-toggle" style="margin-bottom: 16px;">
+                                    <label class="checkbox-row" style="display:flex; gap:10px; align-items:flex-start; cursor:pointer;">
+                                        <input type="checkbox" id="hideFromMainFeed" name="hideFromMainFeed" value="on" style="margin-top:3px;">
+                                        <span>
+                                            <strong>Calendar &amp; upcoming only</strong> — hide this from the main feed cards.
+                                        </span>
+                                    </label>
                                 </div>
 
-                                <div class="form-group optional-field">
-                                    <label for="classType">Class Type (if applicable)</label>
-                                    <select id="classType" name="classType" class="recommended">
-                                        <option value="">Select class type (if applicable)</option>
-                                        <option value="esol">ESOL (English for Speakers of Other Languages)</option>
-                                        <option value="hse">HSE (High School Equivalency)</option>
-                                        <option value="famlit">FamLit (Family Literacy)</option>
-                                    </select>
-                                    <small class="input-help">Which student groups would benefit most from this opportunity?</small>
-                                </div>
-                            </div>
+                                <div class="field-group double event-date-type-row">
+                                    <div class="form-group event-field">
+                                        <label for="dateType">Date Type</label>
+                                        <select id="dateType" name="dateType" onchange="toggleDateFields()" class="recommended">
+                                            <option value="">No specific date</option>
+                                            <option value="deadline">Application Deadline</option>
+                                            <option value="event">Event Date</option>
+                                            <option value="range">Event Date Range</option>
+                                        </select>
+                                    </div>
 
-                            <div class="form-group optional-field">
-                                <label for="eventLink">Link (optional)</label>
-                                <input type="url" id="eventLink" name="eventLink" placeholder="https://example.com/register" class="recommended">
-                                <small class="input-help">Add a URL for more details or registration. The link will be clickable for students.</small>
-                            </div>
-
-                            <div class="form-group optional-field">
-                                <label for="contact">Contact Information</label>
-                                <textarea id="contact" name="contact" rows="2" placeholder="Email, phone, or website for more information" class="recommended"></textarea>
-                                <small class="input-help">How can students get more information or apply?</small>
-                            </div>
-                        </div>
-
-                        <!-- Event Details Section -->
-                        <div class="form-section event-details content-mode-section" id="eventDetailsSection" data-content-mode="post event">
-                            <div class="form-section-header">
-                                <div class="form-section-icon">📅</div>
-                                <div>
-                                    <h3 class="form-section-title">Event & Timing Details</h3>
-                                    <p class="form-section-subtitle">Add dates so items appear on the student Calendar and Home “Upcoming” list. Any advisor with an <strong>@ebhcs.org</strong> login can post.</p>
-                                </div>
-                            </div>
-
-                            <p class="input-help event-post-helper" style="margin: 0 0 12px;">
-                                <strong>Tip:</strong> choose <strong>Event date</strong> (or deadline / range) below. Use shortcuts for typical school posts.
-                            </p>
-                            <div class="advisor-category-picker event-post-helper" aria-label="School event shortcuts" style="margin-bottom: 14px;">
-                                <button type="button" data-school-event-preset="with-feed">School post + calendar</button>
-                                <button type="button" data-school-event-preset="calendar-only">Calendar / sidebar only</button>
-                            </div>
-
-                            <div class="form-group event-feed-toggle" style="margin-bottom: 16px;">
-                                <label class="checkbox-row" style="display:flex; gap:10px; align-items:flex-start; cursor:pointer;">
-                                    <input type="checkbox" id="hideFromMainFeed" name="hideFromMainFeed" value="on" style="margin-top:3px;">
-                                    <span>
-                                        <strong>Calendar &amp; upcoming only</strong> — hide this from the main feed cards (good for no-school days, holidays, or low-noise dates).
-                                    </span>
-                                </label>
-                            </div>
-
-                            <div class="field-group double event-date-type-row">
-                                <div class="form-group event-field">
-                                    <label for="dateType">Date Type</label>
-                                    <select id="dateType" name="dateType" onchange="toggleDateFields()" class="recommended">
-                                        <option value="">No specific date</option>
-                                        <option value="deadline">Application Deadline</option>
-                                        <option value="event">Event Date</option>
-                                        <option value="range">Event Date Range</option>
-                                    </select>
-                                    <small class="input-help">What type of date information is most relevant?</small>
+                                    <div class="form-group event-field event-format-field">
+                                        <label for="eventLocation">Event Format</label>
+                                        <select id="eventLocation" name="eventLocation" class="recommended">
+                                            <option value="">Select format</option>
+                                            <option value="in-person">In-Person</option>
+                                            <option value="online">Online</option>
+                                            <option value="hybrid">Hybrid</option>
+                                        </select>
+                                    </div>
                                 </div>
 
-                                <div class="form-group event-field event-format-field">
-                                    <label for="eventLocation">Event Format</label>
-                                    <select id="eventLocation" name="eventLocation" class="recommended">
-                                        <option value="">Select format (if applicable)</option>
-                                        <option value="in-person">In-Person</option>
-                                        <option value="online">Online</option>
-                                        <option value="hybrid">Hybrid (In-Person & Online)</option>
-                                    </select>
-                                    <small class="input-help">How will this event be conducted?</small>
-                                </div>
-                            </div>
-
-                            <div class="field-group" id="dateFields" style="display: none;">
-                                <div class="form-group event-field" id="singleDateGroup">
-                                    <label for="eventDate">Date</label>
-                                    <input type="date" id="eventDate" name="eventDate" class="recommended">
+                                <div class="field-group" id="dateFields" style="display: none;">
+                                    <div class="form-group event-field" id="singleDateGroup">
+                                        <label for="eventDate">Date</label>
+                                        <input type="date" id="eventDate" name="eventDate" class="recommended">
+                                    </div>
+                                    <div class="form-group event-field" id="startDateGroup" style="display: none;">
+                                        <label for="startDate">Start Date</label>
+                                        <input type="date" id="startDate" name="startDate" class="recommended">
+                                    </div>
+                                    <div class="form-group event-field" id="endDateGroup" style="display: none;">
+                                        <label for="endDate">End Date</label>
+                                        <input type="date" id="endDate" name="endDate" class="recommended">
+                                    </div>
                                 </div>
 
-                                <div class="form-group event-field" id="startDateGroup" style="display: none;">
-                                    <label for="startDate">Start Date</label>
-                                    <input type="date" id="startDate" name="startDate" class="recommended">
-                                </div>
-
-                                <div class="form-group event-field" id="endDateGroup" style="display: none;">
-                                    <label for="endDate">End Date</label>
-                                    <input type="date" id="endDate" name="endDate" class="recommended">
-                                </div>
-                            </div>
-
-                            <div class="field-group double event-time-row">
-                                <div class="form-group event-field">
-                                    <label for="startTime">Start Time (optional)</label>
-                                    <input type="time" id="startTime" name="startTime" class="recommended">
-                                </div>
-
-                                <div class="form-group event-field">
-                                    <label for="endTime">End Time (optional)</label>
-                                    <input type="time" id="endTime" name="endTime" class="recommended">
+                                <div class="field-group double event-time-row">
+                                    <div class="form-group event-field">
+                                        <label for="startTime">Start Time</label>
+                                        <input type="time" id="startTime" name="startTime" class="recommended">
+                                    </div>
+                                    <div class="form-group event-field">
+                                        <label for="endTime">End Time</label>
+                                        <input type="time" id="endTime" name="endTime" class="recommended">
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Visual Enhancement Section -->
-                        <div class="form-section enhancement content-mode-section" data-content-mode="post">
-                            <div class="form-section-header">
-                                <div class="form-section-icon">🖼️</div>
-                                <div>
-                                    <h3 class="form-section-title">Visual Enhancement</h3>
-                                    <p class="form-section-subtitle">Make your bulletin stand out with an image</p>
+                        <!-- Step 4: Spanish Translation -->
+                        <div class="ap-accordion-section content-mode-section" data-content-mode="post">
+                            <div class="ap-accordion-header" onclick="adminPanel.toggleAccordion(this)">
+                                <div class="ap-step-number">4</div>
+                                <h3 class="ap-accordion-title">Spanish Translation <span style="font-weight: 400; color: var(--ap-text-3); font-size: 0.85rem; margin-left: 4px;">(optional)</span></h3>
+                                <div class="ap-accordion-chevron">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
                                 </div>
                             </div>
-
-                            <div class="form-group enhancement-field">
-                                <label for="image">Add Image (optional)</label>
-                                <input type="file" id="image" name="image" accept="image/*" class="file-input recommended">
-                                <div class="file-upload-help">
-                                    <small>Upload a logo, flyer, or relevant image. Use JPG/PNG/GIF/WebP under 10MB (large posters are auto-resized; aim for ≤1MB and around 800×600px).</small>
+                            <div class="ap-accordion-content">
+                                <div class="form-group">
+                                    <label for="titleEs">Spanish Title</label>
+                                    <input type="text" id="titleEs" name="titleEs" maxlength="200" placeholder="Título en español">
                                 </div>
-                                <div id="imagePreview" class="image-preview"></div>
+                                <div class="form-group">
+                                    <label for="summaryEs">Spanish Summary</label>
+                                    <textarea id="summaryEs" name="summaryEs" rows="3" maxlength="600" placeholder="Resumen en español"></textarea>
+                                </div>
+                                <div class="form-group enhancement-field">
+                                    <label for="imageEs">Spanish Image or Flyer</label>
+                                    <input type="file" id="imageEs" name="imageEs" accept="image/*" class="file-input">
+                                    <div id="imageEsPreview" class="image-preview"></div>
+                                </div>
                             </div>
+                        </div>
 
-                            <div class="form-group enhancement-field">
-                                <label for="pdf">Add PDF (optional)</label>
-                                <input type="file" id="pdf" name="pdf" accept=".pdf,application/pdf" class="file-input recommended">
-                                <div class="file-upload-help">
-                                    <small>Upload a PDF flyer, form, or information sheet. Maximum file size: 10MB.</small>
+                        <!-- Step 5: Contact & Location -->
+                        <div class="ap-accordion-section content-mode-section" data-content-mode="post">
+                            <div class="ap-accordion-header" onclick="adminPanel.toggleAccordion(this)">
+                                <div class="ap-step-number">5</div>
+                                <h3 class="ap-accordion-title">Contact & Location <span style="font-weight: 400; color: var(--ap-text-3); font-size: 0.85rem; margin-left: 4px;">(optional)</span></h3>
+                                <div class="ap-accordion-chevron">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
                                 </div>
-                                <div id="pdfPreview" class="pdf-preview"></div>
+                            </div>
+                            <div class="ap-accordion-content">
+                                <div class="form-group">
+                                    <label for="company">Organization/Company</label>
+                                    <input type="text" id="company" name="company" placeholder="e.g., East Boston Neighborhood Health Center">
+                                </div>
+                                <div class="field-group double">
+                                    <div class="form-group">
+                                        <label for="location">Physical Address</label>
+                                        <input type="text" id="location" name="eventLocation" placeholder="e.g., 10 Gove St, East Boston">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="contactPhone">Phone Number</label>
+                                        <input type="tel" id="contactPhone" name="contactPhone" placeholder="e.g., 617-555-0123">
+                                        <div class="phone-mode-selector">
+                                            <label>
+                                                <input type="radio" name="contactPhoneMode" value="call" checked> Call
+                                            </label>
+                                            <label>
+                                                <input type="radio" name="contactPhoneMode" value="text"> Text
+                                            </label>
+                                            <label>
+                                                <input type="radio" name="contactPhoneMode" value="both"> Both
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="field-group double">
+                                    <div class="form-group">
+                                        <label for="contactHours">Hours Available</label>
+                                        <input type="text" id="contactHours" name="contactHours" placeholder="e.g., Weekdays 9:00 - 4:00">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Languages Available</label>
+                                        <div class="language-chip-picker" data-field="contactLanguages">
+                                            <label class="lang-chip-input"><input type="checkbox" name="contactLanguages" value="ENG"><span>ENG</span></label>
+                                            <label class="lang-chip-input"><input type="checkbox" name="contactLanguages" value="ESP"><span>ESP</span></label>
+                                            <label class="lang-chip-input"><input type="checkbox" name="contactLanguages" value="POR"><span>POR</span></label>
+                                            <label class="lang-chip-input"><input type="checkbox" name="contactLanguages" value="KRE"><span>KRE</span></label>
+                                            <label class="lang-chip-input"><input type="checkbox" name="contactLanguages" value="ARA"><span>ARA</span></label>
+                                            <label class="lang-chip-input"><input type="checkbox" name="contactLanguages" value="VIE"><span>VIE</span></label>
+                                            <label class="lang-chip-input"><input type="checkbox" name="contactLanguages" value="CHI"><span>CHI</span></label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="contact">Additional Contact Notes</label>
+                                    <textarea id="contact" name="contact" rows="2" placeholder="Email, website, or other contact info"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 6: Advanced Settings -->
+                        <div class="ap-accordion-section">
+                            <div class="ap-accordion-header" onclick="adminPanel.toggleAccordion(this)">
+                                <div class="ap-step-number">6</div>
+                                <h3 class="ap-accordion-title">Advanced Settings <span style="font-weight: 400; color: var(--ap-text-3); font-size: 0.85rem; margin-left: 4px;">(optional)</span></h3>
+                                <div class="ap-accordion-chevron">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                                </div>
+                            </div>
+                            <div class="ap-accordion-content">
+
+                                <div class="form-group">
+                                    <label for="classType">Target Student Group</label>
+                                    <select id="classType" name="classType">
+                                        <option value="">All students (Default)</option>
+                                        <option value="esol">ESOL</option>
+                                        <option value="hse">HSE</option>
+                                        <option value="famlit">FamLit</option>
+                                    </select>
+                                </div>
+                                <div class="form-group enhancement-field">
+                                    <label for="pdf">Add PDF Document</label>
+                                    <input type="file" id="pdf" name="pdf" accept=".pdf,application/pdf" class="file-input">
+                                    <div id="pdfPreview" class="pdf-preview"></div>
+                                </div>
                             </div>
                         </div>
 
@@ -1018,7 +1137,7 @@
                 <div id="apPageStats" class="ap-page">
                     <div class="ap-stats-header">
                         <h1>Your Stats</h1>
-                        <p>See how your posts are performing with students over the last 30 days.</p>
+                        <p>See how your posts are performing with students over the <span id="analyticsRangeStatsLabel">last 30 days</span>.</p>
                     </div>
 
                     <!-- Big stat cards -->
@@ -1035,29 +1154,29 @@
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                             </div>
                             <div class="ap-stat-value" id="statsViews">—</div>
-                            <div class="ap-stat-label">Total Views</div>
+                            <div class="ap-stat-label">Post Opens</div>
                         </div>
                         <div class="ap-stat-card ap-stat-amber">
                             <div class="ap-stat-icon-wrap">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
                             </div>
                             <div class="ap-stat-value" id="statsClicks">—</div>
-                            <div class="ap-stat-label">Student Clicks</div>
+                            <div class="ap-stat-label">Link/PDF Clicks</div>
                         </div>
                         <div class="ap-stat-card ap-stat-purple">
                             <div class="ap-stat-icon-wrap">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                             </div>
                             <div class="ap-stat-value" id="statsReach">—</div>
-                            <div class="ap-stat-label">Students Reached</div>
+                            <div class="ap-stat-label">Posts Engaged</div>
                         </div>
                     </div>
 
                     <!-- Charts grid -->
                     <div class="ap-chart-grid">
-                        <!-- Views by category (real data) -->
+                        <!-- Engagement by category (real data) -->
                         <div class="ap-chart-card">
-                            <div class="ap-chart-card-title">Student Clicks by Category</div>
+                            <div class="ap-chart-card-title">Engagement by Category</div>
                             <div id="statsCatChart" class="ap-bar-chart">
                                 <p style="font-size:.82rem;color:var(--ap-text-3);">Loading…</p>
                             </div>
@@ -1103,22 +1222,14 @@
                             </div>
                         </div>
 
-                        <!-- Your Impact card (real top category) -->
-                        <div class="ap-chart-card" style="background:linear-gradient(135deg,var(--ap-navy),var(--ap-navy-mid));color:#fff;">
-                            <div class="ap-chart-card-title" style="color:rgba(255,213,93,.8);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;">Your Impact</div>
-                            <div style="margin-top:8px;">
-                                <div style="font-family:var(--ap-font-head);font-size:1.5rem;font-weight:800;letter-spacing:-.03em;line-height:1.2;" id="statsTopCat">—</div>
-                                <div style="font-size:.82rem;color:rgba(255,255,255,.65);margin:6px 0 14px;">your most-clicked category</div>
-                                <div style="font-size:.83rem;color:rgba(255,255,255,.8);line-height:1.55;">Keep sharing opportunities — your posts are reaching students who need this information.</div>
-                            </div>
-                        </div>
+
                     </div>
 
                     <!-- Top performing posts table (real data) -->
                     <div class="ap-top-posts">
                         <div class="ap-top-posts-header">
                             <h3 class="ap-top-posts-title">Top Performing Posts</h3>
-                            <span style="font-size:.75rem;color:var(--ap-text-3);">Last 30 days · by student clicks</span>
+                            <span style="font-size:.75rem;color:var(--ap-text-3);"><span id="analyticsRangeTopPostsLabel">Last 30 days</span> · opens, links, PDFs, resources, and shares</span>
                         </div>
                     </div>
                 </div><!-- /apPageStats -->
@@ -1673,7 +1784,7 @@
                             '<div class="ap-top-post-name">' + escHtml(row.title) + '</div>' +
                             '<div class="ap-top-post-type">' + escHtml(row.type) + (row.age ? ' · ' + row.age : '') + '</div>' +
                         '</div>' +
-                        '<div class="ap-top-post-views">' + row.total + ' <small>clicks</small></div>' +
+                        '<div class="ap-top-post-views">' + row.total + ' <small>actions</small></div>' +
                     '</div>'
                 );
             });
@@ -1703,7 +1814,8 @@
             var events    = ap.analyticsEvents   || [];
             var byPost    = ap.analyticsByPost    || {};
             var byAction  = ap.analyticsByAction  || {};
-            var byCat     = ap.analyticsByCategory || {};
+            var byCat     = ap.analyticsByEngagedCategory || ap.analyticsByCategory || {};
+            var summary   = ap.analyticsSummary || {};
             var bulletins = ap.bulletins          || [];
 
             var studentEvents = events.filter(function(e) { return e.source === 'student'; });
@@ -1711,14 +1823,16 @@
             // ── Top-line stat cards ──────────────────────────────────
             var posts    = bulletins.filter(function(b) { return b.isActive && !ap.isResourceBulletin(b); });
             var live     = posts.filter(function(b) { return !ap.isBulletinExpiredAdmin(b); });
-            var totalViews  = (byAction['card_view'] || 0) + (byAction['detail_open'] || 0);
-            var totalClicks = byAction['link_click'] || 0;
-            var uniquePosts = Object.keys(byPost).length;
+            var postOpens = summary.postOpens || (byAction['detail_open'] || 0);
+            var highIntentClicks = summary.highIntentClicks || ((byAction['link_click'] || 0) + (byAction['pdf_open'] || 0) + (byAction['resource_open'] || 0));
+            var engagedPosts = summary.engagedPosts || Object.values(byPost).filter(function(metrics) {
+                return (metrics.engagement || 0) > 0;
+            }).length;
 
             setText('statsPublished', live.length);
-            setText('statsViews',    totalViews  || studentEvents.length);
-            setText('statsClicks',   totalClicks);
-            setText('statsReach',    uniquePosts);
+            setText('statsViews',    postOpens);
+            setText('statsClicks',   highIntentClicks);
+            setText('statsReach',    engagedPosts);
 
             // ── Views by Category ────────────────────────────────────
             var catRows = Object.entries(byCat).sort(function(a,b){ return b[1]-a[1]; }).slice(0,6);
@@ -1745,22 +1859,15 @@
                         title: b ? (b.title || b.resourceTitleEn || 'Untitled') : 'Unknown post',
                         type: cat,
                         age: timeAgo(datePosted),
-                        total: metrics.total || 0
+                        total: metrics.engagement || 0
                     };
                 })
+                .filter(function(row) { return row.total > 0; })
                 .sort(function(a,b){ return b.total - a.total; })
                 .slice(0, 8);
             renderTopPostsTable(topRows);
 
-            // ── Your Impact card: top category ───────────────────────
-            var topCatEl = document.getElementById('statsTopCat');
-            if (topCatEl && catRows.length) {
-                var topCatKey = catRows[0][0];
-                var topCatName = ap.getCategoryDisplay(topCatKey);
-                topCatEl.textContent = topCatName;
-            } else if (topCatEl) {
-                topCatEl.textContent = 'Keep posting!';
-            }
+
 
             // ── Clicks by Device ─────────────────────────────────────
             var deviceCounts = { mobile: 0, tablet: 0, desktop: 0 };

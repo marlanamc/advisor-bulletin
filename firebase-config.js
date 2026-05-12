@@ -39,6 +39,7 @@ function trackStudentEvent(action, payload = {}) {
         event.category = String(payload.category).slice(0, 80);
     }
 
+    // Advisor analytics are intentionally sourced from Firestore analyticsEvents.
     return addDoc(collection(db, 'analyticsEvents'), event).catch((error) => {
         console.debug('Student analytics skipped:', error && error.code ? error.code : error);
     });
@@ -322,187 +323,6 @@ const RESOURCE_ICON_SVGS = {
         </svg>
     `
 };
-
-const DEMO_RESOURCES = [
-    {
-        id: 'demo-project-citizenship',
-        type: 'resource',
-        isPublished: true,
-        isDemo: true,
-        resourceCategory: 'immigration',
-        resourceOrder: 1,
-        title: 'Project Citizenship',
-        titleEn: 'Project Citizenship',
-        titleEs: 'Proyecto Ciudadania',
-        description: 'Free help with your citizenship paperwork.',
-        url: 'https://projectcitizenship.org',
-        phone: '617-694-5949',
-        tel: 'tel:6176945949',
-        websiteLabel: 'projectcitizenship.org',
-        languages: ['EN', 'ES', 'HT', 'PT']
-    },
-    {
-        id: 'demo-eb-ecumenical',
-        type: 'resource',
-        isPublished: true,
-        isDemo: true,
-        resourceCategory: 'immigration',
-        resourceOrder: 2,
-        title: 'East Boston Ecumenical',
-        titleEn: 'East Boston Ecumenical',
-        titleEs: 'Concilio Ecumenico',
-        description: 'Free legal help. Walk-ins on Tuesday.',
-        url: 'https://ebecc.org',
-        phone: '617-567-3092',
-        tel: 'tel:6175673092',
-        address: '50 Meridian St',
-        mapUrl: 'https://www.google.com/maps/search/?api=1&query=50+Meridian+St+East+Boston+MA',
-        languages: ['EN', 'ES']
-    },
-    {
-        id: 'demo-mira',
-        type: 'resource',
-        isPublished: true,
-        isDemo: true,
-        resourceCategory: 'immigration',
-        resourceOrder: 3,
-        title: 'MIRA Coalition',
-        titleEn: 'MIRA Coalition',
-        titleEs: 'Coalicion MIRA',
-        description: 'Help with green card, asylum, and citizenship.',
-        url: 'https://miracoalition.org',
-        phone: '617-350-5480',
-        tel: 'tel:6173505480',
-        languages: ['EN', 'ES', 'PT']
-    },
-    {
-        id: 'demo-masshire',
-        type: 'resource',
-        isPublished: true,
-        isDemo: true,
-        resourceCategory: 'jobs',
-        resourceOrder: 1,
-        title: 'MassHire Career Center',
-        titleEn: 'MassHire Career Center',
-        titleEs: 'Centro de Empleo MassHire',
-        description: 'Job search, resumes, training referrals, and hiring events.',
-        phone: '617-561-2222',
-        tel: 'tel:6175612222',
-        address: '215 Bremen St',
-        mapUrl: 'https://www.google.com/maps/search/?api=1&query=215+Bremen+St+East+Boston+MA',
-        languages: ['EN', 'ES']
-    },
-    {
-        id: 'demo-jvs',
-        type: 'resource',
-        isPublished: true,
-        isDemo: true,
-        resourceCategory: 'jobs',
-        resourceOrder: 2,
-        title: 'JVS Boston',
-        titleEn: 'JVS Boston',
-        titleEs: 'JVS Boston',
-        description: 'Career coaching, English for work, and skills training.',
-        url: 'https://www.jvs-boston.org',
-        phone: '617-399-3131',
-        tel: 'tel:6173993131',
-        languages: ['EN', 'ES']
-    },
-    {
-        id: 'demo-housing-families',
-        type: 'resource',
-        isPublished: true,
-        isDemo: true,
-        resourceCategory: 'housing',
-        resourceOrder: 1,
-        title: 'Housing Families',
-        titleEn: 'Housing Families',
-        titleEs: 'Ayuda de Vivienda',
-        description: 'Eviction prevention and housing stability support.',
-        phone: '781-322-9119',
-        tel: 'tel:7813229119',
-        languages: ['EN', 'ES', 'HT']
-    },
-    {
-        id: 'demo-ebnhc',
-        type: 'resource',
-        isPublished: true,
-        isDemo: true,
-        resourceCategory: 'health',
-        resourceOrder: 1,
-        title: 'East Boston Neighborhood Health',
-        titleEn: 'East Boston Neighborhood Health',
-        titleEs: 'Clinica de East Boston',
-        description: 'Primary care, urgent care, dental, and pharmacy services.',
-        phone: '617-569-5800',
-        tel: 'tel:6175695800',
-        address: '10 Gove St',
-        mapUrl: 'https://www.google.com/maps/search/?api=1&query=10+Gove+St+East+Boston+MA',
-        languages: ['EN', 'ES', 'PT', 'HT']
-    },
-    {
-        id: 'demo-food-source',
-        type: 'resource',
-        isPublished: true,
-        isDemo: true,
-        resourceCategory: 'food',
-        resourceOrder: 1,
-        title: 'ABCD Food Access',
-        titleEn: 'ABCD Food Access',
-        titleEs: 'Comida con ABCD',
-        description: 'Food delivery and pantry referrals for nearby families.',
-        phone: '617-348-6000',
-        tel: 'tel:6173486000',
-        languages: ['EN', 'ES']
-    },
-    {
-        id: 'demo-family-center',
-        type: 'resource',
-        isPublished: true,
-        isDemo: true,
-        resourceCategory: 'family',
-        resourceOrder: 1,
-        title: 'East Boston Social Centers',
-        titleEn: 'East Boston Social Centers',
-        titleEs: 'Centros Sociales',
-        description: 'Child care, youth programs, and family support.',
-        phone: '617-569-3221',
-        tel: 'tel:6175693221',
-        address: '68 Central Square',
-        mapUrl: 'https://www.google.com/maps/search/?api=1&query=68+Central+Square+East+Boston+MA',
-        languages: ['EN', 'ES']
-    },
-    {
-        id: 'demo-esol-harborside',
-        type: 'resource',
-        isPublished: true,
-        isDemo: true,
-        resourceCategory: 'esol',
-        resourceOrder: 1,
-        title: 'Harborside English Classes',
-        titleEn: 'Harborside English Classes',
-        titleEs: 'Clases de Ingles',
-        description: 'Free ESOL classes and student advising.',
-        phone: '617-635-5114',
-        tel: 'tel:6176355114',
-        languages: ['EN', 'ES', 'PT']
-    },
-    {
-        id: 'demo-bhcc',
-        type: 'resource',
-        isPublished: true,
-        isDemo: true,
-        resourceCategory: 'college',
-        resourceOrder: 1,
-        title: 'Bunker Hill Community College',
-        titleEn: 'Bunker Hill Community College',
-        titleEs: 'Bunker Hill',
-        description: 'Admissions, financial aid, certificates, and college pathways.',
-        phone: '617-228-2000',
-        tel: 'tel:6172282000',
-        languages: ['EN', 'ES']
-    }
-];
 
 // Firebase-enabled Bulletin Board System
 class FirebaseBulletinBoard {
@@ -1937,9 +1757,7 @@ class FirebaseBulletinBoard {
                 return this.getTimestampValue(b.datePosted || b.createdAt) - this.getTimestampValue(a.datePosted || a.createdAt);
             });
 
-        const existingIds = new Set(publishedResources.map((resource) => resource.id));
-        const demoResources = DEMO_RESOURCES.filter((resource) => !existingIds.has(resource.id));
-        return [...demoResources, ...publishedResources];
+        return publishedResources;
     }
 
     isResourceBulletin(bulletin) {
@@ -2317,11 +2135,15 @@ class FirebaseBulletinBoard {
 
         const featuredClass = !bulletin.image && index % 7 === 0 ? 'pc--featured' : '';
 
+        const currentLang = document.body.getAttribute('data-lang') || 'EN';
+        const displayImage = (currentLang === 'ES' && bulletin.imageEs) ? bulletin.imageEs : bulletin.image;
+        const hasImage = Boolean(displayImage);
+
         return `
     <article class="pc ${featuredClass} ${isExpired ? 'pc--expired' : ''}" id="bulletin-${bulletin.id}" data-bulletin-id="${bulletin.id}" onclick="${openHandler}" role="button" tabindex="0" style="cursor:pointer">
-      <div class="pc__top ${bulletin.image ? 'pc__top--image' : ''}" style="background:${bulletin.image ? '#f8fafc' : meta.grad}">
-        ${bulletin.image
-          ? `<div class="pc__image-stage"><img class="pc__poster-image lightbox-trigger" data-lightbox-src="${this.escapeAttribute(bulletin.image)}" src="${this.escapeAttribute(bulletin.image)}" alt=""></div>`
+      <div class="pc__top ${hasImage ? 'pc__top--image' : ''}" style="background:${hasImage ? '#f8fafc' : meta.grad}">
+        ${hasImage
+          ? `<div class="pc__image-stage"><img class="pc__poster-image lightbox-trigger" data-lightbox-src="${this.escapeAttribute(displayImage)}" src="${this.escapeAttribute(displayImage)}" alt=""></div>`
           : `<div class="pc__icon-wrap"><div class="pc__icon-box" style="background:${meta.accent}">${this.getCardIconSvg(bulletin.category)}</div></div>
         <div class="pc__title-overlay">${this.escapeHtml(titleShort)} —</div>`}
       </div>
@@ -2399,8 +2221,11 @@ class FirebaseBulletinBoard {
             .filter(Boolean)
             .slice(0, 3);
         const contactAction = this.getDetailContactAction(bulletin);
-        const heroContent = bulletin.image
-            ? `<img class="post-detail-hero-image lightbox-trigger" data-lightbox-src="${this.escapeAttribute(bulletin.image)}" src="${this.escapeAttribute(bulletin.image)}" alt="">`
+        const currentLang = document.body.getAttribute('data-lang') || 'EN';
+        const displayImage = (currentLang === 'ES' && bulletin.imageEs) ? bulletin.imageEs : bulletin.image;
+
+        const heroContent = displayImage
+            ? `<img class="post-detail-hero-image lightbox-trigger" data-lightbox-src="${this.escapeAttribute(displayImage)}" src="${this.escapeAttribute(displayImage)}" alt="">`
             : `<div class="post-detail-hero-art" style="--detail-accent:${meta.accent};--detail-tint:${meta.tint}">
                 <div class="post-detail-sun"></div>
                 <div class="post-detail-wave post-detail-wave-one"></div>
@@ -2434,6 +2259,37 @@ class FirebaseBulletinBoard {
                         </div>
                     ` : ''}
                     ${descriptionHtml ? `<div class="post-detail-description">${descriptionHtml}</div>` : ''}
+                    
+                    ${(bulletin.phone || bulletin.address || bulletin.hours || bulletin.languages) ? `
+                        <div class="post-detail-info-grid" style="margin-top: 24px; display: grid; gap: 16px; background: #f8fafc; padding: 20px; border-radius: 16px; border: 1px solid #e2e8f0;">
+                            ${bulletin.address ? `
+                                <div style="display: flex; gap: 12px; align-items: flex-start;">
+                                    <div style="color: ${meta.accent}; margin-top: 2px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+                                    <div><strong style="display: block; font-size: 0.8rem; color: #64748b; text-transform: uppercase;">Location</strong><span style="font-size: 0.95rem;">${this.escapeHtml(bulletin.address)}</span></div>
+                                </div>
+                            ` : ''}
+                            
+                            ${bulletin.hours ? `
+                                <div style="display: flex; gap: 12px; align-items: flex-start;">
+                                    <div style="color: ${meta.accent}; margin-top: 2px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+                                    <div><strong style="display: block; font-size: 0.8rem; color: #64748b; text-transform: uppercase;">Hours</strong><span style="font-size: 0.95rem;">${this.escapeHtml(bulletin.hours)}</span></div>
+                                </div>
+                            ` : ''}
+
+                            ${(bulletin.languages && (Array.isArray(bulletin.languages) ? bulletin.languages.length > 0 : bulletin.languages)) ? `
+                                <div style="display: flex; gap: 12px; align-items: flex-start;">
+                                    <div style="color: ${meta.accent}; margin-top: 2px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg></div>
+                                    <div>
+                                        <strong style="display: block; font-size: 0.8rem; color: #64748b; text-transform: uppercase;">Languages</strong>
+                                        <div style="display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap;">
+                                            ${this.getLanguageTagsHtml(bulletin.languages)}
+                                        </div>
+                                    </div>
+                                </div>
+                            ` : ''}
+                        </div>
+                    ` : ''}
+
                     ${tagValues.length ? `<div class="post-detail-tags">${tagValues.map((tag) => `<span>${this.escapeHtml(tag)}</span>`).join('')}</div>` : ''}
                     ${bulletin.contact ? `<div class="post-detail-contact-note">${this.escapeHtml(bulletin.contact).replace(/\n/g, '<br>')}</div>` : ''}
                     <div class="post-detail-actions">
@@ -2478,19 +2334,61 @@ class FirebaseBulletinBoard {
     }
 
     getDetailContactAction(bulletin) {
-        const source = [bulletin.phone, bulletin.contact].filter(Boolean).join(' ');
+        const phone = bulletin.phone || '';
+        const source = [phone, bulletin.contact].filter(Boolean).join(' ');
         const phoneMatch = source.match(/(?:\+?1[\s.-]?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}/);
 
         if (!phoneMatch) return null;
 
-        const phone = phoneMatch[0].replace(/\s+/g, ' ').trim();
-        const tel = phone.replace(/[^0-9+]/g, '');
+        const matchedPhone = phoneMatch[0].replace(/\s+/g, ' ').trim();
+        const tel = matchedPhone.replace(/[^0-9+]/g, '');
+        const mode = bulletin.phoneMode || 'call';
+
+        let label = 'Call';
+        let href = `tel:${tel}`;
+
+        if (mode === 'text') {
+            label = 'Text';
+            href = `sms:${tel}`;
+        } else if (mode === 'both') {
+            label = 'Call or Text';
+            // Default link to call, text mentioned in label
+        }
+
+        if (bulletin.category === 'job') {
+            label = mode === 'text' ? 'Text hiring' : 'Call hiring';
+        }
 
         return {
-            href: `tel:${tel}`,
-            label: bulletin.category === 'job' ? 'Call hiring' : 'Call',
-            value: phone
+            href: href,
+            label: label,
+            value: matchedPhone
         };
+    }
+
+    getLanguageTagsHtml(languages) {
+        if (!languages) return '';
+        const langArray = Array.isArray(languages) ? languages : String(languages).split(',').map(s => s.trim()).filter(Boolean);
+        
+        const langNames = {
+            ENG: 'English',
+            ESP: 'Español',
+            POR: 'Português',
+            KRE: 'Kreyòl (Haitian Creole)',
+            ARA: 'Arabic',
+            VIE: 'Vietnamese',
+            CHI: 'Chinese'
+        };
+
+        return langArray.map(lang => {
+            const code = lang.toUpperCase();
+            const fullName = langNames[code] || code;
+            return `
+                <span title="${this.escapeAttribute(fullName)}" style="display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: #f1f5f9; color: #475569; font-size: 10px; font-weight: 800; font-family: inherit; cursor: help;">
+                    ${this.escapeHtml(code)}
+                </span>
+            `;
+        }).join('');
     }
 
     getDetailLinkActionLabel(category) {

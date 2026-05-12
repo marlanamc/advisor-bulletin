@@ -317,68 +317,11 @@ class BulletinBoard {
         return;
         }
 
-        // For demo purposes, accept any username/password combination
-        // In production, this would be replaced with Firebase Authentication
-        const validCredentials = {
-            'admin': 'admin123',
-            'jorge': 'jorge123',
-            'fabiola': 'fabiola123',
-            'leidy': 'leidy123',
-            'carmen': 'carmen123',
-            'jerome': 'jerome123',
-            'felipe': 'felipe123',
-            'simonetta': 'simonetta123',
-            'mike': 'mike123',
-            'leah': 'leah123',
-            'marlie': 'marlie123'
-        };
-
-        if (validCredentials[username] && validCredentials[username] === password) {
-            // Login successful
-            this.currentUser = {
-                username: username,
-                name: this.getUserDisplayName(username),
-                email: `${username}@ebhcs.org`
-            };
-
-            // Save to localStorage for persistence
-            localStorage.setItem('ebhcs_current_user', JSON.stringify(this.currentUser));
-
-            // Hide login modal
-            this.hideLoginModal();
-
-            // Update UI
-            this.updateLoginUI();
-
-            // Show success message
-            this.showSuccessMessage(`Welcome, ${this.currentUser.name}! You are now logged in.`);
-
-            // If on admin page, show admin panel
-            if (window.location.pathname.includes('admin')) {
-                this.showAdminPanel();
-                this.loadManageBulletins();
-            }
-        } else {
-            // Login failed
-            this.showError('loginError', 'Invalid username or password. Please try again.');
-        }
+        this.showError('loginError', 'Advisor login uses Firebase Authentication. Please reload and try again.');
     }
 
     getUserDisplayName(username) {
-        const names = {
-            'admin': 'Administrator',
-            'jorge': 'Jorge',
-            'fabiola': 'Fabiola',
-            'leidy': 'Leidy',
-            'carmen': 'Carmen',
-            'jerome': 'Jerome',
-            'felipe': 'Felipe',
-            'simonetta': 'Simonetta',
-            'mike': 'Mike K.',
-            'leah': 'Leah',
-            'marlie': 'Marlie'
-        };
-        return names[username] || username;
+        return username;
     }
 
     showError(elementId, message) {
@@ -766,19 +709,15 @@ class BulletinBoard {
 
         if (bulletinsToShow.length === 0) {
             const emptyState = document.getElementById('emptyState');
-            const debugControls = document.getElementById('debugControls');
             if (filteredBulletins) {
                 emptyState.innerHTML = '<h3>No bulletins found</h3><p>Try adjusting your search or filter criteria.</p>';
             } else {
                 emptyState.innerHTML = '<h3>No bulletins posted yet</h3><p>Advisors can log in to post job opportunities, training sessions, and important announcements.</p>';
             }
-            if (debugControls) debugControls.style.display = 'none';
             emptyState.style.display = 'block';
             return;
         }
 
-        const debugControls = document.getElementById('debugControls');
-        if (debugControls) debugControls.style.display = 'none';
         document.getElementById('emptyState').style.display = 'none';
 
         switch(this.currentView) {
@@ -1718,27 +1657,10 @@ class BulletinBoard {
             console.log('📊 Using Firebase for data storage');
             this.setupFirebaseListener();
             return []; // Will be populated by the listener
-        } else {
-            console.log('📊 Firebase not available, using localStorage fallback');
-            const saved = localStorage.getItem('ebhcs_bulletins');
-            if (saved) {
-                const parsedData = JSON.parse(saved);
-                console.log('📊 Loaded bulletins from localStorage:', parsedData.length, 'bulletins');
-
-                // Ensure all bulletins have isActive field
-                const fixedData = parsedData.map(bulletin => ({
-                    ...bulletin,
-                    isActive: bulletin.isActive !== undefined ? bulletin.isActive : true
-                }));
-
-                console.log('📊 Fixed isActive fields:', fixedData.filter(b => b.isActive).length, 'active bulletins');
-                return fixedData;
-            }
-
-            // Return sample data for demo
-            console.log('📊 No saved data, using sample data:', this.getSampleData().length, 'bulletins');
-            return this.getSampleData();
         }
+
+        console.log('📊 Firebase not available; showing empty bulletin state');
+        return [];
     }
 
     setupFirebaseListener() {
@@ -1769,24 +1691,10 @@ class BulletinBoard {
               this.updateCatCounts();
           }, (error) => {
               console.error('❌ Firebase listener error:', error);
-              // Fallback to localStorage if Firebase fails
-              this.loadFromLocalStorage();
+              this.bulletins = [];
+              this.displayBulletins();
+              this.updateCatCounts();
           });
-    }
-
-    loadFromLocalStorage() {
-        const saved = localStorage.getItem('ebhcs_bulletins');
-        if (saved) {
-            const parsedData = JSON.parse(saved);
-            this.bulletins = parsedData.map(bulletin => ({
-                ...bulletin,
-                isActive: bulletin.isActive !== undefined ? bulletin.isActive : true
-            }));
-        } else {
-            this.bulletins = this.getSampleData();
-        }
-        this.displayBulletins();
-        this.updateCatCounts();
     }
 
     saveBulletins() {
@@ -1794,9 +1702,6 @@ class BulletinBoard {
         if (typeof firebase !== 'undefined' && firebase.firestore) {
             console.log('📊 Using Firebase for data storage - no need to manually save (real-time sync)');
             return;
-        } else {
-            console.log('📊 Using localStorage fallback');
-            localStorage.setItem('ebhcs_bulletins', JSON.stringify(this.bulletins));
         }
     }
 
@@ -1846,53 +1751,6 @@ class BulletinBoard {
             console.error('❌ Error deleting from Firebase:', error);
             return false;
         }
-    }
-
-    getSampleData() {
-        return [
-            {
-                id: '1',
-                title: 'Customer Service Representative - Boston Medical Center',
-                category: 'job',
-                description: 'BMC is looking for bilingual customer service representatives. Full-time position with benefits. No experience required - we will train!',
-                company: 'Boston Medical Center',
-                contact: 'Apply online at bmcjobs.org or call 617-555-0123',
-                deadline: '2024-12-15',
-                advisorName: 'Marlie Creed',
-                postedBy: 'admin',
-                datePosted: new Date(Date.now() - 86400000 * 2).toISOString(),
-                isActive: true,
-                image: 'https://images.unsplash.com/photo-1551434678-e076c223a692?w=400&h=300&fit=crop&crop=center'
-            },
-            {
-                id: '2',
-                title: 'Free Computer Skills Workshop',
-                category: 'training',
-                description: 'Learn basic computer skills including Microsoft Word, Excel, and internet browsing. Perfect for job seekers!',
-                company: 'Boston Public Library',
-                contact: 'Register at bpl.org/workshops or call 617-555-0456',
-                deadline: '2024-12-01',
-                advisorName: 'School Advisor',
-                postedBy: 'admin',
-                datePosted: new Date(Date.now() - 86400000 * 5).toISOString(),
-                isActive: true,
-                image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=300&fit=crop&crop=center'
-            },
-            {
-                id: '3',
-                title: 'ESOL Class Registration Open',
-                category: 'training',
-                description: 'New ESOL classes starting next month. Improve your English skills for better job opportunities.',
-                company: 'East Boston Community Center',
-                contact: 'Call 617-555-0789 to register',
-                deadline: '2024-11-30',
-                advisorName: 'Simonetta (Advisor)',
-                postedBy: 'advisor1',
-                datePosted: new Date(Date.now() - 86400000 * 1).toISOString(),
-                isActive: true,
-                image: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=400&h=300&fit=crop&crop=center'
-            }
-        ];
     }
 
     // Admin utility methods for maintenance
@@ -1972,54 +1830,6 @@ class BulletinBoard {
         this.testFirebaseSecurityRules();
 
         console.log('=== COMPREHENSIVE TESTING END ===');
-    }
-
-    // Utility function to inspect and fix localStorage data
-    inspectAndFixData() {
-        console.log('🔍 Inspecting localStorage data...');
-        const saved = localStorage.getItem('ebhcs_bulletins');
-
-        if (saved) {
-            const data = JSON.parse(saved);
-            console.log('📊 Raw data in localStorage:', data);
-
-            // Show detailed info for each bulletin
-            data.forEach((bulletin, index) => {
-                console.log(`📋 Bulletin ${index + 1}:`, {
-                    title: bulletin.title,
-                    isActive: bulletin.isActive,
-                    category: bulletin.category,
-                    datePosted: bulletin.datePosted,
-                    deadline: bulletin.deadline || 'none'
-                });
-            });
-
-            // Check for missing isActive fields
-            const fixedData = data.map((bulletin, index) => {
-                const fixed = { ...bulletin };
-                if (fixed.isActive === undefined) {
-                    fixed.isActive = true;
-                    console.log(`🔧 Fixed bulletin ${index + 1}: Added isActive: true`);
-                }
-                return fixed;
-            });
-
-            const activeCount = fixedData.filter(b => b.isActive).length;
-            console.log(`✅ Active bulletins: ${activeCount}/${fixedData.length}`);
-
-            // Save the fixed data
-            localStorage.setItem('ebhcs_bulletins', JSON.stringify(fixedData));
-            console.log('💾 Fixed data saved to localStorage');
-
-            // Reload bulletins
-            this.bulletins = fixedData;
-            this.displayBulletins();
-
-            return activeCount;
-        } else {
-            console.log('❌ No data found in localStorage');
-            return 0;
-        }
     }
 
     forceRefreshDisplay() {
@@ -2463,27 +2273,6 @@ function showFormSuccess(message) {
         successDiv.remove();
     }, 3000);
 }
-
-// Expose utility functions for debugging
-window.inspectBulletins = () => bulletinBoard.inspectAndFixData();
-window.forceRefresh = () => bulletinBoard.forceRefreshDisplay();
-window.clearAllBulletins = () => {
-    localStorage.removeItem('ebhcs_bulletins');
-    location.reload();
-};
-window.resetToSampleData = () => {
-    bulletinBoard.bulletins = bulletinBoard.getSampleData();
-    bulletinBoard.saveBulletins();
-    bulletinBoard.displayBulletins();
-    console.log('✅ Reset to sample data complete');
-    console.log('📊 Sample data includes', bulletinBoard.bulletins.length, 'bulletins with images');
-};
-window.showAllBulletins = () => {
-    console.log('📋 All bulletins in memory:');
-    bulletinBoard.bulletins.forEach((b, i) => {
-        console.log(`${i + 1}. ${b.title} - Active: ${b.isActive} - Category: ${b.category}`);
-    });
-};
 
 // Run comprehensive tests
 console.log('Running comprehensive tests...');
