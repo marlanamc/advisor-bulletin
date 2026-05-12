@@ -161,9 +161,11 @@ class FirebaseAdminPanel {
         const manageSort = document.getElementById('manageSortSelect');
         const manageFilter = document.getElementById('manageFilterSelect');
         const rerender = () => this.loadManageBulletins();
+        const manageContentType = document.getElementById('manageContentTypeSelect');
         if (manageSearch) manageSearch.addEventListener('input', rerender);
         if (manageSort) manageSort.addEventListener('change', rerender);
         if (manageFilter) manageFilter.addEventListener('change', rerender);
+        if (manageContentType) manageContentType.addEventListener('change', rerender);
 
         const analyticsRangeSelect = document.getElementById('analyticsRangeSelect');
         if (analyticsRangeSelect) {
@@ -432,6 +434,20 @@ class FirebaseAdminPanel {
 
     isResourceBulletin(bulletin) {
         return bulletin && bulletin.type === 'resource';
+    }
+
+    /** Calendar-only items: hidden from main feed + dated as event/range (matches admin "Event Date" save path). */
+    isCalendarEventBulletin(bulletin) {
+        if (!bulletin || this.isResourceBulletin(bulletin)) return false;
+        if (bulletin.hideFromMainFeed !== true) return false;
+        const dt = bulletin.dateType;
+        return dt === 'event' || dt === 'range';
+    }
+
+    getManageContentKind(bulletin) {
+        if (this.isResourceBulletin(bulletin)) return 'resource';
+        if (this.isCalendarEventBulletin(bulletin)) return 'event';
+        return 'bulletin';
     }
 
     getCurrentContentLabel() {
@@ -1738,6 +1754,7 @@ class FirebaseAdminPanel {
         const searchQuery = (document.getElementById('manageSearchInput')?.value || '').toLowerCase().trim();
         const sortMode = document.getElementById('manageSortSelect')?.value || 'newest';
         const filterMode = document.getElementById('manageFilterSelect')?.value || 'all';
+        const contentKind = document.getElementById('manageContentTypeSelect')?.value || 'all';
 
         let userBulletins = this.bulletins
             .filter(b => (this.canManageAllPosts() || b.postedBy === this.currentUser.username) && b.isActive);
@@ -1752,6 +1769,14 @@ class FirebaseAdminPanel {
             userBulletins = userBulletins.filter(b => !this.isResourceBulletin(b) && this.isBulletinExpiredAdmin(b));
         } else if (filterMode === 'draft') {
             userBulletins = userBulletins.filter(b => this.isResourceBulletin(b) && b.isPublished === false);
+        }
+
+        if (contentKind === 'bulletin') {
+            userBulletins = userBulletins.filter(b => this.getManageContentKind(b) === 'bulletin');
+        } else if (contentKind === 'resource') {
+            userBulletins = userBulletins.filter(b => this.getManageContentKind(b) === 'resource');
+        } else if (contentKind === 'event') {
+            userBulletins = userBulletins.filter(b => this.getManageContentKind(b) === 'event');
         }
 
         // Apply search
@@ -1799,6 +1824,12 @@ class FirebaseAdminPanel {
                 container.innerHTML = '<p>No expired posts. Great — everything is still active!</p>';
             } else if (filterMode === 'active') {
                 container.innerHTML = '<p>No active posts right now.</p>';
+            } else if (contentKind === 'event') {
+                container.innerHTML = '<p>No calendar events match these filters.</p>';
+            } else if (contentKind === 'resource') {
+                container.innerHTML = '<p>No resources match these filters.</p>';
+            } else if (contentKind === 'bulletin') {
+                container.innerHTML = '<p>No bulletins match these filters.</p>';
             } else {
                 container.innerHTML = this.canManageAllPosts()
                     ? '<p>There are no bulletins to manage right now.</p>'
@@ -1809,6 +1840,8 @@ class FirebaseAdminPanel {
 
         container.innerHTML = userBulletins.map(bulletin => {
             const isResource = this.isResourceBulletin(bulletin);
+            const kind = this.getManageContentKind(bulletin);
+            const typeLabel = kind === 'resource' ? 'Resource' : kind === 'event' ? 'Calendar event' : 'Bulletin';
             const isDraft = isResource && bulletin.isPublished === false;
             const isExpired = !isResource && this.isBulletinExpiredAdmin(bulletin);
             const statusLabel = isDraft ? 'Draft / Hidden from students' : isExpired ? 'Expired' : 'Live';
@@ -1816,7 +1849,7 @@ class FirebaseAdminPanel {
             return `
             <div class="manage-card" data-bulletin-id="${bulletin.id}" id="manage-card-${bulletin.id}">
                 <h5>${this.escapeHtml(this.getManageCardTitle(bulletin))}</h5>
-                <p><strong>Type:</strong> ${isResource ? 'Resource' : 'Post'}</p>
+                <p><strong>Type:</strong> ${typeLabel}</p>
                 <p><strong>Status:</strong> ${statusLabel}</p>
                 <p><strong>Category:</strong> ${isResource ? this.getResourceCategoryLabel(bulletin.resourceCategory) : this.getCategoryDisplay(bulletin.category)}</p>
                 ${!isResource && bulletin.hideFromMainFeed ? `<p><strong>Main feed:</strong> Hidden (calendar &amp; upcoming only)</p>` : ''}
@@ -3023,6 +3056,9 @@ function toggleDateFields() {
         endDateGroup.style.display = 'block';
         if (startDateInput) startDateInput.required = true;
         if (endDateInput) endDateInput.required = true;
+    }
+    if (typeof window.syncAdminStudentPreview === 'function') {
+        window.syncAdminStudentPreview();
     }
 }
 

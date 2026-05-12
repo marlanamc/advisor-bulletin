@@ -7,10 +7,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Lexend:wght@300;400;500;600;700;800&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
-  <script type="module" crossorigin src="/assets/admin-sKgJHS_5.js"></script>
+  <script type="module" crossorigin src="/assets/admin-Dbob0_ta.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/advisor-directory-BanH5_CV.js">
   <link rel="stylesheet" crossorigin href="/assets/advisor-directory-DF0TvTGT.css">
-  <link rel="stylesheet" crossorigin href="/assets/admin-BuqblWXi.css">
+  <link rel="stylesheet" crossorigin href="/assets/admin-CmBD_SDy.css">
 </head>
 <body>
     <header>
@@ -1117,9 +1117,15 @@
                             <option value="category">By Category</option>
                             <option value="deadline">By Deadline</option>
                         </select>
+                        <select id="manageContentTypeSelect" class="ap-select" style="width:auto;min-width:148px;padding:8px 34px 8px 12px;font-size:.82rem;" title="Filter by content type">
+                            <option value="all">All types</option>
+                            <option value="bulletin">Bulletins</option>
+                            <option value="resource">Resources</option>
+                            <option value="event">Calendar events</option>
+                        </select>
                         <select id="manageFilterSelect" class="ap-select" style="width:auto;min-width:130px;padding:8px 34px 8px 12px;font-size:.82rem;">
-                            <option value="all">All Content</option>
-                            <option value="active">Active</option>
+                            <option value="all">All statuses</option>
+                            <option value="active">Live</option>
                             <option value="draft">Draft</option>
                             <option value="expired">Expired</option>
                         </select>
@@ -1575,7 +1581,40 @@
             return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
         }
 
+        function formatPreviewYmd(ymd) {
+            if (!ymd || typeof ymd !== 'string') return '';
+            var m = ymd.trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
+            if (!m) return ymd;
+            var d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+            if (isNaN(d.getTime())) return ymd;
+            return d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+        }
+
+        function formatPreviewTimeRange(start, end) {
+            function fmt(t) {
+                if (!t || typeof t !== 'string') return '';
+                var p = t.trim().split(':');
+                if (p.length < 2) return t;
+                var h = parseInt(p[0], 10), mm = p[1];
+                if (isNaN(h)) return t;
+                var am = h >= 12 ? 'PM' : 'AM';
+                var h12 = h % 12 || 12;
+                return h12 + ':' + mm + ' ' + am;
+            }
+            var fs = fmt(start), fe = fmt(end);
+            if (fs && fe) return fs + ' – ' + fe;
+            return fs || fe || '';
+        }
+
+        function eventFormatLabel(v) {
+            var map = { 'in-person': 'In person', 'online': 'Online', 'hybrid': 'Hybrid' };
+            return map[v] || '';
+        }
+
         function getPreviewMode() {
+            var form = document.getElementById('bulletinForm');
+            var mode = form && form.dataset.contentMode;
+            if (mode === 'event') return 'event';
             var hidden = document.getElementById('contentType');
             return hidden && hidden.value === 'resource' ? 'resource' : 'post';
         }
@@ -1668,6 +1707,99 @@
                 return;
             }
 
+            if (mode === 'event') {
+                var cardWrapEv = document.querySelector('.ap-preview-card');
+                if (!cardWrapEv) return;
+
+                var titleEv = (document.getElementById('title')?.value || '').trim();
+                var descEv = (document.getElementById('description')?.value || '').trim();
+                var advisorEv = document.getElementById('advisorName')?.value || 'Advisor';
+                var dateTypeEv = document.getElementById('dateType')?.value || '';
+                var eventDateVal = document.getElementById('eventDate')?.value || '';
+                var startDateVal = document.getElementById('startDate')?.value || '';
+                var endDateVal = document.getElementById('endDate')?.value || '';
+                var startT = document.getElementById('startTime')?.value || '';
+                var endT = document.getElementById('endTime')?.value || '';
+                var fmtSel = document.getElementById('eventLocation')?.value || '';
+                var addr = (document.getElementById('location')?.value || '').trim();
+                var evLink = (document.getElementById('eventLink')?.value || '').trim();
+
+                var whenLine = '';
+                if (dateTypeEv === 'range') {
+                    if (startDateVal || endDateVal) {
+                        whenLine = formatPreviewYmd(startDateVal || eventDateVal) + ' – ' + formatPreviewYmd(endDateVal || startDateVal);
+                    } else {
+                        whenLine = 'Add start and end dates';
+                    }
+                } else if (dateTypeEv === 'deadline' && eventDateVal) {
+                    whenLine = 'Deadline: ' + formatPreviewYmd(eventDateVal);
+                } else if (eventDateVal) {
+                    whenLine = formatPreviewYmd(eventDateVal);
+                } else if (dateTypeEv) {
+                    whenLine = 'Pick a date for this event';
+                } else {
+                    whenLine = 'Choose a date type in Event Details';
+                }
+
+                var timeStr = formatPreviewTimeRange(startT, endT);
+                var metaParts = [];
+                var fl = eventFormatLabel(fmtSel);
+                if (fl) metaParts.push(fl);
+                if (addr) metaParts.push(addr);
+                var metaHtml = metaParts.length
+                    ? '<div class="ap-preview-event-meta">' + metaParts.map(function(p) { return '<span class="ap-preview-event-meta-pill">' + escPreview(p) + '</span>'; }).join('') + '</div>'
+                    : '';
+
+                var descHtml = descEv
+                    ? '<div class="ap-preview-event-desc">' + escPreview(descEv.length > 240 ? descEv.slice(0, 240) + '…' : descEv) + '</div>'
+                    : '<div class="ap-preview-event-desc ap-preview-event-desc-muted">Optional details for students</div>';
+
+                var linkRowEv = evLink
+                    ? '<div class="ap-preview-event-url"><span class="ap-preview-url-label">Link</span> ' + escPreview(evLink) + '</div>'
+                    : '';
+
+                cardWrapEv.innerHTML =
+                    '<div class="ap-preview-event-card">' +
+                        '<div class="ap-preview-post-meta">' +
+                            '<span class="ap-preview-type-chip ap-chip-event" id="previewChip">EVENT</span>' +
+                            '<span class="ap-preview-post-time">Calendar</span>' +
+                        '</div>' +
+                        '<div class="ap-preview-event-title">' + escPreview(titleEv || 'Event title will appear here') + '</div>' +
+                        '<div class="ap-preview-event-when">' +
+                            '<span class="ap-preview-event-when-icon" aria-hidden="true">' +
+                                '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>' +
+                            '</span>' +
+                            '<span class="ap-preview-event-when-text">' + escPreview(whenLine) + '</span>' +
+                        '</div>' +
+                        (timeStr ? '<div class="ap-preview-event-time"><span class="ap-preview-event-time-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>' + escPreview(timeStr) + '</div>' : '') +
+                        metaHtml +
+                        descHtml +
+                        '<div class="ap-preview-post-img ap-preview-event-img" id="previewImg">' +
+                            '<div class="ap-preview-post-img-placeholder">' +
+                                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>' +
+                                '<span>Optional flyer</span>' +
+                            '</div>' +
+                        '</div>' +
+                        linkRowEv +
+                        '<div class="ap-preview-post-footer">' +
+                            '<span class="ap-preview-author"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span id="previewAdvisor">' + escPreview(advisorEv) + '</span></span>' +
+                            '<span class="ap-preview-audience"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Events</span>' +
+                        '</div>' +
+                    '</div>';
+
+                var imgInEv = document.getElementById('image');
+                if (imgInEv && imgInEv.files && imgInEv.files[0]) {
+                    var readerEv = new FileReader();
+                    readerEv.onload = function(e) {
+                        var prevImgEv = document.getElementById('previewImg');
+                        if (prevImgEv) prevImgEv.innerHTML = '<img src="' + e.target.result + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:12px;">';
+                    };
+                    readerEv.readAsDataURL(imgInEv.files[0]);
+                }
+                setPreviewNav('events');
+                return;
+            }
+
             renderPostPreviewShell();
             setPreviewNav('posts');
 
@@ -1740,7 +1872,7 @@
 
         // ── Bind live preview to title/desc ──────────────────────────
         function bindPreviewListeners() {
-            ['title','resourceTitleEn','resourceTitleEs','description','resourceDescription','advisorName','resourceAdvisorName','resourceCategory','resourceUrl','resourceHighlights','resourcePhone','resourceAddress','resourceHours','resourcePublished'].forEach(function(id) {
+            ['title','resourceTitleEn','resourceTitleEs','description','resourceDescription','advisorName','resourceAdvisorName','resourceCategory','resourceUrl','resourceHighlights','resourcePhone','resourceAddress','resourceHours','resourcePublished','dateType','eventDate','startDate','endDate','startTime','endTime','location','eventLink','eventLocation'].forEach(function(id) {
                 var el = document.getElementById(id);
                 if (!el) return;
                 el.addEventListener('input', syncPreview);
@@ -2125,6 +2257,7 @@
         function init() {
             initAdvisorDisplay();
             bindPreviewListeners();
+            window.syncAdminStudentPreview = syncPreview;
             installShowTabBridge();
             installStatsBridge();
             // Watch for adminPanel becoming visible
