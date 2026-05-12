@@ -332,6 +332,40 @@
     box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
 }
 
+.advisor-manage-actions {
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.advisor-manage-actions .manage-actions-primary {
+    display: flex;
+    gap: 8px;
+}
+
+.advisor-manage-actions .manage-actions-primary .edit-btn,
+.advisor-manage-actions .manage-actions-primary .delete-btn {
+    flex: 1;
+}
+
+.reset-password-btn {
+    width: 100%;
+    margin-top: 2px;
+    background: #f8fafc;
+    color: #334155;
+    border: 1px solid #cbd5e1;
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.reset-password-btn:hover {
+    background: #e2e8f0;
+    border-color: #94a3b8;
+}
+
 .no-posts-message {
     text-align: center;
     color: #64748b;

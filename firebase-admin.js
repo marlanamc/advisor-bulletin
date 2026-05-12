@@ -1,6 +1,7 @@
 import { db, auth, storage } from './src/firebase.js'
+import { getPublicAdvisorEmail } from './src/advisor-directory.js'
 import { collection, doc, query, where, orderBy, onSnapshot, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, serverTimestamp, Timestamp } from 'firebase/firestore'
-import { onAuthStateChanged, signOut } from 'firebase/auth'
+import { onAuthStateChanged, signOut, sendPasswordResetEmail } from 'firebase/auth'
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage'
 
 const ADMIN_RESOURCE_CATEGORY_LABELS = {
@@ -1571,6 +1572,48 @@ class FirebaseAdminPanel {
         return this.currentUser?.isAdmin === true;
     }
 
+    /** Email used for Firebase Auth sign-in (matches enhanced-auth parseLoginIdentifier). */
+    getAdvisorAuthEmail(username) {
+        const u = String(username || '').trim().toLowerCase();
+        if (!u) return '';
+        return u === 'admin' ? 'admin@ebhcs.org' : `${u}@ebhcs.org`;
+    }
+
+    async sendAdvisorPasswordReset(username) {
+        if (!this.canManageAllPosts()) {
+            this.showToast('Only admins can send password resets.', 'error');
+            return;
+        }
+        const authEmail = this.getAdvisorAuthEmail(username);
+        if (!authEmail) {
+            this.showToast('Invalid username.', 'error');
+            return;
+        }
+        const advisor = this.advisors.find((a) => a.username === username);
+        const label = advisor?.displayName || username;
+        const ok = confirm(
+            `Send a password reset email to:\n${authEmail}\n\nThis is their Firebase login address (${label}). They will set a new password using the link in that inbox.`
+        );
+        if (!ok) return;
+        try {
+            if (typeof auth === 'undefined') {
+                throw new Error('Authentication is not available.');
+            }
+            await sendPasswordResetEmail(auth, authEmail);
+            this.showToast(`Reset email sent to ${authEmail}.`, 'success');
+        } catch (e) {
+            const code = e?.code;
+            let msg = e?.message || 'Failed to send reset email.';
+            if (code === 'auth/user-not-found') {
+                msg = `No Firebase account for ${authEmail}. Create the user in Firebase Auth first, or fix the login email.`;
+            } else if (code === 'auth/too-many-requests') {
+                msg = 'Too many attempts. Try again later.';
+            }
+            console.error('sendAdvisorPasswordReset', e);
+            this.showToast(msg, 'error');
+        }
+    }
+
     // ── Advisor Management ────────────────────────────────────────────
 
     loadAdvisors() {
@@ -1589,11 +1632,14 @@ class FirebaseAdminPanel {
                 </div>
                 <div class="manage-card-body">
                     <p><strong>Username:</strong> ${this.escapeHtml(a.username)}</p>
-                    <p><strong>Email:</strong> ${this.escapeHtml(a.email || a.username + '@ebhcs.org')}</p>
+                    <p><strong>Email:</strong> ${this.escapeHtml(getPublicAdvisorEmail(a))}</p>
                 </div>
-                <div class="manage-actions">
-                    <button class="edit-btn" onclick="adminPanel.openEditAdvisor('${this.escapeHtml(a.username)}')">Edit</button>
-                    ${a.username !== this.currentUser.username ? `<button class="delete-btn" onclick="adminPanel.deleteAdvisor('${this.escapeHtml(a.username)}')">Remove</button>` : ''}
+                <div class="manage-actions advisor-manage-actions">
+                    <div class="manage-actions-primary">
+                        <button type="button" class="edit-btn" onclick="adminPanel.openEditAdvisor('${this.escapeHtml(a.username)}')">Edit</button>
+                        ${a.username !== this.currentUser.username ? `<button type="button" class="delete-btn" onclick="adminPanel.deleteAdvisor('${this.escapeHtml(a.username)}')">Remove</button>` : ''}
+                    </div>
+                    <button type="button" class="reset-password-btn" onclick="adminPanel.sendAdvisorPasswordReset('${this.escapeHtml(a.username)}')">Reset password</button>
                 </div>
             </div>
         `).join('');
@@ -1604,7 +1650,7 @@ class FirebaseAdminPanel {
         if (!advisor) return;
         document.getElementById('editAdvisorUsername').value = advisor.username;
         document.getElementById('editAdvisorDisplayName').value = advisor.displayName;
-        document.getElementById('editAdvisorEmail').value = advisor.email || '';
+        document.getElementById('editAdvisorEmail').value = getPublicAdvisorEmail(advisor);
         document.getElementById('editAdvisorIsAdmin').checked = advisor.isAdmin || false;
         document.getElementById('editAdvisorModal').style.display = 'flex';
     }

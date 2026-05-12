@@ -1,4 +1,5 @@
 import { db, auth, storage } from './src/firebase.js'
+import { STUDENT_ADVISOR_DIRECTORY } from './src/advisor-directory.js'
 import { collection, addDoc, query, where, orderBy, onSnapshot, serverTimestamp } from 'firebase/firestore'
 
 const STUDENT_ANALYTICS_ACTIONS = new Set([
@@ -46,19 +47,6 @@ function trackStudentEvent(action, payload = {}) {
 }
 
 window.trackStudentEvent = trackStudentEvent;
-
-/** Public advisor directory for the student site. Email local parts match advisor usernames. */
-const STUDENT_ADVISOR_DIRECTORY = [
-    { name: 'Leah',      role: 'Coordinator/Educator', email: 'lgregory@ebhcs.org' },
-    { name: 'Carmen',    role: 'Advisor',               email: 'vlalin@ebhcs.org' },
-    { name: 'Fabiola',   role: 'Advisor',               email: 'fvaquerano@ebhcs.org' },
-    { name: 'Felipe',    role: 'Advisor',               email: 'fgallego@ebhcs.org' },
-    { name: 'Jerome',    role: 'Advisor',               email: 'jkiley@ebhcs.org' },
-    { name: 'Jorge',     role: 'Advisor',               email: 'rocha@ebhcs.org' },
-    { name: 'Leidy',     role: 'Advisor',               email: 'lalzate@ebhcs.org' },
-    { name: 'Mike K.',   role: 'Advisor',               email: 'mkelsen@ebhcs.org' },
-    { name: 'Simonetta', role: 'Advisor',               email: 'spiergentili@ebhcs.org' }
-];
 
 /** Optional synthetic items merged into student calendar / upcoming — not stored in Firestore. */
 const SCHOOL_CALENDAR_ANCHORS = [];
@@ -773,7 +761,7 @@ class FirebaseBulletinBoard {
         list.innerHTML = STUDENT_ADVISOR_DIRECTORY.map((advisor) => {
             const name = this.escapeHtml(advisor.name);
             const role = this.escapeHtml(advisor.role);
-            const email = this.escapeHtml(advisor.email || `${advisor.username}@ebhcs.org`);
+            const email = this.escapeHtml(advisor.email || '');
             return `
                 <article class="advisor-dir-card">
                     <div class="advisor-dir-card-text">
