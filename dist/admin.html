@@ -7,10 +7,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Lexend:wght@300;400;500;600;700;800&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
-  <script type="module" crossorigin src="/assets/admin-VFvzIimH.js"></script>
+  <script type="module" crossorigin src="/assets/admin-3dUpwSgu.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/firebase-CvS6P2vg.js">
   <link rel="stylesheet" crossorigin href="/assets/firebase-B0wbb6l6.css">
-  <link rel="stylesheet" crossorigin href="/assets/admin-CeCVYxcg.css">
+  <link rel="stylesheet" crossorigin href="/assets/admin-BuqblWXi.css">
 </head>
 <body>
     <header>
@@ -442,7 +442,7 @@
                         <div class="ap-create-form-col">
 
                             <div class="ap-step-header">
-                                <div class="ap-step-number">1</div>
+                                <div class="ap-step-number"></div>
                                 <h3 class="ap-step-title">What are you posting?</h3>
                             </div>
                             <div class="ap-type-selector" role="group" aria-label="Choose post type" id="apTypeSelector">
@@ -516,8 +516,8 @@
                         </div>
                         
                         <!-- Step 2: Basic Information -->
-                        <div class="ap-step-header" style="margin-top: 24px;">
-                            <div class="ap-step-number">2</div>
+                        <div class="ap-step-header content-mode-section" data-content-mode="post event" style="margin-top: 24px;">
+                            <div class="ap-step-number"></div>
                             <h3 class="ap-step-title">Basic Information</h3>
                         </div>
 
@@ -615,7 +615,7 @@
 
                         <div class="form-section resource-primary content-mode-section" data-content-mode="resource" style="display: none;">
                             <div class="form-section-header">
-                                <div class="form-section-icon">🔗</div>
+                                <div class="ap-step-number"></div>
                                 <div>
                                     <h3 class="form-section-title">Resource Details</h3>
                                     <p class="form-section-subtitle">Keep this simple: paste the link, name it clearly, and publish.</p>
@@ -705,14 +705,13 @@
                                 <div class="form-group">
                                     <label>Languages Spoken</label>
                                     <div class="language-chip-picker" data-field="resourceLanguages">
-                                        <label class="lang-chip-input"><input type="checkbox" name="resourceLanguages" value="EN"><span>EN</span></label>
-                                        <label class="lang-chip-input"><input type="checkbox" name="resourceLanguages" value="ES"><span>ES</span></label>
-                                        <label class="lang-chip-input"><input type="checkbox" name="resourceLanguages" value="PT"><span>PT</span></label>
-                                        <label class="lang-chip-input"><input type="checkbox" name="resourceLanguages" value="HT"><span>HT</span></label>
-                                        <label class="lang-chip-input"><input type="checkbox" name="resourceLanguages" value="AR"><span>AR</span></label>
-                                        <label class="lang-chip-input"><input type="checkbox" name="resourceLanguages" value="FR"><span>FR</span></label>
-                                        <label class="lang-chip-input"><input type="checkbox" name="resourceLanguages" value="VI"><span>VI</span></label>
-                                        <label class="lang-chip-input"><input type="checkbox" name="resourceLanguages" value="ZH"><span>ZH</span></label>
+                                        <label class="lang-chip-input"><input type="checkbox" name="resourceLanguages" value="ENG"><span>ENG</span></label>
+                                        <label class="lang-chip-input"><input type="checkbox" name="resourceLanguages" value="ESP"><span>ESP</span></label>
+                                        <label class="lang-chip-input"><input type="checkbox" name="resourceLanguages" value="POR"><span>POR</span></label>
+                                        <label class="lang-chip-input"><input type="checkbox" name="resourceLanguages" value="KRE"><span>KRE</span></label>
+                                        <label class="lang-chip-input"><input type="checkbox" name="resourceLanguages" value="ARA"><span>ARA</span></label>
+                                        <label class="lang-chip-input"><input type="checkbox" name="resourceLanguages" value="VIE"><span>VIE</span></label>
+                                        <label class="lang-chip-input"><input type="checkbox" name="resourceLanguages" value="CHI"><span>CHI</span></label>
                                     </div>
                                     <small class="input-help">Select all languages available for this resource.</small>
                                 </div>
@@ -763,7 +762,7 @@
                         <!-- Step 3: Event Details -->
                         <div class="ap-accordion-section content-mode-section" id="eventDetailsAccordion" data-content-mode="post event">
                             <div class="ap-accordion-header" onclick="adminPanel.toggleAccordion(this)">
-                                <div class="ap-step-number">3</div>
+                                <div class="ap-step-number"></div>
                                 <h3 class="ap-accordion-title">Event Details <span style="font-weight: 400; color: var(--ap-text-3); font-size: 0.85rem; margin-left: 4px;">(optional)</span></h3>
                                 <div class="ap-accordion-chevron">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
@@ -832,7 +831,7 @@
                         <!-- Step 4: Spanish Translation -->
                         <div class="ap-accordion-section content-mode-section" data-content-mode="post">
                             <div class="ap-accordion-header" onclick="adminPanel.toggleAccordion(this)">
-                                <div class="ap-step-number">4</div>
+                                <div class="ap-step-number"></div>
                                 <h3 class="ap-accordion-title">Spanish Translation <span style="font-weight: 400; color: var(--ap-text-3); font-size: 0.85rem; margin-left: 4px;">(optional)</span></h3>
                                 <div class="ap-accordion-chevron">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
@@ -858,7 +857,7 @@
                         <!-- Step 5: Contact & Location -->
                         <div class="ap-accordion-section content-mode-section" data-content-mode="post">
                             <div class="ap-accordion-header" onclick="adminPanel.toggleAccordion(this)">
-                                <div class="ap-step-number">5</div>
+                                <div class="ap-step-number"></div>
                                 <h3 class="ap-accordion-title">Contact & Location <span style="font-weight: 400; color: var(--ap-text-3); font-size: 0.85rem; margin-left: 4px;">(optional)</span></h3>
                                 <div class="ap-accordion-chevron">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
@@ -898,14 +897,13 @@
                                     <div class="form-group">
                                         <label>Languages Available</label>
                                         <div class="language-chip-picker" data-field="contactLanguages">
-                                            <label class="lang-chip-input"><input type="checkbox" name="contactLanguages" value="EN"><span>EN</span></label>
-                                            <label class="lang-chip-input"><input type="checkbox" name="contactLanguages" value="ES"><span>ES</span></label>
-                                            <label class="lang-chip-input"><input type="checkbox" name="contactLanguages" value="PT"><span>PT</span></label>
-                                            <label class="lang-chip-input"><input type="checkbox" name="contactLanguages" value="HT"><span>HT</span></label>
-                                            <label class="lang-chip-input"><input type="checkbox" name="contactLanguages" value="AR"><span>AR</span></label>
-                                            <label class="lang-chip-input"><input type="checkbox" name="contactLanguages" value="FR"><span>FR</span></label>
-                                            <label class="lang-chip-input"><input type="checkbox" name="contactLanguages" value="VI"><span>VI</span></label>
-                                            <label class="lang-chip-input"><input type="checkbox" name="contactLanguages" value="ZH"><span>ZH</span></label>
+                                            <label class="lang-chip-input"><input type="checkbox" name="contactLanguages" value="ENG"><span>ENG</span></label>
+                                            <label class="lang-chip-input"><input type="checkbox" name="contactLanguages" value="ESP"><span>ESP</span></label>
+                                            <label class="lang-chip-input"><input type="checkbox" name="contactLanguages" value="POR"><span>POR</span></label>
+                                            <label class="lang-chip-input"><input type="checkbox" name="contactLanguages" value="KRE"><span>KRE</span></label>
+                                            <label class="lang-chip-input"><input type="checkbox" name="contactLanguages" value="ARA"><span>ARA</span></label>
+                                            <label class="lang-chip-input"><input type="checkbox" name="contactLanguages" value="VIE"><span>VIE</span></label>
+                                            <label class="lang-chip-input"><input type="checkbox" name="contactLanguages" value="CHI"><span>CHI</span></label>
                                         </div>
                                     </div>
                                 </div>
@@ -919,7 +917,7 @@
                         <!-- Step 6: Advanced Settings -->
                         <div class="ap-accordion-section">
                             <div class="ap-accordion-header" onclick="adminPanel.toggleAccordion(this)">
-                                <div class="ap-step-number">6</div>
+                                <div class="ap-step-number"></div>
                                 <h3 class="ap-accordion-title">Advanced Settings <span style="font-weight: 400; color: var(--ap-text-3); font-size: 0.85rem; margin-left: 4px;">(optional)</span></h3>
                                 <div class="ap-accordion-chevron">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
@@ -1022,19 +1020,19 @@
                                             </div>
                                         </div>
                                         <div class="ap-phone-bottomnav">
-                                            <div class="ap-phone-nav-item">
+                                            <div class="ap-phone-nav-item" data-preview-nav="home">
                                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
                                                 <span>Home</span>
                                             </div>
-                                            <div class="ap-phone-nav-item">
+                                            <div class="ap-phone-nav-item" data-preview-nav="resources">
                                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
                                                 <span>Resources</span>
                                             </div>
-                                            <div class="ap-phone-nav-item">
+                                            <div class="ap-phone-nav-item" data-preview-nav="events">
                                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                                                 <span>Events</span>
                                             </div>
-                                            <div class="ap-phone-nav-item active">
+                                            <div class="ap-phone-nav-item active" data-preview-nav="posts">
                                                 <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z" fill="#1a56db"/></svg>
                                                 <span>Posts</span>
                                             </div>
@@ -1122,6 +1120,7 @@
                         <select id="manageFilterSelect" class="ap-select" style="width:auto;min-width:130px;padding:8px 34px 8px 12px;font-size:.82rem;">
                             <option value="all">All Content</option>
                             <option value="active">Active</option>
+                            <option value="draft">Draft</option>
                             <option value="expired">Expired</option>
                         </select>
                     </div>
@@ -1226,15 +1225,7 @@
                             </div>
                         </div>
 
-                        <!-- Your Impact card (real top category) -->
-                        <div class="ap-chart-card" style="background:linear-gradient(135deg,var(--ap-navy),var(--ap-navy-mid));color:#fff;">
-                            <div class="ap-chart-card-title" style="color:rgba(255,213,93,.8);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;">Your Impact</div>
-                            <div style="margin-top:8px;">
-                                <div style="font-family:var(--ap-font-head);font-size:1.5rem;font-weight:800;letter-spacing:-.03em;line-height:1.2;" id="statsTopCat">—</div>
-                                <div style="font-size:.82rem;color:rgba(255,255,255,.65);margin:6px 0 14px;">your most-clicked category</div>
-                                <div style="font-size:.83rem;color:rgba(255,255,255,.8);line-height:1.55;">Keep sharing opportunities — your posts are reaching students who need this information.</div>
-                            </div>
-                        </div>
+
                     </div>
 
                     <!-- Top performing posts table (real data) -->
@@ -1566,12 +1557,112 @@
                 btn.classList.toggle('active', match);
                 if (match) btn.click();
             });
+            syncPreview();
         };
 
         // ── Live preview sync ─────────────────────────────────────────
+        function escPreview(s) {
+            return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+
+        function getPreviewMode() {
+            var hidden = document.getElementById('contentType');
+            return hidden && hidden.value === 'resource' ? 'resource' : 'post';
+        }
+
+        function setPreviewNav(active) {
+            document.querySelectorAll('[data-preview-nav]').forEach(function(item) {
+                item.classList.toggle('active', item.getAttribute('data-preview-nav') === active);
+            });
+        }
+
+        function renderPostPreviewShell() {
+            var cardWrap = document.querySelector('.ap-preview-card');
+            if (!cardWrap || document.getElementById('previewTitle')) return;
+            cardWrap.innerHTML =
+                '<div class="ap-preview-post-card">' +
+                    '<div class="ap-preview-post-meta">' +
+                        '<span class="ap-preview-type-chip ap-chip-bulletin" id="previewChip">BULLETIN</span>' +
+                        '<span class="ap-preview-post-time">Just now</span>' +
+                    '</div>' +
+                    '<div class="ap-preview-post-title" id="previewTitle">Your post title will appear here</div>' +
+                    '<div class="ap-preview-post-img" id="previewImg">' +
+                        '<div class="ap-preview-post-img-placeholder">' +
+                            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>' +
+                            '<span>IMAGE / FLYER</span>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="ap-preview-post-body" id="previewBody">Your description will show here.</div>' +
+                    '<div class="ap-preview-post-footer">' +
+                        '<span class="ap-preview-author"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span id="previewAdvisor">Advisor</span></span>' +
+                        '<span class="ap-preview-audience"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>All Students</span>' +
+                    '</div>' +
+                '</div>';
+        }
+
+        function resourceCategoryLabel(value) {
+            var labels = {
+                immigration: 'Immigration',
+                jobs: 'Jobs',
+                housing: 'Housing',
+                health: 'Health',
+                'legal-aid': 'Legal Aid'
+            };
+            return labels[value] || 'Resource';
+        }
+
         function syncPreview() {
-            var titleInput = document.getElementById('title') || document.getElementById('resourceTitleEn');
-            var descInput  = document.getElementById('description') || document.getElementById('resourceDescription');
+            var mode = getPreviewMode();
+
+            if (mode === 'resource') {
+                var cardWrap = document.querySelector('.ap-preview-card');
+                if (!cardWrap) return;
+
+                var title = (document.getElementById('resourceTitleEn')?.value || '').trim();
+                var titleEs = (document.getElementById('resourceTitleEs')?.value || '').trim();
+                var category = document.getElementById('resourceCategory')?.value || '';
+                var url = (document.getElementById('resourceUrl')?.value || '').trim();
+                var desc = (document.getElementById('resourceDescription')?.value || '').trim();
+                var highlights = (document.getElementById('resourceHighlights')?.value || '').split(',').map(function(h) { return h.trim(); }).filter(Boolean).slice(0, 3);
+                var advisor = document.getElementById('resourceAdvisorName')?.value || document.getElementById('advisorName')?.value || 'Advisor';
+                var phone = (document.getElementById('resourcePhone')?.value || '').trim();
+                var address = (document.getElementById('resourceAddress')?.value || '').trim();
+                var hours = (document.getElementById('resourceHours')?.value || '').trim();
+                var languages = Array.prototype.slice.call(document.querySelectorAll('input[name="resourceLanguages"]:checked')).map(function(cb) { return cb.value; });
+                var published = document.getElementById('resourcePublished')?.checked !== false;
+                var chips = highlights.concat(languages).slice(0, 5);
+
+                cardWrap.innerHTML =
+                    '<div class="ap-preview-resource-card">' +
+                        '<div class="ap-preview-resource-meta">' +
+                            '<span class="ap-preview-type-chip ap-chip-resource" id="previewChip">RESOURCE</span>' +
+                            '<span class="ap-preview-resource-state">' + (published ? 'Visible' : 'Hidden') + '</span>' +
+                        '</div>' +
+                        '<div class="ap-preview-resource-icon" aria-hidden="true">' +
+                            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>' +
+                        '</div>' +
+                        '<div class="ap-preview-resource-category">' + escPreview(resourceCategoryLabel(category)) + '</div>' +
+                        '<div class="ap-preview-resource-title">' + escPreview(title || 'Resource title will appear here') + '</div>' +
+                        (titleEs ? '<div class="ap-preview-resource-subtitle">' + escPreview(titleEs) + '</div>' : '') +
+                        '<div class="ap-preview-resource-body">' + escPreview(desc || 'Students will see this in the Resources tab, not as a bulletin post.') + '</div>' +
+                        (chips.length ? '<div class="ap-preview-resource-chips">' + chips.map(function(chip) { return '<span>' + escPreview(chip) + '</span>'; }).join('') + '</div>' : '') +
+                        '<div class="ap-preview-resource-actions">' +
+                            (url ? '<span>Website</span>' : '<span>Add link</span>') +
+                            (phone ? '<span>Call</span>' : '') +
+                            (address ? '<span>Directions</span>' : '') +
+                        '</div>' +
+                        (hours ? '<div class="ap-preview-resource-note">' + escPreview(hours) + '</div>' : '') +
+                        '<div class="ap-preview-resource-footer">Posted by ' + escPreview(advisor) + '</div>' +
+                    '</div>';
+                setPreviewNav('resources');
+                return;
+            }
+
+            renderPostPreviewShell();
+            setPreviewNav('posts');
+
+            var titleInput = document.getElementById('title');
+            var descInput  = document.getElementById('description');
             var advisorSel = document.getElementById('advisorName');
             var imageInput = document.getElementById('image');
 
@@ -1639,10 +1730,13 @@
 
         // ── Bind live preview to title/desc ──────────────────────────
         function bindPreviewListeners() {
-            ['title','resourceTitleEn','description','resourceDescription','advisorName'].forEach(function(id) {
+            ['title','resourceTitleEn','resourceTitleEs','description','resourceDescription','advisorName','resourceAdvisorName','resourceCategory','resourceUrl','resourceHighlights','resourcePhone','resourceAddress','resourceHours','resourcePublished'].forEach(function(id) {
                 var el = document.getElementById(id);
                 if (!el) return;
                 el.addEventListener('input', syncPreview);
+                el.addEventListener('change', syncPreview);
+            });
+            document.querySelectorAll('input[name="resourceLanguages"]').forEach(function(el) {
                 el.addEventListener('change', syncPreview);
             });
             var imgEl = document.getElementById('image');
@@ -1879,15 +1973,7 @@
                 .slice(0, 8);
             renderTopPostsTable(topRows);
 
-            // ── Your Impact card: top category ───────────────────────
-            var topCatEl = document.getElementById('statsTopCat');
-            if (topCatEl && catRows.length) {
-                var topCatKey = catRows[0][0];
-                var topCatName = ap.getCategoryDisplay(topCatKey);
-                topCatEl.textContent = topCatName;
-            } else if (topCatEl) {
-                topCatEl.textContent = 'Keep posting!';
-            }
+
 
             // ── Clicks by Device ─────────────────────────────────────
             var deviceCounts = { mobile: 0, tablet: 0, desktop: 0 };

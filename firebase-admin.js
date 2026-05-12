@@ -404,13 +404,7 @@ class FirebaseAdminPanel {
         document.body.classList.add('ap-portal-active');
         document.getElementById('welcomeMessage').textContent = `Welcome, ${this.currentUser.name}!`;
 
-        // Populate advisor dropdown from Firestore and select current user
-        const advisorSelect = document.getElementById('advisorName');
-        if (advisorSelect) {
-            const sorted = [...this.advisors].sort((a, b) => a.displayName.localeCompare(b.displayName));
-            advisorSelect.innerHTML = '<option value="">Select your name</option>' +
-                sorted.map(a => `<option value="${this.escapeHtml(a.displayName)}"${a.displayName === this.currentUser.name ? ' selected' : ''}>${this.escapeHtml(a.displayName)}</option>`).join('');
-        }
+        this.populateAdvisorSelects(this.currentUser.name);
 
         // Show advisors tab only for admins
         const advisorsTabBtn = document.getElementById('advisorsTabBtn');
@@ -557,6 +551,54 @@ class FirebaseAdminPanel {
         if (isEvent) {
             this.applySchoolEventPreset('calendar-only', { keepContentMode: true });
         }
+
+        this.renumberVisibleFormSteps();
+    }
+
+    populateAdvisorSelects(selectedName = '') {
+        const sorted = [...this.advisors].sort((a, b) => a.displayName.localeCompare(b.displayName));
+        ['advisorName', 'resourceAdvisorName'].forEach((selectId) => {
+            const select = document.getElementById(selectId);
+            if (!select) return;
+
+            const current = selectedName || select.value;
+            select.innerHTML = '<option value="">Select your name</option>' +
+                sorted.map((advisor) => {
+                    const name = advisor.displayName || advisor.username;
+                    const selected = name === current ? ' selected' : '';
+                    return `<option value="${this.escapeHtml(name)}"${selected}>${this.escapeHtml(name)}</option>`;
+                }).join('');
+        });
+    }
+
+    isElementVisible(element) {
+        if (!element) return false;
+        let current = element;
+        while (current && current !== document.body) {
+            const style = window.getComputedStyle(current);
+            if (style.display === 'none' || style.visibility === 'hidden') {
+                return false;
+            }
+            current = current.parentElement;
+        }
+        return true;
+    }
+
+    renumberVisibleFormSteps() {
+        const formCol = document.querySelector('.ap-create-form-col');
+        if (!formCol) return;
+
+        let step = 1;
+        formCol.querySelectorAll('.ap-step-number').forEach((badge) => {
+            const wrapper = badge.closest('.ap-step-header, .ap-accordion-section') || badge.parentElement;
+            if (this.isElementVisible(wrapper)) {
+                badge.dataset.step = String(step);
+                badge.textContent = '';
+                step += 1;
+            } else {
+                delete badge.dataset.step;
+            }
+        });
     }
 
     handleResourceCategoryChange(category) {
@@ -1640,12 +1682,8 @@ class FirebaseAdminPanel {
     }
 
     refreshAdvisorDropdown() {
-        const advisorSelect = document.getElementById('advisorName');
-        if (!advisorSelect) return;
-        const current = advisorSelect.value;
-        const sorted = [...this.advisors].sort((a, b) => a.displayName.localeCompare(b.displayName));
-        advisorSelect.innerHTML = '<option value="">Select your name</option>' +
-            sorted.map(a => `<option value="${this.escapeHtml(a.displayName)}"${a.displayName === current ? ' selected' : ''}>${this.escapeHtml(a.displayName)}</option>`).join('');
+        const current = document.getElementById('advisorName')?.value || document.getElementById('resourceAdvisorName')?.value || '';
+        this.populateAdvisorSelects(current);
     }
 
     loadManageBulletins() {
@@ -1660,19 +1698,36 @@ class FirebaseAdminPanel {
 
         // Apply filter
         if (filterMode === 'active') {
-            userBulletins = userBulletins.filter(b => !this.isBulletinExpiredAdmin(b));
+            userBulletins = userBulletins.filter(b => {
+                if (this.isResourceBulletin(b)) return b.isPublished !== false;
+                return !this.isBulletinExpiredAdmin(b);
+            });
         } else if (filterMode === 'expired') {
-            userBulletins = userBulletins.filter(b => this.isBulletinExpiredAdmin(b));
+            userBulletins = userBulletins.filter(b => !this.isResourceBulletin(b) && this.isBulletinExpiredAdmin(b));
+        } else if (filterMode === 'draft') {
+            userBulletins = userBulletins.filter(b => this.isResourceBulletin(b) && b.isPublished === false);
         }
 
         // Apply search
         if (searchQuery) {
             userBulletins = userBulletins.filter(b => {
-                const title = (b.title || b.titleEn || '').toLowerCase();
-                const cat = (b.category || b.resourceCategory || '').toLowerCase();
-                const advisor = (b.advisorName || '').toLowerCase();
-                const desc = (b.description || '').toLowerCase();
-                return title.includes(searchQuery) || cat.includes(searchQuery) || advisor.includes(searchQuery) || desc.includes(searchQuery);
+                const searchable = [
+                    b.title,
+                    b.titleEn,
+                    b.titleEs,
+                    b.category,
+                    b.resourceCategory,
+                    this.isResourceBulletin(b) ? this.getResourceCategoryLabel(b.resourceCategory) : this.getCategoryDisplay(b.category),
+                    b.advisorName,
+                    b.description,
+                    b.url,
+                    b.eventLink,
+                    b.highlights,
+                    b.phone,
+                    b.address,
+                    ...(Array.isArray(b.languages) ? b.languages : [])
+                ].filter(Boolean).join(' ').toLowerCase();
+                return searchable.includes(searchQuery);
             });
         }
 
@@ -1706,23 +1761,34 @@ class FirebaseAdminPanel {
             return;
         }
 
-        container.innerHTML = userBulletins.map(bulletin => `
+        container.innerHTML = userBulletins.map(bulletin => {
+            const isResource = this.isResourceBulletin(bulletin);
+            const isDraft = isResource && bulletin.isPublished === false;
+            const isExpired = !isResource && this.isBulletinExpiredAdmin(bulletin);
+            const statusLabel = isDraft ? 'Draft / Hidden from students' : isExpired ? 'Expired' : 'Live';
+
+            return `
             <div class="manage-card" data-bulletin-id="${bulletin.id}" id="manage-card-${bulletin.id}">
                 <h5>${this.escapeHtml(this.getManageCardTitle(bulletin))}</h5>
-                <p><strong>Type:</strong> ${this.isResourceBulletin(bulletin) ? 'Resource' : 'Post'}</p>
-                <p><strong>Category:</strong> ${this.isResourceBulletin(bulletin) ? this.getResourceCategoryLabel(bulletin.resourceCategory) : this.getCategoryDisplay(bulletin.category)}</p>
-                ${!this.isResourceBulletin(bulletin) && bulletin.hideFromMainFeed ? `<p><strong>Main feed:</strong> Hidden (calendar &amp; upcoming only)</p>` : ''}
+                <p><strong>Type:</strong> ${isResource ? 'Resource' : 'Post'}</p>
+                <p><strong>Status:</strong> ${statusLabel}</p>
+                <p><strong>Category:</strong> ${isResource ? this.getResourceCategoryLabel(bulletin.resourceCategory) : this.getCategoryDisplay(bulletin.category)}</p>
+                ${!isResource && bulletin.hideFromMainFeed ? `<p><strong>Main feed:</strong> Hidden (calendar &amp; upcoming only)</p>` : ''}
                 ${this.canManageAllPosts() && bulletin.postedBy !== this.currentUser.username ? `
                     <p><strong>Advisor:</strong> ${this.escapeHtml(bulletin.advisorName)} (${this.escapeHtml(bulletin.postedBy)})</p>
                 ` : ''}
                 <p><strong>Posted:</strong> ${bulletin.datePosted
                     ? new Date(bulletin.datePosted.toDate ? bulletin.datePosted.toDate() : bulletin.datePosted).toLocaleDateString()
                     : 'Unknown'}</p>
-                ${this.isResourceBulletin(bulletin) ? `
+                ${isResource ? `
                     <p><strong>Spanish Title:</strong> ${this.escapeHtml(bulletin.titleEs || bulletin.titleEn || bulletin.title || '')}</p>
-                    <p><strong>Published:</strong> ${bulletin.isPublished !== false ? 'Yes' : 'No'}</p>
+                    <p><strong>Published:</strong> ${bulletin.isPublished !== false ? 'Yes' : 'No — hidden from students'}</p>
                     ${bulletin.url || bulletin.eventLink ? `<p><strong>Link:</strong> <a href="${this.escapeAttribute(bulletin.url || bulletin.eventLink)}" target="_blank" rel="noopener">Open resource</a></p>` : ''}
                     ${bulletin.description ? `<p><strong>Description:</strong> ${this.escapeHtml(bulletin.description)}</p>` : ''}
+                    ${bulletin.highlights ? `<p><strong>Highlights:</strong> ${this.escapeHtml(bulletin.highlights)}</p>` : ''}
+                    ${bulletin.address ? `<p><strong>Address:</strong> ${this.escapeHtml(bulletin.address)}</p>` : ''}
+                    ${bulletin.phone ? `<p><strong>Phone:</strong> ${this.escapeHtml(bulletin.phone)} (${this.escapeHtml(bulletin.phoneMode || 'call')})</p>` : ''}
+                    ${Array.isArray(bulletin.languages) && bulletin.languages.length ? `<p><strong>Languages:</strong> ${bulletin.languages.map(lang => this.escapeHtml(lang)).join(', ')}</p>` : ''}
                     ${bulletin.resourceOrder !== '' && bulletin.resourceOrder !== undefined && bulletin.resourceOrder !== null ? `<p><strong>Display Order:</strong> ${this.escapeHtml(String(bulletin.resourceOrder))}</p>` : ''}
                 ` : ''}
                 ${this.renderManageDateInfo(bulletin)}
@@ -1736,7 +1802,8 @@ class FirebaseAdminPanel {
                     </button>
                 </div>
             </div>
-        `).join('');
+        `;
+        }).join('');
 
         // Scroll to and briefly highlight the card that was just posted/edited
         if (this.pendingHighlightId) {
@@ -2524,8 +2591,8 @@ class FirebaseAdminPanel {
             }
 
             const resourceOrder = rawOrder === '' ? null : Number(rawOrder);
-            if (rawOrder !== '' && !Number.isFinite(resourceOrder)) {
-                throw new Error('Display order must be a number.');
+            if (rawOrder !== '' && (!Number.isFinite(resourceOrder) || !Number.isInteger(resourceOrder) || resourceOrder < 0 || resourceOrder > 999)) {
+                throw new Error('Display order must be a whole number from 0 to 999.');
             }
 
             const suggestedIcon = document.getElementById('resourceIcon')?.dataset?.suggestedIcon || 'globe';
@@ -2665,14 +2732,8 @@ class FirebaseAdminPanel {
         this.pendingImageEsData = null;
 
         // Reset advisor name dropdown to current user
-        const advisorSelect = document.getElementById('advisorName');
-        if (advisorSelect && this.currentUser && [...advisorSelect.options].some(option => option.value === this.currentUser.name)) {
-            advisorSelect.value = this.currentUser.name;
-        }
-
-        const resourceAdvisorSelect = document.getElementById('resourceAdvisorName');
-        if (resourceAdvisorSelect && this.currentUser && [...resourceAdvisorSelect.options].some(option => option.value === this.currentUser.name)) {
-            resourceAdvisorSelect.value = this.currentUser.name;
+        if (this.currentUser) {
+            this.populateAdvisorSelects(this.currentUser.name);
         }
 
         // Reset phone mode radios

@@ -396,10 +396,15 @@ import{C as e,D as t,T as n,b as r,m as i,n as a,v as o,y as s}from"./firebase-C
                                 </div>
                             `:``}
 
-                            ${e.languages?`
+                            ${e.languages&&(Array.isArray(e.languages)?e.languages.length>0:e.languages)?`
                                 <div style="display: flex; gap: 12px; align-items: flex-start;">
                                     <div style="color: ${t.accent}; margin-top: 2px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg></div>
-                                    <div><strong style="display: block; font-size: 0.8rem; color: #64748b; text-transform: uppercase;">Languages</strong><span style="font-size: 0.95rem;">${this.escapeHtml(e.languages)}</span></div>
+                                    <div>
+                                        <strong style="display: block; font-size: 0.8rem; color: #64748b; text-transform: uppercase;">Languages</strong>
+                                        <div style="display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap;">
+                                            ${this.getLanguageTagsHtml(e.languages)}
+                                        </div>
+                                    </div>
                                 </div>
                             `:``}
                         </div>
@@ -433,7 +438,11 @@ import{C as e,D as t,T as n,b as r,m as i,n as a,v as o,y as s}from"./firebase-C
                     </div>
                 </section>
             </article>
-        `}getDetailImportantDate(e){let t=this.getDatesListItem(e);return t?{raw:t.rawDate,date:t.date,kind:t.kind,label:t.label}:null}getDetailContactAction(e){let t=[e.phone||``,e.contact].filter(Boolean).join(` `).match(/(?:\+?1[\s.-]?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}/);if(!t)return null;let n=t[0].replace(/\s+/g,` `).trim(),r=n.replace(/[^0-9+]/g,``),i=e.phoneMode||`call`,a=`Call`,o=`tel:${r}`;return i===`text`?(a=`Text`,o=`sms:${r}`):i===`both`&&(a=`Call or Text`),e.category===`job`&&(a=i===`text`?`Text hiring`:`Call hiring`),{href:o,label:a,value:n}}getDetailLinkActionLabel(e){return{job:`Apply online`,training:`Sign up online`,college:`Apply online`,"career-fair":`Event details`,resource:`Open resource`,announcement:`More info`}[e]||`Open link`}getDisplayHost(e){if(!e)return``;try{return new URL(e).hostname.replace(/^www\./,``)}catch{return e.replace(/^https?:\/\//,``).replace(/^www\./,``).split(`/`)[0]}}_unused_renderBulletinDetail_v1(e){let t=this.isBulletinExpired(e);return`
+        `}getDetailImportantDate(e){let t=this.getDatesListItem(e);return t?{raw:t.rawDate,date:t.date,kind:t.kind,label:t.label}:null}getDetailContactAction(e){let t=[e.phone||``,e.contact].filter(Boolean).join(` `).match(/(?:\+?1[\s.-]?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}/);if(!t)return null;let n=t[0].replace(/\s+/g,` `).trim(),r=n.replace(/[^0-9+]/g,``),i=e.phoneMode||`call`,a=`Call`,o=`tel:${r}`;return i===`text`?(a=`Text`,o=`sms:${r}`):i===`both`&&(a=`Call or Text`),e.category===`job`&&(a=i===`text`?`Text hiring`:`Call hiring`),{href:o,label:a,value:n}}getLanguageTagsHtml(e){if(!e)return``;let t=Array.isArray(e)?e:String(e).split(`,`).map(e=>e.trim()).filter(Boolean),n={ENG:`English`,ESP:`Español`,POR:`Português`,KRE:`Kreyòl (Haitian Creole)`,ARA:`Arabic`,VIE:`Vietnamese`,CHI:`Chinese`};return t.map(e=>{let t=e.toUpperCase(),r=n[t]||t;return`
+                <span title="${this.escapeAttribute(r)}" style="display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: #f1f5f9; color: #475569; font-size: 10px; font-weight: 800; font-family: inherit; cursor: help;">
+                    ${this.escapeHtml(t)}
+                </span>
+            `}).join(``)}getDetailLinkActionLabel(e){return{job:`Apply online`,training:`Sign up online`,college:`Apply online`,"career-fair":`Event details`,resource:`Open resource`,announcement:`More info`}[e]||`Open link`}getDisplayHost(e){if(!e)return``;try{return new URL(e).hostname.replace(/^www\./,``)}catch{return e.replace(/^https?:\/\//,``).replace(/^www\./,``).split(`/`)[0]}}_unused_renderBulletinDetail_v1(e){let t=this.isBulletinExpired(e);return`
             <article class="detail-card ${t?`expired-bulletin`:``}" id="detail-${e.id}">
                 ${t?`<div class="expired-banner">EXPIRED</div>`:``}
                 <div class="detail-header">
