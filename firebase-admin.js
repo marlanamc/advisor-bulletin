@@ -364,6 +364,7 @@ class FirebaseAdminPanel {
 
         try {
             const username = userDetails.username;
+            this.setAuthView('loading', 'Loading your dashboard...');
             await this.loadAdvisorsFromFirestore();
             const advisor = this.advisors.find(a => a.username === username);
             this.currentUser = {
@@ -372,6 +373,9 @@ class FirebaseAdminPanel {
                 name: advisor?.displayName || userDetails.name || username,
                 isAdmin: advisor?.isAdmin === true
             };
+
+            this.setAuthView('loading', `Welcome back, ${this.currentUser.name}!`);
+            await new Promise(resolve => setTimeout(resolve, 500));
 
             this.showAdminPanel();
             this.clearLoginForm();
