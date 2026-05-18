@@ -1832,7 +1832,7 @@ class FirebaseAdminPanel {
             document.getElementById('resourceHighlights').value = bulletin.highlights || '';
             document.getElementById('resourcePublished').checked = bulletin.isPublished !== false;
             document.getElementById('resourceOrder').value = bulletin.resourceOrder ?? '';
-            document.getElementById('resourceAdvisorName').value = bulletin.advisorName || '';
+            this.populateAdvisorSelects(bulletin.advisorName || '');
             document.getElementById('resourceAddress').value = bulletin.address || '';
             document.getElementById('resourcePhone').value = bulletin.phone || '';
             if (bulletin.phoneMode) {
@@ -1904,7 +1904,7 @@ class FirebaseAdminPanel {
             document.getElementById('endTime').value = bulletin.endTime || '';
             document.getElementById('eventLocation').value = bulletin.eventLocation || '';
             document.getElementById('eventLink').value = bulletin.eventLink || '';
-            document.getElementById('advisorName').value = bulletin.advisorName;
+            this.populateAdvisorSelects(bulletin.advisorName || '');
 
             if (bulletin.image) {
                 document.getElementById('imagePreview').innerHTML = `
