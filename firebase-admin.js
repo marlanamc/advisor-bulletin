@@ -584,7 +584,7 @@ class FirebaseAdminPanel {
                     name="eventDates"
                     class="recommended"
                     value="${safeValue}"
-                    ${index === 0 ? 'required' : ''}
+                    ${index === 0 ? 'data-session-first="true"' : ''}
                     onchange="window.syncAdminStudentPreview && window.syncAdminStudentPreview()"
                     oninput="window.syncAdminStudentPreview && window.syncAdminStudentPreview()"
                 >
@@ -698,6 +698,8 @@ class FirebaseAdminPanel {
         if (titleInput) titleInput.required = nextMode === 'post' || nextMode === 'event';
         if (categoryInput) categoryInput.required = nextMode === 'post';
         if (advisorNameInput) advisorNameInput.required = nextMode === 'post' || nextMode === 'event';
+        const descriptionInput = document.getElementById('description');
+        if (descriptionInput) descriptionInput.required = nextMode === 'post' || nextMode === 'event';
 
         const helper = document.getElementById('contentTypeHelper');
         if (helper) {
