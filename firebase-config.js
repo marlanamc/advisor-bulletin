@@ -2117,21 +2117,21 @@ class FirebaseBulletinBoard {
 
     getCatMeta(category) {
         const map = {
-            job:           { accent: '#1f3d7a', tint: '#dbeafe', grad: 'linear-gradient(145deg,#c7deff 0%,#e8f2ff 100%)', label: 'Jobs',         labelEs: 'Empleos',        badge: 'JOBS' },
-            training:      { accent: '#7b4ec7', tint: '#ede9fe', grad: 'linear-gradient(145deg,#ddd6fe 0%,#ede9fe 100%)', label: 'Training',      labelEs: 'Capacitación',   badge: 'FREE' },
-            college:       { accent: '#0a1d3a', tint: '#dde2eb', grad: 'linear-gradient(145deg,#c9d4e8 0%,#dde2eb 100%)', label: 'College',       labelEs: 'Universidad',    badge: 'APPLY' },
-            immigration:   { accent: '#0d8a7a', tint: '#ccfbf1', grad: 'linear-gradient(145deg,#99f6e4 0%,#ccfbf1 100%)', label: 'Immigration',   labelEs: 'Inmigración',    badge: 'FREE' },
-            housing:       { accent: '#b91c1c', tint: '#fee2e2', grad: 'linear-gradient(145deg,#fca5a5 0%,#fecaca 100%)', label: 'Housing',       labelEs: 'Vivienda',       badge: 'FREE HELP' },
-            health:        { accent: '#be185d', tint: '#fce7f3', grad: 'linear-gradient(145deg,#f9a8d4 0%,#fce7f3 100%)', label: 'Health',        labelEs: 'Salud',          badge: 'FREE' },
-            food:          { accent: '#166534', tint: '#dcfce7', grad: 'linear-gradient(145deg,#86efac 0%,#dcfce7 100%)', label: 'Food',          labelEs: 'Comida',         badge: 'FREE' },
-            childcare:     { accent: '#92400e', tint: '#fef3c7', grad: 'linear-gradient(145deg,#fde68a 0%,#fef3c7 100%)', label: 'Family',        labelEs: 'Familia',        badge: 'FREE' },
-            esol:          { accent: '#6d28d9', tint: '#ede9fe', grad: 'linear-gradient(145deg,#c4b5fd 0%,#ede9fe 100%)', label: 'ESOL',          labelEs: 'Inglés',         badge: 'FREE' },
-            'career-fair': { accent: '#b45309', tint: '#ffedd5', grad: 'linear-gradient(145deg,#fed7aa 0%,#ffedd5 100%)', label: 'Career Fair',   labelEs: 'Feria de Empleo',badge: 'FREE' },
-            money:         { accent: '#065f46', tint: '#d1fae5', grad: 'linear-gradient(145deg,#6ee7b7 0%,#d1fae5 100%)', label: 'Money Help',    labelEs: 'Ayuda Económica',badge: 'FREE' },
-            announcement:  { accent: '#1d4ed8', tint: '#dbeafe', grad: 'linear-gradient(145deg,#93c5fd 0%,#dbeafe 100%)', label: 'Announcements', labelEs: 'Anuncios',       badge: 'INFO' },
-            resource:      { accent: '#1d4ed8', tint: '#dbeafe', grad: 'linear-gradient(145deg,#93c5fd 0%,#dbeafe 100%)', label: 'Resource',      labelEs: 'Recurso',        badge: 'INFO' },
+            job:           { accent: '#1e40af', tint: '#dbeafe', grad: 'linear-gradient(145deg,#bfdbfe 0%,#dbeafe 100%)', label: 'Jobs',         labelEs: 'Empleos',        badge: 'JOBS',         emoji: '💼' },
+            training:      { accent: '#7b4ec7', tint: '#ede9fe', grad: 'linear-gradient(145deg,#ddd6fe 0%,#ede9fe 100%)', label: 'Training',      labelEs: 'Capacitación',   badge: 'FREE',         emoji: '📚' },
+            college:       { accent: '#4338ca', tint: '#e0e7ff', grad: 'linear-gradient(145deg,#c7d2fe 0%,#e0e7ff 100%)', label: 'College',       labelEs: 'Universidad',    badge: 'APPLY',        emoji: '🎓' },
+            immigration:   { accent: '#0d8a7a', tint: '#ccfbf1', grad: 'linear-gradient(145deg,#99f6e4 0%,#ccfbf1 100%)', label: 'Immigration',   labelEs: 'Inmigración',    badge: 'FREE',         emoji: '🌍' },
+            housing:       { accent: '#b91c1c', tint: '#fee2e2', grad: 'linear-gradient(145deg,#fca5a5 0%,#fecaca 100%)', label: 'Housing',       labelEs: 'Vivienda',       badge: 'FREE HELP',    emoji: '🏠' },
+            health:        { accent: '#be185d', tint: '#fce7f3', grad: 'linear-gradient(145deg,#f9a8d4 0%,#fce7f3 100%)', label: 'Health',        labelEs: 'Salud',          badge: 'FREE',         emoji: '❤️' },
+            food:          { accent: '#166534', tint: '#dcfce7', grad: 'linear-gradient(145deg,#86efac 0%,#dcfce7 100%)', label: 'Food',          labelEs: 'Comida',         badge: 'FREE',         emoji: '🍎' },
+            childcare:     { accent: '#92400e', tint: '#fef3c7', grad: 'linear-gradient(145deg,#fde68a 0%,#fef3c7 100%)', label: 'Family',        labelEs: 'Familia',        badge: 'FREE',         emoji: '👨‍👩‍👧' },
+            esol:          { accent: '#6d28d9', tint: '#ede9fe', grad: 'linear-gradient(145deg,#c4b5fd 0%,#ede9fe 100%)', label: 'ESOL',          labelEs: 'Inglés',         badge: 'FREE',         emoji: '🗣️' },
+            'career-fair': { accent: '#b45309', tint: '#ffedd5', grad: 'linear-gradient(145deg,#fed7aa 0%,#ffedd5 100%)', label: 'Career Fair',   labelEs: 'Feria de Empleo',badge: 'FREE',         emoji: '🤝' },
+            money:         { accent: '#065f46', tint: '#d1fae5', grad: 'linear-gradient(145deg,#6ee7b7 0%,#d1fae5 100%)', label: 'Money Help',    labelEs: 'Ayuda Económica',badge: 'FREE',         emoji: '💰' },
+            announcement:  { accent: '#0284c7', tint: '#e0f2fe', grad: 'linear-gradient(145deg,#bae6fd 0%,#e0f2fe 100%)', label: 'Announcements', labelEs: 'Anuncios',       badge: 'INFO',         emoji: '📢' },
+            resource:      { accent: '#0e7490', tint: '#cffafe', grad: 'linear-gradient(145deg,#a5f3fc 0%,#cffafe 100%)', label: 'Resource',      labelEs: 'Recurso',        badge: 'INFO',         emoji: '🔗' },
         };
-        return map[category] || { accent: '#1d4ed8', tint: '#dbeafe', grad: 'linear-gradient(145deg,#93c5fd 0%,#dbeafe 100%)', label: category, labelEs: category, badge: 'INFO' };
+        return map[category] || { accent: '#475569', tint: '#f1f5f9', grad: 'linear-gradient(145deg,#e2e8f0 0%,#f1f5f9 100%)', label: category, labelEs: category, badge: 'INFO', emoji: '📌' };
     }
 
     getCardIconSvg(category) {
@@ -2156,7 +2156,7 @@ class FirebaseBulletinBoard {
         const palettes = {
             job:           { top: '#7eb1ff', bot: '#e1e9f7', sun: '#ffc857', fg1: '#1f3d7a', fg2: '#5a7bb7' },
             training:      { top: '#b89bea', bot: '#ece4f9', sun: '#fff',    fg1: '#7b4ec7', fg2: '#c4afe7' },
-            college:       { top: '#5a7bb7', bot: '#dde2eb', sun: '#ffc857', fg1: '#0a1d3a', fg2: '#3a4f78' },
+            college:       { top: '#a5b4fc', bot: '#e0e7ff', sun: '#ffc857', fg1: '#4338ca', fg2: '#818cf8' },
             immigration:   { top: '#5fc4b3', bot: '#cfeee8', sun: '#fff',    fg1: '#0d8a7a', fg2: '#7fd4c6' },
             housing:       { top: '#f0a78f', bot: '#fbdcd1', sun: '#fff8eb', fg1: '#d96a4a', fg2: '#f5b7a3' },
             health:        { top: '#f0a3bd', bot: '#fbd6e3', sun: '#fff',    fg1: '#e0497d', fg2: '#f0a3bd' },
@@ -2165,8 +2165,8 @@ class FirebaseBulletinBoard {
             esol:          { top: '#b89bea', bot: '#ece4f9', sun: '#fff',    fg1: '#7b4ec7', fg2: '#c4afe7' },
             'career-fair': { top: '#f5c285', bot: '#fbe6cc', sun: '#fff',    fg1: '#e88a2a', fg2: '#f5c285' },
             money:         { top: '#6dcfa9', bot: '#cfeee0', sun: '#ffc857', fg1: '#1aa37a', fg2: '#9fdcc4' },
-            announcement:  { top: '#a9c8ff', bot: '#dde9ff', sun: '#fff8eb', fg1: '#7eb1ff', fg2: '#dde9ff' },
-            resource:      { top: '#a9c8ff', bot: '#dde9ff', sun: '#fff8eb', fg1: '#7eb1ff', fg2: '#dde9ff' },
+            announcement:  { top: '#7dd3fc', bot: '#e0f2fe', sun: '#fff8eb', fg1: '#0284c7', fg2: '#bae6fd' },
+            resource:      { top: '#67e8f9', bot: '#cffafe', sun: '#fff8eb', fg1: '#0e7490', fg2: '#a5f3fc' },
         };
         const p = palettes[category] || palettes.announcement;
         const id = `hg-${category}-${Math.random().toString(36).slice(2, 6)}`;
@@ -2199,19 +2199,22 @@ class FirebaseBulletinBoard {
         const displayImage = (currentLang === 'ES' && bulletin.imageEs) ? bulletin.imageEs : bulletin.image;
         const hasImage = Boolean(displayImage);
 
-        const chipsOverlay = `
-        <div class="pc__chips pc__chips--overlay" role="list" aria-label="Post labels">
-          ${isExpired ? '<span class="pc__chip pc__chip--expired" role="listitem">Expired</span>' : ''}
-          <span class="pc__chip pc__chip--category" role="listitem" style="--chip-accent:${meta.accent};--chip-tint:${meta.tint}">
+        const chipsBar = `
+      <div class="pc__chip-bar" style="--chip-accent:${meta.accent};--chip-tint:${meta.tint}">
+        <div class="pc__chips" role="list" aria-label="Post labels">
+          ${isExpired ? '<span class="pc__chip pc__chip--expired" role="listitem">⏰ Expired</span>' : ''}
+          <span class="pc__chip pc__chip--category" role="listitem">
+            <span class="pc__chip-emoji" aria-hidden="true">${meta.emoji}</span>
             <span class="en-text">${this.escapeHtml(meta.label.toUpperCase())}</span>
             <span class="es-text">${this.escapeHtml(meta.labelEs.toUpperCase())}</span>
           </span>
-        </div>`;
+        </div>
+      </div>`;
 
         return `
     <article class="pc ${featuredClass} ${isExpired ? 'pc--expired' : ''}" id="bulletin-${bulletin.id}" data-bulletin-id="${bulletin.id}" onclick="${openHandler}" role="button" tabindex="0" style="cursor:pointer">
+      ${chipsBar}
       <div class="pc__top ${hasImage ? 'pc__top--image' : ''}" style="background:${hasImage ? '#f8fafc' : meta.grad}">
-        ${chipsOverlay}
         ${hasImage
           ? `<div class="pc__image-stage"><img class="pc__poster-image lightbox-trigger" data-lightbox-src="${this.escapeAttribute(displayImage)}" src="${this.escapeAttribute(displayImage)}" alt=""></div>`
           : `<div class="pc__icon-wrap"><div class="pc__icon-box" style="background:${meta.accent}">${this.getCardIconSvg(bulletin.category)}</div></div>
