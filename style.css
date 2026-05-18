@@ -14941,25 +14941,26 @@ body:has(#loginRequired) {
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    margin-bottom: 4px;
+    margin-bottom: 12px;
 }
 
 .cat-org-logo img {
-    max-width: 132px;
-    max-height: 64px;
+    max-width: 220px;
+    max-height: 80px;
     width: auto;
     height: auto;
     object-fit: contain;
-    border-radius: 10px;
+    border-radius: 12px;
     background: #fff;
-    padding: 6px 10px;
+    padding: 10px 16px;
     box-shadow: 0 2px 8px rgba(10, 29, 58, 0.08), inset 0 0 0 1px rgba(15, 23, 42, 0.06);
+    mix-blend-mode: multiply;
 }
 
 @media (max-width: 600px) {
     .cat-org-logo img {
-        max-width: 112px;
-        max-height: 56px;
+        max-width: 180px;
+        max-height: 68px;
     }
 }
 
