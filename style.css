@@ -12091,6 +12091,7 @@ body:has(#loginRequired) {
         border-radius: 12px;
         background: #fff;
         cursor: pointer;
+        text-align: left;
     }
 
     .side-date {
@@ -14212,7 +14213,8 @@ body:has(#loginRequired) {
 .post-detail-hero-zoom-hint {
     position: absolute;
     right: 16px;
-    bottom: 16px;
+    bottom: 52px;
+    z-index: 6;
     display: inline-flex;
     align-items: center;
     gap: 6px;
