@@ -13224,10 +13224,22 @@ body:has(#loginRequired) {
     }
 
     .resources-prototype-grid {
-        grid-template-columns: repeat(5, minmax(0, 1fr));
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
         max-width: 1180px;
         gap: 18px;
         padding: 36px 28px 52px;
+    }
+
+    .resources-prototype-grid::-webkit-scrollbar {
+        display: none;
+    }
+
+    .resources-prototype-grid .resource-category-tile {
+        flex: 0 0 140px;
     }
 
     .resource-category-tile {
