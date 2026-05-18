@@ -14920,17 +14920,17 @@ body:has(#loginRequired) {
 /* Optional organization logo for resources */
 .resource-card-icon--logo {
     width: auto;
-    max-width: 120px;
+    max-width: 140px;
     min-width: var(--resource-icon-size);
     background: #fff;
-    padding: 6px 10px;
+    padding: 10px 14px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), inset 0 0 0 1px rgba(15, 23, 42, 0.08);
 }
 
 .resource-card-logo {
     width: auto;
     height: 100%;
-    max-width: 108px;
+    max-width: 116px;
     object-fit: contain;
     border-radius: 12px;
     display: block;
@@ -14941,11 +14941,12 @@ body:has(#loginRequired) {
 }
 
 .resource-story-ring--logo .resource-story-logo {
-    width: 90%;
-    height: 90%;
+    width: 86%;
+    height: 86%;
     border-radius: 8px;
     object-fit: contain;
     background: #fff;
+    padding: 4px;
     display: block;
 }
 
@@ -14953,26 +14954,26 @@ body:has(#loginRequired) {
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    margin-bottom: 12px;
+    margin-bottom: 14px;
 }
 
 .cat-org-logo img {
-    max-width: 220px;
-    max-height: 80px;
+    max-width: 240px;
+    max-height: 110px;
     width: auto;
     height: auto;
     object-fit: contain;
-    border-radius: 12px;
+    border-radius: 14px;
     background: #fff;
-    padding: 10px 16px;
+    padding: 14px 20px;
     box-shadow: 0 2px 8px rgba(10, 29, 58, 0.08), inset 0 0 0 1px rgba(15, 23, 42, 0.06);
-    mix-blend-mode: multiply;
 }
 
 @media (max-width: 600px) {
     .cat-org-logo img {
-        max-width: 180px;
-        max-height: 68px;
+        max-width: 200px;
+        max-height: 92px;
+        padding: 12px 16px;
     }
 }
 
