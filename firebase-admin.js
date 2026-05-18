@@ -553,6 +553,8 @@ class FirebaseAdminPanel {
             || (bulletin.company || '').trim()
             || (bulletin.contact || '').trim()
             || (bulletin.eventLink || '').trim()
+            || bulletin.image
+            || bulletin.pdfUrl
         );
 
         return bulletin.category === 'announcement' && !hasBody;

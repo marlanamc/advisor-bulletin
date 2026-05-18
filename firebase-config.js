@@ -899,7 +899,8 @@ class FirebaseBulletinBoard {
         this.updateFeedCategoryHeader();
         this.updateActiveCategoryState();
         this.updateResultsInfo(postBulletins);
-        this.renderFeed(postBulletins);
+        const feedPosts = postBulletins.filter((bulletin) => !this.isCalendarEventBulletin(bulletin));
+        this.renderFeed(feedPosts);
         this.renderCalendar(postBulletins);
         this.renderHomeUpcomingEvents(postBulletins);
         this.renderResourcesSections(resources);
@@ -1131,64 +1132,8 @@ class FirebaseBulletinBoard {
         }
 
         emptyState.style.display = 'none';
-        grid.innerHTML = this.createCuratedFeedHtml(bulletins);
+        grid.innerHTML = bulletins.map((bulletin, index) => this.createBulletinCard(bulletin, index)).join('');
         this.trackRenderedCardViews(bulletins);
-    }
-
-    createCuratedFeedHtml(bulletins) {
-        const sections = this.getCuratedFeedSections(bulletins);
-        if (sections.length === 0) {
-            return bulletins.map((bulletin, index) => this.createBulletinCard(bulletin, index)).join('');
-        }
-
-        return sections.map((section) => {
-            const cards = section.items.map((bulletin, index) => this.createBulletinCard(bulletin, index)).join('');
-            const showSoftHeading = section.title !== 'Jobs Hiring Now' && section.title !== 'More Resources';
-            const headingHtml = showSoftHeading
-                ? `
-                <div class="feed-soft-section">
-                    <div class="feed-soft-heading">
-                        <span>${this.escapeHtml(section.icon)}</span>
-                        <h3>${this.escapeHtml(section.title)}</h3>
-                    </div>
-                </div>
-                `
-                : '';
-            return `${headingHtml}${cards}`;
-        }).join('');
-    }
-
-    getCuratedFeedSections(bulletins) {
-        if ((this.currentFeedCategory || 'all') !== 'all') {
-            const content = FEED_CATEGORY_CONTENT[this.currentFeedCategory] || FEED_CATEGORY_CONTENT.all;
-            return [{ title: content.title, icon: content.icon, items: bulletins }];
-        }
-
-        const definitions = [
-            { title: 'Popular This Week', icon: '✨', categories: ['announcement', 'food', 'health'] },
-            { title: 'Jobs Hiring Now', icon: '💼', categories: ['job', 'career-fair', 'training'] },
-            { title: 'Free Classes', icon: '📘', categories: ['esol', 'college'] },
-            { title: 'Immigration Help', icon: '🌎', categories: ['immigration'] },
-            { title: 'New Programs', icon: '🧰', categories: ['housing', 'money', 'childcare'] }
-        ];
-
-        const used = new Set();
-        const sections = definitions.map((definition) => {
-            const items = bulletins.filter((bulletin) => {
-                if (used.has(bulletin.id)) return false;
-                const matches = definition.categories.some((category) => this.bulletinMatchesCategory(bulletin, category));
-                if (matches) used.add(bulletin.id);
-                return matches;
-            });
-            return { ...definition, items };
-        }).filter((section) => section.items.length > 0);
-
-        const remaining = bulletins.filter((bulletin) => !used.has(bulletin.id));
-        if (remaining.length > 0) {
-            sections.push({ title: 'More Resources', icon: '📌', items: remaining });
-        }
-
-        return sections;
     }
 
     trackRenderedCardViews(bulletins) {
@@ -1845,6 +1790,25 @@ class FirebaseBulletinBoard {
 
     getPostBulletins(bulletins = this.bulletins) {
         return bulletins.filter((bulletin) => !this.isResourceBulletin(bulletin));
+    }
+
+    /** Simple dated labels (Event Date tab) — calendar/upcoming only, not main feed cards. */
+    isCalendarEventBulletin(bulletin) {
+        if (!bulletin || this.isResourceBulletin(bulletin)) return false;
+
+        const dt = bulletin.dateType;
+        if (dt !== 'event' && dt !== 'range' && dt !== 'sessions') return false;
+
+        const hasBody = Boolean(
+            (bulletin.description || '').trim()
+            || (bulletin.company || '').trim()
+            || (bulletin.contact || '').trim()
+            || (bulletin.eventLink || '').trim()
+            || bulletin.image
+            || bulletin.pdfUrl
+        );
+
+        return bulletin.category === 'announcement' && !hasBody;
     }
 
     getPublishedResources() {
