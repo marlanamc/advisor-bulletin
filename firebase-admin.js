@@ -364,23 +364,32 @@ class FirebaseAdminPanel {
 
         try {
             const username = userDetails.username;
-            this.setAuthView('loading', 'Loading your dashboard...');
-            await this.loadAdvisorsFromFirestore();
-            const advisor = this.advisors.find(a => a.username === username);
+
+            // Set current user immediately with whatever name we have so the
+            // panel can open without waiting on Firestore.
             this.currentUser = {
                 username,
                 email: userDetails.email,
-                name: advisor?.displayName || userDetails.name || username,
-                isAdmin: advisor?.isAdmin === true
+                name: userDetails.name || username,
+                isAdmin: false
             };
 
             this.setAuthView('loading', `Welcome back, ${this.currentUser.name}!`);
-            await new Promise(resolve => setTimeout(resolve, 500));
-
             this.showAdminPanel();
             this.clearLoginForm();
             this.setupAnalyticsListener();
             this.loadManageBulletins();
+
+            // Load full advisor metadata in the background and patch the live UI.
+            this.loadAdvisorsFromFirestore().then(() => {
+                const advisor = this.advisors.find(a => a.username === username);
+                if (advisor) {
+                    this.currentUser.name = advisor.displayName || this.currentUser.name;
+                    this.currentUser.isAdmin = advisor.isAdmin === true;
+                    const welcome = document.getElementById('welcomeMessage');
+                    if (welcome) welcome.textContent = `Welcome, ${this.currentUser.name}!`;
+                }
+            }).catch(err => console.error('Error loading advisor metadata:', err));
         } catch (error) {
             console.error('Error signing in to advisor portal:', error);
             this.currentUser = null;
