@@ -823,10 +823,8 @@ class FirebaseAdminPanel {
     }
 
     handleResourceCategoryChange(category) {
-        const iconSelect = document.getElementById('resourceIcon');
-        if (!iconSelect || !category || iconSelect.value !== 'auto') {
-            return;
-        }
+        const categorySelect = document.getElementById('resourceCategory');
+        if (!categorySelect || !category) return;
 
         const defaultIcons = {
             immigration: 'shield',
@@ -836,7 +834,7 @@ class FirebaseAdminPanel {
             'legal-aid': 'scale'
         };
 
-        iconSelect.dataset.suggestedIcon = defaultIcons[category] || 'globe';
+        categorySelect.dataset.suggestedIcon = defaultIcons[category] || 'globe';
     }
 
     // Tab Management
@@ -1825,7 +1823,10 @@ class FirebaseAdminPanel {
             document.getElementById('resourceTitleEn').value = bulletin.titleEn || bulletin.title || '';
             document.getElementById('resourceTitleEs').value = bulletin.titleEs || '';
             document.getElementById('resourceCategory').value = bulletin.resourceCategory || '';
-            document.getElementById('resourceIcon').value = bulletin.resourceIcon || 'auto';
+            if (bulletin.resourceIcon) {
+                const categoryEl = document.getElementById('resourceCategory');
+                if (categoryEl) categoryEl.dataset.suggestedIcon = bulletin.resourceIcon;
+            }
             document.getElementById('resourceUrl').value = bulletin.url || bulletin.eventLink || '';
             document.getElementById('resourceDescription').value = bulletin.description || '';
             document.getElementById('resourceHighlights').value = bulletin.highlights || '';
@@ -2296,7 +2297,7 @@ class FirebaseAdminPanel {
             const rawUrl = document.getElementById('resourceUrl').value.trim();
             const description = document.getElementById('resourceDescription').value.trim();
             const highlights = document.getElementById('resourceHighlights').value.trim();
-            const resourceIcon = document.getElementById('resourceIcon').value;
+            const resourceIcon = document.getElementById('resourceCategory')?.dataset?.suggestedIcon || 'globe';
             const resourceOrder = document.getElementById('resourceOrder').value.trim();
             const isPublished = document.getElementById('resourcePublished').checked;
 
@@ -3074,8 +3075,7 @@ class FirebaseAdminPanel {
                 throw new Error('Display order must be a whole number from 0 to 999.');
             }
 
-            const suggestedIcon = document.getElementById('resourceIcon')?.dataset?.suggestedIcon || 'globe';
-            const selectedIcon = (formData.get('resourceIcon') || 'auto').trim();
+            const suggestedIcon = document.getElementById('resourceCategory')?.dataset?.suggestedIcon || 'globe';
 
             const advisorName = (formData.get('resourceAdvisorName') || '').trim();
             if (!advisorName) {
@@ -3089,7 +3089,7 @@ class FirebaseAdminPanel {
                 titleEs: titleEs || titleEn,
                 category: 'resource',
                 resourceCategory,
-                resourceIcon: selectedIcon === 'auto' ? suggestedIcon : selectedIcon,
+                resourceIcon: suggestedIcon,
                 resourceLogo: null,
                 url,
                 eventLink: url,
@@ -3247,7 +3247,7 @@ class FirebaseAdminPanel {
         toggleDateFields();
         this.setContentType('post', { preserveFields: true, silent: true });
         document.getElementById('resourcePublished').checked = true;
-        delete document.getElementById('resourceIcon').dataset.suggestedIcon;
+        delete document.getElementById('resourceCategory').dataset.suggestedIcon;
         
         // Collapse all accordions
         document.querySelectorAll('.ap-accordion-section').forEach(section => {
