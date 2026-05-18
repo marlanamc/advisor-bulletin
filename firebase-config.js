@@ -354,7 +354,44 @@ class FirebaseBulletinBoard {
         window.addEventListener('hashchange', this.handleHashChange);
     }
 
+    // --- bulletin cache helpers ---
+    // Cache key includes the origin so localhost and prod never share state.
+    static CACHE_KEY = 'ebhcs_bulletins_v1';
+    static CACHE_TTL = 30 * 60 * 1000; // 30 minutes
+
+    _readCache() {
+        try {
+            const raw = sessionStorage.getItem(FirebaseBulletinBoard.CACHE_KEY);
+            if (!raw) return null;
+            const { ts, bulletins } = JSON.parse(raw);
+            if (Date.now() - ts > FirebaseBulletinBoard.CACHE_TTL) return null;
+            return bulletins;
+        } catch {
+            return null;
+        }
+    }
+
+    _writeCache(bulletins) {
+        try {
+            sessionStorage.setItem(
+                FirebaseBulletinBoard.CACHE_KEY,
+                JSON.stringify({ ts: Date.now(), bulletins })
+            );
+        } catch {
+            // sessionStorage full or unavailable — skip silently
+        }
+    }
+
     setupRealtimeListener() {
+        // Render from cache immediately so the feed appears before Firestore responds.
+        const cached = this._readCache();
+        if (cached && cached.length > 0) {
+            this.bulletins = cached;
+            this.populateAdvisorFilters();
+            this.renderResourceCategoryFilters();
+            this.displayBulletins();
+        }
+
         const q = query(collection(db, 'bulletins'), where('isActive', '==', true), orderBy('datePosted', 'desc'))
         onSnapshot(q, (snapshot) => {
             this.bulletins = [];
@@ -364,6 +401,7 @@ class FirebaseBulletinBoard {
                     ...this.normalizeBulletin(doc.data())
                 });
             });
+            this._writeCache(this.bulletins);
             this.populateAdvisorFilters();
             this.renderResourceCategoryFilters();
             this.displayBulletins();
