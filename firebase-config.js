@@ -2113,6 +2113,11 @@ class FirebaseBulletinBoard {
         document.body.classList.add('modal-open');
     }
 
+    showDayEventsByIds(ids) {
+        const bulletins = ids.map(id => this.bulletins.find(b => b.id === id)).filter(Boolean);
+        this.showDayEvents(bulletins);
+    }
+
     getCatMeta(category) {
         const map = {
             job:           { accent: '#1e40af', tint: '#dbeafe', grad: 'linear-gradient(145deg,#bfdbfe 0%,#dbeafe 100%)', label: 'Jobs',         labelEs: 'Empleos',        badge: 'JOBS',         emoji: '💼' },
@@ -3677,7 +3682,7 @@ class FirebaseBulletinBoard {
     createMonthlyCalendarDay(day, bulletins, isToday) {
         const bulletinCount = bulletins.length;
         const hasBulletins = bulletinCount > 0;
-        const clickHandler = hasBulletins ? `onclick="bulletinBoard.showDayEvents(${JSON.stringify(bulletins).replace(/"/g, '&quot;')})"` : '';
+        const clickHandler = hasBulletins ? `onclick="bulletinBoard.showDayEventsByIds(${JSON.stringify(bulletins.map(b => b.id))})"` : '';
 
         return `
             <div class="calendar-day ${isToday ? 'today' : ''} ${hasBulletins ? 'has-bulletins' : ''}"
