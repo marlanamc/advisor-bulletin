@@ -4,8 +4,10 @@ async function showSeededAdvisorDashboard(page) {
   await page.goto('/admin.html');
   await page.waitForFunction(() => window.adminPanel);
   await page.evaluate(() => {
+    const loading = document.getElementById('authLoadingScreen');
     const login = document.getElementById('loginRequired');
     const panel = document.getElementById('adminPanel');
+    if (loading) loading.style.display = 'none';
     if (login) login.style.display = 'none';
     if (panel) panel.style.display = 'block';
 
@@ -59,6 +61,7 @@ test.describe('Advisor redesign', () => {
   test('renders the redesigned advisor login screen', async ({ page }) => {
     await page.goto('/admin.html');
 
+    await expect(page.locator('#loginForm')).toBeVisible({ timeout: 15000 });
     await expect(page.locator('.advisor-login-card')).toBeVisible();
     await expect(page.locator('.advisor-login-card')).toContainText('Advisor Portal');
     await expect(page.locator('.advisor-login-card')).toContainText('mcreed@ebhcs.org');

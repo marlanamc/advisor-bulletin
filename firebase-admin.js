@@ -45,6 +45,7 @@ class FirebaseAdminPanel {
         this.analyticsUnsubscribe = null;
         this.analyticsRangeDays = 30;
         this.advisors = [];
+        this.authTransitionInProgress = false;
         this.init();
     }
 
@@ -109,19 +110,9 @@ class FirebaseAdminPanel {
     }
 
     bindEvents() {
-        // Login controls
-        document.getElementById('loginBtn').addEventListener('click', () => this.showLoginModal());
-
-        // Add event listener to the close button in the login modal specifically
-        const loginModalClose = document.querySelector('#loginModal .close');
-        if (loginModalClose) {
-            loginModalClose.addEventListener('click', () => this.hideLoginModal());
-        }
-
         document.getElementById('logoutBtn').addEventListener('click', () => this.logout());
 
         // Login form is handled by enhanced-auth.js
-        // Listen for successful login from enhanced-auth
         document.addEventListener('userAuthenticated', (event) => {
             this.handleUserAuthenticated(event.detail);
         });
@@ -304,29 +295,95 @@ class FirebaseAdminPanel {
     }
 
     // Authentication Methods
-    showLoginModal() {
-        document.getElementById('loginModal').style.display = 'block';
-    }
+    setAuthView(view, message = 'Checking your session...') {
+        const loadingEl = document.getElementById('authLoadingScreen');
+        const loadingMsg = document.getElementById('authLoadingMessage');
+        const loginRequired = document.getElementById('loginRequired');
+        const adminPanel = document.getElementById('adminPanel');
+        const logoutBtn = document.getElementById('logoutBtn');
 
-    hideLoginModal() {
-        document.getElementById('loginModal').style.display = 'none';
+        if (loadingMsg) {
+            loadingMsg.textContent = message;
+        }
+
+        if (view === 'loading') {
+            if (loadingEl) {
+                loadingEl.style.display = 'flex';
+                loadingEl.setAttribute('aria-busy', 'true');
+            }
+            if (loginRequired) loginRequired.style.display = 'none';
+            if (adminPanel) adminPanel.style.display = 'none';
+            if (logoutBtn) logoutBtn.style.display = 'none';
+            document.body.classList.remove('ap-portal-active');
+            return;
+        }
+
+        if (loadingEl) {
+            loadingEl.style.display = 'none';
+            loadingEl.setAttribute('aria-busy', 'false');
+        }
+
+        if (view === 'login') {
+            if (loginRequired) loginRequired.style.display = 'grid';
+            if (adminPanel) adminPanel.style.display = 'none';
+            if (logoutBtn) logoutBtn.style.display = 'none';
+            document.body.classList.remove('ap-portal-active');
+            return;
+        }
+
+        if (view === 'portal') {
+            if (loginRequired) loginRequired.style.display = 'none';
+        }
     }
 
     async handleUserAuthenticated(userDetails) {
-        await this.loadAdvisorsFromFirestore();
-        const advisor = this.advisors.find(a => a.username === userDetails.username);
-        this.currentUser = {
-            username: userDetails.username,
-            email: userDetails.email,
-            name: advisor?.displayName || userDetails.username,
-            isAdmin: advisor?.isAdmin === true
-        };
+        await this.applyAuthenticatedUser(userDetails);
+    }
 
-        this.showAdminPanel();
-        this.hideLoginModal();
+    async applyAuthenticatedUser(userDetails) {
+        if (this.authTransitionInProgress) {
+            return;
+        }
+
+        this.authTransitionInProgress = true;
+        this.setAuthView('loading', 'Signing you in...');
+
+        try {
+            const username = userDetails.username;
+            await this.loadAdvisorsFromFirestore();
+            const advisor = this.advisors.find(a => a.username === username);
+            this.currentUser = {
+                username,
+                email: userDetails.email,
+                name: advisor?.displayName || userDetails.name || username,
+                isAdmin: advisor?.isAdmin === true
+            };
+
+            this.showAdminPanel();
+            this.clearLoginForm();
+            this.setupAnalyticsListener();
+            this.loadManageBulletins();
+        } catch (error) {
+            console.error('Error signing in to advisor portal:', error);
+            this.currentUser = null;
+            this.setAuthView('login');
+            throw error;
+        } finally {
+            this.authTransitionInProgress = false;
+        }
+    }
+
+    handleSignedOut() {
+        this.currentUser = null;
+        if (this.analyticsUnsubscribe) {
+            this.analyticsUnsubscribe();
+            this.analyticsUnsubscribe = null;
+        }
+        this.analyticsEvents = [];
+        this.analyticsByPost = {};
+        this.hideAdminPanel();
         this.clearLoginForm();
-        this.setupAnalyticsListener();
-        this.loadManageBulletins();
+        this.setAuthView('login');
     }
 
     getUserDisplayName(username) {
@@ -348,17 +405,29 @@ class FirebaseAdminPanel {
     checkAutoLogin() {
         if (typeof auth === 'undefined') {
             console.error('Firebase auth not initialized');
+            this.setAuthView('login');
             return;
         }
+
+        this.setAuthView('loading', 'Checking your session...');
+
+        auth.authStateReady().catch((error) => {
+            console.error('Auth readiness error:', error);
+            this.setAuthView('login');
+        });
+
         onAuthStateChanged(auth, async (user) => {
             if (user) {
+                if (this.authTransitionInProgress) {
+                    return;
+                }
+
                 const username = user.email.split('@')[0];
 
-                // Check if user needs to change password
                 try {
                     const userDoc = await getDoc(doc(db, 'users', username));
                     if (userDoc.exists() && userDoc.data().requirePasswordChange === true) {
-                        // User needs to change password, show password change modal
+                        this.setAuthView('login');
                         if (window.enhancedAuth) {
                             window.enhancedAuth.showPasswordChangeModal(username);
                         }
@@ -368,19 +437,21 @@ class FirebaseAdminPanel {
                     console.error('Error checking user password status:', error);
                 }
 
-                await this.loadAdvisorsFromFirestore();
-                this.currentUser = {
-                    username: username,
-                    email: user.email,
-                    name: this.getUserDisplayName(username),
-                    isAdmin: this.advisors.find(a => a.username === username)?.isAdmin === true
-                };
-                this.showAdminPanel();
-                this.setupAnalyticsListener();
-                this.loadManageBulletins();
-            } else {
-                document.getElementById('loginRequired').style.display = 'block';
+                if (!this.currentUser || this.currentUser.username !== username) {
+                    await this.applyAuthenticatedUser({
+                        username,
+                        email: user.email,
+                        name: this.getUserDisplayName(username)
+                    });
+                }
+                return;
             }
+
+            if (this.authTransitionInProgress) {
+                return;
+            }
+
+            this.handleSignedOut();
         });
     }
 
@@ -390,16 +461,6 @@ class FirebaseAdminPanel {
                 throw new Error('Firebase auth not initialized');
             }
             await signOut(auth);
-            this.currentUser = null;
-            if (this.analyticsUnsubscribe) {
-                this.analyticsUnsubscribe();
-                this.analyticsUnsubscribe = null;
-            }
-            this.analyticsEvents = [];
-            this.analyticsByPost = {};
-            this.hideAdminPanel();
-            this.clearLoginForm();
-            document.getElementById('loginRequired').style.display = 'block';
         } catch (error) {
             console.error('Logout error:', error);
         }
@@ -411,7 +472,7 @@ class FirebaseAdminPanel {
     }
 
     showAdminPanel() {
-        document.getElementById('loginRequired').style.display = 'none';
+        this.setAuthView('portal');
         document.getElementById('adminPanel').style.display = 'block';
         document.getElementById('logoutBtn').style.display = 'block';
         document.body.classList.add('ap-portal-active');
@@ -753,6 +814,11 @@ class FirebaseAdminPanel {
 
     // Tab Management
     showTab(tabName) {
+        const v2PageMap = { post: 'create', manage: 'posts', advisors: 'advisors' };
+        if (typeof window.apShowPage === 'function' && v2PageMap[tabName]) {
+            window.apShowPage(v2PageMap[tabName]);
+        }
+
         // Hide all tabs and update aria attributes
         document.querySelectorAll('.tab-content').forEach(tab => {
             tab.classList.remove('active');
@@ -1627,6 +1693,9 @@ class FirebaseAdminPanel {
 
         const isResource = this.isResourceBulletin(bulletin);
         this.setContentType(isResource ? 'resource' : 'post', { preserveFields: true, silent: true });
+        if (typeof window.apSelectType === 'function') {
+            window.apSelectType(isResource ? 'resource' : 'bulletin');
+        }
 
         if (isResource) {
             document.getElementById('resourceTitleEn').value = bulletin.titleEn || bulletin.title || '';

@@ -59,13 +59,15 @@
 
 /* Advisor portal redesign */
 body:has(.advisor-redesign),
-body:has(#loginRequired) {
+body:has(#loginRequired),
+body:has(#authLoadingScreen) {
     background: var(--adv-bg);
     font-size: 16px;
 }
 
 body:has(.advisor-redesign) header,
-body:has(#loginRequired) header {
+body:has(#loginRequired) header,
+body:has(#authLoadingScreen) header {
     background: var(--adv-navy);
     border-bottom: 1px solid rgba(255,255,255,0.08);
     box-shadow: 0 2px 12px rgba(7,29,59,0.2);
@@ -122,12 +124,102 @@ body:has(.advisor-redesign) .main-content {
 }
 
 .advisor-login-card p {
-    margin: 0 0 28px;
+    margin: 0 0 24px;
     color: var(--adv-text-2);
     font-weight: 400;
     font-family: var(--adv-font-body);
     line-height: 1.5;
     font-size: 0.95rem;
+}
+
+.advisor-login-form {
+    text-align: left;
+    margin-bottom: 18px;
+}
+
+.advisor-login-form .form-group {
+    margin-bottom: 16px;
+}
+
+.advisor-login-form label {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--adv-text);
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-transform: none;
+    letter-spacing: 0;
+}
+
+.advisor-login-form input[type="text"],
+.advisor-login-form input[type="password"],
+.advisor-login-form input[type="email"] {
+    width: 100%;
+    min-height: 48px;
+    border-radius: 12px;
+    border: 1.5px solid var(--adv-border);
+    padding: 12px 14px;
+    font-size: 1rem;
+    background: #fff;
+}
+
+.advisor-login-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.advisor-login-actions .admin-btn,
+.advisor-login-actions .secondary-btn {
+    width: 100%;
+    min-height: 48px;
+    border-radius: 12px;
+}
+
+.advisor-login-error,
+.advisor-login-success {
+    text-align: left;
+    margin-bottom: 16px;
+}
+
+.auth-loading-screen {
+    min-height: calc(100vh - 132px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 24px;
+    background: linear-gradient(180deg, var(--adv-navy) 0% 40%, var(--adv-bg) 40% 100%);
+}
+
+.auth-loading-card {
+    width: min(360px, calc(100vw - 48px));
+    padding: 32px 28px;
+    border-radius: 20px;
+    text-align: center;
+    background: var(--adv-surface);
+    border: 1px solid var(--adv-border);
+    box-shadow: 0 20px 60px rgba(7,29,59,0.18);
+}
+
+.auth-loading-card p {
+    margin: 16px 0 0;
+    color: var(--adv-text-2);
+    font-size: 0.95rem;
+}
+
+.auth-loading-spinner {
+    width: 36px;
+    height: 36px;
+    margin: 0 auto;
+    border: 3px solid rgba(26, 86, 219, 0.15);
+    border-top-color: var(--adv-cyan);
+    border-radius: 50%;
+    animation: auth-loading-spin 0.8s linear infinite;
+}
+
+@keyframes auth-loading-spin {
+    to { transform: rotate(360deg); }
 }
 
 .advisor-login-card .admin-btn {

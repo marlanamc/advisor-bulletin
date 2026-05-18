@@ -26,36 +26,6 @@
         </div>
     </header>
 
-    <!-- Admin Login Modal -->
-    <div id="loginModal" class="modal">
-        <div class="modal-content">
-            <span class="close" title="Close login">&times;</span>
-            <h3>Advisor Login</h3>
-            <p class="modal-subtitle">Enter your credentials to access the advisor portal</p>
-            <div id="loginError" class="error-message" style="display: none;"></div>
-            <div id="loginSuccess" class="success-message" style="display: none;"></div>
-
-            <form id="loginForm">
-                <div class="form-group">
-                    <label for="username">Username:</label>
-                    <input type="text" id="username" name="username" required autocomplete="username" placeholder="your.name">
-                </div>
-                <div class="form-group">
-                    <label for="password">Password:</label>
-                    <div class="password-input-wrapper">
-                        <input type="password" id="password" name="password" required autocomplete="current-password" placeholder="Enter your password">
-                        <button type="button" class="show-password" onclick="togglePassword('password')" tabindex="-1">Show</button>
-                    </div>
-                </div>
-                <div class="form-actions">
-                    <button type="submit" id="loginSubmitBtn">Login</button>
-                    <button type="button" id="forgotPasswordBtn" class="secondary-btn">Forgot Password?</button>
-                </div>
-            </form>
-
-        </div>
-    </div>
-
     <!-- Password Change Modal -->
     <div id="passwordChangeModal" class="modal">
         <div class="modal-content">
@@ -118,15 +88,43 @@
     </div>
 
     <main class="main-content">
-        <!-- Login Required Message -->
-        <div id="loginRequired" class="login-required">
+        <div id="authLoadingScreen" class="auth-loading-screen" aria-live="polite" aria-busy="true">
+            <div class="auth-loading-card">
+                <div class="auth-loading-spinner" aria-hidden="true"></div>
+                <p id="authLoadingMessage">Checking your session...</p>
+            </div>
+        </div>
+
+        <!-- Advisor sign-in -->
+        <div id="loginRequired" class="login-required" style="display: none;">
             <div class="login-card advisor-login-card">
                 <a href="index.html" class="advisor-home-link">← Student bulletin board</a>
                 <div class="advisor-app-icon">⛵</div>
                 <h3>Advisor Portal</h3>
-                <p>Post bulletins for your students and review what they click.</p>
-                <button id="loginBtn" class="admin-btn">Sign in</button>
-                <div class="advisor-login-help">Forgot your password? Email <strong>mcreed@ebhcs.org</strong></div>
+                <p>Sign in to post bulletins for your students and review what they click.</p>
+
+                <div id="loginError" class="error-message advisor-login-error" style="display: none;"></div>
+                <div id="loginSuccess" class="success-message advisor-login-success" style="display: none;"></div>
+
+                <form id="loginForm" class="advisor-login-form">
+                    <div class="form-group">
+                        <label for="username">Username or email</label>
+                        <input type="text" id="username" name="username" required autocomplete="username" placeholder="your.name or you@ebhcs.org">
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <div class="password-input-wrapper">
+                            <input type="password" id="password" name="password" required autocomplete="current-password" placeholder="Enter your password">
+                            <button type="button" class="show-password" onclick="togglePassword('password')" tabindex="-1">Show</button>
+                        </div>
+                    </div>
+                    <div class="form-actions advisor-login-actions">
+                        <button type="submit" id="loginSubmitBtn" class="admin-btn">Sign in</button>
+                        <button type="button" id="forgotPasswordBtn" class="secondary-btn">Forgot password?</button>
+                    </div>
+                </form>
+
+                <div class="advisor-login-help">Need help? Email <strong>mcreed@ebhcs.org</strong></div>
             </div>
         </div>
 

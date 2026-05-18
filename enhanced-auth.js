@@ -68,6 +68,11 @@ class EnhancedAuth {
         submitBtn.disabled = true;
         submitBtn.classList.add('loading');
         submitBtn.textContent = '';
+        if (window.adminPanel) {
+            window.adminPanel.setAuthView('loading', 'Signing you in...');
+        }
+
+        let loginSucceeded = false;
 
         try {
             // Ensure Firebase auth is available
@@ -93,16 +98,21 @@ class EnhancedAuth {
                 }
                 this.showPasswordChangeModal(username);
             } else {
+                loginSucceeded = true;
                 this.completeLogin(username, email);
             }
 
         } catch (error) {
+            if (window.adminPanel) {
+                window.adminPanel.setAuthView('login');
+            }
             this.handleLoginError(error, username);
         } finally {
-            // Reset button state
-            submitBtn.disabled = false;
-            submitBtn.classList.remove('loading');
-            submitBtn.textContent = 'Login';
+            if (!loginSucceeded) {
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('loading');
+                submitBtn.textContent = 'Sign in';
+            }
         }
     }
 
@@ -140,7 +150,10 @@ class EnhancedAuth {
     }
 
     showPasswordChangeModal(username) {
-        document.getElementById('loginModal').style.display = 'none';
+        const loadingEl = document.getElementById('authLoadingScreen');
+        const loginRequired = document.getElementById('loginRequired');
+        if (loadingEl) loadingEl.style.display = 'none';
+        if (loginRequired) loginRequired.style.display = 'none';
         document.getElementById('passwordChangeModal').style.display = 'block';
         document.getElementById('currentPassword').value = 'ebhcs123';
     }
@@ -228,20 +241,14 @@ class EnhancedAuth {
     }
 
     completeLogin(username, email) {
-        // Hide all modals
-        document.getElementById('loginModal').style.display = 'none';
         document.getElementById('passwordChangeModal').style.display = 'none';
 
-        // Set up admin panel
-        const currentUser = {
-            username: username,
-            email: email,
-            name: this.getUserDisplayName(username)
-        };
-
-        // Dispatch custom event for admin panel to handle
         document.dispatchEvent(new CustomEvent('userAuthenticated', {
-            detail: currentUser
+            detail: {
+                username: username,
+                email: email,
+                name: this.getUserDisplayName(username)
+            }
         }));
     }
 
@@ -303,13 +310,14 @@ class EnhancedAuth {
     }
 
     showForgotPassword() {
-        document.getElementById('loginModal').style.display = 'none';
         document.getElementById('forgotPasswordModal').style.display = 'block';
     }
 
     closeForgotPassword() {
         document.getElementById('forgotPasswordModal').style.display = 'none';
-        document.getElementById('loginModal').style.display = 'block';
+        if (window.adminPanel) {
+            window.adminPanel.setAuthView('login');
+        }
     }
 
     // Password strength checking
@@ -525,7 +533,9 @@ function togglePassword(fieldId) {
 
 function closeForgotPassword() {
     document.getElementById('forgotPasswordModal').style.display = 'none';
-    document.getElementById('loginModal').style.display = 'block';
+    if (window.adminPanel) {
+        window.adminPanel.setAuthView('login');
+    }
 }
 
 // Initialize enhanced authentication
