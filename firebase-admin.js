@@ -1,6 +1,7 @@
 import { db, auth, storage } from './src/firebase.js'
 import { getPublicAdvisorEmail } from './src/advisor-directory.js'
 import { installClientErrorLogger } from './src/error-logger.js'
+import { getPostCategoryDisplay } from './src/feed-categories.js'
 import { collection, doc, query, where, orderBy, onSnapshot, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, serverTimestamp, Timestamp } from 'firebase/firestore'
 
 installClientErrorLogger('admin')
@@ -27,6 +28,11 @@ const ADMIN_RESOURCE_ICON_LABELS = {
 
 const HIGH_INTENT_ANALYTICS_ACTIONS = new Set(['link_click', 'pdf_open', 'resource_open']);
 const ENGAGEMENT_ANALYTICS_ACTIONS = new Set(['detail_open', 'link_click', 'pdf_open', 'resource_open', 'share_click']);
+
+function isPdfFile(file) {
+    if (!file) return false;
+    return file.type === 'application/pdf' || /\.pdf$/i.test(file.name || '');
+}
 
 // Firebase-enabled Admin Panel
 class FirebaseAdminPanel {
@@ -239,8 +245,16 @@ class FirebaseAdminPanel {
                 select.value = category;
                 select.dispatchEvent(new Event('change', { bubbles: true }));
                 this.syncCategoryPicker(category);
+                this.syncClassTypeForCategory(category);
             });
         });
+
+        const categorySelect = document.getElementById('category');
+        if (categorySelect) {
+            categorySelect.addEventListener('change', (event) => {
+                this.syncClassTypeForCategory(event.target.value);
+            });
+        }
 
         this.updateAdvisorDashboard();
     }
@@ -1081,6 +1095,18 @@ class FirebaseAdminPanel {
         });
     }
 
+    syncClassTypeForCategory(category) {
+        const classTypeSelect = document.getElementById('classType');
+        if (!classTypeSelect || classTypeSelect.value) {
+            return;
+        }
+        if (category === 'esol') {
+            classTypeSelect.value = 'esol';
+        } else if (category === 'college') {
+            classTypeSelect.value = 'hse';
+        }
+    }
+
     // Bulletin Management
     async handleBulletinSubmit(e) {
         e.preventDefault();
@@ -1169,6 +1195,14 @@ class FirebaseAdminPanel {
             if (this[pendingKey] && this[pendingKey].signature === signature) {
                 processedImage = this[pendingKey];
                 usedCachedImage = true;
+            } else if (fieldName === 'image' && isPdfFile(file)) {
+                const flyerSource = await this.prepareFlyerSourceFile(file, fieldName);
+                processedImage = {
+                    ...(await this.prepareImageForUpload(flyerSource.uploadFile)),
+                    signature,
+                    convertedFromPdf: true,
+                    pdfPageCount: flyerSource.pdfPageCount
+                };
             } else {
                 processedImage = await this.prepareImageForUpload(file);
             }
@@ -1189,19 +1223,28 @@ class FirebaseAdminPanel {
                 await this.saveBulletin(bulletin, null);
             }
 
-            // Handle PDF upload if provided (only for primary image upload to avoid duplicate calls)
-            if (fieldName === 'image' && pdfFile && pdfFile.size > 0) {
-                await this.handlePdfUpload(pdfFile, bulletin, editingId);
+            // Attach the original PDF when a PDF flyer was uploaded, or when a separate PDF was added.
+            if (fieldName === 'image') {
+                const pdfToUpload = isPdfFile(file)
+                    ? file
+                    : (pdfFile && pdfFile.size > 0 ? pdfFile : null);
+                if (pdfToUpload) {
+                    await this.handlePdfUpload(pdfToUpload, bulletin, editingId);
+                }
             }
 
             if (processedImage.infoMessage && !usedCachedImage) {
                 this.showTemporaryMessage(processedImage.infoMessage, 'info');
+            } else if (fieldName === 'image' && isPdfFile(file) && !usedCachedImage) {
+                this.showTemporaryMessage('PDF flyer converted. Students will see page 1 on the board and can open the full PDF from the post.', 'success');
             }
         } catch (error) {
             console.error('Image processing error:', error);
             const message = typeof error === 'string'
                 ? error
-                : 'Image upload failed. Please try uploading a JPG/PNG under 10MB.';
+                : (fieldName === 'image' && isPdfFile(file)
+                    ? 'Flyer upload failed. Please try a different PDF or upload a JPG/PNG instead.'
+                    : 'Image upload failed. Please try uploading a JPG/PNG under 10MB.');
             this.showTemporaryMessage(message, 'error');
             throw error; // Re-throw to prevent form reset on error
         }
@@ -1314,40 +1357,68 @@ class FirebaseAdminPanel {
         }
 
         if (file) {
-            // Comprehensive image validation
-            const validation = this.validateImageFile(file);
-
-            if (!validation.isValid) {
-                this.showTemporaryMessage(validation.error, 'error');
+            if (fieldName !== 'image' && isPdfFile(file)) {
+                this.showTemporaryMessage('PDF flyers can only be uploaded in the English flyer field.', 'error');
                 e.target.value = '';
                 preview.innerHTML = '';
                 this[pendingKey] = null;
                 return;
             }
 
-            // Show warnings if any
-            if (validation.warnings.length > 0) {
-                validation.warnings.forEach(warning => {
-                    this.showTemporaryMessage(warning, 'warning');
-                });
-            }
-
             try {
-                const processed = await this.prepareImageForUpload(file);
+                let flyerSource;
+                if (fieldName === 'image') {
+                    if (isPdfFile(file)) {
+                        this.showTemporaryMessage('Converting PDF flyer preview...', 'info');
+                    }
+                    flyerSource = await this.prepareFlyerSourceFile(file, fieldName);
+                    if (flyerSource.warnings?.length) {
+                        flyerSource.warnings.forEach((warning) => {
+                            this.showTemporaryMessage(warning, 'warning');
+                        });
+                    }
+                } else {
+                    const validation = this.validateImageFile(file);
+                    if (!validation.isValid) {
+                        this.showTemporaryMessage(validation.error, 'error');
+                        e.target.value = '';
+                        preview.innerHTML = '';
+                        this[pendingKey] = null;
+                        return;
+                    }
+                    if (validation.warnings.length > 0) {
+                        validation.warnings.forEach((warning) => {
+                            this.showTemporaryMessage(warning, 'warning');
+                        });
+                    }
+                    flyerSource = {
+                        uploadFile: file,
+                        convertedFromPdf: false,
+                        pdfPageCount: 0
+                    };
+                }
+
+                const processed = await this.prepareImageForUpload(flyerSource.uploadFile);
                 const signature = this.getFileSignature(file);
 
                 this[pendingKey] = {
                     ...processed,
-                    signature
+                    signature,
+                    convertedFromPdf: flyerSource.convertedFromPdf,
+                    pdfPageCount: flyerSource.pdfPageCount || 0
                 };
 
                 const sizeWarning = this.getImageSizeRecommendation(processed.width, processed.height, processed.finalBytes);
+                const pdfNote = flyerSource.convertedFromPdf
+                    ? `<small>Converted from PDF (page 1${flyerSource.pdfPageCount > 1 ? ` of ${flyerSource.pdfPageCount}` : ''})</small>`
+                    : '';
 
                 preview.innerHTML = `
                     <div class="preview-container">
                         <img src="${processed.dataUrl}" alt="Preview" class="preview-image">
                         <button type="button" class="remove-image" onclick="adminPanel.removeImagePreview('${fieldName}')" aria-label="Remove image">&times;</button>
                         <div class="image-info">
+                            ${pdfNote}
                             <small>${processed.width} × ${processed.height} pixels</small>
                             <small>${this.formatFileSize(processed.finalBytes)}</small>
                             ${sizeWarning ? `<small class="size-warning">${sizeWarning}</small>` : ''}
@@ -1363,10 +1434,17 @@ class FirebaseAdminPanel {
                     this.showTemporaryMessage(processed.infoMessage, 'info');
                 } else if (sizeWarning) {
                     this.showTemporaryMessage(sizeWarning, 'info');
+                } else if (flyerSource.convertedFromPdf) {
+                    this.showTemporaryMessage('PDF preview ready. The full PDF will be attached when you post.', 'info');
                 }
             } catch (error) {
                 console.error('Image preview error:', error);
-                this.showTemporaryMessage('Could not process this image. Please try a smaller JPG or PNG.', 'error');
+                const message = typeof error === 'string'
+                    ? error
+                    : (fieldName === 'image' && isPdfFile(file)
+                        ? 'Could not read this PDF. Try a different file or export page 1 as a PNG/JPG.'
+                        : 'Could not process this image. Please try a smaller JPG or PNG.');
+                this.showTemporaryMessage(message, 'error');
                 e.target.value = '';
                 preview.innerHTML = '';
                 this[pendingKey] = null;
@@ -1455,6 +1533,39 @@ class FirebaseAdminPanel {
 
     getFileSignature(file) {
         return `${file.name}_${file.lastModified}_${file.size}`;
+    }
+
+    async prepareFlyerSourceFile(file, fieldName = 'image') {
+        if (fieldName === 'image' && isPdfFile(file)) {
+            if (file.size > 10 * 1024 * 1024) {
+                throw 'PDF file too large. Please select a PDF under 10MB.';
+            }
+
+            const { convertPdfFirstPageToImageFile } = await import('./src/pdf-flyer.js');
+            const converted = await convertPdfFirstPageToImageFile(file);
+            return {
+                uploadFile: converted.imageFile,
+                sourcePdf: file,
+                convertedFromPdf: true,
+                pdfPageCount: converted.pageCount,
+                warnings: converted.pageCount > 1
+                    ? [`This PDF has ${converted.pageCount} pages. Page 1 will show on the board; the full PDF will be attached.`]
+                    : []
+            };
+        }
+
+        const validation = this.validateImageFile(file);
+        if (!validation.isValid) {
+            throw validation.error;
+        }
+
+        return {
+            uploadFile: file,
+            sourcePdf: null,
+            convertedFromPdf: false,
+            pdfPageCount: 0,
+            warnings: validation.warnings
+        };
     }
 
     prepareImageForUpload(file) {
@@ -2423,16 +2534,7 @@ class FirebaseAdminPanel {
     }
 
     getCategoryDisplay(category) {
-        const categories = {
-            'job': 'Job Opportunity',
-            'training': 'Training/Workshop',
-            'college': 'College/University',
-            'career-fair': 'Career Fair',
-            'immigration': 'Immigration',
-            'announcement': 'General Announcement',
-            'resource': 'Resource/Service'
-        };
-        return categories[category] || category;
+        return getPostCategoryDisplay(category);
     }
 
     getClassTypeDisplay(classType) {

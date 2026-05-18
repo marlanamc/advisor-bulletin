@@ -1,6 +1,7 @@
 import { db, auth, storage } from './src/firebase.js'
 import { STUDENT_ADVISOR_DIRECTORY } from './src/advisor-directory.js'
 import { installClientErrorLogger } from './src/error-logger.js'
+import { normalizePostCategory, getPostCategoryDisplay } from './src/feed-categories.js'
 import { collection, addDoc, query, where, orderBy, onSnapshot, serverTimestamp } from 'firebase/firestore'
 
 installClientErrorLogger('student')
@@ -214,6 +215,12 @@ const FEED_CATEGORY_CONTENT = {
         title: 'Career Fairs',
         description: 'Find hiring events, job fairs, and places to meet employers.',
         chips: ['Hiring Events', 'Employers', 'Resume', 'Interviews']
+    },
+    announcement: {
+        icon: '📢',
+        title: 'Announcements',
+        description: 'School news, reminders, and general updates from your advisors.',
+        chips: ['School News', 'Reminders', 'Updates', 'Events']
     }
 };
 
@@ -717,6 +724,9 @@ class FirebaseBulletinBoard {
 
         document.addEventListener('keydown', (event) => {
             if (event.key === 'Escape') {
+                if (typeof window.isImageLightboxOpen === 'function' && window.isImageLightboxOpen()) {
+                    return;
+                }
                 if (this.isSearchLayerOpen) {
                     this.closeSearchLayer();
                     return;
@@ -1513,13 +1523,7 @@ class FirebaseBulletinBoard {
     }
 
     normalizeFeedCategory(category) {
-        const key = String(category || 'all');
-        const aliases = {
-            jobs: 'job',
-            family: 'childcare',
-            resource: 'all'
-        };
-        return aliases[key] || key;
+        return normalizePostCategory(category);
     }
 
     openResourceDetailSheet(category) {
@@ -1946,14 +1950,8 @@ class FirebaseBulletinBoard {
         const normalized = rawValues
             .filter(Boolean)
             .map((value) => this.normalizeFeedCategory(String(value).trim().toLowerCase()))
-            .filter(Boolean);
+            .filter((value) => value && value !== 'all');
 
-        if (normalized.includes('healthcare')) {
-            normalized.push('health');
-        }
-        if (normalized.includes('english') || normalized.includes('english class')) {
-            normalized.push('esol');
-        }
         return [...new Set(normalized)];
     }
 
@@ -2216,7 +2214,7 @@ class FirebaseBulletinBoard {
       ${chipsBar}
       <div class="pc__top ${hasImage ? 'pc__top--image' : ''}" style="background:${hasImage ? '#f8fafc' : meta.grad}">
         ${hasImage
-          ? `<div class="pc__image-stage"><img class="pc__poster-image lightbox-trigger" data-lightbox-src="${this.escapeAttribute(displayImage)}" src="${this.escapeAttribute(displayImage)}" alt=""></div>`
+          ? `<div class="pc__image-stage"><img class="pc__poster-image" src="${this.escapeAttribute(displayImage)}" alt=""></div>`
           : `<div class="pc__icon-wrap"><div class="pc__icon-box" style="background:${meta.accent}">${this.getCardIconSvg(bulletin.category)}</div></div>
         <div class="pc__title-overlay">${this.escapeHtml(titleShort)} —</div>`}
       </div>
@@ -2287,11 +2285,19 @@ class FirebaseBulletinBoard {
             .filter(Boolean)
             .slice(0, 3);
         const contactAction = this.getDetailContactAction(bulletin);
+        const showDetailInfoGrid = this.hasDetailInfoGridContent(bulletin);
         const currentLang = document.body.getAttribute('data-lang') || 'EN';
         const displayImage = (currentLang === 'ES' && bulletin.imageEs) ? bulletin.imageEs : bulletin.image;
 
         const heroContent = displayImage
-            ? `<img class="post-detail-hero-image lightbox-trigger" data-lightbox-src="${this.escapeAttribute(displayImage)}" src="${this.escapeAttribute(displayImage)}" alt="">`
+            ? `<button type="button" class="post-detail-hero-zoom lightbox-trigger" data-lightbox-src="${this.escapeAttribute(displayImage)}" aria-label="View full size flyer">
+                <img class="post-detail-hero-image" src="${this.escapeAttribute(displayImage)}" alt="">
+                <span class="post-detail-hero-zoom-hint">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3M11 8v6M8 11h6"/></svg>
+                    <span class="en-text">Tap to zoom</span>
+                    <span class="es-text">Toca para ampliar</span>
+                </span>
+            </button>`
             : `<div class="post-detail-hero-art" style="--detail-accent:${meta.accent};--detail-tint:${meta.tint}">
                 <div class="post-detail-sun"></div>
                 <div class="post-detail-wave post-detail-wave-one"></div>
@@ -2326,7 +2332,7 @@ class FirebaseBulletinBoard {
                     ` : ''}
                     ${descriptionHtml ? `<div class="post-detail-description">${descriptionHtml}</div>` : ''}
                     
-                    ${(bulletin.phone || bulletin.address || bulletin.hours || bulletin.languages) ? `
+                    ${showDetailInfoGrid ? `
                         <div class="post-detail-info-grid" style="margin-top: 24px; display: grid; gap: 16px; background: #f8fafc; padding: 20px; border-radius: 16px; border: 1px solid #e2e8f0;">
                             ${bulletin.address ? `
                                 <div style="display: flex; gap: 12px; align-items: flex-start;">
@@ -2474,6 +2480,16 @@ class FirebaseBulletinBoard {
                 </span>
             `;
         }).join('');
+    }
+
+    hasDetailInfoGridContent(bulletin) {
+        if (!bulletin) return false;
+        if ((bulletin.address || '').trim()) return true;
+        if ((bulletin.hours || '').trim()) return true;
+        const languages = Array.isArray(bulletin.languages)
+            ? bulletin.languages
+            : String(bulletin.languages || '').split(',').map((s) => s.trim()).filter(Boolean);
+        return languages.length > 0;
     }
 
     getDetailLinkActionLabel(category) {
@@ -2853,16 +2869,7 @@ class FirebaseBulletinBoard {
 
     // Utility Methods
     getCategoryDisplay(category) {
-        const categories = {
-            'job': 'Job Opportunity',
-            'training': 'Training/Workshop',
-            'college': 'College/University',
-            'career-fair': 'Career Fair',
-            'immigration': 'Immigration',
-            'announcement': 'General Announcement',
-            'resource': 'Resource/Service'
-        };
-        return categories[category] || category;
+        return getPostCategoryDisplay(category);
     }
 
     getClassTypeDisplay(classType) {

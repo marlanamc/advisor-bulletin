@@ -14,9 +14,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <script type="module" crossorigin src="/assets/main-tfxV2Tos.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/error-logger-BdTI09-p.js">
-  <link rel="stylesheet" crossorigin href="/assets/error-logger-DWFMAmrz.css">
+  <script type="module" crossorigin src="/assets/main-Do03-7zM.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/feed-categories-DCdVHbXB.js">
+  <link rel="stylesheet" crossorigin href="/assets/feed-categories-CYZoMiM8.css">
 </head>
 <body>
 
@@ -126,7 +126,12 @@
             <div class="filter-section">
                 <div class="search-bar">
                     <input type="text" id="searchInput" placeholder="Search the feed / Buscar publicaciones" class="search-input">
-                    <button id="searchBtn" class="search-btn" aria-label="Search the feed">🔍</button>
+                    <button id="searchBtn" class="search-btn" type="button" aria-label="Search the feed">
+                        <svg class="search-btn-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <circle cx="11" cy="11" r="7"></circle>
+                            <path d="m17 17 4 4"></path>
+                        </svg>
+                    </button>
                 </div>
                 <div class="search-layer-cats" id="searchLayerCats">
                     <p class="search-layer-cats-label"><span class="en-text">Or filter posts by topic:</span><span class="es-text">O filtra publicaciones por tema:</span></p>
@@ -135,7 +140,7 @@
                             <span class="sl-cat-icon">✨</span>
                             <span class="en-text">All</span><span class="es-text">Todo</span>
                         </button>
-                        <button class="sl-cat-btn" data-cat-filter="jobs" type="button">
+                        <button class="sl-cat-btn" data-cat-filter="job" type="button">
                             <span class="sl-cat-icon">💼</span>
                             <span class="en-text">Jobs</span><span class="es-text">Empleos</span>
                         </button>
@@ -160,7 +165,7 @@
                             <span class="en-text">Food</span><span class="es-text">Comida</span>
                         </button>
                         <button class="sl-cat-btn" data-cat-filter="esol" type="button">
-                            <span class="sl-cat-icon">📚</span>
+                            <span class="sl-cat-icon">🗣️</span>
                             <span class="en-text">English class</span><span class="es-text">Inglés</span>
                         </button>
                         <button class="sl-cat-btn" data-cat-filter="college" type="button">
@@ -170,6 +175,14 @@
                         <button class="sl-cat-btn" data-cat-filter="money" type="button">
                             <span class="sl-cat-icon">💵</span>
                             <span class="en-text">Money help</span><span class="es-text">Dinero</span>
+                        </button>
+                        <button class="sl-cat-btn" data-cat-filter="career-fair" type="button">
+                            <span class="sl-cat-icon">🤝</span>
+                            <span class="en-text">Career fair</span><span class="es-text">Feria</span>
+                        </button>
+                        <button class="sl-cat-btn" data-cat-filter="announcement" type="button">
+                            <span class="sl-cat-icon">📣</span>
+                            <span class="en-text">News</span><span class="es-text">Anuncios</span>
                         </button>
                     </div>
                 </div>

@@ -7,9 +7,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Lexend:wght@300;400;500;600;700;800&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
-  <script type="module" crossorigin src="/assets/admin-CRgV9Fzp.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/error-logger-BdTI09-p.js">
-  <link rel="stylesheet" crossorigin href="/assets/error-logger-DWFMAmrz.css">
+  <script type="module" crossorigin src="/assets/admin-C5QIh3KZ.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/feed-categories-DCdVHbXB.js">
+  <link rel="stylesheet" crossorigin href="/assets/feed-categories-CYZoMiM8.css">
   <link rel="stylesheet" crossorigin href="/assets/admin-CcDT3MIV.css">
 </head>
 <body>
@@ -534,19 +534,29 @@
                                     <select id="category" name="category" required class="required">
                                         <option value="">Select a category</option>
                                         <option value="job">Job Opportunity</option>
-                                        <option value="training">Training/Workshop</option>
-                                        <option value="college">College/University</option>
-                                        <option value="career-fair">Career Fair</option>
+                                        <option value="training">Training / Workshop</option>
                                         <option value="immigration">Immigration</option>
+                                        <option value="housing">Housing</option>
+                                        <option value="health">Health</option>
+                                        <option value="food">Food</option>
+                                        <option value="esol">English Class (ESOL)</option>
+                                        <option value="college">College &amp; GED</option>
+                                        <option value="money">Money Help</option>
+                                        <option value="career-fair">Career Fair</option>
                                         <option value="announcement">General Announcement</option>
-                                        <option value="resource">Resource/Service</option>
                                     </select>
+                                    <small class="input-help">Choose the topic students use to find this post. For permanent link listings, use the Resources content type.</small>
                                     <div class="advisor-category-picker" aria-label="Quick category picker" style="margin-top: 8px;">
                                         <button type="button" data-category-pick="job">💼 Job</button>
-                                        <button type="button" data-category-pick="training">🔤 Training</button>
+                                        <button type="button" data-category-pick="training">📚 Training</button>
+                                        <button type="button" data-category-pick="immigration">🌎 Immigration</button>
+                                        <button type="button" data-category-pick="housing">🏠 Housing</button>
+                                        <button type="button" data-category-pick="health">❤️ Health</button>
+                                        <button type="button" data-category-pick="food">🍽️ Food</button>
+                                        <button type="button" data-category-pick="esol">🗣️ ESOL</button>
                                         <button type="button" data-category-pick="college">🎓 College</button>
-                                        <button type="button" data-category-pick="career-fair">🎪 Fair</button>
-                                        <button type="button" data-category-pick="immigration">🌐 Immigration</button>
+                                        <button type="button" data-category-pick="money">💵 Money</button>
+                                        <button type="button" data-category-pick="career-fair">🤝 Fair</button>
                                         <button type="button" data-category-pick="announcement">📣 News</button>
                                     </div>
                                 </div>
@@ -578,10 +588,10 @@
                                     </div>
                                     <div>
                                         <div style="font-weight: 700; font-size: 0.88rem; color: var(--ap-text);">Upload image or flyer</div>
-                                        <div style="font-size: 0.74rem; color: var(--ap-text-3);">PNG, JPG (Max 10MB)</div>
+                                        <div style="font-size: 0.74rem; color: var(--ap-text-3);">PNG, JPG, or PDF (max 10MB). PDFs use page 1 for the student preview.</div>
                                     </div>
                                 </div>
-                                <input type="file" id="image" name="image" accept="image/*" class="file-input recommended" style="display: none;">
+                                <input type="file" id="image" name="image" accept="image/*,.pdf,application/pdf" class="file-input recommended" style="display: none;">
                                 <div id="imagePreview" class="image-preview" style="margin-top: 10px;"></div>
                             </div>
 
@@ -936,8 +946,9 @@
                                     </select>
                                 </div>
                                 <div class="form-group enhancement-field">
-                                    <label for="pdf">Add PDF Document</label>
+                                    <label for="pdf">Add PDF Document (optional)</label>
                                     <input type="file" id="pdf" name="pdf" accept=".pdf,application/pdf" class="file-input">
+                                    <small class="input-help">Use this only if you already uploaded a PNG/JPG flyer above and want to attach the original PDF too.</small>
                                     <div id="pdfPreview" class="pdf-preview"></div>
                                 </div>
                             </div>

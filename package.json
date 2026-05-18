@@ -14,7 +14,8 @@
     "test:headed": "playwright test --headed"
   },
   "dependencies": {
-    "firebase": "^12.13.0"
+    "firebase": "^12.13.0",
+    "pdfjs-dist": "^5.7.284"
   },
   "devDependencies": {
     "@playwright/test": "^1.40.0",
