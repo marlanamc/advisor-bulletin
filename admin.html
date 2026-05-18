@@ -772,15 +772,6 @@
                                 </div>
                             </div>
                             <div class="ap-accordion-content">
-                                <div class="form-group event-feed-toggle" style="margin-bottom: 16px;">
-                                    <label class="checkbox-row" style="display:flex; gap:10px; align-items:flex-start; cursor:pointer;">
-                                        <input type="checkbox" id="hideFromMainFeed" name="hideFromMainFeed" value="on" style="margin-top:3px;">
-                                        <span>
-                                            <strong>Calendar &amp; upcoming only</strong> — hide this from the main feed cards.
-                                        </span>
-                                    </label>
-                                </div>
-
                                 <div class="field-group double event-date-type-row">
                                     <div class="form-group event-field">
                                         <label for="dateType">Date Type</label>
@@ -788,6 +779,7 @@
                                             <option value="">No specific date</option>
                                             <option value="deadline">Application Deadline</option>
                                             <option value="event">Event Date</option>
+                                            <option value="sessions">Multiple Session Dates</option>
                                             <option value="range">Event Date Range</option>
                                         </select>
                                     </div>
@@ -815,6 +807,12 @@
                                     <div class="form-group event-field" id="endDateGroup" style="display: none;">
                                         <label for="endDate">End Date</label>
                                         <input type="date" id="endDate" name="endDate" class="recommended">
+                                    </div>
+                                    <div class="form-group event-field" id="sessionsDateGroup" style="display: none;">
+                                        <label>Session Dates</label>
+                                        <small class="input-help">Add each separate date (e.g., two Zoom info sessions). Same start/end time applies to all.</small>
+                                        <div id="eventDatesList" class="event-dates-list"></div>
+                                        <button type="button" class="ap-btn ap-btn-ghost event-date-add-btn" id="addEventDateBtn">+ Add another date</button>
                                     </div>
                                 </div>
 
@@ -1664,6 +1662,16 @@
                     }
                 } else if (dateTypeEv === 'deadline' && eventDateVal) {
                     whenLine = 'Deadline: ' + formatPreviewYmd(eventDateVal);
+                } else if (dateTypeEv === 'sessions') {
+                    var sessionInputs = document.querySelectorAll('#eventDatesList input[name="eventDates"]');
+                    var sessionDates = Array.from(sessionInputs).map(function(inp) { return inp.value; }).filter(Boolean);
+                    if (sessionDates.length >= 2) {
+                        whenLine = sessionDates.map(formatPreviewYmd).join(' · ');
+                    } else if (sessionDates.length === 1) {
+                        whenLine = formatPreviewYmd(sessionDates[0]) + ' — add another date';
+                    } else {
+                        whenLine = 'Add at least two session dates';
+                    }
                 } else if (eventDateVal) {
                     whenLine = formatPreviewYmd(eventDateVal);
                 } else if (dateTypeEv) {
@@ -1823,6 +1831,12 @@
                     attributes: true,
                     attributeFilter: ['src']
                 });
+            }
+
+            var eventDatesList = document.getElementById('eventDatesList');
+            if (eventDatesList) {
+                eventDatesList.addEventListener('input', syncPreview);
+                eventDatesList.addEventListener('change', syncPreview);
             }
         }
 

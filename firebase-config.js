@@ -380,7 +380,116 @@ class FirebaseBulletinBoard {
             normalized.isPublished = data.isPublished !== false;
         }
 
+        if (normalized.dateType === 'sessions') {
+            if (Array.isArray(data.eventDates) && data.eventDates.length) {
+                normalized.eventDates = data.eventDates
+                    .map((value) => String(value).split('T')[0].trim())
+                    .filter((value) => /^\d{4}-\d{2}-\d{2}$/.test(value))
+                    .sort();
+            } else if (data.eventDate) {
+                normalized.eventDates = [String(data.eventDate).split('T')[0]];
+            } else {
+                normalized.eventDates = [];
+            }
+            normalized.eventDate = normalized.eventDates[0] || data.eventDate || '';
+        }
+
         return normalized;
+    }
+
+    getBulletinEventDates(bulletin) {
+        if (!bulletin) return [];
+
+        if (bulletin.dateType === 'sessions') {
+            if (Array.isArray(bulletin.eventDates) && bulletin.eventDates.length) {
+                return bulletin.eventDates
+                    .map((value) => String(value).split('T')[0].trim())
+                    .filter((value) => /^\d{4}-\d{2}-\d{2}$/.test(value))
+                    .sort();
+            }
+            if (bulletin.eventDate) {
+                return [String(bulletin.eventDate).split('T')[0]];
+            }
+            return [];
+        }
+
+        if (bulletin.eventDate) {
+            return [String(bulletin.eventDate).split('T')[0]];
+        }
+        if (bulletin.startDate) {
+            return [String(bulletin.startDate).split('T')[0]];
+        }
+        if (bulletin.deadline) {
+            return [String(bulletin.deadline).split('T')[0]];
+        }
+
+        return [];
+    }
+
+    formatEventDatesDisplay(bulletin) {
+        if (bulletin.dateType === 'sessions') {
+            const dates = this.getBulletinEventDates(bulletin);
+            if (!dates.length) return null;
+
+            const formatted = dates.map((rawDate) => {
+                const parsed = this.parseStoredYmdLocal(rawDate);
+                return parsed
+                    ? parsed.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+                    : rawDate;
+            });
+            const timeSuffix = bulletin.startTime ? ` · ${bulletin.startTime}` : '';
+
+            if (formatted.length === 1) {
+                return `${formatted[0]}${timeSuffix}`;
+            }
+            if (formatted.length === 2) {
+                return `${formatted[0]} & ${formatted[1]}${timeSuffix}`;
+            }
+            return `${formatted.length} sessions${timeSuffix}`;
+        }
+
+        if (bulletin.deadline) {
+            const deadlineDate = this.parseStoredYmdLocal(String(bulletin.deadline).split('T')[0]) || new Date(bulletin.deadline);
+            const label = deadlineDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+            return `Apply by ${label}`;
+        }
+
+        if (bulletin.eventDate) {
+            const eventDate = this.parseStoredYmdLocal(String(bulletin.eventDate).split('T')[0]) || new Date(bulletin.eventDate);
+            return eventDate.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })
+                + (bulletin.startTime ? ` · ${bulletin.startTime}` : '');
+        }
+
+        return null;
+    }
+
+    formatSessionDatesDetailLabel(bulletin) {
+        const dates = this.getBulletinEventDates(bulletin);
+        if (!dates.length) return '';
+
+        const formatted = dates.map((rawDate) => {
+            const parsed = this.parseStoredYmdLocal(rawDate);
+            return parsed
+                ? parsed.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })
+                : rawDate;
+        });
+        const timeRange = this.formatTimeRange(bulletin.startTime, bulletin.endTime);
+        const timeSuffix = timeRange ? ` · ${timeRange}` : '';
+
+        if (formatted.length === 1) {
+            return `${formatted[0]}${timeSuffix}`;
+        }
+
+        return `${formatted.length} sessions: ${formatted.join(', ')}${timeSuffix}`;
+    }
+
+    bulletinHasCalendarDates(bulletin) {
+        return Boolean(
+            bulletin.deadline
+            || bulletin.eventDate
+            || bulletin.startDate
+            || (bulletin.dateType === 'sessions' && Array.isArray(bulletin.eventDates) && bulletin.eventDates.length)
+        );
     }
 
     populateAdvisorFilters() {
@@ -790,8 +899,7 @@ class FirebaseBulletinBoard {
         this.updateFeedCategoryHeader();
         this.updateActiveCategoryState();
         this.updateResultsInfo(postBulletins);
-        const feedPosts = postBulletins.filter((bulletin) => this.isVisibleOnMainFeed(bulletin));
-        this.renderFeed(feedPosts);
+        this.renderFeed(postBulletins);
         this.renderCalendar(postBulletins);
         this.renderHomeUpcomingEvents(postBulletins);
         this.renderResourcesSections(resources);
@@ -1106,7 +1214,7 @@ class FirebaseBulletinBoard {
         }
 
         const mergedBulletins = withSchoolCalendarAnchors(bulletins);
-        const datedBulletins = mergedBulletins.filter((bulletin) => bulletin.deadline || bulletin.eventDate || bulletin.startDate);
+        const datedBulletins = mergedBulletins.filter((bulletin) => this.bulletinHasCalendarDates(bulletin));
         if (datedBulletins.length === 0) {
             calendar.innerHTML = '';
             emptyState.style.display = 'block';
@@ -1131,10 +1239,21 @@ class FirebaseBulletinBoard {
 
         const mergedBulletins = withSchoolCalendarAnchors(bulletins);
         const events = mergedBulletins
-            .map((bulletin) => {
+            .flatMap((bulletin) => {
+                if (bulletin.dateType === 'sessions') {
+                    return this.getBulletinEventDates(bulletin).map((rawDate) => ({
+                        bulletin,
+                        rawDate,
+                        timestamp: this.getTimestampValue(rawDate)
+                    }));
+                }
+
                 const rawDate = bulletin.eventDate || bulletin.startDate || bulletin.deadline;
-                const timestamp = this.getTimestampValue(rawDate);
-                return { bulletin, timestamp };
+                return [{
+                    bulletin,
+                    rawDate,
+                    timestamp: this.getTimestampValue(rawDate)
+                }];
             })
             .filter((item) => item.timestamp && item.timestamp >= now.getTime())
             .sort((a, b) => a.timestamp - b.timestamp)
@@ -1145,7 +1264,7 @@ class FirebaseBulletinBoard {
             return;
         }
 
-        container.innerHTML = events.map(({ bulletin, timestamp }) => {
+        container.innerHTML = events.map(({ bulletin, rawDate, timestamp }) => {
             const date = new Date(timestamp);
             const month = date.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
             const day = date.toLocaleDateString('en-US', { day: 'numeric' });
@@ -1728,22 +1847,6 @@ class FirebaseBulletinBoard {
         return bulletins.filter((bulletin) => !this.isResourceBulletin(bulletin));
     }
 
-    /** Posts hidden from the default main feed still appear on Calendar / Home upcoming when they have dates. */
-    isMainFeedDiscoveryOverridden() {
-        const category = this.currentFeedCategory || 'all';
-        if (category !== 'all') {
-            return true;
-        }
-        return this.areFiltersApplied();
-    }
-
-    isVisibleOnMainFeed(bulletin) {
-        if (!bulletin || bulletin.hideFromMainFeed !== true) {
-            return true;
-        }
-        return this.isMainFeedDiscoveryOverridden();
-    }
-
     getPublishedResources() {
         const publishedResources = [...this.bulletins]
             .filter((bulletin) => this.isResourceBulletin(bulletin) && bulletin.isPublished !== false)
@@ -2122,18 +2225,7 @@ class FirebaseBulletinBoard {
         const desc = bulletin.description || '';
         const descShort = desc.length > 110 ? desc.substring(0, 108) + '…' : desc;
 
-        const dateLabel = (() => {
-            if (bulletin.deadline) {
-                const d = this.parseStoredYmdLocal(String(bulletin.deadline).split('T')[0]) || new Date(bulletin.deadline);
-                const label = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-                return `Apply by ${label}`;
-            }
-            if (bulletin.eventDate) {
-                const d = this.parseStoredYmdLocal(String(bulletin.eventDate).split('T')[0]) || new Date(bulletin.eventDate);
-                return d.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }) + (bulletin.startTime ? ` · ${bulletin.startTime}` : '');
-            }
-            return null;
-        })();
+        const dateLabel = this.formatEventDatesDisplay(bulletin);
 
         const openHandler = `window.bulletinBoard && window.bulletinBoard.showBulletinDetail('${bulletin.id}')`;
 
@@ -2326,6 +2418,25 @@ class FirebaseBulletinBoard {
     }
 
     getDetailImportantDate(bulletin) {
+        if (bulletin.dateType === 'sessions') {
+            const items = this.expandBulletinDateItems(bulletin);
+            if (!items.length) return null;
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const upcoming = items
+                .filter((item) => item.date >= today)
+                .sort((a, b) => a.date.getTime() - b.date.getTime());
+            const item = upcoming[0] || items[items.length - 1];
+
+            return {
+                raw: item.rawDate,
+                date: item.date,
+                kind: item.kind,
+                label: this.formatSessionDatesDetailLabel(bulletin)
+            };
+        }
+
         const item = this.getDatesListItem(bulletin);
         if (!item) return null;
 
@@ -2812,6 +2923,21 @@ class FirebaseBulletinBoard {
             return endOfDay < now;
         }
 
+        if (bulletin.dateType === 'sessions') {
+            const dates = this.getBulletinEventDates(bulletin);
+            if (!dates.length) return false;
+
+            const lastDate = dates[dates.length - 1];
+            if (bulletin.endTime) {
+                const eventDateTime = new Date(`${lastDate}T${bulletin.endTime}:00`);
+                return eventDateTime < now;
+            }
+
+            const eventDate = this.parseStoredYmdLocal(lastDate) || new Date(lastDate);
+            const endOfDay = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate(), 23, 59, 59);
+            return endOfDay < now;
+        }
+
         // Check event-based expiration (with end time)
         if (bulletin.eventDate && bulletin.endTime) {
             // endTime is stored in 24-hour format (e.g., "14:00")
@@ -3071,7 +3197,7 @@ class FirebaseBulletinBoard {
 
     renderDateInfo(bulletin) {
         // Prioritize new date structure over backward compatibility
-        if (bulletin.dateType && (bulletin.eventDate || (bulletin.startDate && bulletin.endDate))) {
+        if (bulletin.dateType && (bulletin.eventDate || (bulletin.eventDates && bulletin.eventDates.length) || (bulletin.startDate && bulletin.endDate))) {
             return this.renderNewDateInfo(bulletin);
         }
 
@@ -3117,10 +3243,18 @@ class FirebaseBulletinBoard {
                     <strong>Event Dates:</strong> ${this.formatDateLocal(bulletin.startDate)} - ${this.formatDateLocal(bulletin.endDate)}${timeInfo ? ` at ${timeInfo}` : ''}
                 </div>
             `;
+        } else if (dateType === 'sessions' && bulletin.eventDates?.length) {
+            const datesLabel = bulletin.eventDates.map((date) => this.formatDateLocal(date)).join(', ');
+            let timeInfo = this.formatTimeRange(bulletin.startTime, bulletin.endTime);
+            dateHtml = `
+                <div class="meta-item">
+                    <strong>Session Dates:</strong> ${datesLabel}${timeInfo ? ` at ${timeInfo}` : ''}
+                </div>
+            `;
         }
 
         // Add event location if specified
-        if (bulletin.eventLocation && (dateType === 'event' || dateType === 'range')) {
+        if (bulletin.eventLocation && (dateType === 'event' || dateType === 'range' || dateType === 'sessions')) {
             const locationText = bulletin.eventLocation === 'in-person' ? 'In-Person' :
                                bulletin.eventLocation === 'online' ? 'Online' :
                                bulletin.eventLocation === 'hybrid' ? 'Hybrid (In-Person & Online)' : bulletin.eventLocation;
@@ -3136,7 +3270,7 @@ class FirebaseBulletinBoard {
 
     renderDetailDateInfo(bulletin) {
         // Prioritize new date structure
-        if (bulletin.dateType && (bulletin.eventDate || (bulletin.startDate && bulletin.endDate))) {
+        if (bulletin.dateType && (bulletin.eventDate || (bulletin.eventDates && bulletin.eventDates.length) || (bulletin.startDate && bulletin.endDate))) {
             const dateType = bulletin.dateType;
             let dateHtml = '';
 
@@ -3150,10 +3284,14 @@ class FirebaseBulletinBoard {
             } else if (dateType === 'range' && bulletin.startDate && bulletin.endDate) {
                 let timeInfo = this.formatTimeRange(bulletin.startTime, bulletin.endTime);
                 dateHtml = `<div><strong>Event Dates:</strong> ${this.formatDateLocal(bulletin.startDate)} - ${this.formatDateLocal(bulletin.endDate)}${timeInfo ? ` at ${timeInfo}` : ''}</div>`;
+            } else if (dateType === 'sessions' && bulletin.eventDates?.length) {
+                let timeInfo = this.formatTimeRange(bulletin.startTime, bulletin.endTime);
+                const datesLabel = bulletin.eventDates.map((date) => this.formatDateLocal(date)).join(', ');
+                dateHtml = `<div><strong>Session Dates:</strong> ${datesLabel}${timeInfo ? ` at ${timeInfo}` : ''}</div>`;
             }
 
             // Add event location if specified
-            if (bulletin.eventLocation && (dateType === 'event' || dateType === 'range')) {
+            if (bulletin.eventLocation && (dateType === 'event' || dateType === 'range' || dateType === 'sessions')) {
                 const locationText = bulletin.eventLocation === 'in-person' ? 'In-Person' :
                                    bulletin.eventLocation === 'online' ? 'Online' :
                                    bulletin.eventLocation === 'hybrid' ? 'Hybrid (In-Person & Online)' : bulletin.eventLocation;
@@ -3294,7 +3432,7 @@ class FirebaseBulletinBoard {
 
     createDatesListView(bulletins) {
         const datedItems = bulletins
-            .map((bulletin) => this.getDatesListItem(bulletin))
+            .flatMap((bulletin) => this.expandBulletinDateItems(bulletin))
             .filter(Boolean)
             .sort((a, b) => a.date.getTime() - b.date.getTime());
 
@@ -3347,6 +3485,30 @@ class FirebaseBulletinBoard {
         `;
     }
 
+    expandBulletinDateItems(bulletin) {
+        if (bulletin.dateType === 'sessions') {
+            const dates = this.getBulletinEventDates(bulletin);
+            return dates.map((rawDate, index) => {
+                const date = this.parseDateOnly(rawDate);
+                if (!date) return null;
+
+                return {
+                    bulletin,
+                    rawDate,
+                    date,
+                    kind: 'event',
+                    label: this.getDatesListLabel(bulletin, date, 'event', {
+                        sessionIndex: index + 1,
+                        sessionTotal: dates.length
+                    })
+                };
+            }).filter(Boolean);
+        }
+
+        const item = this.getDatesListItem(bulletin);
+        return item ? [item] : [];
+    }
+
     getDatesListItem(bulletin) {
         let rawDate = '';
         let kind = 'date';
@@ -3394,7 +3556,7 @@ class FirebaseBulletinBoard {
         return Number.isNaN(date.getTime()) ? null : date;
     }
 
-    getDatesListLabel(bulletin, date, kind) {
+    getDatesListLabel(bulletin, date, kind, options = {}) {
         const dateLabel = date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
         const dayLabel = date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
         const timeRange = this.formatTimeRange(bulletin.startTime, bulletin.endTime);
@@ -3405,6 +3567,10 @@ class FirebaseBulletinBoard {
 
         if (kind === 'start') {
             return `Starts ${dateLabel}${timeRange ? ` · ${timeRange}` : ''}`;
+        }
+
+        if (options.sessionTotal > 1) {
+            return `${dayLabel} (Session ${options.sessionIndex} of ${options.sessionTotal})${timeRange ? ` · ${timeRange}` : ''}`;
         }
 
         return `${dayLabel}${timeRange ? ` · ${timeRange}` : ''}`;
@@ -3446,34 +3612,27 @@ class FirebaseBulletinBoard {
 
     createCalendarView(bulletins) {
         // Filter to only show bulletins with deadlines or events
-        const calendarBulletins = bulletins.filter(bulletin => {
-            return bulletin.deadline || bulletin.eventDate || bulletin.startDate;
-        });
+        const calendarBulletins = bulletins.filter((bulletin) => this.bulletinHasCalendarDates(bulletin));
 
         // Group bulletins by date - use event date if available, otherwise deadline
         const bulletinsByDate = {};
-        calendarBulletins.forEach(bulletin => {
-            let date;
+        calendarBulletins.forEach((bulletin) => {
+            const rawDates = bulletin.dateType === 'sessions'
+                ? this.getBulletinEventDates(bulletin)
+                : [bulletin.eventDate || bulletin.startDate || bulletin.deadline].filter(Boolean);
 
-            // Use event date if available, otherwise use deadline
-            if (bulletin.eventDate) {
-                // Add time component to prevent timezone shift
-                date = new Date(bulletin.eventDate + 'T12:00:00');
-            } else if (bulletin.startDate) {
-                // Add time component to prevent timezone shift
-                date = new Date(bulletin.startDate + 'T12:00:00');
-            } else if (bulletin.deadline) {
-                date = new Date(bulletin.deadline + 'T12:00:00');
-            } else {
-                // Skip bulletins without deadlines or events
-                return;
-            }
+            rawDates.forEach((rawDate) => {
+                const date = new Date(String(rawDate).split('T')[0] + 'T12:00:00');
+                if (Number.isNaN(date.getTime())) {
+                    return;
+                }
 
-            const dateKey = date.toDateString();
-            if (!bulletinsByDate[dateKey]) {
-                bulletinsByDate[dateKey] = [];
-            }
-            bulletinsByDate[dateKey].push(bulletin);
+                const dateKey = date.toDateString();
+                if (!bulletinsByDate[dateKey]) {
+                    bulletinsByDate[dateKey] = [];
+                }
+                bulletinsByDate[dateKey].push(bulletin);
+            });
         });
 
         // Get current month and year (use stored values if available)

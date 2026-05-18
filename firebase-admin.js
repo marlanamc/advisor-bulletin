@@ -151,6 +151,13 @@ class FirebaseAdminPanel {
         if (resourceLogoInput) {
             resourceLogoInput.addEventListener('change', (e) => this.handleImagePreview(e, 'resourceLogo'));
         }
+
+        const addEventDateBtn = document.getElementById('addEventDateBtn');
+        if (addEventDateBtn) {
+            addEventDateBtn.addEventListener('click', () => this.addEventDateRow());
+        }
+
+        this.renderEventDatesList(['']);
         
         // PDF upload preview
         document.getElementById('pdf').addEventListener('change', (e) => this.handlePdfPreview(e));
@@ -214,11 +221,6 @@ class FirebaseAdminPanel {
             }
         }
 
-        const hideToggle = document.getElementById('hideFromMainFeed');
-        if (hideToggle) {
-            hideToggle.checked = mode === 'calendar-only';
-        }
-
         const titleField = document.getElementById('title');
         if (titleField && !titleField.value.trim()) {
             titleField.placeholder = mode === 'calendar-only'
@@ -267,8 +269,7 @@ class FirebaseAdminPanel {
         // Check sections for values and expand if they have data
         // 3. Event Details
         const dateType = document.getElementById('dateType')?.value;
-        const hideFeed = document.getElementById('hideFromMainFeed')?.checked;
-        if (dateType || hideFeed) {
+        if (dateType) {
             document.getElementById('eventDetailsAccordion')?.classList.add('open');
         }
 
@@ -434,23 +435,127 @@ class FirebaseAdminPanel {
     }
 
     normalizeBulletin(data) {
-        return {
+        const normalized = {
             ...data,
             type: data.type || 'post',
             isPublished: data.isPublished !== false
         };
+
+        if (normalized.dateType === 'sessions') {
+            if (Array.isArray(data.eventDates) && data.eventDates.length) {
+                normalized.eventDates = this.normalizeEventDates(data.eventDates);
+            } else if (data.eventDate) {
+                normalized.eventDates = [String(data.eventDate).split('T')[0]];
+            } else {
+                normalized.eventDates = [];
+            }
+            normalized.eventDate = normalized.eventDates[0] || data.eventDate || '';
+        }
+
+        return normalized;
+    }
+
+    normalizeEventDates(rawDates) {
+        const seen = new Set();
+        const valid = [];
+
+        (Array.isArray(rawDates) ? rawDates : [rawDates]).forEach((raw) => {
+            const value = String(raw || '').trim();
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(value) || seen.has(value)) {
+                return;
+            }
+            seen.add(value);
+            valid.push(value);
+        });
+
+        valid.sort();
+        return valid.slice(0, 10);
+    }
+
+    renderEventDatesList(dates = ['']) {
+        const list = document.getElementById('eventDatesList');
+        const addBtn = document.getElementById('addEventDateBtn');
+        if (!list) return;
+
+        const rows = (dates.length ? dates : ['']).map((date, index) => this.buildEventDateRowHtml(date, index));
+        list.innerHTML = rows.join('');
+
+        if (addBtn) {
+            addBtn.style.display = dates.length >= 10 ? 'none' : '';
+        }
+    }
+
+    buildEventDateRowHtml(value = '', index = 0) {
+        const canRemove = index > 0;
+        const safeValue = this.escapeAttribute(String(value || '').split('T')[0]);
+
+        return `
+            <div class="event-date-row">
+                <input
+                    type="date"
+                    name="eventDates"
+                    class="recommended"
+                    value="${safeValue}"
+                    ${index === 0 ? 'required' : ''}
+                    onchange="window.syncAdminStudentPreview && window.syncAdminStudentPreview()"
+                    oninput="window.syncAdminStudentPreview && window.syncAdminStudentPreview()"
+                >
+                ${canRemove ? `<button type="button" class="event-date-remove-btn" onclick="adminPanel.removeEventDateRow(this)" aria-label="Remove date">&times;</button>` : ''}
+            </div>
+        `;
+    }
+
+    addEventDateRow() {
+        const list = document.getElementById('eventDatesList');
+        if (!list) return;
+
+        const count = list.querySelectorAll('.event-date-row').length;
+        if (count >= 10) return;
+
+        list.insertAdjacentHTML('beforeend', this.buildEventDateRowHtml('', count));
+
+        const addBtn = document.getElementById('addEventDateBtn');
+        if (addBtn && count + 1 >= 10) {
+            addBtn.style.display = 'none';
+        }
+
+        if (typeof window.syncAdminStudentPreview === 'function') {
+            window.syncAdminStudentPreview();
+        }
+    }
+
+    removeEventDateRow(button) {
+        button.closest('.event-date-row')?.remove();
+
+        const addBtn = document.getElementById('addEventDateBtn');
+        if (addBtn) {
+            addBtn.style.display = '';
+        }
+
+        if (typeof window.syncAdminStudentPreview === 'function') {
+            window.syncAdminStudentPreview();
+        }
     }
 
     isResourceBulletin(bulletin) {
         return bulletin && bulletin.type === 'resource';
     }
 
-    /** Calendar-only items: hidden from main feed + dated as event/range (matches admin "Event Date" save path). */
+    /** Simple dated announcements created via the Event Date tab (label + date, no body). */
     isCalendarEventBulletin(bulletin) {
         if (!bulletin || this.isResourceBulletin(bulletin)) return false;
-        if (bulletin.hideFromMainFeed !== true) return false;
+
         const dt = bulletin.dateType;
-        return dt === 'event' || dt === 'range';
+        if (dt !== 'event' && dt !== 'range' && dt !== 'sessions') return false;
+
+        const hasBody = Boolean(
+            (bulletin.description || '').trim()
+            || (bulletin.company || '').trim()
+            || (bulletin.contact || '').trim()
+            || (bulletin.eventLink || '').trim()
+        );
+
+        return bulletin.category === 'announcement' && !hasBody;
     }
 
     getManageContentKind(bulletin) {
@@ -509,7 +614,7 @@ class FirebaseAdminPanel {
             helper.textContent = nextType === 'resource'
                 ? 'Use Resources for important links students may need again later.'
                 : isEvent
-                    ? 'Add a date to the student calendar without creating a bulletin post. Great for holidays, no-school days, and school events.'
+                    ? 'Quick calendar dates (holidays, no-school days). They appear on the feed, calendar, and upcoming list.'
                     : 'Use Posts for announcements, events, trainings, and opportunities.';
         }
 
@@ -929,7 +1034,6 @@ class FirebaseAdminPanel {
                 const hasEndDate = Boolean((formData.get('endDate') || '').trim());
                 formData.set('contentType', 'post');
                 formData.set('category', 'announcement');
-                formData.set('hideFromMainFeed', 'on');
                 formData.set('dateType', hasEndDate ? 'range' : 'event');
                 if (hasEndDate && !formData.get('startDate')) {
                     formData.set('startDate', formData.get('eventDate') || '');
@@ -939,6 +1043,7 @@ class FirebaseAdminPanel {
             const submittedLabel = this.contentMode === 'event' ? 'Event date' : submittedType === 'resource' ? 'Resource' : 'Bulletin';
 
             let newBulletinId = null;
+            const wasEditMode = this.isEditMode;
             if (this.isEditMode && this.editingBulletinId) {
                 newBulletinId = this.editingBulletinId;
                 await this.updateBulletin(formData, this.editingBulletinId);
@@ -950,7 +1055,13 @@ class FirebaseAdminPanel {
             this.pendingHighlightId = newBulletinId;
             this.resetForm();
 
-            this.showTemporaryMessage(this.isEditMode ? `${submittedLabel} updated successfully!` : `${submittedLabel} saved successfully! Check the Manage tab.`, 'success');
+            let successMessage = wasEditMode
+                ? `${submittedLabel} updated successfully!`
+                : `${submittedLabel} saved successfully! Check the Manage tab.`;
+            if (submittedType === 'post') {
+                successMessage += ' It should appear on the student feed shortly.';
+            }
+            this.showTemporaryMessage(successMessage, 'success');
         } catch (error) {
             if (error && error.code === 'user-cancelled') {
                 this.showTemporaryMessage('Post cancelled. You can review the content and try again.', 'info');
@@ -1579,6 +1690,11 @@ class FirebaseAdminPanel {
                 } else if (bulletin.dateType === 'range') {
                     document.getElementById('startDate').value = bulletin.startDate || '';
                     document.getElementById('endDate').value = bulletin.endDate || '';
+                } else if (bulletin.dateType === 'sessions') {
+                    const sessionDates = Array.isArray(bulletin.eventDates) && bulletin.eventDates.length
+                        ? bulletin.eventDates
+                        : (bulletin.eventDate ? [bulletin.eventDate] : ['', '']);
+                    this.renderEventDatesList(sessionDates);
                 }
             } else {
                 document.getElementById('dateType').value = bulletin.deadline ? 'deadline' : '';
@@ -1593,10 +1709,6 @@ class FirebaseAdminPanel {
             document.getElementById('eventLocation').value = bulletin.eventLocation || '';
             document.getElementById('eventLink').value = bulletin.eventLink || '';
             document.getElementById('advisorName').value = bulletin.advisorName;
-            const hideField = document.getElementById('hideFromMainFeed');
-            if (hideField) {
-                hideField.checked = bulletin.hideFromMainFeed === true;
-            }
 
             if (bulletin.image) {
                 document.getElementById('imagePreview').innerHTML = `
@@ -1928,7 +2040,6 @@ class FirebaseAdminPanel {
                 <p><strong>Type:</strong> ${typeLabel}</p>
                 <p><strong>Status:</strong> ${statusLabel}</p>
                 <p><strong>Category:</strong> ${isResource ? this.getResourceCategoryLabel(bulletin.resourceCategory) : this.getCategoryDisplay(bulletin.category)}</p>
-                ${!isResource && bulletin.hideFromMainFeed ? `<p><strong>Main feed:</strong> Hidden (calendar &amp; upcoming only)</p>` : ''}
                 ${this.canManageAllPosts() && bulletin.postedBy !== this.currentUser.username ? `
                     <p><strong>Advisor:</strong> ${this.escapeHtml(bulletin.advisorName)} (${this.escapeHtml(bulletin.postedBy)})</p>
                 ` : ''}
@@ -2201,12 +2312,15 @@ class FirebaseAdminPanel {
             html += `<div class="meta-item"><strong>Application Deadline:</strong> ${this.formatDateLocal(bulletin.eventDate)}</div>`;
         } else if (dateType === 'event' && bulletin.eventDate) {
             html += `<div class="meta-item"><strong>Event Date:</strong> ${this.formatDateLocal(bulletin.eventDate)}</div>`;
-        } else if (dateType === 'range' && bulletin.startDate && bulletin.endDate) {
+        } else if (dateType === 'range') {
             html += `<div class="meta-item"><strong>Event Dates:</strong> ${this.formatDateLocal(bulletin.startDate)} - ${this.formatDateLocal(bulletin.endDate)}</div>`;
+        } else if (dateType === 'sessions' && bulletin.eventDates?.length) {
+            const datesLabel = bulletin.eventDates.map((date) => this.formatDateLocal(date)).join(', ');
+            html += `<div class="meta-item"><strong>Session Dates:</strong> ${datesLabel}</div>`;
         }
 
         // Add time range if specified
-        if ((bulletin.startTime || bulletin.endTime) && (dateType === 'event' || dateType === 'range')) {
+        if ((bulletin.startTime || bulletin.endTime) && (dateType === 'event' || dateType === 'range' || dateType === 'sessions')) {
             const timeRange = this.formatTimeRange(bulletin.startTime, bulletin.endTime);
             if (timeRange) {
                 html += `<div class="meta-item"><strong>Time:</strong> ${timeRange}</div>`;
@@ -2214,7 +2328,7 @@ class FirebaseAdminPanel {
         }
 
         // Add event location/format if specified
-        if (bulletin.eventLocation && (dateType === 'event' || dateType === 'range')) {
+        if (bulletin.eventLocation && (dateType === 'event' || dateType === 'range' || dateType === 'sessions')) {
             const locationText = bulletin.eventLocation === 'in-person' ? 'In-Person' :
                                bulletin.eventLocation === 'online' ? 'Online' :
                                bulletin.eventLocation === 'hybrid' ? 'Hybrid (In-Person & Online)' : bulletin.eventLocation;
@@ -2362,6 +2476,9 @@ class FirebaseAdminPanel {
             return formData.get('eventDate') || '';
         } else if (dateType === 'range') {
             return formData.get('startDate') || '';
+        } else if (dateType === 'sessions') {
+            const dates = this.normalizeEventDates(formData.getAll('eventDates'));
+            return dates.length ? dates[dates.length - 1] : '';
         }
         return '';
     }
@@ -2806,6 +2923,7 @@ class FirebaseAdminPanel {
                 contact: '',
                 dateType: '',
                 eventDate: '',
+                eventDates: [],
                 startDate: '',
                 endDate: '',
                 deadline: '',
@@ -2818,6 +2936,15 @@ class FirebaseAdminPanel {
             };
         }
 
+        const dateType = formData.get('dateType') || '';
+        let eventDates = [];
+        if (dateType === 'sessions') {
+            eventDates = this.normalizeEventDates(formData.getAll('eventDates'));
+            if (eventDates.length < 2) {
+                throw new Error('Please add at least two session dates.');
+            }
+        }
+
         const bulletin = {
             type: 'post',
             title: (formData.get('title') || '').trim(),
@@ -2827,10 +2954,11 @@ class FirebaseAdminPanel {
             summaryEs: (formData.get('summaryEs') || '').trim(),
             company: (formData.get('company') || '').trim(),
             contact: (formData.get('contact') || '').trim(),
-            dateType: formData.get('dateType') || '',
-            eventDate: formData.get('eventDate') || '',
-            startDate: formData.get('startDate') || '',
-            endDate: formData.get('endDate') || '',
+            dateType,
+            eventDate: dateType === 'sessions' ? (eventDates[0] || '') : (formData.get('eventDate') || ''),
+            eventDates: dateType === 'sessions' ? eventDates : [],
+            startDate: dateType === 'sessions' ? '' : (formData.get('startDate') || ''),
+            endDate: dateType === 'sessions' ? '' : (formData.get('endDate') || ''),
             deadline: this.getCompatibleDeadline(formData),
             startTime: formData.get('startTime') || '',
             endTime: formData.get('endTime') || '',
@@ -2845,7 +2973,7 @@ class FirebaseAdminPanel {
             languages: formData.getAll('contactLanguages'),
             isActive: true,
             isPublished: true,
-            hideFromMainFeed: formData.get('hideFromMainFeed') === 'on',
+            hideFromMainFeed: false,
             image: null,
             pdfUrl: null
         };
@@ -2929,11 +3057,8 @@ class FirebaseAdminPanel {
 
         // Reset date fields
         document.getElementById('dateType').value = '';
+        this.renderEventDatesList(['']);
         toggleDateFields();
-        const hideFromMainFeed = document.getElementById('hideFromMainFeed');
-        if (hideFromMainFeed) {
-            hideFromMainFeed.checked = false;
-        }
         this.setContentType('post', { preserveFields: true, silent: true });
         document.getElementById('resourcePublished').checked = true;
         delete document.getElementById('resourceIcon').dataset.suggestedIcon;
@@ -3126,6 +3251,7 @@ function toggleDateFields() {
     const singleDateGroup = document.getElementById('singleDateGroup');
     const startDateGroup = document.getElementById('startDateGroup');
     const endDateGroup = document.getElementById('endDateGroup');
+    const sessionsDateGroup = document.getElementById('sessionsDateGroup');
     const eventDateInput = document.getElementById('eventDate');
     const startDateInput = document.getElementById('startDate');
     const endDateInput = document.getElementById('endDate');
@@ -3135,11 +3261,15 @@ function toggleDateFields() {
     singleDateGroup.style.display = 'none';
     startDateGroup.style.display = 'none';
     endDateGroup.style.display = 'none';
+    if (sessionsDateGroup) sessionsDateGroup.style.display = 'none';
 
     // Remove required attribute from all date fields first
     if (eventDateInput) eventDateInput.required = false;
     if (startDateInput) startDateInput.required = false;
     if (endDateInput) endDateInput.required = false;
+    document.querySelectorAll('#eventDatesList input[name="eventDates"]').forEach((input) => {
+        input.required = false;
+    });
 
     if (dateType === 'deadline') {
         dateFields.style.display = 'flex';
@@ -3153,6 +3283,18 @@ function toggleDateFields() {
         const label = document.querySelector('label[for="eventDate"]');
         if (label) label.textContent = 'Event Date';
         if (eventDateInput) eventDateInput.required = true;
+    } else if (dateType === 'sessions') {
+        dateFields.style.display = 'flex';
+        if (sessionsDateGroup) sessionsDateGroup.style.display = 'block';
+        if (window.adminPanel) {
+            const rows = document.querySelectorAll('#eventDatesList .event-date-row');
+            if (rows.length < 2) {
+                const firstValue = rows.length === 1 ? (rows[0].querySelector('input')?.value || '') : '';
+                window.adminPanel.renderEventDatesList(firstValue ? [firstValue, ''] : ['', '']);
+            }
+        }
+        const firstSessionInput = document.querySelector('#eventDatesList input[name="eventDates"]');
+        if (firstSessionInput) firstSessionInput.required = true;
     } else if (dateType === 'range') {
         dateFields.style.display = 'flex';
         startDateGroup.style.display = 'block';

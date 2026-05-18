@@ -3391,6 +3391,50 @@ details.ap-accordion > summary.ap-accordion-trigger {
   border-color: var(--ap-blue-light);
   box-shadow: 0 12px 32px rgba(7, 29, 59, 0.08);
 }
+
+.event-dates-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.event-date-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.event-date-row input[type="date"] {
+  flex: 1;
+  min-width: 0;
+}
+
+.event-date-remove-btn {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border: 1.5px solid var(--ap-border-mid);
+  border-radius: var(--ap-r-md);
+  background: #fff;
+  color: var(--ap-text-3);
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+
+.event-date-remove-btn:hover {
+  border-color: #fca5a5;
+  color: #dc2626;
+  background: #fef2f2;
+}
+
+.event-date-add-btn {
+  align-self: flex-start;
+  margin-top: 2px;
+}
+
 /* --- Phone Mode Selector Toggles --- */
 .phone-mode-selector {
     display: flex;

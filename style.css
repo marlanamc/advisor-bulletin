@@ -923,7 +923,7 @@ body:has(.advisor-redesign) .main-content {
     font-weight: 600;
 }
 
-.advisor-redesign .form-group input,
+.advisor-redesign .form-group input:not([type="checkbox"]):not([type="radio"]),
 .advisor-redesign .form-group select,
 .advisor-redesign .form-group textarea {
     background: #fff;
@@ -934,7 +934,7 @@ body:has(.advisor-redesign) .main-content {
     font-family: var(--adv-font-body);
 }
 
-.advisor-redesign .form-group input:focus,
+.advisor-redesign .form-group input:not([type="checkbox"]):not([type="radio"]):focus,
 .advisor-redesign .form-group select:focus,
 .advisor-redesign .form-group textarea:focus {
     border-color: #1a56db;
@@ -2754,7 +2754,7 @@ header h2 {
     position: relative;
 }
 
-.form-group label {
+.form-group label:not(.checkbox-row) {
     display: block;
     margin-bottom: 6px;
     font-size: 0.72rem;
@@ -2763,6 +2763,25 @@ header h2 {
     text-transform: uppercase;
     color: #334155;
     position: relative;
+}
+
+.form-group label.checkbox-row {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    margin-bottom: 0;
+    font-size: 0.88rem;
+    font-weight: 500;
+    letter-spacing: normal;
+    text-transform: none;
+    color: var(--ap-text, #334155);
+    cursor: pointer;
+    line-height: 1.45;
+}
+
+.form-group label.checkbox-row strong {
+    font-weight: 700;
+    color: var(--ap-text, #0f172a);
 }
 
 .form-group label.required::after {
@@ -8248,7 +8267,6 @@ h3, .section-header-row h3 {
 #bulletinForm[data-content-mode="event"] .category-field-group,
 #bulletinForm[data-content-mode="event"] .title-es-field-group,
 #bulletinForm[data-content-mode="event"] .event-post-helper,
-#bulletinForm[data-content-mode="event"] .event-feed-toggle,
 #bulletinForm[data-content-mode="event"] .event-date-type-row,
 #bulletinForm[data-content-mode="event"] .event-format-field,
 #bulletinForm[data-content-mode="event"] .event-time-row,
@@ -8259,14 +8277,6 @@ h3, .section-header-row h3 {
 #bulletinForm[data-content-mode="event"] .title-field-group,
 #bulletinForm[data-content-mode="event"] .event-details {
     grid-column: 1 / -1;
-}
-
-#bulletinForm[data-content-mode="event"] #hideFromMainFeed {
-    pointer-events: none;
-}
-
-#bulletinForm[data-content-mode="event"] #hideFromMainFeed:checked + span {
-    color: #475569;
 }
 
 #bulletinForm[data-content-mode="event"] #dateFields {
