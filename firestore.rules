@@ -63,6 +63,17 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    match /errors/{errorId} {
+      // Public clients can append sanitized runtime errors for monitoring.
+      allow create: if validateClientError(request.resource.data);
+
+      // Advisors can review error logs in Firebase Console.
+      allow read: if isAdvisor(request.auth);
+
+      // Error logs are append-only from the public client.
+      allow update, delete: if false;
+    }
+
     function getUsername(email) {
       return email.split('@')[0];
     }
@@ -99,6 +110,8 @@ service cloud.firestore {
         && (!('eventLocation' in data) || data.eventLocation is string)
         && (!('classType' in data) || data.classType is string)
         && (!('image' in data) || data.image == null || data.image is string)
+        && (!('imageEs' in data) || data.imageEs == null || data.imageEs is string)
+        && (!('resourceLogo' in data) || data.resourceLogo == null || data.resourceLogo is string)
         && (!('pdfUrl' in data) || data.pdfUrl == null || data.pdfUrl is string)
         && (!('createdAt' in data) || data.createdAt is timestamp)
         && (!('updatedAt' in data) || data.updatedAt is timestamp)
@@ -182,6 +195,28 @@ service cloud.firestore {
         && (!('category' in data) || (data.category is string && data.category in validCategories))
         && (!('postId' in data) || (data.postId is string && data.postId.size() > 0 && data.postId.size() <= 160))
         && (data.action == 'category_click' || ('postId' in data && data.postId.size() > 0));
+    }
+
+    function validateClientError(data) {
+      return data.keys().hasAll(['type', 'message', 'source', 'page', 'createdAt', 'dayKey'])
+        && data.keys().hasOnly(['type', 'message', 'stack', 'filename', 'lineno', 'colno', 'source', 'page', 'userAgent', 'createdAt', 'dayKey'])
+        && data.type is string
+        && data.type in ['error', 'unhandledrejection']
+        && data.message is string
+        && data.message.size() > 0
+        && data.message.size() <= 500
+        && (!('stack' in data) || (data.stack is string && data.stack.size() <= 2000))
+        && (!('filename' in data) || (data.filename is string && data.filename.size() <= 200))
+        && (!('lineno' in data) || data.lineno == null || data.lineno is int)
+        && (!('colno' in data) || data.colno == null || data.colno is int)
+        && data.source is string
+        && data.source in ['student', 'admin']
+        && data.page is string
+        && data.page.size() <= 200
+        && (!('userAgent' in data) || (data.userAgent is string && data.userAgent.size() <= 300))
+        && data.createdAt is timestamp
+        && data.dayKey is string
+        && data.dayKey.matches('^\\d{4}-\\d{2}-\\d{2}$');
     }
   }
 }

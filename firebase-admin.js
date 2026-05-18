@@ -1,6 +1,9 @@
 import { db, auth, storage } from './src/firebase.js'
 import { getPublicAdvisorEmail } from './src/advisor-directory.js'
+import { installClientErrorLogger } from './src/error-logger.js'
 import { collection, doc, query, where, orderBy, onSnapshot, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, serverTimestamp, Timestamp } from 'firebase/firestore'
+
+installClientErrorLogger('admin')
 import { onAuthStateChanged, signOut, sendPasswordResetEmail } from 'firebase/auth'
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage'
 
@@ -32,6 +35,8 @@ class FirebaseAdminPanel {
         this.bulletins = [];
         this.pendingImageData = null;
         this.pendingImageEsData = null;
+        this.pendingResourceLogoData = null;
+        this.removeResourceLogo = false;
         this.isSubmitting = false;
         this.contentType = 'post';
         this.contentMode = 'post';
@@ -142,6 +147,10 @@ class FirebaseAdminPanel {
         // Image upload preview
         document.getElementById('image').addEventListener('change', (e) => this.handleImagePreview(e, 'image'));
         document.getElementById('imageEs').addEventListener('change', (e) => this.handleImagePreview(e, 'imageEs'));
+        const resourceLogoInput = document.getElementById('resourceLogo');
+        if (resourceLogoInput) {
+            resourceLogoInput.addEventListener('change', (e) => this.handleImagePreview(e, 'resourceLogo'));
+        }
         
         // PDF upload preview
         document.getElementById('pdf').addEventListener('change', (e) => this.handlePdfPreview(e));
@@ -976,7 +985,7 @@ class FirebaseAdminPanel {
             const signature = this.getFileSignature(file);
             let processedImage = null;
             let usedCachedImage = false;
-            const pendingKey = fieldName === 'image' ? 'pendingImageData' : 'pendingImageEsData';
+            const { pendingKey, label } = this.getImageFieldConfig(fieldName);
 
             if (this[pendingKey] && this[pendingKey].signature === signature) {
                 processedImage = this[pendingKey];
@@ -987,7 +996,7 @@ class FirebaseAdminPanel {
 
             // Ensure final encoded image is within safety limits (~4MB)
             if (processedImage.finalBytes > 4 * 1024 * 1024) {
-                throw `Optimized ${fieldName === 'image' ? 'English' : 'Spanish'} image is still larger than 4MB. Please upload a smaller image.`;
+                throw `Optimized ${label} is still larger than 4MB. Please upload a smaller image.`;
             }
 
             // Update the document with just the image field
@@ -1097,11 +1106,33 @@ class FirebaseAdminPanel {
         }
     }
 
+    getImageFieldConfig(fieldName) {
+        switch (fieldName) {
+            case 'imageEs':
+                return { previewId: 'imageEsPreview', pendingKey: 'pendingImageEsData', label: 'Spanish image' };
+            case 'resourceLogo':
+                return { previewId: 'resourceLogoPreview', pendingKey: 'pendingResourceLogoData', label: 'Organization logo' };
+            case 'image':
+            default:
+                return { previewId: 'imagePreview', pendingKey: 'pendingImageData', label: 'English image' };
+        }
+    }
+
+    updateResourceIconGroupState() {
+        const group = document.getElementById('resourceIconGroup');
+        if (!group) return;
+        const hasLogo = Boolean(document.querySelector('#resourceLogoPreview .preview-image'));
+        group.classList.toggle('is-logo-active', hasLogo);
+    }
+
     async handleImagePreview(e, fieldName = 'image') {
         const file = e.target.files[0];
-        const previewId = fieldName === 'image' ? 'imagePreview' : 'imageEsPreview';
+        const { previewId, pendingKey } = this.getImageFieldConfig(fieldName);
         const preview = document.getElementById(previewId);
-        const pendingKey = fieldName === 'image' ? 'pendingImageData' : 'pendingImageEsData';
+
+        if (file && fieldName === 'resourceLogo') {
+            this.removeResourceLogo = false;
+        }
 
         if (file) {
             // Comprehensive image validation
@@ -1145,6 +1176,10 @@ class FirebaseAdminPanel {
                     </div>
                 `;
 
+                if (fieldName === 'resourceLogo') {
+                    this.updateResourceIconGroupState();
+                }
+
                 if (processed.infoMessage) {
                     this.showTemporaryMessage(processed.infoMessage, 'info');
                 } else if (sizeWarning) {
@@ -1156,10 +1191,16 @@ class FirebaseAdminPanel {
                 e.target.value = '';
                 preview.innerHTML = '';
                 this[pendingKey] = null;
+                if (fieldName === 'resourceLogo') {
+                    this.updateResourceIconGroupState();
+                }
             }
         } else {
             preview.innerHTML = '';
             this[pendingKey] = null;
+            if (fieldName === 'resourceLogo') {
+                this.updateResourceIconGroupState();
+            }
         }
     }
 
@@ -1339,14 +1380,20 @@ class FirebaseAdminPanel {
     }
 
     removeImagePreview(fieldName = 'image') {
-        const previewId = fieldName === 'image' ? 'imagePreview' : 'imageEsPreview';
+        const { previewId, pendingKey } = this.getImageFieldConfig(fieldName);
         const input = document.getElementById(fieldName);
         const preview = document.getElementById(previewId);
-        const pendingKey = fieldName === 'image' ? 'pendingImageData' : 'pendingImageEsData';
 
         if (input) input.value = '';
         if (preview) preview.innerHTML = '';
         this[pendingKey] = null;
+
+        if (fieldName === 'resourceLogo') {
+            if (this.isEditMode) {
+                this.removeResourceLogo = true;
+            }
+            this.updateResourceIconGroupState();
+        }
     }
 
     handlePdfPreview(e) {
@@ -1453,9 +1500,13 @@ class FirebaseAdminPanel {
         document.getElementById('bulletinForm').reset();
         document.getElementById('imagePreview').innerHTML = '';
         document.getElementById('imageEsPreview').innerHTML = '';
+        const resourceLogoPreviewEl = document.getElementById('resourceLogoPreview');
+        if (resourceLogoPreviewEl) resourceLogoPreviewEl.innerHTML = '';
         document.getElementById('pdfPreview').innerHTML = '';
         this.pendingImageData = null;
         this.pendingImageEsData = null;
+        this.pendingResourceLogoData = null;
+        this.removeResourceLogo = false;
 
         // Set edit mode
         this.isEditMode = true;
@@ -1486,6 +1537,21 @@ class FirebaseAdminPanel {
             document.querySelectorAll('input[name="resourceLanguages"]').forEach(cb => {
                 cb.checked = resLangs.includes(cb.value);
             });
+
+            const resourceLogoPreview = document.getElementById('resourceLogoPreview');
+            if (resourceLogoPreview) {
+                if (bulletin.resourceLogo) {
+                    resourceLogoPreview.innerHTML = `
+                        <div class="preview-container">
+                            <img src="${bulletin.resourceLogo}" alt="Logo preview" class="preview-image">
+                            <button type="button" class="remove-image" onclick="adminPanel.removeImagePreview('resourceLogo')" aria-label="Remove logo">&times;</button>
+                        </div>
+                    `;
+                } else {
+                    resourceLogoPreview.innerHTML = '';
+                }
+            }
+            this.updateResourceIconGroupState();
         } else {
             document.getElementById('title').value = bulletin.title;
             document.getElementById('titleEs').value = bulletin.titleEs || '';
@@ -1714,15 +1780,25 @@ class FirebaseAdminPanel {
             this.showToast('An advisor with that username already exists.', 'error'); return;
         }
         try {
-            await setDoc(doc(db, 'advisors', username), { displayName, email, isAdmin, createdAt: serverTimestamp() });
-            this.advisors.push({ username, displayName, email, isAdmin });
+            const loginEmail = (email || `${username}@ebhcs.org`).trim().toLowerCase();
+            await setDoc(doc(db, 'advisors', username), {
+                displayName,
+                email: loginEmail,
+                isAdmin,
+                createdAt: serverTimestamp()
+            });
+            this.advisors.push({ username, displayName, email: loginEmail, isAdmin });
             document.getElementById('newAdvisorUsername').value = '';
             document.getElementById('newAdvisorDisplayName').value = '';
             document.getElementById('newAdvisorEmail').value = '';
             document.getElementById('newAdvisorIsAdmin').checked = false;
             this.loadAdvisors();
             this.refreshAdvisorDropdown();
-            this.showToast(`${displayName} added as advisor.`, 'success');
+            this.showToast(`${displayName} added to the advisor list.`, 'success');
+            this.showTemporaryMessage(
+                `Next step (required): open Firebase Console → Authentication → Add user with email ${loginEmail}. They cannot log in until that account exists.`,
+                'info'
+            );
         } catch (e) {
             this.showToast('Error adding advisor: ' + e.message, 'error');
         }
@@ -2098,7 +2174,7 @@ class FirebaseAdminPanel {
                     <p><strong>Link:</strong> <a href="${this.escapeAttribute(resource.url || resource.eventLink)}" target="_blank" rel="noopener">Open resource</a></p>
                     ${resource.description ? `<p><strong>Description:</strong> ${this.escapeHtml(resource.description)}</p>` : ''}
                     ${resource.resourceOrder !== '' && resource.resourceOrder !== undefined && resource.resourceOrder !== null ? `<p><strong>Display Order:</strong> ${this.escapeHtml(String(resource.resourceOrder))}</p>` : ''}
-                    <p><strong>Posted by:</strong> ${this.escapeHtml(resource.advisorName || '')}</p>
+                    <p class="resource-preview-internal"><strong>Internal — Posted by:</strong> ${this.escapeHtml(resource.advisorName || '')} <span class="resource-preview-internal-note">(not shown to students)</span></p>
                 </div>
             </div>
         `;
@@ -2571,6 +2647,10 @@ class FirebaseAdminPanel {
         const bulletinId = docRef.id;
 
         if (this.isResourceBulletin(bulletin)) {
+            const resourceLogoFile = formData.get('resourceLogo');
+            if (resourceLogoFile && resourceLogoFile.size > 0) {
+                await this.handleImageUpload(resourceLogoFile, bulletin, null, bulletinId, 'resourceLogo');
+            }
             this.loadManageBulletins();
             return bulletinId;
         }
@@ -2606,10 +2686,27 @@ class FirebaseAdminPanel {
             bulletin.createdAt = existingBulletin.createdAt || existingBulletin.datePosted;
             bulletin.image = this.isResourceBulletin(bulletin) ? null : existingBulletin.image;
             bulletin.pdfUrl = this.isResourceBulletin(bulletin) ? null : existingBulletin.pdfUrl;
+            if (this.isResourceBulletin(bulletin)) {
+                bulletin.resourceLogo = existingBulletin.resourceLogo || null;
+            }
         }
 
         if (this.isResourceBulletin(bulletin)) {
-            await this.saveBulletin(bulletin, bulletinId);
+            const resourceLogoFile = formData.get('resourceLogo');
+            const hasNewLogo = resourceLogoFile && resourceLogoFile.size > 0;
+
+            if (!hasNewLogo && this.removeResourceLogo) {
+                bulletin.resourceLogo = null;
+            }
+
+            if (hasNewLogo) {
+                await this.saveBulletin(bulletin, bulletinId);
+                await this.handleImageUpload(resourceLogoFile, bulletin, null, bulletinId, 'resourceLogo');
+            } else {
+                await this.saveBulletin(bulletin, bulletinId);
+            }
+
+            this.removeResourceLogo = false;
             return;
         }
 
@@ -2690,6 +2787,7 @@ class FirebaseAdminPanel {
                 category: 'resource',
                 resourceCategory,
                 resourceIcon: selectedIcon === 'auto' ? suggestedIcon : selectedIcon,
+                resourceLogo: null,
                 url,
                 eventLink: url,
                 description: (formData.get('resourceDescription') || '').trim(),
@@ -2805,10 +2903,15 @@ class FirebaseAdminPanel {
         if (imagePreview) imagePreview.innerHTML = '';
         const imageEsPreview = document.getElementById('imageEsPreview');
         if (imageEsPreview) imageEsPreview.innerHTML = '';
+        const resourceLogoPreview = document.getElementById('resourceLogoPreview');
+        if (resourceLogoPreview) resourceLogoPreview.innerHTML = '';
         const pdfPreview = document.getElementById('pdfPreview');
         if (pdfPreview) pdfPreview.innerHTML = '';
         this.pendingImageData = null;
         this.pendingImageEsData = null;
+        this.pendingResourceLogoData = null;
+        this.removeResourceLogo = false;
+        this.updateResourceIconGroupState();
 
         // Reset advisor name dropdown to current user
         if (this.currentUser) {

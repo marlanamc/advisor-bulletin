@@ -9,6 +9,61 @@
 
 ---
 
+## 👤 **OWNERSHIP AFTER HANDOFF**
+
+Fill this in before training day:
+
+| Role | Name | Contact |
+|------|------|---------|
+| **Firebase Console keyholder** (can add/remove login accounts) | [Name] | [Email / phone] |
+| **Primary admin user** (can manage all posts + advisors in the app) | [Name] | [Email / phone] |
+| **Technical fallback** (only if the site breaks) | [Your name or IT contact] | [Email / phone] |
+
+The **Firebase Console keyholder** is the most important role. They are the only person who can create login accounts for new advisors. The in-app "Add Advisor" button updates the advisor list, but it does **not** create the login by itself.
+
+**Firebase Console:** https://console.firebase.google.com/project/ebhcs-bulletin-board
+
+---
+
+## ➕ **WHEN A NEW ADVISOR JOINS (2-STEP CHECKLIST)**
+
+Both steps are required. Skipping step 2 means the advisor appears in dropdowns but **cannot log in**.
+
+1. **In the admin portal (Advisors tab):** Add the advisor with username + display name. Use their `@ebhcs.org` email if known.
+2. **In Firebase Console:** Go to **Authentication → Users → Add user**. Create the same email (usually `username@ebhcs.org`) and a temporary password. Share the password securely and ask them to change it on first login.
+
+**When an advisor leaves:** Remove them from the Advisors tab in the admin portal. Optionally disable their Firebase Auth account in the Console (Authentication → Users).
+
+---
+
+## 🩺 **MONTHLY HEALTH CHECK (5 MINUTES)**
+
+Once a month, the Firebase keyholder should:
+
+1. Open **Firestore Database → `errors` collection**
+2. Sort by newest. If empty (or only old entries), the site is healthy.
+3. If new errors appear, note the `message`, `page`, and `source` fields (`student` = public site, `admin` = advisor portal).
+4. Contact the technical fallback if errors are recurring or students report broken pages.
+
+Student and admin pages automatically log JavaScript errors here. No developer action is needed day-to-day unless errors show up.
+
+---
+
+## 🚨 **WHEN SOMETHING BREAKS**
+
+| Symptom | First thing to try |
+|---------|-------------------|
+| Advisor cannot log in | Confirm their account exists in Firebase Console → Authentication → Users |
+| New advisor added but can't sign in | Complete step 2 of the new-advisor checklist above |
+| Student site blank or not loading posts | Check Firebase Console → Firestore → `errors` for recent entries; try a hard refresh |
+| "Permission denied" when posting | Advisor may be logged out — log out and back in |
+| Image upload fails | Use a smaller JPG/PNG (under 10MB). The app auto-compresses, but very large files may still fail |
+| Need to hide content quickly | Use **Manage tab → Edit → hide/unpublish**. Avoid permanent Delete unless necessary |
+
+**Do not edit code or Firestore rules** unless you have a developer. The site is frozen as-is — operational fixes happen through the admin portal and Firebase Console only.
+
+---
+
 ## 🔥 **PHASE 1: FIREBASE CONSOLE SETUP** (30 minutes)
 
 ### ✅ **Step 1.1: Verify Project Configuration**
@@ -45,7 +100,9 @@
 
 ### ✅ **Step 1.3: Configure Firestore Security Rules**
 - [ ] Go to **Firestore Database** → **Rules**
-- [ ] Replace existing rules with:
+- [ ] Copy the current rules from the project's `firestore.rules` file in the repo (preferred over the older example below)
+- [ ] Click **Publish**
+- [ ] Confirm the rules include an `errors` collection (used for automatic site error logging)
 
 ```javascript
 rules_version = '2';
@@ -287,6 +344,7 @@ Print out:
 - **Main Website:** https://ebhcsjobboard.web.app
 - **Admin Portal:** https://ebhcsjobboard.web.app/admin
 - **Firebase Console:** https://console.firebase.google.com/project/ebhcs-bulletin-board
+- **Error logs (monthly check):** Firebase Console → Firestore → `errors` collection
 - **Tech Support:** [Your contact information]
 
 ### **For Advisors:**
@@ -311,8 +369,9 @@ Print out:
 - [ ] All advisors have login credentials
 - [ ] Documentation is complete and accessible
 - [ ] Emergency procedures are in place
-- [ ] Monitoring is set up
-- [ ] Backup procedures are documented
+- [ ] Firebase Console keyholder is named and has access
+- [ ] Error monitoring is active (check Firestore `errors` collection monthly)
+- [ ] New-advisor 2-step checklist is understood by admin staff
 
 ---
 

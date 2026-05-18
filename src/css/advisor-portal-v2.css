@@ -2080,6 +2080,52 @@ details.ap-accordion > summary.ap-accordion-trigger {
   height: 22px;
 }
 
+.ap-preview-resource-icon--logo {
+  background: #fff;
+  padding: 4px;
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.08);
+}
+
+.ap-preview-resource-icon--logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+  display: block;
+}
+
+#resourceIconGroup .resource-icon-logo-note {
+  display: none;
+}
+
+#resourceIconGroup.is-logo-active .resource-icon-default-help {
+  display: none;
+}
+
+#resourceIconGroup.is-logo-active .resource-icon-logo-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgba(46, 160, 102, 0.1);
+  color: var(--ap-green, #1f8d57);
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+#resourceIconGroup.is-logo-active .resource-icon-logo-note svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+#resourceIconGroup.is-logo-active select {
+  opacity: 0.55;
+}
+
 .ap-preview-resource-category {
   font-size: .58rem;
   font-family: var(--ap-font-head);

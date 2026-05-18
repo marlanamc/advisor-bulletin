@@ -14538,3 +14538,83 @@ body:has(#loginRequired) {
     }
 
 }
+
+/* Optional organization logo for resources */
+.resource-card-icon--logo {
+    background: #fff;
+    padding: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), inset 0 0 0 1px rgba(15, 23, 42, 0.08);
+}
+
+.resource-card-logo {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 12px;
+    display: block;
+}
+
+.resource-story-ring--logo {
+    background: #fff;
+}
+
+.resource-story-ring--logo .resource-story-logo {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--app-surface, #fff);
+    background: #fff;
+    display: block;
+}
+
+.cat-org-logo {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    margin-bottom: 4px;
+}
+
+.cat-org-logo img {
+    max-width: 132px;
+    max-height: 64px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border-radius: 10px;
+    background: #fff;
+    padding: 6px 10px;
+    box-shadow: 0 2px 8px rgba(10, 29, 58, 0.08), inset 0 0 0 1px rgba(15, 23, 42, 0.06);
+}
+
+@media (max-width: 600px) {
+    .cat-org-logo img {
+        max-width: 112px;
+        max-height: 56px;
+    }
+}
+
+/* Resource preview: clearly mark internal-only fields */
+.ap-preview-resource-footer--internal {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed rgba(15, 23, 42, 0.18);
+    color: #64748b;
+    font-style: italic;
+    font-size: 0.78rem;
+    letter-spacing: 0.01em;
+}
+
+.resource-preview-internal {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed rgba(15, 23, 42, 0.18);
+    color: #64748b;
+    font-style: italic;
+}
+
+.resource-preview-internal-note {
+    font-weight: 500;
+    color: #94a3b8;
+    margin-left: 4px;
+}

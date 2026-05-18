@@ -1,6 +1,9 @@
 import { db, auth, storage } from './src/firebase.js'
 import { STUDENT_ADVISOR_DIRECTORY } from './src/advisor-directory.js'
+import { installClientErrorLogger } from './src/error-logger.js'
 import { collection, addDoc, query, where, orderBy, onSnapshot, serverTimestamp } from 'firebase/firestore'
+
+installClientErrorLogger('student')
 
 const STUDENT_ANALYTICS_ACTIONS = new Set([
     'card_view',
@@ -1527,9 +1530,13 @@ class FirebaseBulletinBoard {
             : '';
 
         const actionCount = [callHtml, websiteHtml || directionsHtml].filter(Boolean).length;
+        const logoHtml = resource.resourceLogo
+            ? `<div class="cat-org-logo"><img src="${this.escapeAttribute(resource.resourceLogo)}" alt="${this.escapeAttribute(titleEn)} logo" loading="lazy"></div>`
+            : '';
 
         return `
             <article class="cat-org-card" style="--cat-accent:${config.color}">
+                ${logoHtml}
                 <h3 class="cat-org-name">${this.escapeHtml(titleEn)}</h3>
                 ${description ? `<p class="cat-org-description">${description}</p>` : ''}
                 ${address ? `<p class="cat-org-address">
@@ -1617,6 +1624,12 @@ class FirebaseBulletinBoard {
             `;
         }
 
+        const logo = resource.resourceLogo || '';
+        const storyInnerHtml = logo
+            ? `<img src="${this.escapeAttribute(logo)}" alt="" class="resource-story-logo" loading="lazy">`
+            : `<span class="resource-story-icon" aria-hidden="true">${this.getResourceIconSvg(resource)}</span>`;
+        const ringClass = logo ? 'resource-story-ring resource-story-ring--logo' : 'resource-story-ring';
+
         return `
             <a
                 class="resource-story-bubble story-${categoryKey}"
@@ -1626,10 +1639,8 @@ class FirebaseBulletinBoard {
                 title="${this.escapeAttribute(titleEn)}"
                 aria-label="${this.escapeAttribute(`${titleEn} / ${titleEs}`)}"
             >
-                <span class="resource-story-ring">
-                    <span class="resource-story-icon" aria-hidden="true">
-                        ${this.getResourceIconSvg(resource)}
-                    </span>
+                <span class="${ringClass}">
+                    ${storyInnerHtml}
                 </span>
                 <span class="resource-story-copy">
                     <strong>${this.escapeHtml(titleEn)}</strong>
@@ -1646,6 +1657,7 @@ class FirebaseBulletinBoard {
         const categoryConfig = this.getResourceCategoryConfig(resource);
         const description = resource.description ? this.escapeHtml(resource.description) : '';
         const url = this.getResourceUrl(resource);
+        const logo = resource.resourceLogo || '';
 
         // Parse highlights for quick-scan bullet points
         const highlights = this.parseResourceHighlights(resource.highlights);
@@ -1654,6 +1666,10 @@ class FirebaseBulletinBoard {
                 ${highlights.map(h => `<span class="resource-card-highlight">${this.escapeHtml(h)}</span>`).join('')}
                </span>`
             : '';
+        const iconContents = logo
+            ? `<img src="${this.escapeAttribute(logo)}" alt="" class="resource-card-logo" loading="lazy">`
+            : this.getResourceIconSvg(resource);
+        const iconClass = logo ? 'resource-card-icon resource-card-icon--logo' : 'resource-card-icon';
 
         return `
             <div class="resource-card-wrapper">
@@ -1668,8 +1684,8 @@ class FirebaseBulletinBoard {
                     data-analytics-content-type="resource"
                     aria-label="${this.escapeAttribute(`${titleEn} / ${titleEs}`)}"
                 >
-                    <span class="resource-card-icon" aria-hidden="true">
-                        ${this.getResourceIconSvg(resource)}
+                    <span class="${iconClass}" aria-hidden="true">
+                        ${iconContents}
                     </span>
                     <span class="resource-card-body">
                         <span class="resource-card-category">
