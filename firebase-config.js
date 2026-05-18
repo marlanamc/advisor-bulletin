@@ -2199,9 +2199,19 @@ class FirebaseBulletinBoard {
         const displayImage = (currentLang === 'ES' && bulletin.imageEs) ? bulletin.imageEs : bulletin.image;
         const hasImage = Boolean(displayImage);
 
+        const chipsOverlay = `
+        <div class="pc__chips pc__chips--overlay" role="list" aria-label="Post labels">
+          ${isExpired ? '<span class="pc__chip pc__chip--expired" role="listitem">Expired</span>' : ''}
+          <span class="pc__chip pc__chip--category" role="listitem" style="--chip-accent:${meta.accent};--chip-tint:${meta.tint}">
+            <span class="en-text">${this.escapeHtml(meta.label.toUpperCase())}</span>
+            <span class="es-text">${this.escapeHtml(meta.labelEs.toUpperCase())}</span>
+          </span>
+        </div>`;
+
         return `
     <article class="pc ${featuredClass} ${isExpired ? 'pc--expired' : ''}" id="bulletin-${bulletin.id}" data-bulletin-id="${bulletin.id}" onclick="${openHandler}" role="button" tabindex="0" style="cursor:pointer">
       <div class="pc__top ${hasImage ? 'pc__top--image' : ''}" style="background:${hasImage ? '#f8fafc' : meta.grad}">
+        ${chipsOverlay}
         ${hasImage
           ? `<div class="pc__image-stage"><img class="pc__poster-image lightbox-trigger" data-lightbox-src="${this.escapeAttribute(displayImage)}" src="${this.escapeAttribute(displayImage)}" alt=""></div>`
           : `<div class="pc__icon-wrap"><div class="pc__icon-box" style="background:${meta.accent}">${this.getCardIconSvg(bulletin.category)}</div></div>
@@ -2209,13 +2219,6 @@ class FirebaseBulletinBoard {
       </div>
 
       <div class="pc__body">
-        <div class="pc__chips" role="list">
-          <span class="pc__chip pc__chip--category" role="listitem" style="--chip-accent:${meta.accent};--chip-tint:${meta.tint}">
-            <span class="en-text">${this.escapeHtml(meta.label.toUpperCase())}</span>
-            <span class="es-text">${this.escapeHtml(meta.labelEs.toUpperCase())}</span>
-          </span>
-          ${isExpired ? '<span class="pc__chip pc__chip--expired" role="listitem">Expired</span>' : ''}
-        </div>
         <h3 class="pc__title">${this.escapeHtml(title)}</h3>
         <p class="pc__desc">${this.escapeHtml(descShort)}</p>
 
