@@ -14964,16 +14964,6 @@ body:has(#loginRequired) {
     }
 }
 
-/* Resource preview: clearly mark internal-only fields */
-.ap-preview-resource-footer--internal {
-    margin-top: 10px;
-    padding-top: 10px;
-    border-top: 1px dashed rgba(15, 23, 42, 0.18);
-    color: #64748b;
-    font-style: italic;
-    font-size: 0.78rem;
-    letter-spacing: 0.01em;
-}
 
 .resource-preview-internal {
     margin-top: 10px;
