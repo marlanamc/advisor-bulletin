@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="Advisor Portal for the East Boston Harborside Community School. Sign in to post student bulletins, list community resources, schedule upcoming events, and view engagement analytics.">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://www.gstatic.com https://*.firebaseapp.com; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://*.firebaseapp.com https://*.firebase.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleapis.com https://*.firebaseapp.com https://*.google.com https://*.firebase.com; frame-src 'self' https://*.firebaseapp.com;">
     <title>EBHCS Admin - Post Bulletin</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -739,8 +741,9 @@
 
                             <div class="field-group double">
                                 <div class="form-group">
-                                    <label for="resourceOrder">Display Order (optional)</label>
+                                    <label for="resourceOrder">Display Order (advanced)</label>
                                     <input type="number" id="resourceOrder" name="resourceOrder" min="0" max="999" step="1" placeholder="Lower number shows first">
+                                    <small class="input-help">Most advisors don't need to set this. Use the <strong>Reorder</strong> button on the My Posts tab to drag resources into order instead.</small>
                                 </div>
 
                                 <div class="form-group resource-toggle-group">
@@ -1120,6 +1123,13 @@
                             <option value="draft">Draft</option>
                             <option value="expired">Expired</option>
                         </select>
+                        <button type="button" id="manageReorderToggle" class="ap-btn ap-btn-ghost" style="display:none;font-size:.82rem;padding:8px 14px;" onclick="adminPanel.toggleResourceReorderMode()" title="Drag resources to change the order students see">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;vertical-align:-2px;margin-right:6px;"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                            <span id="manageReorderToggleLabel">Reorder</span>
+                        </button>
+                    </div>
+                    <div id="manageReorderBanner" style="display:none;margin:0 0 16px;padding:10px 14px;background:linear-gradient(135deg,#eff6ff,#dbeafe);border:1px solid #bfdbfe;border-radius:10px;color:#1e3a8a;font-size:.85rem;font-weight:600;">
+                        Drag resources up or down within each category. Changes save automatically. Students see the new order right away.
                     </div>
 
                     <!-- Posts grid (existing JS populates manageBulletins) -->

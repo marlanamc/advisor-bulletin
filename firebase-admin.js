@@ -1,8 +1,8 @@
 import { db, auth, storage } from './src/firebase.js'
-import { getPublicAdvisorEmail } from './src/advisor-directory.js'
+import { getPublicAdvisorEmail, STUDENT_ADVISOR_DIRECTORY } from './src/advisor-directory.js'
 import { installClientErrorLogger } from './src/error-logger.js'
 import { getPostCategoryDisplay } from './src/feed-categories.js'
-import { collection, doc, query, where, orderBy, onSnapshot, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, serverTimestamp, Timestamp } from 'firebase/firestore'
+import { collection, doc, query, where, orderBy, onSnapshot, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, serverTimestamp, Timestamp, writeBatch } from 'firebase/firestore'
 
 installClientErrorLogger('admin')
 import { onAuthStateChanged, signOut, sendPasswordResetEmail } from 'firebase/auth'
@@ -50,8 +50,14 @@ class FirebaseAdminPanel {
         this.analyticsByPost = {};
         this.analyticsUnsubscribe = null;
         this.analyticsRangeDays = 30;
-        this.advisors = [];
+        this.advisors = STUDENT_ADVISOR_DIRECTORY.map(a => ({
+            username: a.loginUsername,
+            displayName: a.name,
+            email: a.email,
+            isAdmin: a.loginUsername === 'admin'
+        }));
         this.authTransitionInProgress = false;
+        this.resourceReorderMode = false;
         this.init();
     }
 
@@ -178,7 +184,14 @@ class FirebaseAdminPanel {
         if (manageSearch) manageSearch.addEventListener('input', rerender);
         if (manageSort) manageSort.addEventListener('change', rerender);
         if (manageFilter) manageFilter.addEventListener('change', rerender);
-        if (manageContentType) manageContentType.addEventListener('change', rerender);
+        if (manageContentType) manageContentType.addEventListener('change', () => {
+            if (manageContentType.value !== 'resource' && this.resourceReorderMode) {
+                this.resourceReorderMode = false;
+            }
+            this.updateReorderToggleUI();
+            rerender();
+        });
+        this.updateReorderToggleUI();
 
         const analyticsRangeSelect = document.getElementById('analyticsRangeSelect');
         if (analyticsRangeSelect) {
@@ -389,6 +402,7 @@ class FirebaseAdminPanel {
                     const welcome = document.getElementById('welcomeMessage');
                     if (welcome) welcome.textContent = `Welcome, ${this.currentUser.name}!`;
                 }
+                this.populateAdvisorSelects(this.currentUser.name);
             }).catch(err => console.error('Error loading advisor metadata:', err));
         } catch (error) {
             console.error('Error signing in to advisor portal:', error);
@@ -779,7 +793,11 @@ class FirebaseAdminPanel {
     }
 
     populateAdvisorSelects(selectedName = '') {
-        const sorted = [...this.advisors].sort((a, b) => a.displayName.localeCompare(b.displayName));
+        const sorted = [...this.advisors].sort((a, b) => {
+            const nameA = a.displayName || a.username || '';
+            const nameB = b.displayName || b.username || '';
+            return nameA.localeCompare(nameB);
+        });
         ['advisorName', 'resourceAdvisorName'].forEach((selectId) => {
             const select = document.getElementById(selectId);
             if (!select) return;
@@ -2015,7 +2033,11 @@ class FirebaseAdminPanel {
             container.innerHTML = '<p class="manage-empty">No advisors found.</p>';
             return;
         }
-        const sorted = [...this.advisors].sort((a, b) => a.displayName.localeCompare(b.displayName));
+        const sorted = [...this.advisors].sort((a, b) => {
+            const nameA = a.displayName || a.username || '';
+            const nameB = b.displayName || b.username || '';
+            return nameA.localeCompare(nameB);
+        });
         container.innerHTML = sorted.map(a => `
             <div class="manage-card advisor-card" data-username="${this.escapeHtml(a.username)}">
                 <div class="manage-card-header">
@@ -2165,6 +2187,13 @@ class FirebaseAdminPanel {
             userBulletins = userBulletins.filter(b => this.getManageContentKind(b) === 'event');
         }
 
+        // Reorder mode: render every active resource grouped by category, regardless of search/sort/status filters
+        if (this.resourceReorderMode && contentKind === 'resource') {
+            const allResources = this.bulletins.filter(b => this.isResourceBulletin(b) && b.isActive);
+            this.renderResourceReorderView(container, allResources);
+            return;
+        }
+
         // Apply search
         if (searchQuery) {
             userBulletins = userBulletins.filter(b => {
@@ -2286,6 +2315,191 @@ class FirebaseAdminPanel {
                 }, 2500);
             });
         }
+    }
+
+    toggleResourceReorderMode() {
+        const contentType = document.getElementById('manageContentTypeSelect');
+        if (contentType && contentType.value !== 'resource') {
+            contentType.value = 'resource';
+        }
+        this.resourceReorderMode = !this.resourceReorderMode;
+        this.updateReorderToggleUI();
+        this.loadManageBulletins();
+    }
+
+    updateReorderToggleUI() {
+        const toggle = document.getElementById('manageReorderToggle');
+        const label = document.getElementById('manageReorderToggleLabel');
+        const banner = document.getElementById('manageReorderBanner');
+        const contentKind = document.getElementById('manageContentTypeSelect')?.value || 'all';
+        const visible = contentKind === 'resource';
+        if (toggle) {
+            toggle.style.display = visible ? '' : 'none';
+            toggle.classList.toggle('is-active', this.resourceReorderMode);
+            toggle.style.background = this.resourceReorderMode ? 'var(--ap-blue, #2563eb)' : '';
+            toggle.style.color = this.resourceReorderMode ? '#fff' : '';
+            toggle.style.borderColor = this.resourceReorderMode ? 'var(--ap-blue, #2563eb)' : '';
+        }
+        if (label) label.textContent = this.resourceReorderMode ? 'Done reordering' : 'Reorder';
+        if (banner) banner.style.display = (visible && this.resourceReorderMode) ? '' : 'none';
+    }
+
+    renderResourceReorderView(container, resources) {
+        if (resources.length === 0) {
+            container.innerHTML = '<p>No resources yet. Create one from the New Content tab, then come back to reorder.</p>';
+            return;
+        }
+
+        const orderOf = (r) => {
+            const v = r.resourceOrder;
+            return (v === null || v === undefined || v === '') ? Number.POSITIVE_INFINITY : Number(v);
+        };
+        const dateOf = (r) => {
+            if (!r.datePosted) return 0;
+            return r.datePosted.toDate ? r.datePosted.toDate().getTime() : new Date(r.datePosted).getTime();
+        };
+
+        const categoryOrder = ['immigration', 'jobs', 'housing', 'health', 'legal-aid'];
+        const grouped = {};
+        resources.forEach(r => {
+            const cat = r.resourceCategory || 'other';
+            (grouped[cat] = grouped[cat] || []).push(r);
+        });
+        Object.keys(grouped).forEach(cat => {
+            grouped[cat].sort((a, b) => {
+                const oa = orderOf(a), ob = orderOf(b);
+                if (oa !== ob) return oa - ob;
+                return dateOf(b) - dateOf(a);
+            });
+        });
+        const orderedCats = [
+            ...categoryOrder.filter(c => grouped[c]),
+            ...Object.keys(grouped).filter(c => !categoryOrder.includes(c)).sort()
+        ];
+
+        const handleSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="6" r="1.4"/><circle cx="9" cy="12" r="1.4"/><circle cx="9" cy="18" r="1.4"/><circle cx="15" cy="6" r="1.4"/><circle cx="15" cy="12" r="1.4"/><circle cx="15" cy="18" r="1.4"/></svg>';
+
+        container.innerHTML = orderedCats.map(cat => {
+            const items = grouped[cat];
+            const label = this.getResourceCategoryLabel(cat);
+            const cards = items.map(r => `
+                <div class="reorder-card" draggable="true" data-bulletin-id="${r.id}" data-category="${this.escapeAttribute(cat)}">
+                    <div class="reorder-handle" aria-hidden="true">${handleSvg}</div>
+                    <div class="reorder-card-body">
+                        <div class="reorder-card-title">${this.escapeHtml(r.titleEn || r.title || 'Untitled resource')}</div>
+                        <div class="reorder-card-meta">
+                            ${r.isPublished === false ? '<span class="reorder-pill reorder-pill-draft">Hidden</span>' : '<span class="reorder-pill reorder-pill-live">Live</span>'}
+                            <span class="reorder-card-advisor">Posted by ${this.escapeHtml(r.advisorName || '—')}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            return `
+                <section class="reorder-section" data-category="${this.escapeAttribute(cat)}">
+                    <header class="reorder-section-header">
+                        <h4>${this.escapeHtml(label)}</h4>
+                        <span class="reorder-count">${items.length} resource${items.length === 1 ? '' : 's'}</span>
+                    </header>
+                    <div class="reorder-list" data-category="${this.escapeAttribute(cat)}">
+                        ${cards}
+                    </div>
+                </section>
+            `;
+        }).join('');
+
+        this.attachReorderDragHandlers(container);
+    }
+
+    attachReorderDragHandlers(container) {
+        const lists = container.querySelectorAll('.reorder-list');
+        let draggedId = null;
+        let draggedFromCategory = null;
+
+        const clearIndicators = () => {
+            container.querySelectorAll('.reorder-card').forEach(c => {
+                c.classList.remove('drop-before', 'drop-after', 'is-dragging');
+            });
+        };
+
+        lists.forEach(list => {
+            list.addEventListener('dragstart', (e) => {
+                const card = e.target.closest('.reorder-card');
+                if (!card) return;
+                draggedId = card.dataset.bulletinId;
+                draggedFromCategory = card.dataset.category;
+                card.classList.add('is-dragging');
+                if (e.dataTransfer) {
+                    e.dataTransfer.effectAllowed = 'move';
+                    try { e.dataTransfer.setData('text/plain', draggedId); } catch (_) {}
+                }
+            });
+
+            list.addEventListener('dragover', (e) => {
+                if (!draggedId) return;
+                if (list.dataset.category !== draggedFromCategory) return;
+                e.preventDefault();
+                if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+                const target = e.target.closest('.reorder-card');
+                container.querySelectorAll('.reorder-card.drop-before, .reorder-card.drop-after')
+                    .forEach(c => c.classList.remove('drop-before', 'drop-after'));
+                if (!target || target.dataset.bulletinId === draggedId) return;
+                const rect = target.getBoundingClientRect();
+                const before = (e.clientY - rect.top) < rect.height / 2;
+                target.classList.add(before ? 'drop-before' : 'drop-after');
+            });
+
+            list.addEventListener('dragleave', (e) => {
+                if (!list.contains(e.relatedTarget)) {
+                    container.querySelectorAll('.reorder-card.drop-before, .reorder-card.drop-after')
+                        .forEach(c => c.classList.remove('drop-before', 'drop-after'));
+                }
+            });
+
+            list.addEventListener('drop', async (e) => {
+                if (!draggedId) return;
+                if (list.dataset.category !== draggedFromCategory) {
+                    clearIndicators();
+                    draggedId = null;
+                    draggedFromCategory = null;
+                    return;
+                }
+                e.preventDefault();
+                const target = e.target.closest('.reorder-card');
+                const draggedCard = list.querySelector(`.reorder-card[data-bulletin-id="${draggedId}"]`);
+                if (!draggedCard) { clearIndicators(); draggedId = null; return; }
+
+                if (target && target.dataset.bulletinId !== draggedId) {
+                    const rect = target.getBoundingClientRect();
+                    const before = (e.clientY - rect.top) < rect.height / 2;
+                    if (before) list.insertBefore(draggedCard, target);
+                    else list.insertBefore(draggedCard, target.nextSibling);
+                } else if (!target) {
+                    list.appendChild(draggedCard);
+                }
+                clearIndicators();
+
+                const category = list.dataset.category;
+                const orderedIds = Array.from(list.querySelectorAll('.reorder-card')).map(c => c.dataset.bulletinId);
+
+                draggedId = null;
+                draggedFromCategory = null;
+
+                try {
+                    await this.reorderResourcesInCategory(category, orderedIds);
+                    this.showTemporaryMessage('Order saved.', 'success');
+                } catch (err) {
+                    console.error('Reorder failed', err);
+                    this.showTemporaryMessage('Could not save the new order. Please try again.', 'error');
+                    this.loadManageBulletins();
+                }
+            });
+
+            list.addEventListener('dragend', () => {
+                clearIndicators();
+                draggedId = null;
+                draggedFromCategory = null;
+            });
+        });
     }
 
     // Preview functionality
@@ -2547,6 +2761,22 @@ class FirebaseAdminPanel {
 
     getResourceCategoryLabel(category) {
         return ADMIN_RESOURCE_CATEGORY_LABELS[category] || 'Resource / Recurso';
+    }
+
+    async reorderResourcesInCategory(category, orderedIds) {
+        if (!Array.isArray(orderedIds) || orderedIds.length === 0) return;
+        const batch = writeBatch(db);
+        orderedIds.forEach((id, i) => {
+            batch.update(doc(db, 'bulletins', id), {
+                resourceOrder: (i + 1) * 10,
+                updatedAt: serverTimestamp()
+            });
+        });
+        await batch.commit();
+        orderedIds.forEach((id, i) => {
+            const bulletin = this.bulletins.find(b => b.id === id);
+            if (bulletin) bulletin.resourceOrder = (i + 1) * 10;
+        });
     }
 
     getCategoryDisplay(category) {

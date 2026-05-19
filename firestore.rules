@@ -27,6 +27,17 @@ service cloud.firestore {
         && (!('datePosted' in request.resource.data) || request.resource.data.datePosted == resource.data.datePosted)
         && (!('createdAt' in request.resource.data) || !('createdAt' in resource.data) || request.resource.data.createdAt == resource.data.createdAt);
 
+      // Any authenticated advisor can update the display order of a resource (drag-to-reorder).
+      // Only resourceOrder and updatedAt may change; everything else must remain identical.
+      allow update: if request.auth != null
+        && request.auth.token.email.matches('.*@ebhcs\\.org')
+        && resource.data.type == 'resource'
+        && request.resource.data.type == 'resource'
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['resourceOrder', 'updatedAt'])
+        && (request.resource.data.resourceOrder == null
+          || request.resource.data.resourceOrder is int
+          || request.resource.data.resourceOrder is float);
+
       // Privileged advisors can permanently delete bulletins (e.g. to remove sensitive content).
       allow delete: if request.auth != null
         && isPrivilegedAdvisor(request.auth.token.email);
