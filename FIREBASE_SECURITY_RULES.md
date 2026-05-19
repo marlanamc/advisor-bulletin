@@ -9,72 +9,13 @@ These security rules ensure that:
 
 ## Firestore Security Rules
 
-Add these rules to your Firestore Security Rules in the Firebase Console:
+The production security rules are located in the [firestore.rules](firestore.rules) file in the root of this repository. Copy and paste the contents of that file into your Firebase Console under **Firestore Database** -> **Rules**.
 
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-
-    // Bulletins collection rules
-    match /bulletins/{bulletinId} {
-
-      // Anyone can read active bulletins (for student viewing)
-      allow read: if resource.data.isActive == true;
-
-      // Only authenticated advisors can create bulletins
-      allow create: if request.auth != null
-        && request.auth.token.email.matches('.*@ebhcs\\.org')
-        && validateBulletinData(request.resource.data)
-        && request.resource.data.postedBy == getUsername(request.auth.token.email);
-
-      // Original authors can update their own bulletins; admin/leah may update any bulletin
-      allow update: if request.auth != null
-        && request.auth.token.email.matches('.*@ebhcs\\.org')
-        && (isPrivilegedAdvisor(request.auth.token.email)
-          || resource.data.postedBy == getUsername(request.auth.token.email))
-        && validateBulletinData(request.resource.data)
-        // Prevent changing the original author
-        && request.resource.data.postedBy == resource.data.postedBy
-        // Prevent changing the creation date
-        && request.resource.data.datePosted == resource.data.datePosted;
-
-      // Original authors (or admin/leah) can delete by setting isActive: false
-      allow update: if request.auth != null
-        && request.auth.token.email.matches('.*@ebhcs\\.org')
-        && (isPrivilegedAdvisor(request.auth.token.email)
-          || resource.data.postedBy == getUsername(request.auth.token.email))
-        && request.resource.data.isActive == false
-        && request.resource.data.keys().hasAll(resource.data.keys());
-    }
-
-    // Helper functions
-    function getUsername(email) {
-      return email.split('@')[0];
-    }
-
-    function isPrivilegedAdvisor(email) {
-      return email == 'admin@ebhcs.org' || email == 'leah@ebhcs.org';
-    }
-
-    function validateBulletinData(data) {
-      return data.keys().hasAll(['title', 'category', 'advisorName', 'postedBy', 'isActive'])
-        && data.title is string && data.title.size() > 0 && data.title.size() <= 200
-        && data.category is string && data.category in ['job', 'training', 'college', 'career-fair', 'announcement', 'resource', 'immigration']
-        && data.description is string && data.description.size() <= 2000
-        && data.advisorName is string && data.advisorName.size() > 0
-        && data.postedBy is string && data.postedBy.size() > 0
-        && data.isActive is bool
-        && (data.company == null || (data.company is string && data.company.size() <= 200))
-        && (data.contact == null || (data.contact is string && data.contact.size() <= 500))
-        && (data.deadline == null || data.deadline is string)
-        && (data.eventTime == null || data.eventTime is string)
-        && (data.eventLink == null || (data.eventLink is string && data.eventLink.size() <= 1000))
-        && (data.image == null || (data.image is string && data.image.size() <= 5000000)); // ~5MB base64 limit
-    }
-  }
-}
-```
+These rules validate:
+1. **Public Read Access**: Active posts and published resources are readable by anyone (for student use).
+2. **Authenticated Write Access**: Creating and editing requires a verified `@ebhcs.org` account.
+3. **Ownership Limits**: Advisors can only update their own posts. Administrators (`admin@ebhcs.org`, `leah@ebhcs.org`, `mcreed@ebhcs.org`) have global overrides.
+4. **Data Shape Validation**: Field checks for text lengths, date formats (single event date, date ranges, multiple sessions, and deadlines), PDF attachments, and analytics/error properties.
 
 ## Firebase Authentication Setup
 

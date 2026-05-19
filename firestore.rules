@@ -141,7 +141,7 @@ service cloud.firestore {
       let validPost = data.type == 'post'
         && data.keys().hasAll(['title', 'category'])
         && data.title is string && data.title.size() > 0 && data.title.size() <= 200
-        && data.category is string && data.category in ['job', 'training', 'college', 'career-fair', 'announcement', 'resource', 'immigration'];
+        && data.category is string && data.category in ['job', 'training', 'college', 'career-fair', 'announcement', 'resource', 'immigration', 'housing', 'health', 'food', 'esol', 'money'];
 
       let validResource = data.type == 'resource'
         && data.keys().hasAll(['title', 'titleEn', 'category', 'resourceCategory', 'url', 'isPublished'])
@@ -149,7 +149,7 @@ service cloud.firestore {
         && data.titleEn is string && data.titleEn.size() > 0 && data.titleEn.size() <= 200
         && (!('titleEs' in data) || data.titleEs.size() <= 200)
         && data.category == 'resource'
-        && data.resourceCategory in ['immigration', 'jobs', 'housing', 'health', 'legal-aid']
+        && data.resourceCategory in ['immigration', 'jobs', 'housing', 'health', 'legal-aid', 'food', 'family', 'esol', 'college', 'money', 'announcement']
         && data.url is string && data.url.size() > 0;
 
       return hasCommonRequired && validOptionalFields && (validPost || validResource);
@@ -181,7 +181,10 @@ service cloud.firestore {
         'food',
         'home',
         'fair',
-        'esol'
+        'esol',
+        'money',
+        'family',
+        'childcare'
       ];
 
       let postActions = [
@@ -194,7 +197,7 @@ service cloud.firestore {
       ];
 
       return data.keys().hasAll(['action', 'createdAt', 'dayKey', 'source', 'contentType'])
-        && data.keys().hasOnly(['postId', 'category', 'action', 'createdAt', 'dayKey', 'source', 'contentType'])
+        && data.keys().hasOnly(['postId', 'category', 'action', 'createdAt', 'dayKey', 'source', 'contentType', 'device'])
         && data.action is string
         && data.action in validActions
         && data.createdAt is timestamp
@@ -206,6 +209,7 @@ service cloud.firestore {
         && data.contentType in ['post', 'resource', 'category']
         && (!('category' in data) || (data.category is string && data.category in validCategories))
         && (!('postId' in data) || (data.postId is string && data.postId.size() > 0 && data.postId.size() <= 160))
+        && (!('device' in data) || (data.device is string && data.device in ['mobile', 'tablet', 'desktop']))
         && (data.action == 'category_click' || ('postId' in data && data.postId.size() > 0));
     }
 

@@ -18,37 +18,13 @@
 
 ## Step 3: Configure Security Rules
 
-In Firestore Database → Rules, replace the default rules with:
+In Firestore Database → Rules, paste the content of the [firestore.rules](firestore.rules) file from the root of this project.
 
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    // Allow anyone to read bulletins
-    match /bulletins/{document} {
-      allow read: if true;
-      allow write: if request.auth != null;
-    }
-
-    // Allow authenticated users to manage their own posts
-    match /bulletins/{document} {
-      allow update, delete: if request.auth != null &&
-        request.auth.token.email in [
-          "admin@ebhcs.org",
-          "jorge@ebhcs.org",
-          "fabiola@ebhcs.org",
-          "leidy@ebhcs.org",
-          "carmen@ebhcs.org",
-          "jerome@ebhcs.org",
-          "felipe@ebhcs.org",
-          "simonetta@ebhcs.org",
-          "mike@ebhcs.org",
-          "leah@ebhcs.org"
-        ];
-    }
-  }
-}
-```
+These rules secure the bulletin board by:
+1. Permitting public read access only to active posts and published resources.
+2. Requiring an authenticated `@ebhcs.org` Google Account for creates and edits.
+3. Restricting post updates to the original creator, while administrators (`admin@ebhcs.org`, `leah@ebhcs.org`, `mcreed@ebhcs.org`) have global update/delete rights.
+4. Ensuring structural data validation for posts, resources, analytics events, and error logs before writes are processed.
 
 ## Step 4: Set Up Authentication
 

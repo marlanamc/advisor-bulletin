@@ -73,19 +73,25 @@
 
 ---
 
-## 🛠️ **MANAGE YOUR POSTS**
+## 🛠️ **MANAGE & EDIT YOUR POSTS**
 
 ### View Your Posts
 1. Login to Advisor Portal
-2. Click **"Manage Posts"** tab
-3. See all your active bulletins
+2. Click the **"My Posts"** tab in the sidebar
+3. See all your active, expired, or pending bulletins
+
+### Edit a Post
+1. Find the post you want to update under **"My Posts"**
+2. Click the **"✏️ Edit"** button on the post card
+3. The app will open the **"Create Post"** tab with your post's details pre-filled
+4. Make your changes and click the **"Update Bulletin"** button to save immediately
 
 ### Delete Old Posts
 1. Find the post you want to remove
-2. Click **"Delete"** button
+2. Click the **"🗑️ Delete"** button
 3. Confirm deletion
 
-**Please delete expired or filled positions!**
+**Please edit or delete expired or filled positions!**
 
 ---
 
@@ -106,10 +112,10 @@ This helps students share opportunities with friends and family!
 **A:** You'll be prompted on first login. You can also contact tech support.
 
 ### **Q: Can I edit a post after publishing?**
-**A:** Currently, you need to delete and repost. Future updates may add editing.
+**A:** Yes! Go to the **"My Posts"** tab in the sidebar, find your post, and click the **"✏️ Edit"** button. This loads your post's content back into the creation form so you can make updates and save them.
 
 ### **Q: How long do posts stay up?**
-**A:** Forever, until you delete them. Please remove expired posts!
+**A:** Forever, until you delete them. However, they will display an "EXPIRED" ribbon once their deadline date has passed, and they will be hidden from the student feed by default. Please keep them updated!
 
 ### **Q: Can I add multiple images?**
 **A:** One image per post for now.
@@ -207,7 +213,7 @@ Every bulletin you post can change a student's life by connecting them to:
 | **Username** | Your first name (lowercase) |
 | **First Password** | `ebhcs2025` |
 | **Post** | Fill form → Preview → Post Bulletin |
-| **Delete** | Login → Manage Posts → Delete |
+| **Edit / Delete** | Login → My Posts → Edit or Delete |
 | **Help** | tech@ebhcs.org |
 
 **Keep this guide handy and happy posting! 🎉**

@@ -85,7 +85,7 @@ class EnhancedAuth {
             this.clearLoginAttempts(username);
 
             // Check if this is first login (password is still default)
-            if (password === 'ebhcs123' && username !== 'admin') {
+            if ((password === 'ebhcs123' || password === 'ebhcs2025') && username !== 'admin') {
                 // Set requirePasswordChange flag in Firestore
                 try {
                     await setDoc(doc(db, 'users', username), {
@@ -96,7 +96,7 @@ class EnhancedAuth {
                 } catch (error) {
                     console.error('Error setting password change flag:', error);
                 }
-                this.showPasswordChangeModal(username);
+                this.showPasswordChangeModal(username, password);
             } else {
                 loginSucceeded = true;
                 this.completeLogin(username, email);
@@ -149,13 +149,13 @@ class EnhancedAuth {
         this.showError('loginError', errorMessage);
     }
 
-    showPasswordChangeModal(username) {
+    showPasswordChangeModal(username, password) {
         const loadingEl = document.getElementById('authLoadingScreen');
         const loginRequired = document.getElementById('loginRequired');
         if (loadingEl) loadingEl.style.display = 'none';
         if (loginRequired) loginRequired.style.display = 'none';
         document.getElementById('passwordChangeModal').style.display = 'block';
-        document.getElementById('currentPassword').value = 'ebhcs123';
+        document.getElementById('currentPassword').value = password || 'ebhcs123';
     }
 
     async handlePasswordChange(e) {

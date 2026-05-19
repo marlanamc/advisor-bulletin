@@ -1,147 +1,123 @@
-# EBHCS Advisor Bulletin Board
+# ⛵ EBHCS Advisor Bulletin Board
 
-A simple, user-friendly bulletin board system for East Boston Harborside Community School advisors to post job opportunities, training announcements, and resources for ESOL students.
+A modern, mobile-responsive, bilingual community bulletin board system for the **East Boston Harborside Community School (EBHCS)**. The system allows advisors to securely publish and manage job listings, training opportunities, resources, and events for ESOL students.
 
-## Features
+---
 
-- **Public Bulletin Display**: Clean, mobile-responsive display of all active bulletins
-- **Simple Admin Interface**: Easy-to-use forms for advisors to post bulletins
-- **Multi-Category Support**: Job opportunities, training, announcements, and resources
-- **Deadline Tracking**: Automatic highlighting of approaching deadlines
-- **User Management**: Multiple advisor accounts with simple authentication
-- **Data Persistence**: All data stored locally in browser storage
+## 🛠️ Technology Stack
 
-## Quick Start
+*   **Frontend**: HTML5, Vanilla JavaScript (ES6+ Modules), Vanilla CSS
+*   **Build System**: [Vite](https://vite.dev/) (fast bundling, code splitting, and local dev server)
+*   **Backend**: [Firebase](https://firebase.google.com/)
+    *   **Authentication**: Firebase Auth with role-based restrictions (requiring `@ebhcs.org` domains)
+    *   **Database**: Cloud Firestore (NoSQL realtime database with strict validation schemas)
+    *   **File Storage**: Stored as base64 document attachments directly linked with documents
+*   **Testing**: [Playwright](https://playwright.dev/) (End-to-End browser tests for multiple viewports)
 
-1. Open `index.html` in a web browser
-2. Click "Advisor Login" to access the admin panel
-3. Use default credentials: `admin` / `advisor123`
+---
 
-## Default Login Credentials
+## ✨ Features
 
-- **admin** / **advisor123** (Administrator)
-- **marlie** / **teacher123** (Marlie Creed)
-- **advisor1** / **ebhcs2024** (School Advisor)
+*   **Bilingual Translation**: Complete English/Spanish toggle for headings, filters, buttons, and help drawers.
+*   **Custom Story Resource Bubbles**: Quick filter bubbles at the top of the feed for critical areas (Immigration, Jobs, Housing, Health).
+*   **Color-Coordinated Multi-Select Filters**: Filter chips categorized by opportunity type, deadlines, and ESOL class levels (HSE, FamLit, ESOL).
+*   **PDF Document Attachments**: Advisors can upload PDF flyers (up to 10MB) alongside or instead of images. Students see a clean "📄 View PDF" download option.
+*   **Automated Expiration Ribbon**: Outdated opportunities display a grayscale diagonal "EXPIRED" banner once deadlines pass and are hidden from the public feed by default (with a "Show Expired" toggle).
+*   **Comprehensive Advisor Portal**:
+    *   **Live Analytics Dashboard**: View aggregate student engagement metrics (detail opens, link clicks, PDF views) across 7, 30, or 90 days.
+    *   **Unified Post Creator**: Simplified type selectors to create Bulletins, Resources, or Calendar events.
+    *   **Interactive My Posts Section**: Real-time search, sorting, deleting, and editing of existing opportunities.
 
-## How Advisors Use the System
+---
 
-### For Advisors (Non-Technical Users):
+## 📂 Active File Structure
 
-1. **Accessing the System**:
-   - Go to the website URL
-   - Click "Advisor Login" button
-   - Enter your username and password
-
-2. **Creating a New Post**:
-   - After logging in, you'll see the "New Post" tab
-   - Fill out the form with:
-     - **Title**: Brief, descriptive title
-     - **Category**: Select job, training, announcement, or resource
-     - **Description**: Detailed information about the opportunity
-     - **Company/Organization**: (optional) Name of the organization
-     - **Contact**: How students can apply or get more info
-     - **Deadline**: (optional) Application or registration deadline
-     - **Posted by**: Your name (auto-filled)
-   - Click "Post Bulletin"
-
-3. **Managing Your Posts**:
-   - Click the "Manage Posts" tab
-   - View all your active posts
-   - Delete posts that are no longer relevant
-
-## Technical Maintenance (For You)
-
-### Adding New Users
-Open the browser console and run:
-```javascript
-// This would need to be added to the validCredentials array in script.js
-```
-
-Or edit `script.js` line 45 to add new credentials to the `validCredentials` array:
-```javascript
-{ username: 'newuser', password: 'password123', name: 'Full Name' }
-```
-
-### Data Management
-The system includes built-in data management tools accessible via browser console:
-
-```javascript
-// Export all bulletin data
-bulletinBoard.exportData();
-
-// Import data from JSON file
-bulletinBoard.importData(jsonString);
-
-// View current data
-console.log(bulletinBoard.bulletins);
-
-// Clear all data (be careful!)
-localStorage.removeItem('ebhcs_bulletins');
-```
-
-### Deployment Options
-
-1. **GitHub Pages** (Recommended):
-   - Push to a GitHub repository
-   - Enable GitHub Pages in repository settings
-   - Use custom domain if desired
-
-2. **Web Hosting Service**:
-   - Upload all files to any web hosting service
-   - No server-side requirements needed
-
-3. **School Network**:
-   - Host on school's internal web server
-   - Works entirely with static files
-
-### Customization
-
-- **Colors/Styling**: Edit `style.css`
-- **Categories**: Modify the categories in `script.js` line ~280
-- **Sample Data**: Edit the `getSampleData()` function in `script.js`
-- **School Branding**: Update header text in `index.html`
-
-### Security Notes
-
-- Currently uses client-side authentication (suitable for trusted environments)
-- For enhanced security, consider implementing server-side authentication
-- Regular backups recommended using the export function
-
-### Browser Support
-
-- Works on all modern browsers (Chrome, Firefox, Safari, Edge)
-- Mobile responsive design
-- No internet connection required once loaded
-
-## File Structure
+The project has transitioned from client-side mockups (`script.js` & `admin-script.js`) to a structured, modular production app:
 
 ```
 advisor_bulletin/
-├── index.html          # Main page
-├── style.css          # Styling
-├── script.js          # Functionality
-└── README.md          # This file
+├── src/
+│   ├── main.js                  # Main entry point for the Student Feed
+│   ├── admin.js                 # Main entry point for the Advisor Dashboard
+│   ├── lightbox.js              # Full-screen image lightbox preview handler
+│   ├── error-logger.js          # Appends runtime client errors to Firestore for monitoring
+│   ├── feed-categories.js       # Student feed rendering, analytics events tracking, and translations
+│   ├── pdf-flyer.js             # Client-side PDF preview and download rendering logic
+│   └── css/
+│       └── advisor-portal-v2.css # Modern styling sheet for the advisor portal
+├── index.html                   # Student bulletin board interface
+├── admin.html                   # Advisor portal interface
+├── firebase-config.js           # Client-side configuration and student feed handlers
+├── firebase-admin.js            # Server-side configurations and advisor dashboard logic
+├── enhanced-auth.js             # Firebase auth wrapper with password strength checks and default reset modal
+├── firestore.rules              # Strict read/write permissions and data schemas
+├── package.json                 # Project scripts and dependencies
+└── playwright.config.js         # Playwright test runners configuration
 ```
 
-## Troubleshooting
+*Note: `script.js` and `admin-script.js` in the root are legacy backup copies preserved for reference and are not active.*
 
-**Problem**: Login not working
-- **Solution**: Check credentials are typed correctly, case-sensitive
+---
 
-**Problem**: Posts not saving
-- **Solution**: Ensure browser allows local storage, try different browser
+## 🚀 Running Locally
 
-**Problem**: Layout broken on mobile
-- **Solution**: Clear browser cache and reload
+### Prerequisites
+*   Node.js (v18+)
+*   npm
 
-**Problem**: Need to reset everything
-- **Solution**: Open browser console, run: `localStorage.clear()` and reload
+### Installation
+Clone the repository and install dependencies:
+```bash
+npm install
+```
 
-## Future Enhancements (Optional)
+### Dev Server
+Launch Vite's hot-reloading development server:
+```bash
+npm run dev
+```
+Open [http://localhost:5173](http://localhost:5173) in your browser.
 
-- Email notifications for new posts
-- Image upload support
-- Search/filter functionality
-- Categories customization interface
-- User role management
-- Automatic post expiration
+### Production Build
+Compile and minify code for production hosting:
+```bash
+npm run build
+```
+Vite generates optimized static assets inside the `dist/` directory.
+
+---
+
+## 🧪 Testing
+
+The application includes an extensive E2E Playwright test suite validating layouts, responsiveness, stats, search, and form synchronization.
+
+To run all automated tests:
+```bash
+npm test
+```
+
+To run mobile viewport tests specifically:
+```bash
+npm run test:mobile
+```
+
+To open the interactive Playwright UI:
+```bash
+npm run test:ui
+```
+
+---
+
+## 🔑 Advisor Credentials & Security
+
+*   **Advisor Domain**: Only email addresses ending in `@ebhcs.org` can access the portal.
+*   **Default Password**: New advisor accounts are created in the Firebase console with the temporary password `ebhcs123` or `ebhcs2025`.
+*   **Security Policy**: First-time login automatically redirects advisors to a secure password reset interface to transition off default credentials.
+*   **Edit Permissions**: Advisors can modify and delete only their own posts. Administrators (`admin@ebhcs.org`, `leah@ebhcs.org`, `mcreed@ebhcs.org`) have global update/delete overrides.
+
+---
+
+## 📘 Guides & Reference
+*   **Setup Firebase Console**: See [FIREBASE_SETUP.md](FIREBASE_SETUP.md) and [FIREBASE_SECURITY_RULES.md](FIREBASE_SECURITY_RULES.md).
+*   **Advisor Tutorial**: Share the [ADVISOR_GUIDE.md](ADVISOR_GUIDE.md) with staff.
+*   **IT Handover**: Detailed administration procedures are detailed in [DIRECTOR_HANDOVER_GUIDE.md](DIRECTOR_HANDOVER_GUIDE.md).

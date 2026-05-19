@@ -23,6 +23,17 @@ function getAnalyticsDayKey(date = new Date()) {
     return `${year}-${month}-${day}`;
 }
 
+function getDeviceType() {
+    const ua = navigator.userAgent;
+    if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) {
+        return 'tablet';
+    }
+    if (/Mobile|iP(hone|od)|Android|BlackBerry|IEMobile|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/i.test(ua)) {
+        return 'mobile';
+    }
+    return 'desktop';
+}
+
 function trackStudentEvent(action, payload = {}) {
     if (!STUDENT_ANALYTICS_ACTIONS.has(action) || typeof db === 'undefined') {
         return Promise.resolve();
@@ -33,6 +44,7 @@ function trackStudentEvent(action, payload = {}) {
         createdAt: serverTimestamp(),
         dayKey: getAnalyticsDayKey(),
         source: 'student',
+        device: getDeviceType(),
         contentType: payload.contentType || (action === 'category_click' ? 'category' : 'post')
     };
 
