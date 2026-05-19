@@ -546,6 +546,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Expose for global access
 window.enhancedAuth = enhancedAuth;
+window.togglePassword = togglePassword;
+window.closeForgotPassword = closeForgotPassword;
 
 // Global function to clear lockout (for debugging)
 window.clearLoginLockout = function() {
