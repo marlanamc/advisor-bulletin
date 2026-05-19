@@ -1464,6 +1464,12 @@
                     ap.loadAdvisors();
                 }
             }
+            if (page === 'create' && window.adminPanel) {
+                var ap = window.adminPanel;
+                if (typeof ap.renumberVisibleFormSteps === 'function') {
+                    ap.renumberVisibleFormSteps();
+                }
+            }
         };
 
         // ── Type selector ─────────────────────────────────────────────
