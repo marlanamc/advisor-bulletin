@@ -401,6 +401,12 @@ class FirebaseAdminPanel {
                     this.currentUser.isAdmin = advisor.isAdmin === true;
                     const welcome = document.getElementById('welcomeMessage');
                     if (welcome) welcome.textContent = `Welcome, ${this.currentUser.name}!`;
+
+                    // Update admin tab visibility dynamically once loaded
+                    const advisorsTabBtn = document.getElementById('advisorsTabBtn');
+                    if (advisorsTabBtn) advisorsTabBtn.style.display = this.currentUser.isAdmin ? '' : 'none';
+                    const advisorsRailBtn = document.getElementById('advisorsRailBtn');
+                    if (advisorsRailBtn) advisorsRailBtn.style.display = this.currentUser.isAdmin ? '' : 'none';
                 }
                 this.populateAdvisorSelects(this.currentUser.name);
             }).catch(err => console.error('Error loading advisor metadata:', err));
