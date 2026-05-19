@@ -3614,3 +3614,144 @@ details.ap-accordion > summary.ap-accordion-trigger {
     box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
     transform: scale(1.1);
 }
+
+/* Resource reorder mode */
+.reorder-section {
+    margin-bottom: 24px;
+    background: #fff;
+    border: 1px solid var(--ap-border, #e2e8f0);
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.reorder-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    background: linear-gradient(135deg, #f8fafc, #f1f5f9) !important;
+    border-bottom: 1px solid var(--ap-border, #e2e8f0);
+}
+
+.reorder-section-header h4 {
+    margin: 0 !important;
+    font-size: 0.95rem !important;
+    font-weight: 700 !important;
+    color: #0f172a !important;
+    letter-spacing: -0.01em !important;
+}
+
+.reorder-count {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #64748b;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 999px;
+    padding: 3px 10px;
+}
+
+.reorder-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px;
+    min-height: 60px;
+}
+
+.reorder-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    background: #fff;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    cursor: grab;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+    user-select: none;
+}
+
+.reorder-card:hover {
+    border-color: #bfdbfe;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.08);
+}
+
+.reorder-card:active {
+    cursor: grabbing;
+}
+
+.reorder-card.is-dragging {
+    opacity: 0.45;
+    transform: scale(0.99);
+}
+
+.reorder-card.drop-before {
+    box-shadow: 0 -3px 0 0 #2563eb;
+}
+
+.reorder-card.drop-after {
+    box-shadow: 0 3px 0 0 #2563eb;
+}
+
+.reorder-handle {
+    color: #94a3b8;
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+}
+
+.reorder-handle svg {
+    width: 18px;
+    height: 18px;
+}
+
+.reorder-card-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.reorder-card-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.reorder-card-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.78rem;
+    color: #64748b;
+}
+
+.reorder-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.reorder-pill-live {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.reorder-pill-draft {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.reorder-card-advisor {
+    font-weight: 500;
+}
