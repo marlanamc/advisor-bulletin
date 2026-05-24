@@ -9,6 +9,8 @@ import {
     sessionsFromFormData,
     sessionsShareSameTime,
     formatSessionsDetailLines,
+    getMultiSessionFeedSortMs,
+    getNextSessionStartMs,
 } from './src/event-sessions.js'
 import { collection, doc, query, where, orderBy, onSnapshot, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, serverTimestamp, Timestamp, writeBatch } from 'firebase/firestore'
 
@@ -747,6 +749,38 @@ class FirebaseAdminPanel {
             );
         }
         return [];
+    }
+
+    getManagePostTimestamp(bulletin) {
+        if (!bulletin?.datePosted) return 0;
+        return bulletin.datePosted.toDate ? bulletin.datePosted.toDate().getTime() : new Date(bulletin.datePosted).getTime();
+    }
+
+    getManageSortTimestamp(bulletin) {
+        const postedMs = this.getManagePostTimestamp(bulletin);
+        if (!bulletin || bulletin.dateType !== 'sessions') {
+            return postedMs;
+        }
+
+        return getMultiSessionFeedSortMs(this.getBulletinEventSessions(bulletin), postedMs);
+    }
+
+    compareManagePosts(a, b) {
+        const sortA = this.getManageSortTimestamp(a);
+        const sortB = this.getManageSortTimestamp(b);
+        if (sortB !== sortA) {
+            return sortB - sortA;
+        }
+
+        if (a.dateType === 'sessions' && b.dateType === 'sessions') {
+            const nextA = getNextSessionStartMs(this.getBulletinEventSessions(a));
+            const nextB = getNextSessionStartMs(this.getBulletinEventSessions(b));
+            if (nextA !== nextB) {
+                return nextA - nextB;
+            }
+        }
+
+        return this.getManagePostTimestamp(b) - this.getManagePostTimestamp(a);
     }
 
     normalizeEventDates(rawDates) {
@@ -2540,9 +2574,10 @@ class FirebaseAdminPanel {
                 const bD = b.deadline || b.eventDate || b.endDate || '';
                 return aD.localeCompare(bD);
             }
-            const aDate = a.datePosted ? (a.datePosted.toDate ? a.datePosted.toDate() : new Date(a.datePosted)) : new Date(0);
-            const bDate = b.datePosted ? (b.datePosted.toDate ? b.datePosted.toDate() : new Date(b.datePosted)) : new Date(0);
-            return sortMode === 'oldest' ? aDate - bDate : bDate - aDate;
+            if (sortMode === 'oldest') {
+                return this.getManageSortTimestamp(a) - this.getManageSortTimestamp(b);
+            }
+            return this.compareManagePosts(a, b);
         });
 
         if (userBulletins.length === 0) {

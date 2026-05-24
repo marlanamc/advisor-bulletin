@@ -6,6 +6,9 @@ import {
     normalizeEventSessions,
     parseSessionEntry,
     formatSessionsDetailLines,
+    getMultiSessionFeedSortMs,
+    getNextSessionStartMs,
+    getSessionEndMs,
 } from './src/event-sessions.js'
 import { collection, addDoc, query, where, orderBy, onSnapshot, serverTimestamp } from 'firebase/firestore'
 
@@ -1194,7 +1197,9 @@ class FirebaseBulletinBoard {
         this.updateFeedCategoryHeader();
         this.updateActiveCategoryState();
         this.updateResultsInfo(postBulletins);
-        const feedPosts = postBulletins.filter((bulletin) => !this.isCalendarEventBulletin(bulletin));
+        const feedPosts = postBulletins
+            .filter((bulletin) => !this.isCalendarEventBulletin(bulletin))
+            .sort((a, b) => this.compareFeedPosts(a, b));
         this.renderFeed(feedPosts);
         this.renderCalendar(postBulletins);
         this.renderHomeUpcomingEvents(postBulletins);
@@ -2674,6 +2679,34 @@ class FirebaseBulletinBoard {
         return Number.isNaN(date.getTime()) ? 0 : date.getTime();
     }
 
+    getFeedSortTimestamp(bulletin) {
+        const postedMs = this.getTimestampValue(bulletin.datePosted || bulletin.createdAt);
+        if (!bulletin || bulletin.dateType !== 'sessions') {
+            return postedMs;
+        }
+
+        const sessions = this.getBulletinEventSessions(bulletin);
+        return getMultiSessionFeedSortMs(sessions, postedMs);
+    }
+
+    compareFeedPosts(a, b) {
+        const sortA = this.getFeedSortTimestamp(a);
+        const sortB = this.getFeedSortTimestamp(b);
+        if (sortB !== sortA) {
+            return sortB - sortA;
+        }
+
+        if (a.dateType === 'sessions' && b.dateType === 'sessions') {
+            const nextA = getNextSessionStartMs(this.getBulletinEventSessions(a));
+            const nextB = getNextSessionStartMs(this.getBulletinEventSessions(b));
+            if (nextA !== nextB) {
+                return nextA - nextB;
+            }
+        }
+
+        return this.getTimestampValue(b.datePosted || b.createdAt) - this.getTimestampValue(a.datePosted || a.createdAt);
+    }
+
     formatPostedDate(value) {
         const timestamp = this.getTimestampValue(value);
         if (!timestamp) {
@@ -3693,18 +3726,12 @@ class FirebaseBulletinBoard {
         }
 
         if (bulletin.dateType === 'sessions') {
-            const dates = this.getBulletinEventDates(bulletin);
-            if (!dates.length) return false;
+            const sessions = this.getBulletinEventSessions(bulletin);
+            if (!sessions.length) return false;
 
-            const lastDate = dates[dates.length - 1];
-            if (bulletin.endTime) {
-                const eventDateTime = new Date(`${lastDate}T${bulletin.endTime}:00`);
-                return eventDateTime < now;
-            }
-
-            const eventDate = this.parseStoredYmdLocal(lastDate) || new Date(lastDate);
-            const endOfDay = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate(), 23, 59, 59);
-            return endOfDay < now;
+            const lastSession = sessions[sessions.length - 1];
+            const lastEndMs = getSessionEndMs(lastSession, bulletin.endTime || '');
+            return lastEndMs > 0 && lastEndMs < now.getTime();
         }
 
         // Check event-based expiration (with end time)

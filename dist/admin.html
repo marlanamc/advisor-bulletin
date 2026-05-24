@@ -9,10 +9,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Lexend:wght@300;400;500;600;700;800&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
-  <script type="module" crossorigin src="/assets/admin-BlBbwhC9.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/event-sessions-tcJkqVSa.js">
+  <script type="module" crossorigin src="/assets/admin-DznIksiP.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/event-sessions-C_vMLss1.js">
   <link rel="stylesheet" crossorigin href="/assets/event-sessions-VGjDonMt.css">
-  <link rel="stylesheet" crossorigin href="/assets/admin-CMzyGDHP.css">
+  <link rel="stylesheet" crossorigin href="/assets/admin-B2B-3ZTa.css">
 </head>
 <body>
     <header>
@@ -846,10 +846,15 @@
                                     <div class="form-group event-field" id="sessionsDateGroup" style="display: none;">
                                         <label>Session dates &amp; times</label>
                                         <small class="input-help">Add each session date. Use same time for all when every session shares one schedule.</small>
-                                        <label class="session-same-time-toggle" for="sessionSameTimeToggle">
-                                            <input type="checkbox" id="sessionSameTimeToggle" name="sessionSameTime">
-                                            Same time for every session
-                                        </label>
+                                        <div class="session-same-time-row">
+                                            <label class="session-same-time-toggle toggle-switch-label" for="sessionSameTimeToggle">
+                                                <span class="toggle-switch">
+                                                    <input type="checkbox" id="sessionSameTimeToggle" name="sessionSameTime">
+                                                    <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                                                </span>
+                                                <span class="session-same-time-copy">Same time for every session</span>
+                                            </label>
+                                        </div>
                                         <div id="sessionSharedTimeRow" class="session-shared-time-row" hidden>
                                             <div class="field-group double session-shared-time-fields">
                                                 <div class="form-group">

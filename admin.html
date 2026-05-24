@@ -844,10 +844,15 @@
                                     <div class="form-group event-field" id="sessionsDateGroup" style="display: none;">
                                         <label>Session dates &amp; times</label>
                                         <small class="input-help">Add each session date. Use same time for all when every session shares one schedule.</small>
-                                        <label class="session-same-time-toggle" for="sessionSameTimeToggle">
-                                            <input type="checkbox" id="sessionSameTimeToggle" name="sessionSameTime">
-                                            Same time for every session
-                                        </label>
+                                        <div class="session-same-time-row">
+                                            <label class="session-same-time-toggle toggle-switch-label" for="sessionSameTimeToggle">
+                                                <span class="toggle-switch">
+                                                    <input type="checkbox" id="sessionSameTimeToggle" name="sessionSameTime">
+                                                    <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                                                </span>
+                                                <span class="session-same-time-copy">Same time for every session</span>
+                                            </label>
+                                        </div>
                                         <div id="sessionSharedTimeRow" class="session-shared-time-row" hidden>
                                             <div class="field-group double session-shared-time-fields">
                                                 <div class="form-group">

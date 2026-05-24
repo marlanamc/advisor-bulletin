@@ -122,3 +122,95 @@ export function formatSessionsDetailLines(sessions, formatDate, formatTimeRange)
         return timeLabel ? `${dateLabel} · ${timeLabel}` : dateLabel;
     });
 }
+
+/** @param {string} dateStr */
+function parseYmdLocal(dateStr) {
+    const date = String(dateStr || '').split('T')[0].trim();
+    const match = date.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!match) return null;
+    return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+}
+
+/**
+ * @param {EventSession} session
+ * @param {string} [fallbackEnd]
+ */
+export function getSessionEndMs(session, fallbackEnd = '') {
+    const day = parseYmdLocal(session?.date);
+    if (!day) return 0;
+
+    const endTime = String(session.endTime || fallbackEnd || '').trim();
+    if (endTime) {
+        const [hours, minutes] = endTime.split(':').map((part) => Number(part));
+        return new Date(day.getFullYear(), day.getMonth(), day.getDate(), hours || 0, minutes || 0, 0, 0).getTime();
+    }
+
+    return new Date(day.getFullYear(), day.getMonth(), day.getDate(), 23, 59, 59, 999).getTime();
+}
+
+/**
+ * @param {EventSession} session
+ * @param {string} [fallbackStart]
+ */
+export function getSessionStartMs(session, fallbackStart = '') {
+    const day = parseYmdLocal(session?.date);
+    if (!day) return 0;
+
+    const startTime = String(session.startTime || fallbackStart || '').trim();
+    if (startTime) {
+        const [hours, minutes] = startTime.split(':').map((part) => Number(part));
+        return new Date(day.getFullYear(), day.getMonth(), day.getDate(), hours || 0, minutes || 0, 0, 0).getTime();
+    }
+
+    return new Date(day.getFullYear(), day.getMonth(), day.getDate(), 0, 0, 0, 0).getTime();
+}
+
+/**
+ * Feed sort timestamp for multi-session bulletins.
+ * After a session ends, bump the post toward the top until the next session passes.
+ * @param {EventSession[]} sessions
+ * @param {number} datePostedMs
+ * @param {number} [now]
+ */
+export function getMultiSessionFeedSortMs(sessions, datePostedMs, now = Date.now()) {
+    if (!sessions || sessions.length < 2 || !datePostedMs) {
+        return datePostedMs || 0;
+    }
+
+    let lastCompletedEnd = 0;
+    let hasUpcoming = false;
+
+    sessions.forEach((session) => {
+        const endMs = getSessionEndMs(session);
+        if (!endMs) return;
+        if (endMs <= now) {
+            lastCompletedEnd = Math.max(lastCompletedEnd, endMs);
+        } else {
+            hasUpcoming = true;
+        }
+    });
+
+    if (lastCompletedEnd > 0 && hasUpcoming) {
+        const todayStart = new Date(now);
+        todayStart.setHours(0, 0, 0, 0);
+        return Math.max(datePostedMs, lastCompletedEnd, todayStart.getTime());
+    }
+
+    return datePostedMs;
+}
+
+/**
+ * @param {EventSession[]} sessions
+ * @param {number} [now]
+ * @param {string} [fallbackStart]
+ */
+export function getNextSessionStartMs(sessions, now = Date.now(), fallbackStart = '') {
+    if (!Array.isArray(sessions)) return Number.MAX_SAFE_INTEGER;
+
+    for (const session of sessions) {
+        const startMs = getSessionStartMs(session, fallbackStart);
+        if (startMs > now) return startMs;
+    }
+
+    return Number.MAX_SAFE_INTEGER;
+}
