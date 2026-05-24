@@ -2323,8 +2323,6 @@ class FirebaseAdminPanel {
             });
         } else if (filterMode === 'expired') {
             userBulletins = userBulletins.filter(b => !this.isResourceBulletin(b) && this.isBulletinExpiredAdmin(b));
-        } else if (filterMode === 'draft') {
-            userBulletins = userBulletins.filter(b => this.isResourceBulletin(b) && b.isPublished === false);
         }
 
         if (contentKind === 'bulletin') {
