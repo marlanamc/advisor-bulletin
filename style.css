@@ -11999,8 +11999,12 @@ body:has(#loginRequired) {
     border: 1px solid #e2e8f0;
     color: #334155;
     font-size: 12.5px;
-    font-weight: 700;
+    font-weight: 500;
     font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.date-label-prefix {
+    font-weight: 800;
 }
 
 .pc__date--urgent {

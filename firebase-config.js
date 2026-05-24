@@ -515,37 +515,74 @@ class FirebaseBulletinBoard {
             const sessions = this.getBulletinEventSessions(bulletin);
             if (!sessions.length) return null;
 
+            if (sessions.length === 1) {
+                const date = this.parseDateOnly(sessions[0].date);
+                if (!date) return null;
+                return this.getDatesListLabel(bulletin, date, 'event', { session: sessions[0] });
+            }
+
+            const locale = this.getLocale();
             const formatted = sessions.map((session) => {
                 const parsed = this.parseStoredYmdLocal(session.date);
                 const dateLabel = parsed
-                    ? parsed.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+                    ? parsed.toLocaleDateString(locale, { weekday: 'short', month: 'short', day: 'numeric' })
                     : session.date;
                 const timeLabel = this.formatTimeRange(session.startTime, session.endTime);
                 return timeLabel ? `${dateLabel} · ${timeLabel}` : dateLabel;
             });
 
-            if (formatted.length === 1) {
-                return formatted[0];
-            }
             if (formatted.length === 2) {
                 return `${formatted[0]} & ${formatted[1]}`;
             }
-            return `${formatted.length} sessions`;
+
+            const isEs = this.getCurrentLang() === 'ES';
+            return isEs ? `${formatted.length} sesiones` : `${formatted.length} sessions`;
         }
 
-        if (bulletin.deadline) {
-            const deadlineDate = this.parseStoredYmdLocal(String(bulletin.deadline).split('T')[0]) || new Date(bulletin.deadline);
-            const label = deadlineDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-            return `Apply by ${label}`;
+        const item = this.getDatesListItem(bulletin);
+        return item ? item.label : null;
+    }
+
+    isApplicationDeadline(bulletin) {
+        if (bulletin.dateType === 'deadline') {
+            const raw = bulletin.eventDate || bulletin.deadline;
+            return raw ? this.isDeadlineClose(raw) : false;
         }
 
-        if (bulletin.eventDate) {
-            const eventDate = this.parseStoredYmdLocal(String(bulletin.eventDate).split('T')[0]) || new Date(bulletin.eventDate);
-            return eventDate.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })
-                + (bulletin.startTime ? ` · ${bulletin.startTime}` : '');
+        if (!bulletin.dateType && bulletin.deadline && !bulletin.eventDate && !bulletin.startDate) {
+            return this.isDeadlineClose(bulletin.deadline);
         }
 
-        return null;
+        return false;
+    }
+
+    formatStartDateLabelHtml(date, bulletin) {
+        const locale = this.getLocale();
+        const isEs = this.getCurrentLang() === 'ES';
+        const dateLabel = date.toLocaleDateString(locale, { weekday: 'short', month: 'short', day: 'numeric' });
+        const dayLabel = date.toLocaleDateString(locale, { weekday: 'long', month: 'short', day: 'numeric' });
+        const timeRange = this.formatTimeRange(bulletin.startTime, bulletin.endTime);
+        const timeSuffix = timeRange ? ` · ${this.escapeHtml(timeRange)}` : '';
+        const prefix = isEs ? 'Comienza el' : 'Starts';
+        const datePart = isEs ? dayLabel : dateLabel;
+
+        return `<strong class="date-label-prefix">${this.escapeHtml(prefix)}</strong> ${this.escapeHtml(datePart)}${timeSuffix}`;
+    }
+
+    formatFeedDateDisplayHtml(bulletin) {
+        if (bulletin.dateType === 'sessions') {
+            const label = this.formatEventDatesDisplay(bulletin);
+            return label ? this.escapeHtml(label) : '';
+        }
+
+        const item = this.getDatesListItem(bulletin);
+        if (!item) return '';
+
+        if (item.kind === 'start') {
+            return this.formatStartDateLabelHtml(item.date, bulletin);
+        }
+
+        return this.escapeHtml(item.label);
     }
 
     formatSessionDatesDetailLabel(bulletin) {
@@ -3090,7 +3127,7 @@ class FirebaseBulletinBoard {
 
     createBulletinCard(bulletin, index = 0) {
         const meta = this.getCatMeta(bulletin.category);
-        const isDeadlineClose = bulletin.deadline && this.isDeadlineClose(bulletin.deadline);
+        const isDeadlineClose = this.isApplicationDeadline(bulletin);
         const isExpired = this.isBulletinExpired(bulletin);
         const postedAgo = this.formatPostedDate(bulletin.datePosted);
         const title = this.getPostTitle(bulletin);
@@ -3099,7 +3136,7 @@ class FirebaseBulletinBoard {
         const truncatedDesc = truncateRichText(desc, 109);
         const descHtml = renderRichTextInline(truncatedDesc) + (getRichTextPlainLength(desc) > 110 ? '…' : '');
 
-        const dateLabel = this.formatEventDatesDisplay(bulletin);
+        const dateLabelHtml = this.formatFeedDateDisplayHtml(bulletin);
 
         const openHandler = `window.bulletinBoard && window.bulletinBoard.showBulletinDetail('${bulletin.id}')`;
 
@@ -3135,10 +3172,10 @@ class FirebaseBulletinBoard {
         <h3 class="pc__title">${this.escapeHtml(title)}</h3>
         <p class="pc__desc">${descHtml}${getRichTextPlainLength(desc) > 110 ? '…' : ''}</p>
 
-        ${dateLabel ? `
+        ${dateLabelHtml ? `
         <div class="pc__date ${isDeadlineClose && !isExpired ? 'pc__date--urgent' : ''}">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
-          <span>${this.escapeHtml(dateLabel)}</span>
+          <span>${dateLabelHtml}</span>
         </div>` : ''}
 
         <div class="pc__footer">
@@ -3154,7 +3191,7 @@ class FirebaseBulletinBoard {
 
     _unused_createBulletinCard_v1(bulletin) {
         const postedDate = this.formatPostedDate(bulletin.datePosted);
-        const isDeadlineClose = bulletin.deadline && this.isDeadlineClose(bulletin.deadline);
+        const isDeadlineClose = this.isApplicationDeadline(bulletin);
         const isExpired = this.isBulletinExpired(bulletin);
 
         const descriptionHtml = this.renderFormattedDescription(bulletin.description || '', bulletin.id, true);
@@ -4284,7 +4321,7 @@ class FirebaseBulletinBoard {
 
     createBulletinListItem(bulletin) {
         const postedDate = new Date(bulletin.datePosted?.toDate ? bulletin.datePosted.toDate() : bulletin.datePosted).toLocaleDateString();
-        const isDeadlineClose = bulletin.deadline && this.isDeadlineClose(bulletin.deadline);
+        const isDeadlineClose = this.isApplicationDeadline(bulletin);
         const isExpired = this.isBulletinExpired(bulletin);
         const descriptionHtml = this.renderFormattedDescription(bulletin.description || '', bulletin.id, true);
 
@@ -4543,7 +4580,7 @@ class FirebaseBulletinBoard {
                         <span class="es-text">${this.escapeHtml(meta.labelEs.toUpperCase())}</span>
                     </p>
                     <h3>${this.escapeHtml(title)}</h3>
-                    <p class="dates-list-label">${this.escapeHtml(label)}</p>
+                    <p class="dates-list-label">${kind === 'start' ? this.formatStartDateLabelHtml(date, bulletin) : this.escapeHtml(label)}</p>
                 </div>
                 <span class="dates-list-dot" aria-hidden="true"></span>
             </article>
@@ -4693,7 +4730,7 @@ class FirebaseBulletinBoard {
     }
 
     createMonthlyBulletinItem(bulletin) {
-        const isDeadlineClose = bulletin.deadline && this.isDeadlineClose(bulletin.deadline);
+        const isDeadlineClose = this.isApplicationDeadline(bulletin);
         
         // Get the date to display - prioritize new date structure
         let displayDate = '';
@@ -4717,7 +4754,7 @@ class FirebaseBulletinBoard {
     }
 
     createCalendarBulletinItem(bulletin) {
-        const isDeadlineClose = bulletin.deadline && this.isDeadlineClose(bulletin.deadline);
+        const isDeadlineClose = this.isApplicationDeadline(bulletin);
         
         // Get the date to display - prioritize new date structure
         let displayDate = '';
