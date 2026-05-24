@@ -1584,6 +1584,9 @@
         }
 
         function formatPreviewDescription(raw) {
+            if (typeof window.formatRichTextPreview === 'function') {
+                return window.formatRichTextPreview(raw, 110) || 'Your description will show here.';
+            }
             if (!raw) return 'Your description will show here.';
             var txt = raw.length > 110 ? raw.slice(0, 108) + '…' : raw;
             return escPreview(txt)

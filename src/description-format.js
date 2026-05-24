@@ -1,3 +1,9 @@
+import {
+    applyInlineFormatting,
+    formatRichTextPreview,
+    normalizeRichTextMarkers,
+} from './rich-text.js';
+
 function escapeHtml(text) {
     return String(text || '')
         .replace(/&/g, '&amp;')
@@ -11,11 +17,10 @@ export function markdownToHtml(rawText) {
         return '';
     }
 
-    return escapeHtml(rawText)
-        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\+\+(.+?)\+\+/g, '<u>$1</u>')
-        .replace(/\*(.+?)\*/g, '<em>$1</em>')
-        .replace(/\n/g, '<br>');
+    const normalized = normalizeRichTextMarkers(rawText);
+    const div = document.createElement('div');
+    div.textContent = normalized;
+    return applyInlineFormatting(div.innerHTML).replace(/\n/g, '<br>');
 }
 
 export function htmlToMarkdown(root) {
@@ -35,13 +40,13 @@ export function htmlToMarkdown(root) {
         const inner = Array.from(node.childNodes).map(walk).join('');
 
         if (tag === 'strong' || tag === 'b') {
-            return `**${inner}**`;
+            return inner.trim() ? `**${inner.trim()}**` : '';
         }
         if (tag === 'em' || tag === 'i') {
-            return `*${inner}*`;
+            return inner.trim() ? `*${inner.trim()}*` : '';
         }
         if (tag === 'u') {
-            return `++${inner}++`;
+            return inner.trim() ? `++${inner.trim()}++` : '';
         }
         if (tag === 'br') {
             return '\n';
@@ -53,9 +58,11 @@ export function htmlToMarkdown(root) {
         return inner;
     }
 
-    return walk(root)
-        .replace(/\n{3,}/g, '\n\n')
-        .trim();
+    return normalizeRichTextMarkers(
+        walk(root)
+            .replace(/\n{3,}/g, '\n\n')
+            .trim()
+    );
 }
 
 function syncEditorToTextarea(editor, textarea) {
@@ -64,12 +71,13 @@ function syncEditorToTextarea(editor, textarea) {
     const nextValue = maxLength > 0 && markdown.length > maxLength
         ? markdown.slice(0, maxLength)
         : markdown;
+    const normalizedValue = normalizeRichTextMarkers(nextValue);
 
-    if (nextValue !== markdown) {
-        editor.innerHTML = markdownToHtml(nextValue);
+    if (normalizedValue !== markdown) {
+        editor.innerHTML = markdownToHtml(normalizedValue);
     }
 
-    textarea.value = nextValue;
+    textarea.value = normalizedValue;
     textarea.dispatchEvent(new Event('input', { bubbles: true }));
 }
 
@@ -211,4 +219,10 @@ export function initDescriptionFormatToolbars(root = document) {
             syncAllRichEditors(root);
         }, { capture: true });
     }
+
+    if (typeof window !== 'undefined') {
+        window.formatRichTextPreview = formatRichTextPreview;
+    }
 }
+
+export { formatRichTextPreview };

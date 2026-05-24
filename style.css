@@ -11974,6 +11974,20 @@ body:has(#loginRequired) {
     flex: 1;
 }
 
+.pc__desc strong,
+.pc__desc u,
+.pc__desc em {
+    color: inherit;
+}
+
+.pc__desc strong {
+    font-weight: 700;
+}
+
+.pc__desc u {
+    text-underline-offset: 0.12em;
+}
+
 .pc__date {
     display: inline-flex;
     align-items: center;

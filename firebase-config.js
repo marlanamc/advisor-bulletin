@@ -11,6 +11,13 @@ import {
     getSessionEndMs,
     sessionsShareSameTime,
 } from './src/event-sessions.js'
+import {
+    applyInlineFormatting as applyRichTextInlineFormatting,
+    formatRichTextInline as renderRichTextInline,
+    getRichTextPlainLength,
+    normalizeRichTextMarkers,
+    truncateRichText,
+} from './src/rich-text.js'
 import { collection, addDoc, query, where, orderBy, onSnapshot, serverTimestamp } from 'firebase/firestore'
 
 installClientErrorLogger('student')
@@ -3088,7 +3095,8 @@ class FirebaseBulletinBoard {
         const title = bulletin.title || '';
         const titleShort = title.length > 40 ? title.substring(0, 38) + '…' : title;
         const desc = this.getPostDescription(bulletin);
-        const descShort = desc.length > 110 ? desc.substring(0, 108) + '…' : desc;
+        const truncatedDesc = truncateRichText(desc, 109);
+        const descHtml = renderRichTextInline(truncatedDesc) + (getRichTextPlainLength(desc) > 110 ? '…' : '');
 
         const dateLabel = this.formatEventDatesDisplay(bulletin);
 
@@ -3124,7 +3132,7 @@ class FirebaseBulletinBoard {
 
       <div class="pc__body">
         <h3 class="pc__title">${this.escapeHtml(title)}</h3>
-        <p class="pc__desc">${this.formatRichTextInline(descShort)}</p>
+        <p class="pc__desc">${descHtml}${getRichTextPlainLength(desc) > 110 ? '…' : ''}</p>
 
         ${dateLabel ? `
         <div class="pc__date ${isDeadlineClose && !isExpired ? 'pc__date--urgent' : ''}">
@@ -4032,13 +4040,7 @@ class FirebaseBulletinBoard {
     }
 
     formatRichTextInline(rawText) {
-        if (!rawText) {
-            return '';
-        }
-
-        const div = document.createElement('div');
-        div.textContent = rawText;
-        return this.applyInlineFormatting(div.innerHTML).replace(/\n/g, '<br>');
+        return renderRichTextInline(rawText);
     }
 
     renderFormattedDescription(rawText, bulletinId, collapsed = false) {
@@ -4047,7 +4049,7 @@ class FirebaseBulletinBoard {
         }
 
         const div = document.createElement('div');
-        div.textContent = rawText || '';
+        div.textContent = normalizeRichTextMarkers(rawText || '');
         const safeText = div.innerHTML;
 
         const formatted = this.applyInlineFormatting(safeText)
@@ -4076,10 +4078,7 @@ class FirebaseBulletinBoard {
     }
 
     applyInlineFormatting(html) {
-        return (html || '')
-            .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-            .replace(/\+\+(.+?)\+\+/g, '<u>$1</u>')
-            .replace(/\*(.+?)\*/g, '<em>$1</em>')
+        return applyRichTextInlineFormatting(html)
             .replace(/`(.+?)`/g, '<code>$1</code>');
     }
 
