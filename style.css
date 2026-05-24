@@ -14807,40 +14807,6 @@ body:has(#loginRequired) {
         padding-top: 14px;
     }
 
-    .pc--featured {
-        grid-column: span 2;
-        display: grid;
-        grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
-        min-height: 300px;
-    }
-
-    .pc--featured .pc__top {
-        height: 100%;
-        min-height: 300px;
-    }
-
-    .pc--featured .pc__body {
-        justify-content: center;
-        padding: 26px 28px;
-    }
-
-    .pc--featured .pc__title {
-        max-width: 480px;
-        font-size: 30px;
-        line-height: 1.02;
-    }
-
-    .pc--featured .pc__desc {
-        max-width: 480px;
-        font-size: 17px;
-    }
-
-    .pc--featured .pc__icon-box {
-        width: 112px;
-        height: 112px;
-        border-radius: 28px;
-    }
-
     .desktop-home-aside {
         top: 100px;
         gap: 18px;

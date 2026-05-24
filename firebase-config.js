@@ -1564,7 +1564,7 @@ class FirebaseBulletinBoard {
         }
 
         emptyState.style.display = 'none';
-        grid.innerHTML = bulletins.map((bulletin, index) => this.createBulletinCard(bulletin, index)).join('');
+        grid.innerHTML = bulletins.map((bulletin) => this.createBulletinCard(bulletin)).join('');
         this.trackRenderedCardViews(bulletins);
     }
 
@@ -3125,7 +3125,7 @@ class FirebaseBulletinBoard {
         </svg>`;
     }
 
-    createBulletinCard(bulletin, index = 0) {
+    createBulletinCard(bulletin) {
         const meta = this.getCatMeta(bulletin.category);
         const isDeadlineClose = this.isApplicationDeadline(bulletin);
         const isExpired = this.isBulletinExpired(bulletin);
@@ -3139,8 +3139,6 @@ class FirebaseBulletinBoard {
         const dateLabelHtml = this.formatFeedDateDisplayHtml(bulletin);
 
         const openHandler = `window.bulletinBoard && window.bulletinBoard.showBulletinDetail('${bulletin.id}')`;
-
-        const featuredClass = !bulletin.image && index % 7 === 0 ? 'pc--featured' : '';
 
         const currentLang = document.body.getAttribute('data-lang') || 'EN';
         const displayImage = (currentLang === 'ES' && bulletin.imageEs) ? bulletin.imageEs : bulletin.image;
@@ -3159,7 +3157,7 @@ class FirebaseBulletinBoard {
       </div>`;
 
         return `
-    <article class="pc ${featuredClass} ${isExpired ? 'pc--expired' : ''}" id="bulletin-${bulletin.id}" data-bulletin-id="${bulletin.id}" onclick="${openHandler}" role="button" tabindex="0" style="cursor:pointer">
+    <article class="pc ${isExpired ? 'pc--expired' : ''}" id="bulletin-${bulletin.id}" data-bulletin-id="${bulletin.id}" onclick="${openHandler}" role="button" tabindex="0" style="cursor:pointer">
       ${chipsBar}
       <div class="pc__top ${hasImage ? 'pc__top--image' : ''}" style="background:${hasImage ? '#f8fafc' : meta.grad}">
         ${hasImage
