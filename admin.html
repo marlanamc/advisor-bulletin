@@ -842,10 +842,16 @@
                                         <input type="date" id="endDate" name="endDate" class="recommended">
                                     </div>
                                     <div class="form-group event-field" id="sessionsDateGroup" style="display: none;">
-                                        <label>Session Dates</label>
-                                        <small class="input-help">Add each separate date (e.g., two Zoom info sessions). Same start/end time applies to all.</small>
+                                        <label>Session dates &amp; times</label>
+                                        <small class="input-help">Add each session with its own date and time (e.g., two Zoom info sessions at different times).</small>
+                                        <div class="event-session-grid-head" aria-hidden="true">
+                                            <span>Date</span>
+                                            <span>Start</span>
+                                            <span>End</span>
+                                            <span></span>
+                                        </div>
                                         <div id="eventDatesList" class="event-dates-list"></div>
-                                        <button type="button" class="ap-btn ap-btn-ghost event-date-add-btn" id="addEventDateBtn">+ Add another date</button>
+                                        <button type="button" class="ap-btn ap-btn-ghost event-date-add-btn" id="addEventDateBtn">+ Add another session</button>
                                     </div>
                                 </div>
 
@@ -944,11 +950,11 @@
                             </div>
                         </div>
 
-                        <!-- Step 6: Advanced Settings -->
+                        <!-- Step 6: Target Student Group -->
                         <div class="ap-accordion-section">
                             <div class="ap-accordion-header" onclick="adminPanel.toggleAccordion(this)">
                                 <div class="ap-step-number"></div>
-                                <h3 class="ap-accordion-title">Advanced Settings <span style="font-weight: 400; color: var(--ap-text-3); font-size: 0.85rem; margin-left: 4px;">(optional)</span></h3>
+                                <h3 class="ap-accordion-title">Target Student Group <span style="font-weight: 400; color: var(--ap-text-3); font-size: 0.85rem; margin-left: 4px;">(optional)</span></h3>
                                 <div class="ap-accordion-chevron">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
                                 </div>
@@ -956,8 +962,7 @@
                             <div class="ap-accordion-content">
 
                                 <div class="form-group">
-                                    <label for="classType">Target Student Group</label>
-                                    <select id="classType" name="classType">
+                                    <select id="classType" name="classType" aria-label="Target student group">
                                         <option value="">All students (Default)</option>
                                         <option value="esol">ESOL</option>
                                         <option value="hse">HSE</option>
@@ -1755,12 +1760,20 @@
                 } else if (dateTypeEv === 'deadline' && eventDateVal) {
                     whenLine = 'Deadline: ' + formatPreviewYmd(eventDateVal);
                 } else if (dateTypeEv === 'sessions') {
-                    var sessionInputs = document.querySelectorAll('#eventDatesList input[name="eventDates"]');
-                    var sessionDates = Array.from(sessionInputs).map(function(inp) { return inp.value; }).filter(Boolean);
-                    if (sessionDates.length >= 2) {
-                        whenLine = sessionDates.map(formatPreviewYmd).join(' · ');
-                    } else if (sessionDates.length === 1) {
-                        whenLine = formatPreviewYmd(sessionDates[0]) + ' — add another date';
+                    var sessionRows = document.querySelectorAll('#eventDatesList .event-session-row');
+                    var sessionParts = Array.from(sessionRows).map(function(row) {
+                        var dateVal = row.querySelector('.event-session-date')?.value || '';
+                        if (!dateVal) return '';
+                        var startVal = row.querySelector('.event-session-start')?.value || '';
+                        var endVal = row.querySelector('.event-session-end')?.value || '';
+                        var line = formatPreviewYmd(dateVal);
+                        var timePart = formatPreviewTimeRange(startVal, endVal);
+                        return timePart ? line + ' · ' + timePart : line;
+                    }).filter(Boolean);
+                    if (sessionParts.length >= 2) {
+                        whenLine = sessionParts.join(' · ');
+                    } else if (sessionParts.length === 1) {
+                        whenLine = sessionParts[0] + ' — add another session';
                     } else {
                         whenLine = 'Add at least two session dates';
                     }
@@ -1772,7 +1785,7 @@
                     whenLine = 'Choose a date type in Event Details';
                 }
 
-                var timeStr = formatPreviewTimeRange(startT, endT);
+                var timeStr = dateTypeEv === 'sessions' ? '' : formatPreviewTimeRange(startT, endT);
                 var metaParts = [];
                 var fl = eventFormatLabel(fmtSel);
                 if (fl) metaParts.push(fl);

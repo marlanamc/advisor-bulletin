@@ -2,6 +2,11 @@ import { db, auth, storage } from './src/firebase.js'
 import { STUDENT_ADVISOR_DIRECTORY } from './src/advisor-directory.js'
 import { installClientErrorLogger } from './src/error-logger.js'
 import { normalizePostCategory, getPostCategoryDisplay } from './src/feed-categories.js'
+import {
+    normalizeEventSessions,
+    parseSessionEntry,
+    formatSessionsDetailLines,
+} from './src/event-sessions.js'
 import { collection, addDoc, query, where, orderBy, onSnapshot, serverTimestamp } from 'firebase/firestore'
 
 installClientErrorLogger('student')
@@ -445,36 +450,39 @@ class FirebaseBulletinBoard {
         }
 
         if (normalized.dateType === 'sessions') {
+            const fallbackStart = data.startTime || '';
+            const fallbackEnd = data.endTime || '';
             if (Array.isArray(data.eventDates) && data.eventDates.length) {
-                normalized.eventDates = data.eventDates
-                    .map((value) => String(value).split('T')[0].trim())
-                    .filter((value) => /^\d{4}-\d{2}-\d{2}$/.test(value))
-                    .sort();
+                normalized.eventDates = normalizeEventSessions(data.eventDates, fallbackStart, fallbackEnd);
             } else if (data.eventDate) {
-                normalized.eventDates = [String(data.eventDate).split('T')[0]];
+                normalized.eventDates = normalizeEventSessions([data.eventDate], fallbackStart, fallbackEnd);
             } else {
                 normalized.eventDates = [];
             }
-            normalized.eventDate = normalized.eventDates[0] || data.eventDate || '';
+            normalized.eventDate = normalized.eventDates[0]?.date || data.eventDate || '';
         }
 
         return normalized;
+    }
+
+    getBulletinEventSessions(bulletin) {
+        if (!bulletin || bulletin.dateType !== 'sessions') return [];
+        const fallbackStart = bulletin.startTime || '';
+        const fallbackEnd = bulletin.endTime || '';
+        if (Array.isArray(bulletin.eventDates) && bulletin.eventDates.length) {
+            return normalizeEventSessions(bulletin.eventDates, fallbackStart, fallbackEnd);
+        }
+        if (bulletin.eventDate) {
+            return normalizeEventSessions([bulletin.eventDate], fallbackStart, fallbackEnd);
+        }
+        return [];
     }
 
     getBulletinEventDates(bulletin) {
         if (!bulletin) return [];
 
         if (bulletin.dateType === 'sessions') {
-            if (Array.isArray(bulletin.eventDates) && bulletin.eventDates.length) {
-                return bulletin.eventDates
-                    .map((value) => String(value).split('T')[0].trim())
-                    .filter((value) => /^\d{4}-\d{2}-\d{2}$/.test(value))
-                    .sort();
-            }
-            if (bulletin.eventDate) {
-                return [String(bulletin.eventDate).split('T')[0]];
-            }
-            return [];
+            return this.getBulletinEventSessions(bulletin).map((session) => session.date);
         }
 
         if (bulletin.eventDate) {
@@ -492,24 +500,25 @@ class FirebaseBulletinBoard {
 
     formatEventDatesDisplay(bulletin) {
         if (bulletin.dateType === 'sessions') {
-            const dates = this.getBulletinEventDates(bulletin);
-            if (!dates.length) return null;
+            const sessions = this.getBulletinEventSessions(bulletin);
+            if (!sessions.length) return null;
 
-            const formatted = dates.map((rawDate) => {
-                const parsed = this.parseStoredYmdLocal(rawDate);
-                return parsed
+            const formatted = sessions.map((session) => {
+                const parsed = this.parseStoredYmdLocal(session.date);
+                const dateLabel = parsed
                     ? parsed.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
-                    : rawDate;
+                    : session.date;
+                const timeLabel = this.formatTimeRange(session.startTime, session.endTime);
+                return timeLabel ? `${dateLabel} · ${timeLabel}` : dateLabel;
             });
-            const timeSuffix = bulletin.startTime ? ` · ${bulletin.startTime}` : '';
 
             if (formatted.length === 1) {
-                return `${formatted[0]}${timeSuffix}`;
+                return formatted[0];
             }
             if (formatted.length === 2) {
-                return `${formatted[0]} & ${formatted[1]}${timeSuffix}`;
+                return `${formatted[0]} & ${formatted[1]}`;
             }
-            return `${formatted.length} sessions${timeSuffix}`;
+            return `${formatted.length} sessions`;
         }
 
         if (bulletin.deadline) {
@@ -528,23 +537,25 @@ class FirebaseBulletinBoard {
     }
 
     formatSessionDatesDetailLabel(bulletin) {
-        const dates = this.getBulletinEventDates(bulletin);
-        if (!dates.length) return '';
+        const sessions = this.getBulletinEventSessions(bulletin);
+        if (!sessions.length) return '';
 
-        const formatted = dates.map((rawDate) => {
-            const parsed = this.parseStoredYmdLocal(rawDate);
-            return parsed
-                ? parsed.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })
-                : rawDate;
-        });
-        const timeRange = this.formatTimeRange(bulletin.startTime, bulletin.endTime);
-        const timeSuffix = timeRange ? ` · ${timeRange}` : '';
+        const lines = formatSessionsDetailLines(
+            sessions,
+            (date) => {
+                const parsed = this.parseStoredYmdLocal(date);
+                return parsed
+                    ? parsed.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })
+                    : date;
+            },
+            (start, end) => this.formatTimeRange(start, end)
+        );
 
-        if (formatted.length === 1) {
-            return `${formatted[0]}${timeSuffix}`;
+        if (lines.length === 1) {
+            return lines[0];
         }
 
-        return `${formatted.length} sessions: ${formatted.join(', ')}${timeSuffix}`;
+        return lines.join(' · ');
     }
 
     bulletinHasCalendarDates(bulletin) {
@@ -4001,14 +4012,21 @@ class FirebaseBulletinBoard {
                     <strong>Event Dates:</strong> ${this.formatDateLocal(bulletin.startDate)} - ${this.formatDateLocal(bulletin.endDate)}${timeInfo ? ` at ${timeInfo}` : ''}
                 </div>
             `;
-        } else if (dateType === 'sessions' && bulletin.eventDates?.length) {
-            const datesLabel = bulletin.eventDates.map((date) => this.formatDateLocal(date)).join(', ');
-            let timeInfo = this.formatTimeRange(bulletin.startTime, bulletin.endTime);
-            dateHtml = `
-                <div class="meta-item">
-                    <strong>Session Dates:</strong> ${datesLabel}${timeInfo ? ` at ${timeInfo}` : ''}
-                </div>
-            `;
+        } else if (dateType === 'sessions') {
+            const sessions = this.getBulletinEventSessions(bulletin);
+            if (sessions.length) {
+                const lines = formatSessionsDetailLines(
+                    sessions,
+                    (date) => this.formatDateLocal(date),
+                    (start, end) => this.formatTimeRange(start, end)
+                );
+                dateHtml = `
+                    <div class="meta-item">
+                        <strong>Session Dates:</strong>
+                        ${lines.map((line) => `<div>${this.escapeHtml(line)}</div>`).join('')}
+                    </div>
+                `;
+            }
         }
 
         // Add event location if specified
@@ -4042,10 +4060,16 @@ class FirebaseBulletinBoard {
             } else if (dateType === 'range' && bulletin.startDate && bulletin.endDate) {
                 let timeInfo = this.formatTimeRange(bulletin.startTime, bulletin.endTime);
                 dateHtml = `<div><strong>Event Dates:</strong> ${this.formatDateLocal(bulletin.startDate)} - ${this.formatDateLocal(bulletin.endDate)}${timeInfo ? ` at ${timeInfo}` : ''}</div>`;
-            } else if (dateType === 'sessions' && bulletin.eventDates?.length) {
-                let timeInfo = this.formatTimeRange(bulletin.startTime, bulletin.endTime);
-                const datesLabel = bulletin.eventDates.map((date) => this.formatDateLocal(date)).join(', ');
-                dateHtml = `<div><strong>Session Dates:</strong> ${datesLabel}${timeInfo ? ` at ${timeInfo}` : ''}</div>`;
+            } else if (dateType === 'sessions') {
+                const sessions = this.getBulletinEventSessions(bulletin);
+                if (sessions.length) {
+                    const lines = formatSessionsDetailLines(
+                        sessions,
+                        (date) => this.formatDateLocal(date),
+                        (start, end) => this.formatTimeRange(start, end)
+                    );
+                    dateHtml = `<div><strong>Session Dates:</strong> ${lines.map((line) => this.escapeHtml(line)).join('<br>')}</div>`;
+                }
             }
 
             // Add event location if specified
@@ -4245,19 +4269,21 @@ class FirebaseBulletinBoard {
 
     expandBulletinDateItems(bulletin) {
         if (bulletin.dateType === 'sessions') {
-            const dates = this.getBulletinEventDates(bulletin);
-            return dates.map((rawDate, index) => {
-                const date = this.parseDateOnly(rawDate);
+            const sessions = this.getBulletinEventSessions(bulletin);
+            return sessions.map((session, index) => {
+                const date = this.parseDateOnly(session.date);
                 if (!date) return null;
 
                 return {
                     bulletin,
-                    rawDate,
+                    rawDate: session.date,
                     date,
                     kind: 'event',
+                    session,
                     label: this.getDatesListLabel(bulletin, date, 'event', {
                         sessionIndex: index + 1,
-                        sessionTotal: dates.length
+                        sessionTotal: sessions.length,
+                        session
                     })
                 };
             }).filter(Boolean);
@@ -4317,7 +4343,9 @@ class FirebaseBulletinBoard {
     getDatesListLabel(bulletin, date, kind, options = {}) {
         const dateLabel = date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
         const dayLabel = date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
-        const timeRange = this.formatTimeRange(bulletin.startTime, bulletin.endTime);
+        const timeRange = options.session
+            ? this.formatTimeRange(options.session.startTime, options.session.endTime)
+            : this.formatTimeRange(bulletin.startTime, bulletin.endTime);
 
         if (kind === 'deadline') {
             return `Apply by ${dateLabel}`;

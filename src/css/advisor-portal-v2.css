@@ -3964,6 +3964,27 @@ details.ap-accordion > summary.ap-accordion-trigger {
     white-space: normal;
   }
 
+  .event-session-grid-head {
+    display: none;
+  }
+
+  .event-session-row {
+    grid-template-columns: 1fr;
+    padding: 10px;
+    border: 1px solid var(--ap-border);
+    border-radius: var(--ap-r-md);
+    background: var(--ap-surface-2);
+  }
+
+  .event-session-row .event-date-remove-btn {
+    justify-self: end;
+  }
+
+  #eventDetailsAccordion .ap-accordion-content .event-date-type-row,
+  #eventDetailsAccordion .ap-accordion-content .event-time-row {
+    grid-template-columns: 1fr;
+  }
+
   .ap-field-row,
   .form-row,
   .field-group.double,
@@ -4116,7 +4137,6 @@ details.ap-accordion > summary.ap-accordion-trigger {
 
 .ap-accordion-section.open .ap-accordion-content {
   display: block;
-  padding: 24px;
   border-top: 1px solid var(--ap-border);
   animation: ap-slide-down 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -4127,9 +4147,70 @@ details.ap-accordion > summary.ap-accordion-trigger {
 }
 
 /* Adjustments for nested form groups in accordions */
-.ap-accordion-content .form-group:first-of-type,
-.ap-accordion-content .field-group:first-of-type {
-  margin-top: 16px !important;
+.ap-accordion-section.open .ap-accordion-content {
+  padding: 20px 22px 22px;
+}
+
+#eventDetailsAccordion .ap-accordion-content .event-date-type-row,
+#eventDetailsAccordion .ap-accordion-content .event-time-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 16px;
+  align-items: start;
+  margin: 0 0 14px;
+  padding: 0;
+}
+
+#eventDetailsAccordion .ap-accordion-content .event-time-row {
+  margin-bottom: 0;
+}
+
+#eventDetailsAccordion .ap-accordion-content .event-date-type-row .form-group,
+#eventDetailsAccordion .ap-accordion-content .event-time-row .form-group,
+#eventDetailsAccordion .ap-accordion-content #dateFields .form-group {
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  min-width: 0;
+}
+
+#eventDetailsAccordion .ap-accordion-content .form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-family: var(--ap-font-head);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ap-text-2);
+}
+
+#eventDetailsAccordion .ap-accordion-content select,
+#eventDetailsAccordion .ap-accordion-content input[type="date"],
+#eventDetailsAccordion .ap-accordion-content input[type="time"] {
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 13px;
+  border-radius: var(--ap-r-md);
+  border: 1.5px solid var(--ap-border);
+  background: var(--ap-surface);
+  font-family: var(--ap-font-body);
+  font-size: 0.9rem;
+  color: var(--ap-text);
+  box-sizing: border-box;
+}
+
+#eventDetailsAccordion .ap-accordion-content #dateFields {
+  display: none;
+  grid-template-columns: 1fr;
+  margin: 0 0 14px;
+  padding: 0;
+  gap: 14px;
+}
+
+#eventDetailsAccordion .ap-accordion-content #dateFields .form-group {
+  width: 100%;
 }
 
 .ap-accordion-section.open {
@@ -4144,10 +4225,37 @@ details.ap-accordion > summary.ap-accordion-trigger {
   margin-bottom: 10px;
 }
 
+.event-session-grid-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 0.9fr) minmax(0, 0.9fr) 36px;
+  gap: 8px;
+  margin-bottom: 6px;
+  padding: 0 2px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  font-family: var(--ap-font-head);
+  color: var(--ap-text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
 .event-date-row {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.event-session-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 0.9fr) minmax(0, 0.9fr) 36px;
+  gap: 8px;
+  align-items: center;
+}
+
+.event-session-row input[type="date"],
+.event-session-row input[type="time"] {
+  width: 100%;
+  min-width: 0;
 }
 
 .event-date-row input[type="date"] {

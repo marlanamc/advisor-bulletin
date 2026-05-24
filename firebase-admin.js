@@ -2,6 +2,12 @@ import { db, auth, storage } from './src/firebase.js'
 import { getPublicAdvisorEmail, STUDENT_ADVISOR_DIRECTORY } from './src/advisor-directory.js'
 import { installClientErrorLogger } from './src/error-logger.js'
 import { getPostCategoryDisplay } from './src/feed-categories.js'
+import {
+    normalizeEventSessions,
+    parseSessionEntry,
+    sessionsFromFormRows,
+    formatSessionsDetailLines,
+} from './src/event-sessions.js'
 import { collection, doc, query, where, orderBy, onSnapshot, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, serverTimestamp, Timestamp, writeBatch } from 'firebase/firestore'
 
 installClientErrorLogger('admin')
@@ -160,7 +166,7 @@ class FirebaseAdminPanel {
             addEventDateBtn.addEventListener('click', () => this.addEventDateRow());
         }
 
-        this.renderEventDatesList(['']);
+        this.renderEventDatesList([{ date: '' }]);
         
         // PDF upload preview
         const pdfInput = document.getElementById('pdf');
@@ -328,7 +334,7 @@ class FirebaseAdminPanel {
             if (step5) step5.classList.add('open');
         }
 
-        // 6. Advanced Settings
+        // 6. Target Student Group
         const classType = document.getElementById('classType')?.value;
         if (classType) {
             const step6 = [...document.querySelectorAll('.ap-accordion-section')].find(s => s.querySelector('.ap-step-number')?.textContent === '6');
@@ -607,65 +613,102 @@ class FirebaseAdminPanel {
         };
 
         if (normalized.dateType === 'sessions') {
+            const fallbackStart = data.startTime || '';
+            const fallbackEnd = data.endTime || '';
             if (Array.isArray(data.eventDates) && data.eventDates.length) {
-                normalized.eventDates = this.normalizeEventDates(data.eventDates);
+                normalized.eventDates = normalizeEventSessions(data.eventDates, fallbackStart, fallbackEnd);
             } else if (data.eventDate) {
-                normalized.eventDates = [String(data.eventDate).split('T')[0]];
+                normalized.eventDates = normalizeEventSessions([data.eventDate], fallbackStart, fallbackEnd);
             } else {
                 normalized.eventDates = [];
             }
-            normalized.eventDate = normalized.eventDates[0] || data.eventDate || '';
+            normalized.eventDate = normalized.eventDates[0]?.date || data.eventDate || '';
         }
 
         return normalized;
     }
 
-    normalizeEventDates(rawDates) {
-        const seen = new Set();
-        const valid = [];
-
-        (Array.isArray(rawDates) ? rawDates : [rawDates]).forEach((raw) => {
-            const value = String(raw || '').trim();
-            if (!/^\d{4}-\d{2}-\d{2}$/.test(value) || seen.has(value)) {
-                return;
-            }
-            seen.add(value);
-            valid.push(value);
-        });
-
-        valid.sort();
-        return valid.slice(0, 10);
+    getBulletinEventSessions(bulletin, fallbackStart = '', fallbackEnd = '') {
+        if (!bulletin || bulletin.dateType !== 'sessions') return [];
+        if (Array.isArray(bulletin.eventDates) && bulletin.eventDates.length) {
+            return normalizeEventSessions(
+                bulletin.eventDates,
+                fallbackStart || bulletin.startTime || '',
+                fallbackEnd || bulletin.endTime || ''
+            );
+        }
+        if (bulletin.eventDate) {
+            return normalizeEventSessions(
+                [bulletin.eventDate],
+                fallbackStart || bulletin.startTime || '',
+                fallbackEnd || bulletin.endTime || ''
+            );
+        }
+        return [];
     }
 
-    renderEventDatesList(dates = ['']) {
+    normalizeEventDates(rawDates) {
+        return normalizeEventSessions(rawDates).map((session) => session.date);
+    }
+
+    renderEventDatesList(sessions = [{ date: '' }], fallback = {}) {
         const list = document.getElementById('eventDatesList');
         const addBtn = document.getElementById('addEventDateBtn');
         if (!list) return;
 
-        const rows = (dates.length ? dates : ['']).map((date, index) => this.buildEventDateRowHtml(date, index));
+        const rows = (sessions.length ? sessions : [{ date: '' }])
+            .map((session, index) => this.buildEventDateRowHtml(session, index, fallback));
         list.innerHTML = rows.join('');
 
         if (addBtn) {
-            addBtn.style.display = dates.length >= 10 ? 'none' : '';
+            addBtn.style.display = sessions.length >= 10 ? 'none' : '';
         }
     }
 
-    buildEventDateRowHtml(value = '', index = 0) {
+    buildEventDateRowHtml(session = {}, index = 0, fallback = {}) {
+        const parsed = typeof session === 'string'
+            ? parseSessionEntry(session, fallback.startTime, fallback.endTime)
+            : parseSessionEntry(session, fallback.startTime, fallback.endTime);
+        const dateValue = parsed?.date || '';
+        const startValue = parsed?.startTime || '';
+        const endValue = parsed?.endTime || '';
         const canRemove = index > 0;
-        const safeValue = this.escapeAttribute(String(value || '').split('T')[0]);
+        const safeDate = this.escapeAttribute(dateValue);
+        const safeStart = this.escapeAttribute(startValue);
+        const safeEnd = this.escapeAttribute(endValue);
+        const previewHandler = 'window.syncAdminStudentPreview && window.syncAdminStudentPreview()';
 
         return `
-            <div class="event-date-row">
+            <div class="event-date-row event-session-row">
                 <input
                     type="date"
                     name="eventDates"
-                    class="recommended"
-                    value="${safeValue}"
+                    class="recommended event-session-date"
+                    value="${safeDate}"
+                    aria-label="Session date ${index + 1}"
                     ${index === 0 ? 'data-session-first="true"' : ''}
-                    onchange="window.syncAdminStudentPreview && window.syncAdminStudentPreview()"
-                    oninput="window.syncAdminStudentPreview && window.syncAdminStudentPreview()"
+                    onchange="${previewHandler}"
+                    oninput="${previewHandler}"
                 >
-                ${canRemove ? `<button type="button" class="event-date-remove-btn" onclick="adminPanel.removeEventDateRow(this)" aria-label="Remove date">&times;</button>` : ''}
+                <input
+                    type="time"
+                    name="eventSessionStartTimes"
+                    class="recommended event-session-start"
+                    value="${safeStart}"
+                    aria-label="Session ${index + 1} start time"
+                    onchange="${previewHandler}"
+                    oninput="${previewHandler}"
+                >
+                <input
+                    type="time"
+                    name="eventSessionEndTimes"
+                    class="recommended event-session-end"
+                    value="${safeEnd}"
+                    aria-label="Session ${index + 1} end time"
+                    onchange="${previewHandler}"
+                    oninput="${previewHandler}"
+                >
+                ${canRemove ? `<button type="button" class="event-date-remove-btn" onclick="adminPanel.removeEventDateRow(this)" aria-label="Remove session">&times;</button>` : ''}
             </div>
         `;
     }
@@ -677,7 +720,7 @@ class FirebaseAdminPanel {
         const count = list.querySelectorAll('.event-date-row').length;
         if (count >= 10) return;
 
-        list.insertAdjacentHTML('beforeend', this.buildEventDateRowHtml('', count));
+        list.insertAdjacentHTML('beforeend', this.buildEventDateRowHtml({ date: '' }, count));
 
         const addBtn = document.getElementById('addEventDateBtn');
         if (addBtn && count + 1 >= 10) {
@@ -2009,10 +2052,11 @@ class FirebaseAdminPanel {
                     document.getElementById('startDate').value = bulletin.startDate || '';
                     document.getElementById('endDate').value = bulletin.endDate || '';
                 } else if (bulletin.dateType === 'sessions') {
-                    const sessionDates = Array.isArray(bulletin.eventDates) && bulletin.eventDates.length
-                        ? bulletin.eventDates
-                        : (bulletin.eventDate ? [bulletin.eventDate] : ['', '']);
-                    this.renderEventDatesList(sessionDates);
+                    const sessionRows = this.getBulletinEventSessions(bulletin);
+                    this.renderEventDatesList(
+                        sessionRows.length ? sessionRows : [{ date: '' }, { date: '' }],
+                        { startTime: bulletin.startTime || '', endTime: bulletin.endTime || '' }
+                    );
                 }
             } else {
                 document.getElementById('dateType').value = bulletin.deadline ? 'deadline' : '';
@@ -2830,13 +2874,20 @@ class FirebaseAdminPanel {
             html += `<div class="meta-item"><strong>Event Date:</strong> ${this.formatDateLocal(bulletin.eventDate)}</div>`;
         } else if (dateType === 'range') {
             html += `<div class="meta-item"><strong>Event Dates:</strong> ${this.formatDateLocal(bulletin.startDate)} - ${this.formatDateLocal(bulletin.endDate)}</div>`;
-        } else if (dateType === 'sessions' && bulletin.eventDates?.length) {
-            const datesLabel = bulletin.eventDates.map((date) => this.formatDateLocal(date)).join(', ');
-            html += `<div class="meta-item"><strong>Session Dates:</strong> ${datesLabel}</div>`;
+        } else if (dateType === 'sessions') {
+            const sessions = this.getBulletinEventSessions(bulletin);
+            if (sessions.length) {
+                const lines = formatSessionsDetailLines(
+                    sessions,
+                    (date) => this.formatDateLocal(date),
+                    (start, end) => this.formatTimeRange(start, end)
+                );
+                html += `<div class="meta-item"><strong>Session Dates:</strong><br>${lines.map((line) => this.escapeHtml(line)).join('<br>')}</div>`;
+            }
         }
 
-        // Add time range if specified
-        if ((bulletin.startTime || bulletin.endTime) && (dateType === 'event' || dateType === 'range' || dateType === 'sessions')) {
+        // Add time range if specified (single-date events only)
+        if ((bulletin.startTime || bulletin.endTime) && (dateType === 'event' || dateType === 'range')) {
             const timeRange = this.formatTimeRange(bulletin.startTime, bulletin.endTime);
             if (timeRange) {
                 html += `<div class="meta-item"><strong>Time:</strong> ${timeRange}</div>`;
@@ -3000,8 +3051,12 @@ class FirebaseAdminPanel {
         } else if (dateType === 'range') {
             return formData.get('startDate') || '';
         } else if (dateType === 'sessions') {
-            const dates = this.normalizeEventDates(formData.getAll('eventDates'));
-            return dates.length ? dates[dates.length - 1] : '';
+            const sessions = sessionsFromFormRows(
+                formData.getAll('eventDates'),
+                formData.getAll('eventSessionStartTimes'),
+                formData.getAll('eventSessionEndTimes')
+            );
+            return sessions.length ? sessions[sessions.length - 1].date : '';
         }
         return '';
     }
@@ -3461,7 +3516,11 @@ class FirebaseAdminPanel {
         const dateType = formData.get('dateType') || '';
         let eventDates = [];
         if (dateType === 'sessions') {
-            eventDates = this.normalizeEventDates(formData.getAll('eventDates'));
+            eventDates = sessionsFromFormRows(
+                formData.getAll('eventDates'),
+                formData.getAll('eventSessionStartTimes'),
+                formData.getAll('eventSessionEndTimes')
+            );
             if (eventDates.length < 2) {
                 throw new Error('Please add at least two session dates.');
             }
@@ -3477,13 +3536,13 @@ class FirebaseAdminPanel {
             company: (formData.get('company') || '').trim(),
             contact: (formData.get('contact') || '').trim(),
             dateType,
-            eventDate: dateType === 'sessions' ? (eventDates[0] || '') : (formData.get('eventDate') || ''),
+            eventDate: dateType === 'sessions' ? (eventDates[0]?.date || '') : (formData.get('eventDate') || ''),
             eventDates: dateType === 'sessions' ? eventDates : [],
             startDate: dateType === 'sessions' ? '' : (formData.get('startDate') || ''),
             endDate: dateType === 'sessions' ? '' : (formData.get('endDate') || ''),
             deadline: this.getCompatibleDeadline(formData),
-            startTime: formData.get('startTime') || '',
-            endTime: formData.get('endTime') || '',
+            startTime: dateType === 'sessions' ? '' : (formData.get('startTime') || ''),
+            endTime: dateType === 'sessions' ? '' : (formData.get('endTime') || ''),
             eventLocation: formData.get('eventLocation') || '',
             eventLink: (formData.get('eventLink') || '').trim(),
             classType: formData.get('classType') || '',
@@ -3581,7 +3640,7 @@ class FirebaseAdminPanel {
 
         // Reset date fields
         document.getElementById('dateType').value = '';
-        this.renderEventDatesList(['']);
+        this.renderEventDatesList([{ date: '' }]);
         toggleDateFields();
         this.setContentType('post', { preserveFields: true, silent: true });
         document.getElementById('resourcePublished').checked = true;
@@ -3776,6 +3835,7 @@ function toggleDateFields() {
     const startDateGroup = document.getElementById('startDateGroup');
     const endDateGroup = document.getElementById('endDateGroup');
     const sessionsDateGroup = document.getElementById('sessionsDateGroup');
+    const eventTimeRow = document.querySelector('.event-time-row');
     const eventDateInput = document.getElementById('eventDate');
     const startDateInput = document.getElementById('startDate');
     const endDateInput = document.getElementById('endDate');
@@ -3786,6 +3846,7 @@ function toggleDateFields() {
     startDateGroup.style.display = 'none';
     endDateGroup.style.display = 'none';
     if (sessionsDateGroup) sessionsDateGroup.style.display = 'none';
+    if (eventTimeRow) eventTimeRow.style.display = '';
 
     // Remove required attribute from all date fields first
     if (eventDateInput) eventDateInput.required = false;
@@ -3796,31 +3857,34 @@ function toggleDateFields() {
     });
 
     if (dateType === 'deadline') {
-        dateFields.style.display = 'flex';
+        dateFields.style.display = 'grid';
         singleDateGroup.style.display = 'block';
         const label = document.querySelector('label[for="eventDate"]');
         if (label) label.textContent = 'Application Deadline';
         if (eventDateInput) eventDateInput.required = true;
     } else if (dateType === 'event') {
-        dateFields.style.display = 'flex';
+        dateFields.style.display = 'grid';
         singleDateGroup.style.display = 'block';
         const label = document.querySelector('label[for="eventDate"]');
         if (label) label.textContent = 'Event Date';
         if (eventDateInput) eventDateInput.required = true;
     } else if (dateType === 'sessions') {
-        dateFields.style.display = 'flex';
+        dateFields.style.display = 'grid';
         if (sessionsDateGroup) sessionsDateGroup.style.display = 'block';
+        if (eventTimeRow) eventTimeRow.style.display = 'none';
         if (window.adminPanel) {
             const rows = document.querySelectorAll('#eventDatesList .event-date-row');
             if (rows.length < 2) {
-                const firstValue = rows.length === 1 ? (rows[0].querySelector('input')?.value || '') : '';
-                window.adminPanel.renderEventDatesList(firstValue ? [firstValue, ''] : ['', '']);
+                const firstValue = rows.length === 1 ? (rows[0].querySelector('.event-session-date')?.value || '') : '';
+                window.adminPanel.renderEventDatesList(
+                    firstValue ? [{ date: firstValue }, { date: '' }] : [{ date: '' }, { date: '' }]
+                );
             }
         }
         const firstSessionInput = document.querySelector('#eventDatesList input[name="eventDates"]');
         if (firstSessionInput) firstSessionInput.required = true;
     } else if (dateType === 'range') {
-        dateFields.style.display = 'flex';
+        dateFields.style.display = 'grid';
         startDateGroup.style.display = 'block';
         endDateGroup.style.display = 'block';
         if (startDateInput) startDateInput.required = true;
