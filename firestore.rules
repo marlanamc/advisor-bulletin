@@ -95,7 +95,7 @@ service cloud.firestore {
     }
 
     function isPrivilegedAdvisor(email) {
-      return email == 'admin@ebhcs.org' || email == 'leah@ebhcs.org' || email == 'mcreed@ebhcs.org';
+      return email == 'admin@ebhcs.org' || email == 'leah@ebhcs.org';
     }
 
     function validateBulletinData(data) {

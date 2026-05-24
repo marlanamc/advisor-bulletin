@@ -10438,29 +10438,30 @@ a.about-action-card {
     color: var(--about-accent-fg, #0a1d3a);
 }
 
+/* Tile colors pulled from RESOURCE_CATEGORY_CONFIG so About actions match the resource bubbles. */
 .about-action-card--website {
-    --about-accent-bg: hsl(32 45% 74%);
-    --about-accent-fg: hsl(32 38% 30%);
+    --about-accent-bg: #df6b4a;   /* housing orange */
+    --about-accent-fg: #ffffff;
 }
 
 .about-action-card--location {
-    --about-accent-bg: hsl(210 42% 74%);
-    --about-accent-fg: hsl(210 38% 28%);
+    --about-accent-bg: #317dea;   /* announcement sky */
+    --about-accent-fg: #ffffff;
 }
 
 .about-action-card--phone {
-    --about-accent-bg: hsl(155 40% 70%);
-    --about-accent-fg: hsl(155 38% 26%);
+    --about-accent-bg: #2f934f;   /* food green */
+    --about-accent-fg: #ffffff;
 }
 
 .about-action-card--advisors {
-    --about-accent-bg: hsl(225 42% 74%);
-    --about-accent-fg: hsl(225 38% 28%);
+    --about-accent-bg: #24498f;   /* jobs navy-blue */
+    --about-accent-fg: #ffffff;
 }
 
 .about-action-card--support {
-    --about-accent-bg: hsl(275 38% 74%);
-    --about-accent-fg: hsl(275 36% 28%);
+    --about-accent-bg: #7c3aed;   /* legal-aid violet */
+    --about-accent-fg: #ffffff;
 }
 
 .about-action-title {

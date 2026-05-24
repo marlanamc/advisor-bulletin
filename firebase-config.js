@@ -1117,17 +1117,25 @@ class FirebaseBulletinBoard {
             .toUpperCase();
     }
 
-    getAdvisorAvatarColor(index, total = STUDENT_ADVISOR_DIRECTORY.length) {
-        const count = Math.max(Number(total) || 1, 1);
-        // Evenly space hues around the color wheel (spectral rainbow), not tied to role or name.
-        const hue = Math.round((index * 360) / count) % 360;
-        const isYellowBand = hue >= 45 && hue <= 70;
-        const saturation = isYellowBand ? 48 : 38;
-        const lightness = isYellowBand ? 74 : 68;
-        return {
-            background: `hsl(${hue} ${saturation}% ${lightness}%)`,
-            color: `hsl(${hue} 36% 28%)`
-        };
+    getAdvisorAvatarColor(index /*, total */) {
+        // Saturated tiles matching the resource category bubbles (RESOURCE_CATEGORY_CONFIG).
+        // White initials sit on top, same as the icons in the category rail.
+        const palette = [
+            '#24498f',   // jobs
+            '#0d9488',   // immigration
+            '#df6b4a',   // housing
+            '#df477f',   // health
+            '#2f934f',   // food
+            '#c99035',   // family / child care
+            '#2563eb',   // hse
+            '#0a1d3a',   // college
+            '#7c3aed',   // legal-aid
+            '#1fa77e',   // money
+            '#8050d1',   // esol
+            '#317dea'    // announcement
+        ];
+        const i = ((Number(index) || 0) % palette.length + palette.length) % palette.length;
+        return { background: palette[i], color: '#ffffff' };
     }
 
     renderStudentAdvisorDirectory() {
