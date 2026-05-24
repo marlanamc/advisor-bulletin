@@ -114,7 +114,7 @@ service cloud.firestore {
         && (!('eventLink' in data) || data.eventLink is string)
         && (!('dateType' in data) || data.dateType is string)
         && (!('eventDate' in data) || data.eventDate is string)
-        && (!('eventDates' in data) || (data.eventDates is list && data.eventDates.size() <= 10))
+        && (!('eventDates' in data) || (data.eventDates is list && data.eventDates.size() <= 20))
         && (!('startDate' in data) || data.startDate is string)
         && (!('endDate' in data) || data.endDate is string)
         && (!('startTime' in data) || data.startTime is string)

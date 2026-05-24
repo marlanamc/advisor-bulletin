@@ -1,5 +1,7 @@
 /** @typedef {{ date: string, startTime?: string, endTime?: string }} EventSession */
 
+export const MAX_EVENT_SESSIONS = 20;
+
 /**
  * Parse a legacy date string or session object from Firestore.
  * @param {string | EventSession | null | undefined} entry
@@ -34,7 +36,7 @@ export function parseSessionEntry(entry, fallbackStart = '', fallbackEnd = '') {
 }
 
 /**
- * Normalize session rows for storage (dedupe by date, max 10, sorted).
+ * Normalize session rows for storage (dedupe by date, sorted, capped).
  * @param {Array<string | EventSession>} rawEntries
  * @param {string} [fallbackStart]
  * @param {string} [fallbackEnd]
@@ -53,7 +55,7 @@ export function normalizeEventSessions(rawEntries, fallbackStart = '', fallbackE
     });
 
     valid.sort((a, b) => a.date.localeCompare(b.date));
-    return valid.slice(0, 10);
+    return valid.slice(0, MAX_EVENT_SESSIONS);
 }
 
 /** @param {string | EventSession | null | undefined} entry */
@@ -74,6 +76,36 @@ export function sessionsFromFormRows(dates, starts, ends) {
             date,
             startTime: starts[index] || '',
             endTime: ends[index] || '',
+        }))
+    );
+}
+
+/** @param {EventSession[]} sessions */
+export function sessionsShareSameTime(sessions) {
+    if (sessions.length < 2) return false;
+    const first = sessions[0];
+    return sessions.every(
+        (session) => session.startTime === first.startTime && session.endTime === first.endTime
+    );
+}
+
+/**
+ * Read session rows from the bulletin form, honoring shared-time mode.
+ * @param {FormData} formData
+ */
+export function sessionsFromFormData(formData) {
+    const dates = formData.getAll('eventDates');
+    const sameTime = formData.get('sessionSameTime') === 'on';
+    const sharedStart = String(formData.get('sessionSharedStartTime') || '').trim();
+    const sharedEnd = String(formData.get('sessionSharedEndTime') || '').trim();
+    const rowStarts = formData.getAll('eventSessionStartTimes');
+    const rowEnds = formData.getAll('eventSessionEndTimes');
+
+    return normalizeEventSessions(
+        dates.map((date, index) => ({
+            date,
+            startTime: sameTime ? sharedStart : String(rowStarts[index] || '').trim(),
+            endTime: sameTime ? sharedEnd : String(rowEnds[index] || '').trim(),
         }))
     );
 }

@@ -3,9 +3,11 @@ import { getPublicAdvisorEmail, STUDENT_ADVISOR_DIRECTORY } from './src/advisor-
 import { installClientErrorLogger } from './src/error-logger.js'
 import { getPostCategoryDisplay } from './src/feed-categories.js'
 import {
+    MAX_EVENT_SESSIONS,
     normalizeEventSessions,
     parseSessionEntry,
-    sessionsFromFormRows,
+    sessionsFromFormData,
+    sessionsShareSameTime,
     formatSessionsDetailLines,
 } from './src/event-sessions.js'
 import { collection, doc, query, where, orderBy, onSnapshot, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, serverTimestamp, Timestamp, writeBatch } from 'firebase/firestore'
@@ -38,6 +40,21 @@ const ENGAGEMENT_ANALYTICS_ACTIONS = new Set(['detail_open', 'link_click', 'pdf_
 function isPdfFile(file) {
     if (!file) return false;
     return file.type === 'application/pdf' || /\.pdf$/i.test(file.name || '');
+}
+
+function isFlyerImageFile(file) {
+    if (!file) return false;
+    if (isPdfFile(file)) return true;
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    if (file.type && allowedTypes.includes(file.type)) return true;
+    return /\.(jpe?g|png|gif|webp)$/i.test(file.name || '');
+}
+
+function isImageOnlyFile(file) {
+    if (!file) return false;
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    if (file.type && allowedTypes.includes(file.type)) return true;
+    return /\.(jpe?g|png|gif|webp)$/i.test(file.name || '');
 }
 
 // Firebase-enabled Admin Panel
@@ -161,10 +178,33 @@ class FirebaseAdminPanel {
             resourceLogoInput.addEventListener('change', (e) => this.handleImagePreview(e, 'resourceLogo'));
         }
 
+        this.setupFileDropzone('.ap-visual-flyer-zone', 'image', 'image');
+        this.setupFileDropzone('.ap-upload-dropzone-es', 'imageEs', 'imageEs');
+
         const addEventDateBtn = document.getElementById('addEventDateBtn');
         if (addEventDateBtn) {
             addEventDateBtn.addEventListener('click', () => this.addEventDateRow());
         }
+
+        const sessionSameTimeToggle = document.getElementById('sessionSameTimeToggle');
+        if (sessionSameTimeToggle) {
+            sessionSameTimeToggle.addEventListener('change', () => this.syncSessionSameTimeUI({ fromToggle: true }));
+        }
+        ['sessionSharedStartTime', 'sessionSharedEndTime'].forEach((id) => {
+            const input = document.getElementById(id);
+            if (input) {
+                input.addEventListener('input', () => {
+                    if (typeof window.syncAdminStudentPreview === 'function') {
+                        window.syncAdminStudentPreview();
+                    }
+                });
+                input.addEventListener('change', () => {
+                    if (typeof window.syncAdminStudentPreview === 'function') {
+                        window.syncAdminStudentPreview();
+                    }
+                });
+            }
+        });
 
         this.renderEventDatesList([{ date: '' }]);
         
@@ -364,6 +404,68 @@ class FirebaseAdminPanel {
         } else {
             pdfAddon.removeAttribute('hidden');
         }
+    }
+
+    assignFileToInput(input, file) {
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+        input.files = dataTransfer.files;
+    }
+
+    setupFileDropzone(zoneSelector, inputId, fieldName) {
+        const zone = document.querySelector(zoneSelector);
+        const input = document.getElementById(inputId);
+        if (!zone || !input) return;
+
+        const acceptFile = fieldName === 'image' ? isFlyerImageFile : isImageOnlyFile;
+        const rejectMessage = fieldName === 'image'
+            ? 'Please drop a PNG, JPG, or PDF under 10MB.'
+            : 'Please drop a PNG or JPG under 10MB.';
+
+        zone.addEventListener('click', (event) => {
+            if (event.target.closest('.remove-image')) return;
+            input.click();
+        });
+
+        zone.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                input.click();
+            }
+        });
+
+        ['dragenter', 'dragover'].forEach((eventName) => {
+            zone.addEventListener(eventName, (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                if (event.dataTransfer) {
+                    event.dataTransfer.dropEffect = 'copy';
+                }
+                zone.classList.add('dragover');
+            });
+        });
+
+        zone.addEventListener('dragleave', (event) => {
+            event.preventDefault();
+            if (!zone.contains(event.relatedTarget)) {
+                zone.classList.remove('dragover');
+            }
+        });
+
+        zone.addEventListener('drop', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            zone.classList.remove('dragover');
+
+            const file = Array.from(event.dataTransfer?.files || []).find(acceptFile);
+            if (!file) {
+                this.showTemporaryMessage(rejectMessage, 'error');
+                return;
+            }
+
+            this.assignFileToInput(input, file);
+            this.handleImagePreview({ target: input }, fieldName);
+        });
     }
 
     toggleSpanishFlyerPanel(forceOpen) {
@@ -651,21 +753,71 @@ class FirebaseAdminPanel {
         return normalizeEventSessions(rawDates).map((session) => session.date);
     }
 
-    renderEventDatesList(sessions = [{ date: '' }], fallback = {}) {
+    isSessionSameTimeEnabled() {
+        return Boolean(document.getElementById('sessionSameTimeToggle')?.checked);
+    }
+
+    collectEventDatesFromDom() {
+        const rows = document.querySelectorAll('#eventDatesList .event-session-row');
+        return Array.from(rows).map((row) => ({
+            date: row.querySelector('.event-session-date')?.value || '',
+            startTime: row.querySelector('.event-session-start')?.value || '',
+            endTime: row.querySelector('.event-session-end')?.value || '',
+        }));
+    }
+
+    syncSessionSameTimeUI(options = {}) {
+        const toggle = document.getElementById('sessionSameTimeToggle');
+        const group = document.getElementById('sessionsDateGroup');
+        const sharedRow = document.getElementById('sessionSharedTimeRow');
+        const sharedStart = document.getElementById('sessionSharedStartTime');
+        const sharedEnd = document.getElementById('sessionSharedEndTime');
+        const enabled = this.isSessionSameTimeEnabled();
+
+        group?.classList.toggle('is-same-time', enabled);
+        if (sharedRow) sharedRow.hidden = !enabled;
+
+        if (options.fromToggle && enabled) {
+            const firstStart = document.querySelector('#eventDatesList .event-session-start')?.value || '';
+            const firstEnd = document.querySelector('#eventDatesList .event-session-end')?.value || '';
+            if (sharedStart && !sharedStart.value) sharedStart.value = firstStart;
+            if (sharedEnd && !sharedEnd.value) sharedEnd.value = firstEnd;
+        }
+
+        if (options.fromToggle) {
+            const sessions = this.collectEventDatesFromDom().map((session) => ({
+                date: session.date,
+                startTime: enabled
+                    ? (sharedStart?.value || session.startTime)
+                    : (session.startTime || sharedStart?.value || ''),
+                endTime: enabled
+                    ? (sharedEnd?.value || session.endTime)
+                    : (session.endTime || sharedEnd?.value || ''),
+            }));
+            this.renderEventDatesList(sessions.length ? sessions : [{ date: '' }, { date: '' }], {}, { preserveSameTime: true });
+        }
+
+        if (typeof window.syncAdminStudentPreview === 'function') {
+            window.syncAdminStudentPreview();
+        }
+    }
+
+    renderEventDatesList(sessions = [{ date: '' }], fallback = {}, options = {}) {
         const list = document.getElementById('eventDatesList');
         const addBtn = document.getElementById('addEventDateBtn');
         if (!list) return;
 
+        const sameTime = this.isSessionSameTimeEnabled();
         const rows = (sessions.length ? sessions : [{ date: '' }])
-            .map((session, index) => this.buildEventDateRowHtml(session, index, fallback));
+            .map((session, index) => this.buildEventDateRowHtml(session, index, fallback, { sameTime }));
         list.innerHTML = rows.join('');
 
         if (addBtn) {
-            addBtn.style.display = sessions.length >= 10 ? 'none' : '';
+            addBtn.style.display = sessions.length >= MAX_EVENT_SESSIONS ? 'none' : '';
         }
     }
 
-    buildEventDateRowHtml(session = {}, index = 0, fallback = {}) {
+    buildEventDateRowHtml(session = {}, index = 0, fallback = {}, options = {}) {
         const parsed = typeof session === 'string'
             ? parseSessionEntry(session, fallback.startTime, fallback.endTime)
             : parseSessionEntry(session, fallback.startTime, fallback.endTime);
@@ -673,23 +825,13 @@ class FirebaseAdminPanel {
         const startValue = parsed?.startTime || '';
         const endValue = parsed?.endTime || '';
         const canRemove = index > 0;
+        const sameTime = options.sameTime ?? this.isSessionSameTimeEnabled();
         const safeDate = this.escapeAttribute(dateValue);
         const safeStart = this.escapeAttribute(startValue);
         const safeEnd = this.escapeAttribute(endValue);
         const previewHandler = 'window.syncAdminStudentPreview && window.syncAdminStudentPreview()';
 
-        return `
-            <div class="event-date-row event-session-row">
-                <input
-                    type="date"
-                    name="eventDates"
-                    class="recommended event-session-date"
-                    value="${safeDate}"
-                    aria-label="Session date ${index + 1}"
-                    ${index === 0 ? 'data-session-first="true"' : ''}
-                    onchange="${previewHandler}"
-                    oninput="${previewHandler}"
-                >
+        const timeFields = sameTime ? '' : `
                 <input
                     type="time"
                     name="eventSessionStartTimes"
@@ -707,7 +849,21 @@ class FirebaseAdminPanel {
                     aria-label="Session ${index + 1} end time"
                     onchange="${previewHandler}"
                     oninput="${previewHandler}"
+                >`;
+
+        return `
+            <div class="event-date-row event-session-row">
+                <input
+                    type="date"
+                    name="eventDates"
+                    class="recommended event-session-date"
+                    value="${safeDate}"
+                    aria-label="Session date ${index + 1}"
+                    ${index === 0 ? 'data-session-first="true"' : ''}
+                    onchange="${previewHandler}"
+                    oninput="${previewHandler}"
                 >
+                ${timeFields}
                 ${canRemove ? `<button type="button" class="event-date-remove-btn" onclick="adminPanel.removeEventDateRow(this)" aria-label="Remove session">&times;</button>` : ''}
             </div>
         `;
@@ -718,12 +874,12 @@ class FirebaseAdminPanel {
         if (!list) return;
 
         const count = list.querySelectorAll('.event-date-row').length;
-        if (count >= 10) return;
+        if (count >= MAX_EVENT_SESSIONS) return;
 
-        list.insertAdjacentHTML('beforeend', this.buildEventDateRowHtml({ date: '' }, count));
+        list.insertAdjacentHTML('beforeend', this.buildEventDateRowHtml({ date: '' }, count, {}, { sameTime: this.isSessionSameTimeEnabled() }));
 
         const addBtn = document.getElementById('addEventDateBtn');
-        if (addBtn && count + 1 >= 10) {
+        if (addBtn && count + 1 >= MAX_EVENT_SESSIONS) {
             addBtn.style.display = 'none';
         }
 
@@ -2053,10 +2209,21 @@ class FirebaseAdminPanel {
                     document.getElementById('endDate').value = bulletin.endDate || '';
                 } else if (bulletin.dateType === 'sessions') {
                     const sessionRows = this.getBulletinEventSessions(bulletin);
+                    const sameTime = sessionsShareSameTime(sessionRows);
+                    const sameTimeToggle = document.getElementById('sessionSameTimeToggle');
+                    const sharedStart = document.getElementById('sessionSharedStartTime');
+                    const sharedEnd = document.getElementById('sessionSharedEndTime');
+                    if (sameTimeToggle) sameTimeToggle.checked = sameTime;
+                    if (sameTime && sessionRows.length) {
+                        if (sharedStart) sharedStart.value = sessionRows[0].startTime || '';
+                        if (sharedEnd) sharedEnd.value = sessionRows[0].endTime || '';
+                    }
                     this.renderEventDatesList(
                         sessionRows.length ? sessionRows : [{ date: '' }, { date: '' }],
-                        { startTime: bulletin.startTime || '', endTime: bulletin.endTime || '' }
+                        { startTime: bulletin.startTime || '', endTime: bulletin.endTime || '' },
+                        { preserveSameTime: true }
                     );
+                    this.syncSessionSameTimeUI();
                 }
             } else {
                 document.getElementById('dateType').value = bulletin.deadline ? 'deadline' : '';
@@ -3049,11 +3216,7 @@ class FirebaseAdminPanel {
         } else if (dateType === 'range') {
             return formData.get('startDate') || '';
         } else if (dateType === 'sessions') {
-            const sessions = sessionsFromFormRows(
-                formData.getAll('eventDates'),
-                formData.getAll('eventSessionStartTimes'),
-                formData.getAll('eventSessionEndTimes')
-            );
+            const sessions = sessionsFromFormData(formData);
             return sessions.length ? sessions[sessions.length - 1].date : '';
         }
         return '';
@@ -3514,11 +3677,7 @@ class FirebaseAdminPanel {
         const dateType = formData.get('dateType') || '';
         let eventDates = [];
         if (dateType === 'sessions') {
-            eventDates = sessionsFromFormRows(
-                formData.getAll('eventDates'),
-                formData.getAll('eventSessionStartTimes'),
-                formData.getAll('eventSessionEndTimes')
-            );
+            eventDates = sessionsFromFormData(formData);
             if (eventDates.length < 2) {
                 throw new Error('Please add at least two session dates.');
             }
@@ -3638,6 +3797,11 @@ class FirebaseAdminPanel {
 
         // Reset date fields
         document.getElementById('dateType').value = '';
+        const sameTimeToggle = document.getElementById('sessionSameTimeToggle');
+        if (sameTimeToggle) sameTimeToggle.checked = false;
+        const sharedRow = document.getElementById('sessionSharedTimeRow');
+        if (sharedRow) sharedRow.hidden = true;
+        document.getElementById('sessionsDateGroup')?.classList.remove('is-same-time');
         this.renderEventDatesList([{ date: '' }]);
         toggleDateFields();
         this.setContentType('post', { preserveFields: true, silent: true });
