@@ -1642,9 +1642,10 @@ class FirebaseBulletinBoard {
 
         container.innerHTML = events.map(({ bulletin, rawDate, timestamp }) => {
             const date = new Date(timestamp);
-            const month = date.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
-            const day = date.toLocaleDateString('en-US', { day: 'numeric' });
-            const weekday = date.toLocaleDateString('en-US', { weekday: 'long' });
+            const locale = this.getLocale();
+            const month = date.toLocaleDateString(locale, { month: 'short' }).toUpperCase();
+            const day = date.toLocaleDateString(locale, { day: 'numeric' });
+            const weekday = date.toLocaleDateString(locale, { weekday: 'long' });
             const time = bulletin.startTime || '';
             const meta = [weekday, time].filter(Boolean).join(' · ');
 
@@ -1652,7 +1653,7 @@ class FirebaseBulletinBoard {
                 <button class="side-event" type="button" onclick="window.bulletinBoard && window.bulletinBoard.showBulletinDetail('${bulletin.id}')">
                     <div class="side-date"><span>${month}</span><strong>${day}</strong></div>
                     <div>
-                        <p class="side-event-title">${this.escapeHtml(bulletin.title || 'Upcoming event')}</p>
+                        <p class="side-event-title">${this.escapeHtml(this.getPostTitle(bulletin) || (this.getCurrentLang() === 'ES' ? 'Próximo evento' : 'Upcoming event'))}</p>
                         <p class="side-event-meta">${this.escapeHtml(meta || 'Date posted')}</p>
                     </div>
                     <span class="side-event-arrow" aria-hidden="true">›</span>
@@ -2991,7 +2992,7 @@ class FirebaseBulletinBoard {
             return `
                 <div class="day-event-item ${isExpired ? 'expired' : ''}" onclick="event.stopPropagation(); bulletinBoard.showBulletinDetail('${bulletin.id}')">
                     <div class="day-event-header">
-                        <h3 class="day-event-title">${this.escapeHtml(bulletin.title)}</h3>
+                        <h3 class="day-event-title">${this.escapeHtml(this.getPostTitle(bulletin))}</h3>
                         <span class="category-badge category-${bulletin.category}">${this.getCategoryDisplay(bulletin.category)}</span>
                     </div>
                     ${bulletin.description ? `<p class="day-event-description">${this.escapeHtml(bulletin.description.substring(0, 150))}${bulletin.description.length > 150 ? '...' : ''}</p>` : ''}
@@ -3092,7 +3093,7 @@ class FirebaseBulletinBoard {
         const isDeadlineClose = bulletin.deadline && this.isDeadlineClose(bulletin.deadline);
         const isExpired = this.isBulletinExpired(bulletin);
         const postedAgo = this.formatPostedDate(bulletin.datePosted);
-        const title = bulletin.title || '';
+        const title = this.getPostTitle(bulletin);
         const titleShort = title.length > 40 ? title.substring(0, 38) + '…' : title;
         const desc = this.getPostDescription(bulletin);
         const truncatedDesc = truncateRichText(desc, 109);
@@ -3229,7 +3230,7 @@ class FirebaseBulletinBoard {
                         <span class="en-text">${this.escapeHtml(meta.label.toUpperCase())}</span>
                         <span class="es-text">${this.escapeHtml(meta.labelEs.toUpperCase())}</span>
                     </p>
-                    <h2>${this.escapeHtml(bulletin.title || '')}</h2>
+                    <h2>${this.escapeHtml(this.getPostTitle(bulletin))}</h2>
                     ${isExpired ? '<p class="post-detail-expired">Expired</p>' : ''}
                     <div class="post-detail-author">
                         <span class="post-detail-avatar" style="background:${meta.accent}">${this.escapeHtml(initial)}</span>
@@ -3439,7 +3440,7 @@ class FirebaseBulletinBoard {
                 ${isExpired ? '<div class="expired-banner">EXPIRED</div>' : ''}
                 <div class="detail-header">
                     <div>
-                        <div class="detail-title">${this.escapeHtml(bulletin.title)}</div>
+                        <div class="detail-title">${this.escapeHtml(this.getPostTitle(bulletin))}</div>
                     </div>
                     <span class="category-badge category-${bulletin.category}">${this.getCategoryDisplay(bulletin.category)}</span>
                 </div>
@@ -3592,8 +3593,10 @@ class FirebaseBulletinBoard {
                 const eventLink = (b.eventLink || '').toLowerCase();
                 const advisorName = (b.advisorName || '').toLowerCase();
                 const title = (b.title || '').toLowerCase();
+                const titleEs = (b.titleEs || '').toLowerCase();
                 return (
                     title.includes(searchTerm) ||
+                    titleEs.includes(searchTerm) ||
                     description.includes(searchTerm) ||
                     company.includes(searchTerm) ||
                     contact.includes(searchTerm) ||
@@ -4039,6 +4042,24 @@ class FirebaseBulletinBoard {
         return (bulletin.description || '').trim();
     }
 
+    getCurrentLang() {
+        return document.body.getAttribute('data-lang') === 'ES' ? 'ES' : 'EN';
+    }
+
+    getLocale() {
+        return this.getCurrentLang() === 'ES' ? 'es-US' : 'en-US';
+    }
+
+    getPostTitle(bulletin) {
+        if (this.getCurrentLang() === 'ES') {
+            const titleEs = (bulletin.titleEs || '').trim();
+            if (titleEs) {
+                return titleEs;
+            }
+        }
+        return (bulletin.title || '').trim();
+    }
+
     formatRichTextInline(rawText) {
         return renderRichTextInline(rawText);
     }
@@ -4278,7 +4299,7 @@ class FirebaseBulletinBoard {
 
                 <div class="bulletin-list-content">
                     <div class="bulletin-list-header">
-                        <div class="bulletin-list-title">${this.escapeHtml(bulletin.title)}</div>
+                        <div class="bulletin-list-title">${this.escapeHtml(this.getPostTitle(bulletin))}</div>
                     </div>
 
                     <div class="bulletin-list-description">
@@ -4472,22 +4493,28 @@ class FirebaseBulletinBoard {
     }
 
     getDatesListLabel(bulletin, date, kind, options = {}) {
-        const dateLabel = date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-        const dayLabel = date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+        const locale = this.getLocale();
+        const isEs = this.getCurrentLang() === 'ES';
+        const dateLabel = date.toLocaleDateString(locale, { weekday: 'short', month: 'short', day: 'numeric' });
+        const dayLabel = date.toLocaleDateString(locale, { weekday: 'long', month: 'short', day: 'numeric' });
         const timeRange = options.session
             ? this.formatTimeRange(options.session.startTime, options.session.endTime)
             : this.formatTimeRange(bulletin.startTime, bulletin.endTime);
 
         if (kind === 'deadline') {
-            return `Apply by ${dateLabel}`;
+            return isEs ? `Postular antes del ${dateLabel}` : `Apply by ${dateLabel}`;
         }
 
         if (kind === 'start') {
-            return `Starts ${dateLabel}${timeRange ? ` · ${timeRange}` : ''}`;
+            return isEs
+                ? `Comienza el ${dayLabel}${timeRange ? ` · ${timeRange}` : ''}`
+                : `Starts ${dateLabel}${timeRange ? ` · ${timeRange}` : ''}`;
         }
 
         if (options.sessionTotal > 1) {
-            return `${dayLabel} (Session ${options.sessionIndex} of ${options.sessionTotal})${timeRange ? ` · ${timeRange}` : ''}`;
+            return isEs
+                ? `${dayLabel} (Sesión ${options.sessionIndex} de ${options.sessionTotal})${timeRange ? ` · ${timeRange}` : ''}`
+                : `${dayLabel} (Session ${options.sessionIndex} of ${options.sessionTotal})${timeRange ? ` · ${timeRange}` : ''}`;
         }
 
         return `${dayLabel}${timeRange ? ` · ${timeRange}` : ''}`;
@@ -4496,8 +4523,12 @@ class FirebaseBulletinBoard {
     createDatesListCard(item) {
         const { bulletin, date, kind, label } = item;
         const meta = this.getCatMeta(bulletin.category);
-        const title = bulletin.title || '';
-        const badgeTop = kind === 'deadline' ? 'BY' : date.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
+        const title = this.getPostTitle(bulletin);
+        const locale = this.getLocale();
+        const isEs = this.getCurrentLang() === 'ES';
+        const badgeTop = kind === 'deadline'
+            ? (isEs ? 'LÍM' : 'BY')
+            : date.toLocaleDateString(locale, { month: 'short' }).toUpperCase();
         const badgeMain = date.getDate();
         const dotColor = kind === 'deadline' ? '#f08b1f' : meta.accent;
         const isoDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
@@ -4685,7 +4716,7 @@ class FirebaseBulletinBoard {
         return `
             <div class="monthly-bulletin-item" onclick="bulletinBoard.showBulletinDetail('${bulletin.id}')">
                 <div class="monthly-bulletin-category category-${bulletin.category}"></div>
-                <div class="monthly-bulletin-title">${this.escapeHtml(bulletin.title)}</div>
+                <div class="monthly-bulletin-title">${this.escapeHtml(this.getPostTitle(bulletin))}</div>
                 ${displayDate ? `
                     <div class="monthly-bulletin-deadline ${isDeadlineClose ? 'deadline-warning' : ''}">
                         ${displayDate}
@@ -4708,7 +4739,7 @@ class FirebaseBulletinBoard {
         
         return `
             <div class="calendar-bulletin-item">
-                <div class="calendar-bulletin-title">${this.escapeHtml(bulletin.title)}</div>
+                <div class="calendar-bulletin-title">${this.escapeHtml(this.getPostTitle(bulletin))}</div>
                 <div class="calendar-bulletin-category">${this.getCategoryDisplay(bulletin.category)}</div>
                 <div class="calendar-bulletin-description">${this.escapeHtml(bulletin.description || '').substring(0, 100)}${bulletin.description && bulletin.description.length > 100 ? '...' : ''}</div>
                 <div class="calendar-bulletin-meta">
