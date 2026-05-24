@@ -216,20 +216,28 @@
                 <header class="ap-topbar">
                     <h1 class="ap-topbar-title" id="apTopbarTitle">Dashboard</h1>
                     <div class="ap-topbar-actions">
-                        <label class="ap-analytics-range" for="analyticsRangeSelect">
-                            <span>Analytics</span>
-                            <select id="analyticsRangeSelect" class="ap-select" aria-label="Analytics time period">
+                        <div class="ap-analytics-control" role="group" aria-label="Analytics time period">
+                            <div class="ap-analytics-control-head">
+                                <svg class="ap-analytics-control-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 16l4-4 4 4 5-6"/></svg>
+                                <span class="ap-analytics-control-title">Engagement</span>
+                            </div>
+                            <div class="ap-analytics-segments" role="radiogroup" aria-label="Time range">
+                                <button type="button" class="ap-analytics-segment" data-days="7" aria-pressed="false">7d</button>
+                                <button type="button" class="ap-analytics-segment" data-days="30" aria-pressed="true">30d</button>
+                                <button type="button" class="ap-analytics-segment" data-days="90" aria-pressed="false">90d</button>
+                                <button type="button" class="ap-analytics-segment" data-days="365" aria-pressed="false">1y</button>
+                            </div>
+                            <div class="ap-analytics-live" id="advisorStatusPill" aria-live="polite">
+                                <span class="ap-analytics-live-dot" aria-hidden="true"></span>
+                                <span class="ap-analytics-live-text">Connecting…</span>
+                            </div>
+                            <select id="analyticsRangeSelect" class="ap-analytics-select-sr" aria-label="Analytics time period" tabindex="-1">
                                 <option value="7">7 days</option>
                                 <option value="30" selected>30 days</option>
                                 <option value="90">90 days</option>
                                 <option value="365">1 year</option>
                             </select>
-                        </label>
-                        <div class="advisor-status-pill" id="advisorStatusPill" style="font-size:.75rem;padding:5px 12px;">Connecting...</div>
-                        <a href="index.html" class="ap-btn ap-btn-ghost">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                            Student View
-                        </a>
+                        </div>
                         <button id="logoutBtn" class="ap-btn ap-btn-danger" style="display:none;">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                             Logout
@@ -1020,7 +1028,6 @@
                                      </div>
                                     </div>
                                 </div>
-                            </div>
 
                             <!-- Posting Tips -->
                             <div class="ap-tips-card">

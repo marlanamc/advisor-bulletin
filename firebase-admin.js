@@ -200,6 +200,12 @@ class FirebaseAdminPanel {
                 this.setAnalyticsRange(Number(event.target.value));
             });
         }
+        document.querySelectorAll('.ap-analytics-segment').forEach((button) => {
+            button.addEventListener('click', () => {
+                this.setAnalyticsRange(Number(button.getAttribute('data-days')));
+            });
+        });
+        this.syncAnalyticsRangeUI();
 
         document.querySelectorAll('[data-school-event-preset]').forEach((button) => {
             button.addEventListener('click', () => {
@@ -934,23 +940,20 @@ class FirebaseAdminPanel {
                 this.aggregateAnalytics();
                 this.updateAdvisorDashboard();
                 this.updateAnalyticsRangeLabels();
-                const status = document.getElementById('advisorStatusPill');
-                if (status) status.textContent = `Live analytics · ${this.getAnalyticsRangeLabel()}`;
+                this.setAdvisorAnalyticsStatus('live', 'Live');
                 if (this.currentUser) {
                     this.loadManageBulletins();
                 }
             }, (error) => {
                 console.error('Error loading analytics:', error);
-                const status = document.getElementById('advisorStatusPill');
-                if (status) status.textContent = 'Analytics unavailable';
+                this.setAdvisorAnalyticsStatus('error', 'Unavailable');
             });
     }
 
     setAnalyticsRange(days) {
         const allowedDays = [7, 30, 90, 365];
         this.analyticsRangeDays = allowedDays.includes(days) ? days : 30;
-        const select = document.getElementById('analyticsRangeSelect');
-        if (select) select.value = String(this.analyticsRangeDays);
+        this.syncAnalyticsRangeUI();
         this.analyticsEvents = [];
         this.aggregateAnalytics();
         this.updateAdvisorDashboard();
@@ -958,6 +961,25 @@ class FirebaseAdminPanel {
         if (this.currentUser) {
             this.setupAnalyticsListener();
         }
+    }
+
+    syncAnalyticsRangeUI() {
+        const select = document.getElementById('analyticsRangeSelect');
+        if (select) select.value = String(this.analyticsRangeDays);
+        document.querySelectorAll('.ap-analytics-segment').forEach((button) => {
+            const days = Number(button.getAttribute('data-days'));
+            button.setAttribute('aria-pressed', days === this.analyticsRangeDays ? 'true' : 'false');
+        });
+    }
+
+    setAdvisorAnalyticsStatus(state, text) {
+        const pill = document.getElementById('advisorStatusPill');
+        if (!pill) return;
+        pill.classList.remove('is-live', 'is-error');
+        if (state === 'live') pill.classList.add('is-live');
+        if (state === 'error') pill.classList.add('is-error');
+        const textEl = pill.querySelector('.ap-analytics-live-text');
+        if (textEl) textEl.textContent = text;
     }
 
     getAnalyticsRangeLabel() {
