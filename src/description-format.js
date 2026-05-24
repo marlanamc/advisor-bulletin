@@ -47,13 +47,14 @@ export function htmlToMarkdown(root) {
             return inner.trim() ? `++${inner.trim()}++` : '';
         }
         if (tag === 'ul' || tag === 'ol') {
-            return Array.from(node.children)
+            const items = Array.from(node.children)
                 .filter((child) => child.tagName.toLowerCase() === 'li')
                 .map((child) => {
                     const item = Array.from(child.childNodes).map(walk).join('').replace(/\n+$/, '').trim();
                     return item ? `- ${item}\n` : '';
                 })
                 .join('');
+            return items ? `\n${items}` : '';
         }
         if (tag === 'li') {
             return inner;
@@ -63,7 +64,7 @@ export function htmlToMarkdown(root) {
         }
         if (tag === 'div' || tag === 'p') {
             const trimmed = inner.replace(/\n+$/, '');
-            return trimmed ? `${trimmed}\n` : '';
+            return trimmed ? `\n${trimmed}\n` : '';
         }
         return inner;
     }
