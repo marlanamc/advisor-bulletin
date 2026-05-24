@@ -14,6 +14,7 @@ import {
 import {
     applyInlineFormatting as applyRichTextInlineFormatting,
     formatRichTextInline as renderRichTextInline,
+    formatRichTextPlainPreview,
     getRichTextPlainLength,
     normalizeRichTextMarkers,
     truncateRichText,
@@ -3141,8 +3142,8 @@ class FirebaseBulletinBoard {
         const title = this.getPostTitle(bulletin);
         const titleShort = title.length > 40 ? title.substring(0, 38) + '…' : title;
         const desc = this.getPostDescription(bulletin);
-        const truncatedDesc = truncateRichText(desc, 109);
-        const descHtml = renderRichTextInline(truncatedDesc) + (getRichTextPlainLength(desc) > 110 ? '…' : '');
+        const descPreview = formatRichTextPlainPreview(desc, 150);
+        const descHtml = this.escapeHtml(descPreview);
 
         const dateLabelHtml = this.formatFeedDateDisplayHtml(bulletin);
 
@@ -3176,7 +3177,7 @@ class FirebaseBulletinBoard {
 
       <div class="pc__body">
         <h3 class="pc__title">${this.escapeHtml(title)}</h3>
-        <p class="pc__desc">${descHtml}${getRichTextPlainLength(desc) > 110 ? '…' : ''}</p>
+        <p class="pc__desc">${descHtml}</p>
 
         ${dateLabelHtml ? `
         <div class="pc__date ${isDeadlineClose && !isExpired ? 'pc__date--urgent' : ''}">

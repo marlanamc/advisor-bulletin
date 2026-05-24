@@ -171,6 +171,35 @@ export function formatRichTextInline(rawText, options = {}) {
     return parts.join('');
 }
 
+export function toRichTextPlainText(rawText) {
+    if (!rawText) {
+        return '';
+    }
+
+    return normalizeRichTextMarkers(String(rawText))
+        .replace(/\*\*/g, '')
+        .replace(/\+\+/g, '')
+        .replace(/(?<!\*)\*(?!\*)/g, '')
+        .split('\n')
+        .map((line) => line.replace(/^\s*-\s+/, '').trim())
+        .filter(Boolean)
+        .join(' • ');
+}
+
+export function formatRichTextPlainPreview(rawText, maxPlainLength = 140) {
+    const plain = toRichTextPlainText(rawText);
+    if (!plain) {
+        return '';
+    }
+    if (plain.length <= maxPlainLength) {
+        return plain;
+    }
+    const slice = plain.slice(0, maxPlainLength);
+    const lastSpace = slice.lastIndexOf(' ');
+    const cut = lastSpace > maxPlainLength * 0.6 ? slice.slice(0, lastSpace) : slice;
+    return `${cut.replace(/[\s,.;:•-]+$/, '')}…`;
+}
+
 export function formatRichTextPreview(rawText, maxPlainLength = 110) {
     if (!rawText) {
         return '';
