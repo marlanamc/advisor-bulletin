@@ -439,7 +439,7 @@
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                                     </div>
                                     <div class="ap-type-name">Bulletin</div>
-                                    <div class="ap-type-desc">Announcements, reminders, updates</div>
+                                    <div class="ap-type-desc">Shows on the home feed — announcements, updates, and opportunities</div>
                                 </button>
                                 <button class="ap-type-card ap-type-resource" type="button" onclick="apSelectType('resource')" id="apTypeResource" aria-pressed="false">
                                     <div class="ap-type-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
@@ -447,7 +447,7 @@
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
                                     </div>
                                     <div class="ap-type-name">Resource</div>
-                                    <div class="ap-type-desc">Jobs, immigration help, housing, health</div>
+                                    <div class="ap-type-desc">Saved in Find Help — jobs, immigration, housing, health, and more</div>
                                 </button>
                                 <button class="ap-type-card ap-type-event" type="button" onclick="apSelectType('event')" id="apTypeEvent" aria-pressed="false">
                                     <div class="ap-type-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
@@ -455,7 +455,8 @@
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                                     </div>
                                     <div class="ap-type-name">Calendar Event</div>
-                                    <div class="ap-type-desc">Workshops, meetings, deadlines</div>
+                                    <div class="ap-type-desc">Adds dates to the school calendar — holidays, workshops, deadlines</div>
+                                    <div class="ap-type-note">Not shown as a post on the home feed</div>
                                 </button>
                             </div>
 
@@ -531,71 +532,54 @@
                                 <small class="input-help required">Add details so students know why this opportunity matters to them.</small>
                             </div>
 
-                            <div class="field-group double">
-                                <div class="form-group required-field category-field-group">
-                                    <label for="category" class="required">Category</label>
-                                    <select id="category" name="category" required class="required">
-                                        <option value="">Select a category</option>
-                                        <option value="job">Job Opportunity</option>
-                                        <option value="training">Training / Workshop</option>
-                                        <option value="immigration">Immigration</option>
-                                        <option value="housing">Housing</option>
-                                        <option value="health">Health</option>
-                                        <option value="food">Food</option>
-                                        <option value="esol">English Class (ESOL)</option>
-                                        <option value="college">College &amp; GED</option>
-                                        <option value="money">Money Help</option>
-                                        <option value="career-fair">Career Fair</option>
-                                        <option value="announcement">General Announcement</option>
-                                    </select>
-                                    <small class="input-help">Choose the topic students use to find this post. For permanent link listings, use the Resources content type.</small>
-                                    <div class="advisor-category-picker" aria-label="Quick category picker" style="margin-top: 8px;">
-                                        <button type="button" data-category-pick="job">💼 Job</button>
-                                        <button type="button" data-category-pick="training">📚 Training</button>
-                                        <button type="button" data-category-pick="immigration">🌎 Immigration</button>
-                                        <button type="button" data-category-pick="housing">🏠 Housing</button>
-                                        <button type="button" data-category-pick="health">❤️ Health</button>
-                                        <button type="button" data-category-pick="food">🍽️ Food</button>
-                                        <button type="button" data-category-pick="esol">🗣️ ESOL</button>
-                                        <button type="button" data-category-pick="college">🎓 College</button>
-                                        <button type="button" data-category-pick="money">💵 Money</button>
-                                        <button type="button" data-category-pick="career-fair">🤝 Fair</button>
-                                        <button type="button" data-category-pick="announcement">📣 News</button>
-                                    </div>
-                                </div>
-
-                                <div class="form-group required-field advisor-field-group">
-                                    <label for="advisorName" class="required">Posted by</label>
-                                    <select id="advisorName" name="advisorName" required class="required">
-                                        <option value="">Select your name</option>
-                                        <option value="Jorge">Jorge</option>
-                                        <option value="Fabiola">Fabiola</option>
-                                        <option value="Leidy">Leidy</option>
-                                        <option value="Carmen">Carmen</option>
-                                        <option value="Jerome">Jerome</option>
-                                        <option value="Felipe">Felipe</option>
-                                        <option value="Simonetta">Simonetta</option>
-                                        <option value="Mike K.">Mike K.</option>
-                                        <option value="Leah">Leah</option>
-                                        <option value="Administrator">Administrator</option>
-                                    </select>
-                                    <small class="input-help required">Select your name so students know who to contact.</small>
-                                </div>
+                            <div class="form-group required-field advisor-field-group" style="padding: 0 22px; margin-bottom: 0;">
+                                <label for="advisorName" class="required">Posted by</label>
+                                <select id="advisorName" name="advisorName" required class="required">
+                                    <option value="">Select your name</option>
+                                    <option value="Jorge">Jorge</option>
+                                    <option value="Fabiola">Fabiola</option>
+                                    <option value="Leidy">Leidy</option>
+                                    <option value="Carmen">Carmen</option>
+                                    <option value="Jerome">Jerome</option>
+                                    <option value="Felipe">Felipe</option>
+                                    <option value="Simonetta">Simonetta</option>
+                                    <option value="Mike K.">Mike K.</option>
+                                    <option value="Leah">Leah</option>
+                                    <option value="Administrator">Administrator</option>
+                                </select>
+                                <small class="input-help required">Select your name so students know who to contact.</small>
                             </div>
 
-                            <div class="form-group enhancement-field" style="padding: 0 22px; margin-bottom: 20px;">
-                                <label for="image">Add Image or Flyer (optional)</label>
-                                <div style="display: flex; gap: 12px; align-items: center; padding: 16px; border: 1.5px dashed var(--ap-border-mid); border-radius: var(--ap-r-md); background: var(--ap-surface-2); cursor: pointer;" onclick="document.getElementById('image').click()">
-                                    <div style="width: 44px; height: 44px; border-radius: 10px; background: #fff; display: grid; place-items: center; color: var(--ap-blue);">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 24px; height: 24px;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                                    </div>
-                                    <div>
-                                        <div style="font-weight: 700; font-size: 0.88rem; color: var(--ap-text);">Upload image or flyer</div>
-                                        <div style="font-size: 0.74rem; color: var(--ap-text-3);">PNG, JPG, or PDF (max 10MB). PDFs use page 1 for the student preview.</div>
-                                    </div>
+                            <div class="ap-category-picker-block category-field-group">
+                                <label for="category" class="required">Category</label>
+                                <small class="input-help ap-category-picker-help">Choose the topic students use to find this post. For permanent links, use Resources.</small>
+                                <select id="category" name="category" required class="required ap-category-select-sr" tabindex="-1" aria-hidden="true">
+                                    <option value="">Select a category</option>
+                                    <option value="job">Job Opportunity</option>
+                                    <option value="training">Training / Workshop</option>
+                                    <option value="immigration">Immigration</option>
+                                    <option value="housing">Housing</option>
+                                    <option value="health">Health</option>
+                                    <option value="food">Food</option>
+                                    <option value="esol">English Class (ESOL)</option>
+                                    <option value="college">College &amp; GED</option>
+                                    <option value="money">Money Help</option>
+                                    <option value="career-fair">Career Fair</option>
+                                    <option value="announcement">Announcement</option>
+                                </select>
+                                <div class="advisor-category-picker" role="group" aria-label="Category">
+                                    <button type="button" data-category-pick="job">💼 Job Opportunity</button>
+                                    <button type="button" data-category-pick="training">📚 Training / Workshop</button>
+                                    <button type="button" data-category-pick="immigration">🌎 Immigration</button>
+                                    <button type="button" data-category-pick="housing">🏠 Housing</button>
+                                    <button type="button" data-category-pick="health">❤️ Health</button>
+                                    <button type="button" data-category-pick="food">🍽️ Food</button>
+                                    <button type="button" data-category-pick="esol">🗣️ English Class (ESOL)</button>
+                                    <button type="button" data-category-pick="college">🎓 College &amp; GED</button>
+                                    <button type="button" data-category-pick="money">💵 Money Help</button>
+                                    <button type="button" data-category-pick="career-fair">🤝 Career Fair</button>
+                                    <button type="button" data-category-pick="announcement">📣 Announcement</button>
                                 </div>
-                                <input type="file" id="image" name="image" accept="image/*,.pdf,application/pdf" class="file-input recommended" style="display: none;">
-                                <div id="imagePreview" class="image-preview" style="margin-top: 10px;"></div>
                             </div>
 
                             <div class="form-group optional-field">
@@ -607,6 +591,58 @@
                                     <input type="url" id="eventLink" name="eventLink" placeholder="https://example.com" class="recommended" style="padding-left: 38px;">
                                 </div>
                                 <small class="input-help">Add a website or registration link for more information.</small>
+                            </div>
+                        </div>
+
+                        <div class="form-section ap-visual-upload-section content-mode-section" data-content-mode="post event">
+                            <div class="ap-visual-upload-head">
+                                <div class="ap-visual-upload-head-text">
+                                    <h3 class="ap-visual-upload-title">Make it visual</h3>
+                                    <p class="ap-visual-upload-sub">A flyer is the first thing students notice on the board.</p>
+                                </div>
+                                <span class="ap-visual-upload-badge">Recommended</span>
+                            </div>
+                            <div class="ap-visual-upload-body">
+                                <div class="ap-upload-zone ap-visual-flyer-zone" role="button" tabindex="0" onclick="document.getElementById('image').click()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();document.getElementById('image').click();}">
+                                    <div class="ap-upload-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                                    </div>
+                                    <div class="ap-upload-title">Drop flyer here</div>
+                                    <div class="ap-upload-sub">PNG, JPG, or PDF · max 10MB</div>
+                                </div>
+                                <input type="file" id="image" name="image" accept="image/*,.pdf,application/pdf" class="file-input recommended" style="display: none;" aria-label="Upload flyer">
+                                <div id="imagePreview" class="image-preview ap-visual-flyer-preview"></div>
+
+                                <div id="apFlyerPdfAddon" class="ap-flyer-pdf-addon" hidden>
+                                    <div class="ap-flyer-pdf-addon-row">
+                                        <div class="ap-flyer-pdf-addon-icon" aria-hidden="true">📄</div>
+                                        <div class="ap-flyer-pdf-addon-copy">
+                                            <label for="pdf">Also attach the original PDF</label>
+                                            <small class="input-help">Optional — students can open the full document from your post.</small>
+                                        </div>
+                                        <button type="button" class="ap-flyer-pdf-choose" onclick="document.getElementById('pdf').click()">Choose PDF</button>
+                                    </div>
+                                    <input type="file" id="pdf" name="pdf" accept=".pdf,application/pdf" class="file-input ap-flyer-pdf-input" style="display: none;" aria-label="Attach PDF">
+                                    <div id="pdfPreview" class="pdf-preview"></div>
+                                </div>
+
+                                <button type="button" id="apFlyerEsToggle" class="ap-flyer-es-toggle" aria-expanded="false" aria-controls="apFlyerEsPanel">+ Add Spanish flyer (ES)</button>
+                                <div id="apFlyerEsPanel" class="ap-flyer-es-panel" hidden>
+                                    <label for="imageEs">Spanish flyer</label>
+                                    <small class="input-help ap-image-es-help">Shown when students switch to Español (ES). English flyer is used if blank.</small>
+                                    <div class="ap-upload-dropzone ap-upload-dropzone-es" onclick="document.getElementById('imageEs').click()">
+                                        <div class="ap-upload-dropzone-icon" aria-hidden="true">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                                        </div>
+                                        <div>
+                                            <div class="ap-upload-dropzone-title">Upload Spanish flyer</div>
+                                            <div class="ap-upload-dropzone-sub">PNG or JPG · max 10MB</div>
+                                        </div>
+                                        <span class="ap-upload-lang-badge" aria-hidden="true">ES</span>
+                                    </div>
+                                    <input type="file" id="imageEs" name="imageEs" accept="image/*" class="file-input" style="display: none;" aria-label="Upload Spanish flyer">
+                                    <div id="imageEsPreview" class="image-preview"></div>
+                                </div>
                             </div>
                         </div>
 
@@ -843,11 +879,7 @@
                                 <div class="form-group">
                                     <label for="summaryEs">Spanish Summary</label>
                                     <textarea id="summaryEs" name="summaryEs" rows="3" maxlength="600" placeholder="Resumen en español"></textarea>
-                                </div>
-                                <div class="form-group enhancement-field">
-                                    <label for="imageEs">Spanish Image or Flyer</label>
-                                    <input type="file" id="imageEs" name="imageEs" accept="image/*" class="file-input">
-                                    <div id="imageEsPreview" class="image-preview"></div>
+                                    <small class="input-help">Spanish flyer can be added in the Make it visual section above.</small>
                                 </div>
                             </div>
                         </div>
@@ -932,12 +964,6 @@
                                         <option value="famlit">FamLit</option>
                                     </select>
                                 </div>
-                                <div class="form-group enhancement-field">
-                                    <label for="pdf">Add PDF Document (optional)</label>
-                                    <input type="file" id="pdf" name="pdf" accept=".pdf,application/pdf" class="file-input">
-                                    <small class="input-help">Use this only if you already uploaded a PNG/JPG flyer above and want to attach the original PDF too.</small>
-                                    <div id="pdfPreview" class="pdf-preview"></div>
-                                </div>
                             </div>
                         </div>
 
@@ -981,9 +1007,14 @@
                                     <div class="ap-phone-mockup">
                                         <div class="ap-phone-status">
                                             <div data-ebhcs-brand-lockup data-brand-href="false" data-brand-variant="preview"></div>
-                                            <div class="ap-phone-topnav-icons">
-                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                                            <div class="ap-phone-topbar-actions" aria-hidden="true">
+                                                <span class="ap-phone-search-btn" aria-hidden="true">
+                                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></svg>
+                                                </span>
+                                                <div class="ap-phone-lang-pill">
+                                                    <span class="ap-phone-lang-btn is-active">EN</span>
+                                                    <span class="ap-phone-lang-btn">ES</span>
+                                                </div>
                                             </div>
                                         </div>
                                         <div class="ap-preview-card">
@@ -1044,7 +1075,7 @@
                                     </li>
                                     <li class="ap-tip-item">
                                         <div class="ap-tip-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
-                                        Add a flyer or image for 2× more clicks
+                                        Add a flyer or image
                                     </li>
                                     <li class="ap-tip-item">
                                         <div class="ap-tip-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>

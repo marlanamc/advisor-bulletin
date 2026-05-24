@@ -95,7 +95,7 @@ export const POST_CATEGORIES = [
     },
     {
         id: 'announcement',
-        adminLabel: 'General Announcement',
+        adminLabel: 'Announcement',
         displayLabel: 'Announcement',
         filterLabelEn: 'Announcements',
         filterLabelEs: 'Anuncios',

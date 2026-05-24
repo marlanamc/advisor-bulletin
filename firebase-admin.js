@@ -163,7 +163,17 @@ class FirebaseAdminPanel {
         this.renderEventDatesList(['']);
         
         // PDF upload preview
-        document.getElementById('pdf').addEventListener('change', (e) => this.handlePdfPreview(e));
+        const pdfInput = document.getElementById('pdf');
+        if (pdfInput) {
+            pdfInput.addEventListener('change', (e) => this.handlePdfPreview(e));
+        }
+
+        const flyerEsToggle = document.getElementById('apFlyerEsToggle');
+        if (flyerEsToggle) {
+            flyerEsToggle.addEventListener('click', () => this.toggleSpanishFlyerPanel());
+        }
+
+        this.syncFlyerUploadUI();
 
         // Close preview modal when clicking outside (but NOT login modal - that's annoying during login)
         window.addEventListener('click', (e) => {
@@ -320,10 +330,51 @@ class FirebaseAdminPanel {
 
         // 6. Advanced Settings
         const classType = document.getElementById('classType')?.value;
-        const hasPdf = document.getElementById('pdfPreview')?.querySelector('.pdf-preview-container');
-        if (classType || hasPdf) {
+        if (classType) {
             const step6 = [...document.querySelectorAll('.ap-accordion-section')].find(s => s.querySelector('.ap-step-number')?.textContent === '6');
             if (step6) step6.classList.add('open');
+        }
+    }
+
+    syncFlyerUploadUI() {
+        const imageInput = document.getElementById('image');
+        const imagePreview = document.getElementById('imagePreview');
+        const pdfAddon = document.getElementById('apFlyerPdfAddon');
+        const hasImagePreview = Boolean(imagePreview?.querySelector('.preview-image'));
+
+        if (!pdfAddon) return;
+
+        if (!hasImagePreview) {
+            pdfAddon.setAttribute('hidden', '');
+            return;
+        }
+
+        const file = imageInput?.files?.[0];
+        const fromPdf = Boolean(this.pendingImageData?.convertedFromPdf || (file && isPdfFile(file)));
+
+        if (fromPdf) {
+            pdfAddon.setAttribute('hidden', '');
+            this.removePdfPreview();
+        } else {
+            pdfAddon.removeAttribute('hidden');
+        }
+    }
+
+    toggleSpanishFlyerPanel(forceOpen) {
+        const panel = document.getElementById('apFlyerEsPanel');
+        const toggle = document.getElementById('apFlyerEsToggle');
+        if (!panel || !toggle) return;
+
+        const shouldOpen = typeof forceOpen === 'boolean' ? forceOpen : panel.hasAttribute('hidden');
+
+        if (shouldOpen) {
+            panel.removeAttribute('hidden');
+            toggle.setAttribute('aria-expanded', 'true');
+            toggle.textContent = '− Hide Spanish flyer (ES)';
+        } else {
+            panel.setAttribute('hidden', '');
+            toggle.setAttribute('aria-expanded', 'false');
+            toggle.textContent = '+ Add Spanish flyer (ES)';
         }
     }
 
@@ -732,8 +783,8 @@ class FirebaseAdminPanel {
             helper.textContent = nextType === 'resource'
                 ? 'Use Resources for important links students may need again later.'
                 : isEvent
-                    ? 'Quick calendar dates (holidays, no-school days). They appear on the feed, calendar, and upcoming list.'
-                    : 'Use Posts for announcements, events, trainings, and opportunities.';
+                    ? 'Adds to the calendar and upcoming dates. Not shown as a post on the home feed.'
+                    : 'Use Posts for announcements, trainings, and opportunities on the home feed.';
         }
 
         const requiredTitle = document.querySelector('.form-section.required .form-section-title');
@@ -1487,6 +1538,10 @@ class FirebaseAdminPanel {
 
                 if (fieldName === 'resourceLogo') {
                     this.updateResourceIconGroupState();
+                } else if (fieldName === 'image') {
+                    this.syncFlyerUploadUI();
+                } else if (fieldName === 'imageEs') {
+                    this.toggleSpanishFlyerPanel(true);
                 }
 
                 if (processed.infoMessage) {
@@ -1517,6 +1572,13 @@ class FirebaseAdminPanel {
             if (fieldName === 'resourceLogo') {
                 this.updateResourceIconGroupState();
             }
+            if (fieldName === 'image') {
+                this.syncFlyerUploadUI();
+            }
+        }
+
+        if (typeof window.syncAdminStudentPreview === 'function') {
+            window.syncAdminStudentPreview();
         }
     }
 
@@ -1742,6 +1804,18 @@ class FirebaseAdminPanel {
                 this.removeResourceLogo = true;
             }
             this.updateResourceIconGroupState();
+        }
+
+        if (fieldName === 'image') {
+            this.removePdfPreview();
+            this.syncFlyerUploadUI();
+        }
+        if (fieldName === 'imageEs' && !document.getElementById('imageEsPreview')?.querySelector('.preview-image')) {
+            this.toggleSpanishFlyerPanel(false);
+        }
+
+        if (typeof window.syncAdminStudentPreview === 'function') {
+            window.syncAdminStudentPreview();
         }
     }
 
@@ -1970,7 +2044,9 @@ class FirebaseAdminPanel {
                         <button type="button" class="remove-image" onclick="adminPanel.removeImagePreview('imageEs')">&times;</button>
                     </div>
                 `;
+                this.toggleSpanishFlyerPanel(true);
             }
+            this.syncFlyerUploadUI();
             this.autoExpandAccordions();
         }
 
@@ -3486,6 +3562,8 @@ class FirebaseAdminPanel {
         this.pendingResourceLogoData = null;
         this.removeResourceLogo = false;
         this.updateResourceIconGroupState();
+        this.toggleSpanishFlyerPanel(false);
+        this.syncFlyerUploadUI();
 
         // Reset advisor name dropdown to current user
         if (this.currentUser) {

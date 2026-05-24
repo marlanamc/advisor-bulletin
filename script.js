@@ -1324,7 +1324,7 @@ class BulletinBoard {
             esol:          { accent: '#7b4ec7', tint: '#ece4f9', label: 'ESOL' },
             'career-fair': { accent: '#e88a2a', tint: '#fbe6cc', label: 'Career Fair' },
             money:         { accent: '#1aa37a', tint: '#cfeee0', label: 'Money Help' },
-            announcement:  { accent: '#2e7af0', tint: '#dde9ff', label: 'General Announcement' },
+            announcement:  { accent: '#2e7af0', tint: '#dde9ff', label: 'Announcement' },
             resource:      { accent: '#2e7af0', tint: '#dde9ff', label: 'Resource/Service' },
         };
         return map[category] || { accent: '#2e7af0', tint: '#dde9ff', label: category };
@@ -1590,7 +1590,7 @@ class BulletinBoard {
             'classtype': 'Class Type',
             'immigration': 'Immigration',
             'career-fair': 'Career Fair',
-            'announcement': 'General Announcement',
+            'announcement': 'Announcement',
             'resource': 'Resource/Service'
         };
         return categories[category] || category;
