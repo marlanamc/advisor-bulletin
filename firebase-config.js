@@ -4422,7 +4422,7 @@ class FirebaseBulletinBoard {
     expandBulletinDateItems(bulletin) {
         if (bulletin.dateType === 'sessions') {
             const sessions = this.getBulletinEventSessions(bulletin);
-            return sessions.map((session, index) => {
+            return sessions.map((session) => {
                 const date = this.parseDateOnly(session.date);
                 if (!date) return null;
 
@@ -4432,11 +4432,7 @@ class FirebaseBulletinBoard {
                     date,
                     kind: 'event',
                     session,
-                    label: this.getDatesListLabel(bulletin, date, 'event', {
-                        sessionIndex: index + 1,
-                        sessionTotal: sessions.length,
-                        session
-                    })
+                    label: this.getDatesListLabel(bulletin, date, 'event', { session })
                 };
             }).filter(Boolean);
         }
@@ -4509,12 +4505,6 @@ class FirebaseBulletinBoard {
             return isEs
                 ? `Comienza el ${dayLabel}${timeRange ? ` · ${timeRange}` : ''}`
                 : `Starts ${dateLabel}${timeRange ? ` · ${timeRange}` : ''}`;
-        }
-
-        if (options.sessionTotal > 1) {
-            return isEs
-                ? `${dayLabel} (Sesión ${options.sessionIndex} de ${options.sessionTotal})${timeRange ? ` · ${timeRange}` : ''}`
-                : `${dayLabel} (Session ${options.sessionIndex} of ${options.sessionTotal})${timeRange ? ` · ${timeRange}` : ''}`;
         }
 
         return `${dayLabel}${timeRange ? ` · ${timeRange}` : ''}`;
