@@ -1892,6 +1892,49 @@ body.ap-portal-active .main-content {
   color: var(--ap-text);
 }
 
+.ap-toolbar-divider {
+  width: 1px;
+  height: 20px;
+  background: var(--ap-border);
+  margin: 4px 4px 4px 2px;
+  align-self: center;
+}
+
+.ap-toolbar-chip {
+  width: auto;
+  min-width: 0;
+  padding: 0 10px;
+  font-family: var(--ap-font-head);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.ap-create-form-col .ap-rich-field .ap-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 10px;
+  margin-top: 6px;
+  background: var(--ap-surface-2);
+  border: 1.5px solid var(--ap-border);
+  border-bottom: none;
+  border-radius: var(--ap-r-md) var(--ap-r-md) 0 0;
+}
+
+.ap-create-form-col .ap-rich-field .ap-toolbar + textarea {
+  border-radius: 0 0 var(--ap-r-md) var(--ap-r-md);
+  border-top: none;
+}
+
+.ap-create-form-col .ap-rich-field:focus-within .ap-toolbar {
+  border-color: var(--ap-blue);
+}
+
+.ap-create-form-col .ap-rich-field:focus-within .ap-toolbar + textarea {
+  border-top: none;
+}
+
 .ap-char-count {
   font-size: 0.72rem;
   color: var(--ap-text-3);

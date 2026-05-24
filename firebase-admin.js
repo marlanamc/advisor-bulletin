@@ -12,6 +12,7 @@ import {
     getMultiSessionFeedSortMs,
     getNextSessionStartMs,
 } from './src/event-sessions.js'
+import { initDescriptionFormatToolbars } from './src/description-format.js'
 import { collection, doc, query, where, orderBy, onSnapshot, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, serverTimestamp, Timestamp, writeBatch } from 'firebase/firestore'
 
 installClientErrorLogger('admin')
@@ -222,6 +223,8 @@ class FirebaseAdminPanel {
         }
 
         this.syncFlyerUploadUI();
+
+        initDescriptionFormatToolbars();
 
         this.setContentType('post', { preserveFields: true, silent: true });
 

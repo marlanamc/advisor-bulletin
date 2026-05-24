@@ -1344,7 +1344,7 @@ class FirebaseBulletinBoard {
 
     createFeedCategoryResourceCard(resource) {
         const { titleEn } = this.getResourceTitles(resource);
-        const description = resource.description ? this.escapeHtml(resource.description) : '';
+        const description = resource.description ? this.formatRichTextInline(resource.description) : '';
         const url = this.getResourceUrl(resource);
         const phone = resource.phone || '';
         const tel = resource.tel || (phone ? `tel:${phone.replace(/[^0-9+]/g, '')}` : '');
@@ -2424,7 +2424,11 @@ class FirebaseBulletinBoard {
         const description = isCompact
             ? this.getResourceSheetSubtitle(resource)
             : (resource.description || '');
-        const escapedDescription = description ? this.escapeHtml(description) : '';
+        const escapedDescription = description
+            ? (isCompact
+                ? this.escapeHtml(description)
+                : this.formatRichTextInline(resource.description || ''))
+            : '';
         const url = this.getResourceUrl(resource);
         const displayUrl = resource.websiteLabel || this.formatLinkLabel(url, this.getResourceCategoryKey(resource));
         const phone = resource.phone || '';
@@ -2532,7 +2536,7 @@ class FirebaseBulletinBoard {
         const isPreviewBubble = resource.isPreviewBubble === true;
         const categoryKey = this.getResourceCategoryKey(resource);
         const url = this.getResourceUrl(resource);
-        const description = this.escapeHtml(resource.description || '');
+        const description = resource.description ? this.formatRichTextInline(resource.description) : '';
 
         if (isPreviewBubble) {
             return `
@@ -2587,7 +2591,7 @@ class FirebaseBulletinBoard {
         const { titleEn, titleEs } = this.getResourceTitles(resource);
         const categoryKey = this.getResourceCategoryKey(resource);
         const categoryConfig = this.getResourceCategoryConfig(resource);
-        const description = resource.description ? this.escapeHtml(resource.description) : '';
+        const description = resource.description ? this.formatRichTextInline(resource.description) : '';
         const url = this.getResourceUrl(resource);
         const logo = resource.resourceLogo || '';
 
@@ -3083,7 +3087,7 @@ class FirebaseBulletinBoard {
         const postedAgo = this.formatPostedDate(bulletin.datePosted);
         const title = bulletin.title || '';
         const titleShort = title.length > 40 ? title.substring(0, 38) + '…' : title;
-        const desc = bulletin.description || '';
+        const desc = this.getPostDescription(bulletin);
         const descShort = desc.length > 110 ? desc.substring(0, 108) + '…' : desc;
 
         const dateLabel = this.formatEventDatesDisplay(bulletin);
@@ -3120,7 +3124,7 @@ class FirebaseBulletinBoard {
 
       <div class="pc__body">
         <h3 class="pc__title">${this.escapeHtml(title)}</h3>
-        <p class="pc__desc">${this.escapeHtml(descShort)}</p>
+        <p class="pc__desc">${this.formatRichTextInline(descShort)}</p>
 
         ${dateLabel ? `
         <div class="pc__date ${isDeadlineClose && !isExpired ? 'pc__date--urgent' : ''}">
@@ -3181,7 +3185,8 @@ class FirebaseBulletinBoard {
             : omitAuthorPostedDate
                 ? `<strong>${this.escapeHtml(bulletin.advisorName || 'Advisor')}</strong>`
                 : `<strong>${this.escapeHtml(bulletin.advisorName || 'Advisor')}</strong> · ${postedDate}`;
-        const descriptionHtml = bulletin.description ? this.renderFormattedDescription(bulletin.description, `${bulletin.id}-detail`) : '';
+        const postDescription = this.getPostDescription(bulletin);
+        const descriptionHtml = postDescription ? this.renderFormattedDescription(postDescription, `${bulletin.id}-detail`) : '';
         const tagValues = [bulletin.classType ? this.getClassTypeDisplay(bulletin.classType) : '', bulletin.company || '', bulletin.eventLocation || '']
             .filter(Boolean)
             .slice(0, 3);
@@ -3438,7 +3443,7 @@ class FirebaseBulletinBoard {
                 ` : ''}
 
                 <div class="detail-body">
-                    ${bulletin.description ? this.renderFormattedDescription(bulletin.description, `${bulletin.id}-detail`) : ''}
+                    ${this.getPostDescription(bulletin) ? this.renderFormattedDescription(this.getPostDescription(bulletin), `${bulletin.id}-detail`) : ''}
 
                         ${bulletin.company ? `
                             <p><strong>Organization:</strong> ${this.escapeHtml(bulletin.company)}</p>
@@ -4013,6 +4018,27 @@ class FirebaseBulletinBoard {
         } catch (error) {
             return timeString;
         }
+    }
+
+    getPostDescription(bulletin) {
+        const lang = document.body.getAttribute('data-lang') || 'EN';
+        if (lang === 'ES') {
+            const summaryEs = (bulletin.summaryEs || '').trim();
+            if (summaryEs) {
+                return summaryEs;
+            }
+        }
+        return (bulletin.description || '').trim();
+    }
+
+    formatRichTextInline(rawText) {
+        if (!rawText) {
+            return '';
+        }
+
+        const div = document.createElement('div');
+        div.textContent = rawText;
+        return this.applyInlineFormatting(div.innerHTML).replace(/\n/g, '<br>');
     }
 
     renderFormattedDescription(rawText, bulletinId, collapsed = false) {

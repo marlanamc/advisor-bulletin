@@ -525,11 +525,28 @@
                                 <small class="input-help required">Keep it short and clear. This is what students will see first.</small>
                             </div>
 
-                            <div class="form-group required-field">
+                            <div class="form-group required-field ap-rich-field">
                                 <label for="description" class="required">Description</label>
+                                <div
+                                    class="ap-toolbar"
+                                    role="toolbar"
+                                    aria-label="Description formatting"
+                                    aria-controls="description"
+                                    data-rich-toolbar
+                                >
+                                    <button type="button" class="ap-toolbar-btn" data-format="bold" title="Bold (⌘B)" aria-label="Bold">
+                                        <strong>B</strong>
+                                    </button>
+                                    <button type="button" class="ap-toolbar-btn" data-format="italic" title="Italic (⌘I)" aria-label="Italic">
+                                        <em>I</em>
+                                    </button>
+                                    <span class="ap-toolbar-divider" aria-hidden="true"></span>
+                                    <button type="button" class="ap-toolbar-btn ap-toolbar-chip" data-insert="**When:** " aria-label="Insert When label">When</button>
+                                    <button type="button" class="ap-toolbar-btn ap-toolbar-chip" data-insert="**Where:** " aria-label="Insert Where label">Where</button>
+                                </div>
                                 <textarea id="description" name="description" rows="4" placeholder="Share the details about this opportunity..." maxlength="2000" class="required"></textarea>
                                 <div class="field-feedback" id="descriptionFeedback"></div>
-                                <small class="input-help required">Add details so students know why this opportunity matters to them.</small>
+                                <small class="input-help required">Highlight key details with the toolbar — use <strong>When</strong> and <strong>Where</strong> labels so students can scan quickly.</small>
                             </div>
 
                             <div class="form-group required-field advisor-field-group" style="padding: 0 22px; margin-bottom: 0;">
@@ -705,9 +722,27 @@
                                 <div id="resourceLogoPreview" class="image-preview" style="margin-top: 10px;"></div>
                             </div>
 
-                            <div class="form-group">
+                            <div class="form-group ap-rich-field">
                                 <label for="resourceDescription">Short Description (optional)</label>
+                                <div
+                                    class="ap-toolbar"
+                                    role="toolbar"
+                                    aria-label="Resource description formatting"
+                                    aria-controls="resourceDescription"
+                                    data-rich-toolbar
+                                >
+                                    <button type="button" class="ap-toolbar-btn" data-format="bold" title="Bold (⌘B)" aria-label="Bold">
+                                        <strong>B</strong>
+                                    </button>
+                                    <button type="button" class="ap-toolbar-btn" data-format="italic" title="Italic (⌘I)" aria-label="Italic">
+                                        <em>I</em>
+                                    </button>
+                                    <span class="ap-toolbar-divider" aria-hidden="true"></span>
+                                    <button type="button" class="ap-toolbar-btn ap-toolbar-chip" data-insert="**When:** " aria-label="Insert When label">When</button>
+                                    <button type="button" class="ap-toolbar-btn ap-toolbar-chip" data-insert="**Where:** " aria-label="Insert Where label">Where</button>
+                                </div>
                                 <textarea id="resourceDescription" name="resourceDescription" rows="3" maxlength="240" placeholder="One sentence about what students will find or who should use it."></textarea>
+                                <small class="input-help">Use the toolbar to bold key details like hours or location.</small>
                             </div>
 
                             <div class="field-group double">
@@ -903,10 +938,27 @@
                                     <label for="titleEs">Spanish Title</label>
                                     <input type="text" id="titleEs" name="titleEs" maxlength="200" placeholder="Título en español">
                                 </div>
-                                <div class="form-group">
+                                <div class="form-group ap-rich-field">
                                     <label for="summaryEs">Spanish Summary</label>
+                                    <div
+                                        class="ap-toolbar"
+                                        role="toolbar"
+                                        aria-label="Spanish summary formatting"
+                                        aria-controls="summaryEs"
+                                        data-rich-toolbar
+                                    >
+                                        <button type="button" class="ap-toolbar-btn" data-format="bold" title="Bold (⌘B)" aria-label="Bold">
+                                            <strong>B</strong>
+                                        </button>
+                                        <button type="button" class="ap-toolbar-btn" data-format="italic" title="Italic (⌘I)" aria-label="Italic">
+                                            <em>I</em>
+                                        </button>
+                                        <span class="ap-toolbar-divider" aria-hidden="true"></span>
+                                        <button type="button" class="ap-toolbar-btn ap-toolbar-chip" data-insert="**Cuándo:** " aria-label="Insert Cuándo label">Cuándo</button>
+                                        <button type="button" class="ap-toolbar-btn ap-toolbar-chip" data-insert="**Dónde:** " aria-label="Insert Dónde label">Dónde</button>
+                                    </div>
                                     <textarea id="summaryEs" name="summaryEs" rows="3" maxlength="600" placeholder="Resumen en español"></textarea>
-                                    <small class="input-help">Spanish flyer can be added in the Make it visual section above.</small>
+                                    <small class="input-help">Shown to students when they switch to Español. Use the toolbar to highlight <strong>Cuándo</strong> and <strong>Dónde</strong>.</small>
                                 </div>
                             </div>
                         </div>
@@ -1531,6 +1583,14 @@
             return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
         }
 
+        function formatPreviewDescription(raw) {
+            if (!raw) return 'Your description will show here.';
+            var txt = raw.length > 110 ? raw.slice(0, 108) + '…' : raw;
+            return escPreview(txt)
+                .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.+?)\*/g, '<em>$1</em>');
+        }
+
         function formatPreviewYmd(ymd) {
             if (!ymd || typeof ymd !== 'string') return '';
             var m = ymd.trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
@@ -1634,13 +1694,12 @@
                     '<span style="font-size:.58rem;font-weight:600;color:#94a3b8;font-family:var(--ap-font-head);letter-spacing:.04em">IMAGE / FLYER</span>' +
                     '</div>';
             }
-            var descTxt = desc ? (desc.length > 110 ? desc.slice(0, 108) + '…' : desc) : 'Your description will show here.';
             return '<div class="ap-preview-pc">' +
                 '<div class="ap-preview-pc-chipbar" id="previewChipBar" style="background:#fff">' + chipHtml + '</div>' +
                 '<div class="' + topClass + '" id="previewImg">' + topHtml + '</div>' +
                 '<div class="ap-preview-pc-body">' +
                     '<div class="ap-preview-pc-title" id="previewTitle">' + escPreview(title || 'Your post title will appear here') + '</div>' +
-                    '<div class="ap-preview-pc-desc" id="previewBody">' + escPreview(descTxt) + '</div>' +
+                    '<div class="ap-preview-pc-desc" id="previewBody">' + formatPreviewDescription(desc) + '</div>' +
                 '</div>' +
                 '<div class="ap-preview-pc-footer">' +
                     '<span class="ap-preview-pc-author" id="previewAdvisor">' + escPreview(advisor || 'Advisor') + ' · Just now</span>' +
@@ -1720,7 +1779,7 @@
                                 pillsHtml +
                                 '<div class="ap-preview-resource-title">' + escPreview(title || 'Resource title') + '</div>' +
                                 (titleEs ? '<div class="ap-preview-resource-subtitle">' + escPreview(titleEs) + '</div>' : '') +
-                                (desc ? '<div class="ap-preview-resource-desc">' + escPreview(desc) + '</div>' : '') +
+                                (desc ? '<div class="ap-preview-resource-desc">' + formatPreviewDescription(desc) + '</div>' : '') +
                                 highlightHtml +
                             '</div>' +
                         '</div>' +
@@ -1794,7 +1853,7 @@
                     : '';
 
                 var descHtml = descEv
-                    ? '<div class="ap-preview-event-desc">' + escPreview(descEv.length > 240 ? descEv.slice(0, 240) + '…' : descEv) + '</div>'
+                    ? '<div class="ap-preview-event-desc">' + formatPreviewDescription(descEv.length > 240 ? descEv.slice(0, 240) + '…' : descEv) + '</div>'
                     : '<div class="ap-preview-event-desc ap-preview-event-desc-muted">Optional details for students</div>';
 
                 var linkRowEv = evLink
@@ -1919,7 +1978,7 @@
 
         // ── Bind live preview to title/desc ──────────────────────────
         function bindPreviewListeners() {
-            ['title','category','resourceTitleEn','resourceTitleEs','description','resourceDescription','advisorName','resourceAdvisorName','resourceCategory','resourceUrl','resourceHighlights','resourcePhone','resourceAddress','resourceHours','resourcePublished','dateType','eventDate','startDate','endDate','startTime','endTime','location','eventLink','eventLocation'].forEach(function(id) {
+            ['title','category','resourceTitleEn','resourceTitleEs','description','summaryEs','resourceDescription','advisorName','resourceAdvisorName','resourceCategory','resourceUrl','resourceHighlights','resourcePhone','resourceAddress','resourceHours','resourcePublished','dateType','eventDate','startDate','endDate','startTime','endTime','location','eventLink','eventLocation'].forEach(function(id) {
                 var el = document.getElementById(id);
                 if (!el) return;
                 el.addEventListener('input', syncPreview);
