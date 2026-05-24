@@ -1299,6 +1299,14 @@ class FirebaseBulletinBoard {
         this.renderResourcesSections(resources);
         this.syncHeaderSearchButton();
         this.handleHashRouting();
+        this.refreshOpenBulletinDetail();
+    }
+
+    refreshOpenBulletinDetail() {
+        const detailModal = document.getElementById('bulletinDetailModal');
+        if (this.activeDetailBulletinId && detailModal?.style.display === 'flex') {
+            this.showBulletinDetail(this.activeDetailBulletinId);
+        }
     }
 
     updateResultsInfo(posts) {

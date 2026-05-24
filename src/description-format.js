@@ -90,6 +90,10 @@ function syncEditorToTextarea(editor, textarea) {
     textarea.dispatchEvent(new Event('input', { bubbles: true }));
 }
 
+export function syncRichEditorsToForm(root = document) {
+    syncAllRichEditors(root);
+}
+
 export function refreshRichEditors(root = document) {
     root.querySelectorAll('[data-rich-editor]').forEach((editor) => {
         const textareaId = editor.dataset.richEditor;

@@ -12,7 +12,7 @@ import {
     getMultiSessionFeedSortMs,
     getNextSessionStartMs,
 } from './src/event-sessions.js'
-import { initDescriptionFormatToolbars, refreshRichEditors } from './src/description-format.js'
+import { initDescriptionFormatToolbars, refreshRichEditors, syncRichEditorsToForm } from './src/description-format.js'
 import { collection, doc, query, where, orderBy, onSnapshot, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, serverTimestamp, Timestamp, writeBatch } from 'firebase/firestore'
 
 installClientErrorLogger('admin')
@@ -1469,6 +1469,7 @@ class FirebaseAdminPanel {
         submitBtn.disabled = true;
 
         try {
+            syncRichEditorsToForm();
             const formData = new FormData(e.target);
             if (this.contentMode === 'event') {
                 const hasEndDate = Boolean((formData.get('endDate') || '').trim());
@@ -3322,8 +3323,9 @@ class FirebaseAdminPanel {
             bulletin.postedBy = existingBulletin.postedBy;
             bulletin.datePosted = existingBulletin.datePosted;
             bulletin.createdAt = existingBulletin.createdAt || existingBulletin.datePosted;
-            bulletin.image = this.isResourceBulletin(bulletin) ? null : existingBulletin.image;
-            bulletin.pdfUrl = this.isResourceBulletin(bulletin) ? null : existingBulletin.pdfUrl;
+            bulletin.image = this.isResourceBulletin(bulletin) ? null : (existingBulletin.image || null);
+            bulletin.imageEs = this.isResourceBulletin(bulletin) ? null : (existingBulletin.imageEs || null);
+            bulletin.pdfUrl = this.isResourceBulletin(bulletin) ? null : (existingBulletin.pdfUrl || null);
             if (this.isResourceBulletin(bulletin)) {
                 bulletin.resourceLogo = existingBulletin.resourceLogo || null;
             }
@@ -3348,27 +3350,20 @@ class FirebaseAdminPanel {
             return;
         }
 
+        await this.saveBulletin(bulletin, bulletinId);
+
         const imageFile = formData.get('image');
         const imageEsFile = formData.get('imageEs');
         const pdfFile = formData.get('pdf');
-        
-        let fileProcessed = false;
+
         if (imageFile && imageFile.size > 0) {
             await this.handleImageUpload(imageFile, bulletin, pdfFile, bulletinId, 'image');
-            fileProcessed = true;
         } else if (pdfFile && pdfFile.size > 0) {
             await this.handlePdfUpload(pdfFile, bulletin, bulletinId);
-            fileProcessed = true;
-        }
-        
-        if (imageEsFile && imageEsFile.size > 0) {
-            await this.handleImageUpload(imageEsFile, bulletin, null, bulletinId, 'imageEs');
-            fileProcessed = true;
         }
 
-        if (!fileProcessed) {
-            // Only save if there are no files (file upload handlers save it)
-            await this.saveBulletin(bulletin, bulletinId);
+        if (imageEsFile && imageEsFile.size > 0) {
+            await this.handleImageUpload(imageEsFile, bulletin, null, bulletinId, 'imageEs');
         }
     }
 
