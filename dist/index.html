@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#f4f6fb">
     <meta name="google-site-verification" content="1HrLriZzzFuXUMylxwiYP26DsVb2tDpZsi8-Lez9QRU">
-    <meta name="description" content="Official bulletin board for the East Boston Harborside Community School. Browse jobs, training programs, ESOL classes, housing resources, and community updates posted by school advisors.">
+    <meta name="description" content="Official bulletin board for the East Boston Harborside Community School. Browse jobs, training programs, ESOL classes, housing help, and community updates posted by school advisors.">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://www.gstatic.com https://*.firebaseapp.com; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://*.firebaseapp.com https://*.firebase.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleapis.com https://*.firebaseapp.com https://*.google.com https://*.firebase.com; frame-src 'self' https://*.firebaseapp.com;">
     <title>East Boston Harborside Community School Bulletin Board</title>
     <!-- First paint: match feed shell so PWA / slow network does not flash dark slate before CSS loads -->
@@ -16,9 +16,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <script type="module" crossorigin src="/assets/main-N1H1whfF.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/feed-categories-Ul5PpAVc.js">
-  <link rel="stylesheet" crossorigin href="/assets/feed-categories-tz3j1O7F.css">
+  <script type="module" crossorigin src="/assets/main-DNYOtW2X.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/feed-categories-DYSCHwY0.js">
+  <link rel="stylesheet" crossorigin href="/assets/feed-categories-DiJmTg7J.css">
 </head>
 <body>
 
@@ -59,7 +59,7 @@
                     <circle cx="11" cy="11" r="7"></circle>
                     <path d="m17 17 4 4"></path>
                 </svg>
-                <input id="desktopTopbarSearchInput" type="text" class="desktop-topbar-search-input" placeholder="Search jobs, housing, food, classes and more..." autocomplete="off" spellcheck="false">
+                <input id="desktopTopbarSearchInput" type="text" class="desktop-topbar-search-input" placeholder="Search for help, announcements, and events..." autocomplete="off" spellcheck="false">
                 <button id="desktopTopbarSearchBtn" class="desktop-topbar-search-btn" type="button">
                     <span class="en-text">Search</span>
                     <span class="es-text">Buscar</span>
@@ -75,8 +75,8 @@
                     <span class="es-text">Calendario</span>
                 </button>
                 <button class="desktop-topnav-btn" data-app-view="resources" type="button">
-                    <span class="en-text">Resources</span>
-                    <span class="es-text">Recursos</span>
+                    <span class="en-text">Find Help</span>
+                    <span class="es-text">Ayuda</span>
                 </button>
                 <button class="desktop-topnav-btn" data-app-view="advisors" type="button">
                     <span class="en-text">Advisors</span>
@@ -127,7 +127,7 @@
             </div>
             <div class="filter-section">
                 <div class="search-bar">
-                    <input type="text" id="searchInput" placeholder="Search the feed / Buscar publicaciones" class="search-input">
+                    <input type="text" id="searchInput" placeholder="What do you need help with?" class="search-input">
                     <button id="searchBtn" class="search-btn" type="button" aria-label="Search the feed">
                         <svg class="search-btn-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                             <circle cx="11" cy="11" r="7"></circle>
@@ -196,9 +196,9 @@
     <nav class="header-tabs sr-only" aria-label="Main sections" aria-hidden="true">
         <button class="section-nav-btn active" data-app-view="feed" type="button">Feed / Inicio</button>
         <button class="section-nav-btn" data-app-view="calendar" type="button">Calendar / Calendario</button>
-        <button class="section-nav-btn" data-app-view="resources" type="button">Resources / Recursos</button>
+        <button class="section-nav-btn" data-app-view="resources" type="button">Find Help / Ayuda</button>
         <button class="section-nav-btn" data-app-view="advisors" type="button">Advisors / Asesores</button>
-        <div class="header-resource-strip header-resource-strip-inline" aria-label="Resources / Recursos">
+        <div class="header-resource-strip header-resource-strip-inline" aria-label="Find Help / Ayuda">
             <div class="resource-story-row header-resource-row" id="headerResourceStoryRow" aria-live="polite">
                 <!-- Resource bubbles render here -->
             </div>
@@ -227,10 +227,19 @@
             <!-- cat-bar moved into header; old slot removed -->
 
             <!-- ─── STORY BUBBLES (mobile only, hidden on desktop) ── -->
-            <div class="story-row-wrap story-row-wrap--mobile">
+            <div class="story-row-wrap story-row-wrap--mobile story-row-wrap--bilingual">
                 <div class="story-row-label">
-                    <span class="en-text">Explore resources</span>
-                    <span class="es-text">Explora recursos</span>
+                    <div class="story-row-label-text">
+                        <span class="story-row-kicker">HELP &middot; AYUDA</span>
+                        <span class="story-row-title">Find Help by Topic</span>
+                    </div>
+                    <a href="#" class="story-row-see-all" data-app-view="resources" id="feedStorySeeAll">
+                        <span class="story-row-see-all-text">
+                            <span class="en-text">See all</span>
+                            <span class="es-text">Ver todo</span>
+                        </span>
+                        <span class="story-row-see-all-arrow" aria-hidden="true">&rarr;</span>
+                    </a>
                 </div>
                 <div class="story-row" id="feedStoryCats">
                     <!-- Immigration -->
@@ -321,23 +330,23 @@
                         <span class="story-bubble-label en-text">Food</span>
                         <span class="story-bubble-label es-text">Comida</span>
                     </button>
-                    <!-- ESOL -->
-                    <button class="story-bubble" data-app-view-cat="esol" type="button">
-                        <div class="story-bubble-ring" style="background: conic-gradient(from 200deg, #7b4ec7, #ffc857, #7b4ec7)">
+                    <!-- GED -->
+                    <button class="story-bubble" data-app-view-cat="hse" type="button">
+                        <div class="story-bubble-ring" style="background: conic-gradient(from 200deg, #2563eb, #ffc857, #2563eb)">
                             <div class="story-bubble-inner">
-                                <div class="story-bubble-icon" style="background:#ece4f9">
+                                <div class="story-bubble-icon" style="background:#dbeafe">
                                     <svg viewBox="0 0 80 80" width="52" height="52" xmlns="http://www.w3.org/2000/svg">
-                                        <rect width="80" height="80" rx="22" fill="#7b4ec7"/>
-                                        <path d="M20 26 C20 22, 22 20, 26 20 L46 20 C50 20, 52 22, 52 26 L52 36 C52 40, 50 42, 46 42 L32 42 L26 48 L26 42 C22 42, 20 40, 20 36 Z" fill="#fff"/>
-                                        <text x="36" y="34" text-anchor="middle" font-size="11" font-weight="700" fill="#7b4ec7" font-family="Outfit, sans-serif">ABC</text>
-                                        <circle cx="56" cy="50" r="6" fill="#fff" opacity="0.7"/>
+                                        <rect width="80" height="80" rx="22" fill="#2563eb"/>
+                                        <rect x="18" y="22" width="44" height="36" rx="4" fill="#fff"/>
+                                        <text x="40" y="46" text-anchor="middle" font-size="16" font-weight="900" fill="#2563eb" font-family="Outfit, sans-serif">GED</text>
                                     </svg>
                                 </div>
                             </div>
                         </div>
-                        <span class="story-bubble-label">ESOL</span>
+                        <span class="story-bubble-label en-text">GED / HSE</span>
+                        <span class="story-bubble-label es-text">Equivalencia escolar</span>
                     </button>
-                    <!-- College -->
+                    <!-- College / Work training -->
                     <button class="story-bubble" data-app-view-cat="college" type="button">
                         <div class="story-bubble-ring" style="background: conic-gradient(from 200deg, #0a1d3a, #ffc857, #0a1d3a)">
                             <div class="story-bubble-inner">
@@ -351,10 +360,10 @@
                                 </div>
                             </div>
                         </div>
-                        <span class="story-bubble-label en-text">College</span>
-                        <span class="story-bubble-label es-text">Universidad</span>
+                        <span class="story-bubble-label en-text">College &amp; Careers</span>
+                        <span class="story-bubble-label es-text">Universidad y carreras</span>
                     </button>
-                    <!-- Money -->
+                    <!-- Financial Help -->
                     <button class="story-bubble" data-app-view-cat="money" type="button">
                         <div class="story-bubble-ring" style="background: conic-gradient(from 200deg, #1aa37a, #ffc857, #1aa37a)">
                             <div class="story-bubble-inner">
@@ -367,8 +376,8 @@
                                 </div>
                             </div>
                         </div>
-                        <span class="story-bubble-label en-text">Money</span>
-                        <span class="story-bubble-label es-text">Dinero</span>
+                        <span class="story-bubble-label en-text">Financial Help</span>
+                        <span class="story-bubble-label es-text">Ayuda financiera</span>
                     </button>
                     <!-- Childcare -->
                     <button class="story-bubble" data-app-view-cat="childcare" type="button">
@@ -385,8 +394,8 @@
                                 </div>
                             </div>
                         </div>
-                        <span class="story-bubble-label en-text">Childcare</span>
-                        <span class="story-bubble-label es-text">Cuidado infantil</span>
+                        <span class="story-bubble-label en-text">Child Care</span>
+                        <span class="story-bubble-label es-text">Cuidado de niños</span>
                     </button>
                     <!-- Legal Help -->
                     <button class="story-bubble" data-app-view-cat="legal-aid" type="button">
@@ -474,160 +483,30 @@
                         </div>
                     </section>
 
-                    <details class="side-panel side-panel--urgent urgent-support-disclosure">
-                        <summary class="urgent-support-top">
-                            <div class="urgent-support-mark" aria-hidden="true">
-                                <span>❤</span>
+                    <section class="side-panel side-panel--advisor">
+                        <div class="advisor-side-head">
+                            <div class="advisor-side-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="5" width="18" height="14" rx="2"></rect>
+                                    <path d="m3 7 9 6 9-6"></path>
+                                </svg>
                             </div>
-                            <div>
+                            <div class="advisor-side-copy">
                                 <h2>
-                                    <span class="en-text">Need immediate support?</span>
-                                    <span class="es-text">¿Necesitas apoyo inmediato?</span>
+                                    <span class="en-text">Message your advisor</span>
+                                    <span class="es-text">Mensaje a tu asesor</span>
                                 </h2>
                                 <p>
-                                    <span class="en-text">Free help. Click to see call and text options.</span>
-                                    <span class="es-text">Ayuda gratis. Haz clic para ver opciones.</span>
+                                    <span class="en-text">We're here to help you find support.</span>
+                                    <span class="es-text">Estamos aquí para ayudarte a encontrar ayuda.</span>
                                 </p>
                             </div>
-                            <span class="urgent-support-toggle" aria-hidden="true">⌄</span>
-                        </summary>
-                        <div class="urgent-support-list">
-                            <article class="urgent-support-card urgent-support-card--housing">
-                                <div class="urgent-support-icon" aria-hidden="true">🏠</div>
-                                <div class="urgent-support-copy">
-                                    <h3 class="urgent-support-org">Mass 211</h3>
-                                    <p class="urgent-support-blurb">
-                                        <span class="en-text">Housing, food, shelter, emergencies</span>
-                                        <span class="es-text">Vivienda, comida, refugio, emergencias</span>
-                                    </p>
-                                </div>
-                                <div class="urgent-support-actions">
-                                    <p class="urgent-support-label">
-                                        <span class="en-text">Call</span>
-                                        <span class="es-text">Llamar</span>
-                                    </p>
-                                    <a href="tel:211" class="urgent-tel-num">211</a>
-                                    <a href="tel:211" class="urgent-action-btn">
-                                        <span aria-hidden="true">☎</span>
-                                        <span class="en-text">Call</span>
-                                        <span class="es-text">Llamar</span>
-                                    </a>
-                                    <p class="urgent-support-hours">
-                                        <span aria-hidden="true">◷</span>
-                                        <span class="en-text">24/7</span>
-                                        <span class="es-text">24/7</span>
-                                    </p>
-                                </div>
-                            </article>
-                            <article class="urgent-support-card urgent-support-card--mental">
-                                <div class="urgent-support-icon" aria-hidden="true">💬</div>
-                                <div class="urgent-support-copy">
-                                    <h3 class="urgent-support-org">
-                                        <span class="en-text">MA Behavioral Health Line</span>
-                                        <span class="es-text">Línea de salud conductual (MA)</span>
-                                    </h3>
-                                    <p class="urgent-support-blurb">
-                                        <span class="en-text">Talk to someone. Free, confidential, multilingual</span>
-                                        <span class="es-text">Habla con alguien. Gratis, confidencial y multilingüe</span>
-                                    </p>
-                                </div>
-                                <div class="urgent-support-actions">
-                                    <p class="urgent-support-label">
-                                        <span class="en-text">Call or text</span>
-                                        <span class="es-text">Llamar o texto</span>
-                                    </p>
-                                    <a href="tel:+18337732445" class="urgent-tel-num">833-773-2445</a>
-                                    <div class="urgent-action-row">
-                                        <a href="tel:+18337732445" class="urgent-action-btn">
-                                            <span aria-hidden="true">☎</span>
-                                            <span class="en-text">Call</span>
-                                            <span class="es-text">Llamar</span>
-                                        </a>
-                                        <a href="sms:+18337732445" class="urgent-action-btn urgent-action-btn--soft">
-                                            <span aria-hidden="true">☏</span>
-                                            <span class="en-text">Text</span>
-                                            <span class="es-text">Texto</span>
-                                        </a>
-                                    </div>
-                                    <p class="urgent-support-hours">
-                                        <span aria-hidden="true">◷</span>
-                                        <span class="en-text">24/7</span>
-                                        <span class="es-text">24/7</span>
-                                    </p>
-                                </div>
-                            </article>
-                            <article class="urgent-support-card urgent-support-card--legal">
-                                <div class="urgent-support-icon" aria-hidden="true">⚖</div>
-                                <div class="urgent-support-copy">
-                                    <h3 class="urgent-support-org">
-                                        <span class="en-text">LUCE Immigrant Justice</span>
-                                        <span class="es-text">LUCE Justicia para Inmigrantes</span>
-                                    </h3>
-                                    <p class="urgent-support-blurb">
-                                        <span class="en-text">Immigration concerns, ICE activity, know-your-rights help</span>
-                                        <span class="es-text">Inmigración, actividad de ICE y ayuda sobre tus derechos</span>
-                                    </p>
-                                </div>
-                                <div class="urgent-support-actions">
-                                    <p class="urgent-support-label">
-                                        <span class="en-text">Call</span>
-                                        <span class="es-text">Llamar</span>
-                                    </p>
-                                    <a href="tel:+16173705023" class="urgent-tel-num">617-370-5023</a>
-                                    <a href="tel:+16173705023" class="urgent-action-btn">
-                                        <span aria-hidden="true">☎</span>
-                                        <span class="en-text">Call</span>
-                                        <span class="es-text">Llamar</span>
-                                    </a>
-                                    <p class="urgent-support-hours">
-                                        <span aria-hidden="true">◷</span>
-                                        <span class="en-text">6am - 8pm</span>
-                                        <span class="es-text">6am - 8pm</span>
-                                    </p>
-                                </div>
-                            </article>
                         </div>
-                        <p class="urgent-note">
-                            <span aria-hidden="true">👥</span>
-                            <strong>
-                                <span class="en-text">You are not alone.</span>
-                                <span class="es-text">No estás solo.</span>
-                            </strong>
-                            <span>
-                                <span class="en-text">Support is here.</span>
-                                <span class="es-text">Hay apoyo aquí.</span>
-                            </span>
-                        </p>
-                    </details>
-
-                    <section class="side-panel side-panel--advisor">
-                        <div class="advisor-illustration" aria-hidden="true">
-                            <svg class="advisor-art" viewBox="0 0 80 80" width="70" height="70" focusable="false">
-                                <defs>
-                                    <linearGradient id="advMailTile" x1="0%" y1="0%" x2="100%" y2="100%">
-                                        <stop offset="0%" stop-color="#3b82f6"/>
-                                        <stop offset="100%" stop-color="#0a1d3a"/>
-                                    </linearGradient>
-                                </defs>
-                                <rect x="5" y="5" width="70" height="70" rx="20" fill="url(#advMailTile)"/>
-                                <rect x="20" y="26" width="40" height="28" rx="6" fill="none" stroke="#ffffff" stroke-width="3"/>
-                                <path d="M20 28 L40 44 L60 28" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                        </div>
-                        <div>
-                            <h2>
-                                <span class="en-text">Message your advisor</span>
-                                <span class="es-text">Mensaje a tu asesor</span>
-                            </h2>
-                            <p>
-                                <span class="en-text">We're here to help you find the right resources.</span>
-                                <span class="es-text">Estamos aquí para ayudarte a encontrar recursos.</span>
-                            </p>
-                            <button class="advisor-message-btn" type="button" data-app-view="advisors">
-                                <span class="en-text">See advisor emails</span>
-                                <span class="es-text">Ver correos de asesores</span>
-                            </button>
-                        </div>
+                        <button class="advisor-message-btn" type="button" data-app-view="advisors">
+                            <span class="en-text">See advisor emails</span>
+                            <span class="es-text">Ver correos de asesores</span>
+                            <span class="advisor-message-btn-arrow" aria-hidden="true">&rarr;</span>
+                        </button>
                     </section>
                 </aside>
             </section>
@@ -651,12 +530,16 @@
         <!-- ─── CALENDAR VIEW ──────────────────────────────────── -->
         <div class="page-view" id="calendarView" data-view-panel="calendar">
 
-            <!-- Hero header -->
-            <div class="view-hero">
-                <button type="button" class="calendar-back-home-btn" data-app-view="feed" data-scroll-home="">
+            <div class="page-back-bar">
+                <button type="button" class="page-back-btn back-home-btn" data-app-view="feed" data-scroll-home="">
+                    <span class="back-home-arrow" aria-hidden="true">&larr;</span>
                     <span class="en-text">Back to home</span>
                     <span class="es-text">Volver al inicio</span>
                 </button>
+            </div>
+
+            <!-- Hero header -->
+            <div class="view-hero">
                 <div class="view-hero-eyebrow">
                     <span class="en-text">Important dates</span>
                     <span class="es-text">Fechas</span>
@@ -678,8 +561,13 @@
                 </button>
             </div>
 
-            <div class="bulletin-calendar" id="bulletinCalendar">
-                <!-- Calendar view bulletins render here -->
+            <div class="calendar-split">
+                <div class="bulletin-calendar calendar-split-list" id="bulletinCalendar">
+                    <!-- List view bulletins render here -->
+                </div>
+                <aside class="calendar-split-grid" id="bulletinCalendarDesktopGrid" aria-label="Month calendar">
+                    <!-- Month calendar renders here on desktop -->
+                </aside>
             </div>
 
             <div class="empty-state view-empty-state" id="calendarEmptyState" style="display: none;">
@@ -699,121 +587,179 @@
 
         <!-- ─── RESOURCES VIEW ────────────────────────────────── -->
         <div class="page-view" id="resourcesView" data-view-panel="resources">
-
-            <section class="resources-prototype-hero" aria-labelledby="resourcesPrototypeHeading">
-                <button type="button" class="resources-back-home-btn" data-app-view="feed" data-scroll-home="">
+            <div class="page-back-bar">
+                <button type="button" class="page-back-btn back-home-btn" data-app-view="feed" data-scroll-home="">
+                    <span class="back-home-arrow" aria-hidden="true">&larr;</span>
                     <span class="en-text">Back to home</span>
                     <span class="es-text">Volver al inicio</span>
                 </button>
-                <div class="resources-prototype-eyebrow">
-                    <span class="en-text">Resources</span>
-                    <span class="es-text">Recursos</span>
+            </div>
+
+            <div class="view-hero">
+                <div class="view-hero-eyebrow">
+                    <span class="en-text">Find Help</span>
+                    <span class="es-text">Ayuda</span>
                 </div>
-                <h1 id="resourcesPrototypeHeading">
+                <h1>
                     <span class="en-text">Find help today</span>
                     <span class="es-text">Encuentra ayuda hoy</span>
                 </h1>
-            </section>
-
-            <div class="resources-prototype-grid" id="resourceCategoryFilters" aria-label="Resource categories">
-                <!-- Resource category tiles render here -->
             </div>
 
+            <!-- Mobile Find Help Layout -->
+            <div class="resources-mobile-layout">
 
-            <!-- Resources list -->
-            <div class="resources-list" id="resourcesList" aria-hidden="true">
-                <!-- Resource cards render here -->
-            </div>
-
-            <!-- Empty state -->
-            <div class="empty-state view-empty-state" id="resourceEmptyState" style="display: none;">
-                <div class="empty-state-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-                    </svg>
+                <div class="resources-prototype-grid" id="resourceCategoryFilters" aria-label="Help categories">
+                    <!-- Resource category tiles render here -->
                 </div>
-                <h3>No resources yet</h3>
-                <p>Helpful links for immigration, housing, jobs, and health will appear here.</p>
-                <p class="empty-state-bilingual">Enlaces útiles para inmigración, vivienda, empleos y salud aparecerán aquí.</p>
+
+                <!-- Help list -->
+                <div class="resources-list" id="resourcesList" aria-hidden="true">
+                    <!-- Resource cards render here -->
+                </div>
+
+                <!-- Empty state -->
+                <div class="empty-state view-empty-state" id="resourceEmptyState" style="display: none;">
+                    <div class="empty-state-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                        </svg>
+                    </div>
+                    <h3>No help links yet</h3>
+                    <p>Helpful links for immigration, housing, jobs, and health will appear here.</p>
+                    <p class="empty-state-bilingual">Enlaces útiles para inmigración, vivienda, empleos y salud aparecerán aquí.</p>
+                </div>
+            </div>
+
+            <!-- Desktop Find Help Layout -->
+            <div class="resources-desktop-layout">
+                <!-- Left Sidebar Nav & Filters -->
+                <aside class="resources-desktop-sidebar">
+                    <div class="resources-sidebar-group">
+                        <h2 class="resources-sidebar-title">
+                            <span class="en-text">BROWSE BY TOPIC</span>
+                            <span class="es-text">BUSCAR POR TEMA</span>
+                        </h2>
+                        <nav class="resources-desktop-nav" id="desktopCategoryNav">
+                            <!-- Populated dynamically via JS -->
+                        </nav>
+                    </div>
+                </aside>
+
+                <!-- Main Content Pane -->
+                <main class="resources-desktop-main">
+                    <!-- Scrollable categorized sections -->
+                    <div class="resources-desktop-sections" id="resourcesDesktopSections">
+                        <!-- Populated dynamically via JS -->
+                    </div>
+
+                    <!-- Empty state -->
+                    <div class="empty-state view-empty-state" id="resourceDesktopEmptyState" style="display: none;">
+                        <div class="empty-state-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                            </svg>
+                        </div>
+                        <h3>No help found</h3>
+                        <p>Try adjusting your search terms or filters.</p>
+                        <p class="empty-state-bilingual">No se encontró ayuda. Intente ajustar los términos o filtros.</p>
+                    </div>
+                </main>
             </div>
         </div>
 
         <!-- ─── ABOUT VIEW ─────────────────────────────────────── -->
         <div class="page-view" id="aboutView" data-view-panel="about">
 
+            <div class="page-back-bar">
+                <button type="button" class="page-back-btn back-home-btn" data-app-view="feed" data-scroll-home="">
+                    <span class="back-home-arrow" aria-hidden="true">&larr;</span>
+                    <span class="en-text">Back to home</span>
+                    <span class="es-text">Volver al inicio</span>
+                </button>
+            </div>
+
             <!-- Hero -->
-            <div class="about-hero">
+            <div class="view-hero">
+                <div class="view-hero-eyebrow">
+                    <span class="en-text">About</span>
+                    <span class="es-text">Acerca de</span>
+                </div>
                 <h1>East Boston Harborside Community School</h1>
-                <div class="about-hero-sub">Adult Education</div>
             </div>
 
             <!-- About action cards -->
-            <div class="about-actions-shell" style="padding: 14px 12px;">
+            <div class="about-actions-shell">
+                <p class="about-page-lead">
+                    <span class="en-text">Need help? Call the office or contact your advisor to ask about meeting in person. We're here to help.</span>
+                    <span class="es-text">¿Necesitas ayuda? Llama a la oficina o contacta a tu asesor para pedir una reunión en persona. Estamos aquí para ayudarte.</span>
+                </p>
 
                 <!-- Website -->
-                <a href="https://www.ebhcs.org/" class="about-action-card" target="_blank" rel="noopener" style="text-decoration:none">
-                    <div class="about-action-icon-wrap" style="background:#e88a2a">
+                <a href="https://www.ebhcs.org/" class="about-action-card about-action-card--website" target="_blank" rel="noopener">
+                    <div class="about-action-icon-wrap">
                         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="12" cy="12" r="8.5"></circle>
                             <path d="M3.75 12h16.5"></path>
                             <path d="M12 3.75c2.75 2.55 4.25 5.3 4.25 8.25S14.75 17.7 12 20.25c-2.75-2.55-4.25-5.3-4.25-8.25S9.25 6.3 12 3.75Z"></path>
                         </svg>
                     </div>
-                    <div style="flex:1;min-width:0">
+                    <div class="about-action-copy">
                         <div class="about-action-title">ebhcs.org</div>
                         <div class="about-action-sub">
                             <span class="en-text">School website</span>
                             <span class="es-text">Sitio web de la escuela</span>
                         </div>
                     </div>
-                    <button class="about-action-cta" style="border-color:#e88a2a;color:#e88a2a" tabindex="-1">
+                    <span class="about-action-cta">
                         <span class="en-text">Open</span>
                         <span class="es-text">Abrir</span>
-                    </button>
+                    </span>
                 </a>
 
                 <!-- Location -->
-                <a href="https://www.google.com/maps/search/?api=1&query=312+Border+Street+East+Boston+MA+02128" class="about-action-card" target="_blank" rel="noopener" style="text-decoration:none">
-                    <div class="about-action-icon-wrap" style="background:#2e7af0">
+                <a href="https://www.google.com/maps/search/?api=1&query=312+Border+Street+East+Boston+MA+02128" class="about-action-card about-action-card--location" target="_blank" rel="noopener">
+                    <div class="about-action-icon-wrap">
                         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M12 21s6.25-5.9 6.25-11.1a6.25 6.25 0 1 0-12.5 0C5.75 15.1 12 21 12 21Z"></path>
                             <circle cx="12" cy="9.75" r="2.5"></circle>
                         </svg>
                     </div>
-                    <div style="flex:1;min-width:0">
+                    <div class="about-action-copy">
                         <div class="about-action-title">312 Border Street</div>
                         <div class="about-action-sub">East Boston, MA 02128 · Mario Umana Academy</div>
                     </div>
-                    <button class="about-action-cta" style="border-color:#2e7af0;color:#2e7af0" tabindex="-1">
+                    <span class="about-action-cta">
                         <span class="en-text">Directions</span>
                         <span class="es-text">Cómo llegar</span>
-                    </button>
+                    </span>
                 </a>
 
                 <!-- Phone -->
-                <a href="tel:6176355114" class="about-action-card" style="text-decoration:none">
-                    <div class="about-action-icon-wrap" style="background:#1aa37a">
+                <a href="tel:6176355114" class="about-action-card about-action-card--phone">
+                    <div class="about-action-icon-wrap">
                         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M5.25 7.75c0 5.1 5.9 11 11 11h1.75a1 1 0 0 0 1-1v-3.2a1 1 0 0 0-.78-.98l-3.14-.7a1 1 0 0 0-.96.29l-.92.98a13.84 13.84 0 0 1-4.34-4.34l.98-.92a1 1 0 0 0 .29-.96l-.7-3.14A1 1 0 0 0 8.45 4H5.25a1 1 0 0 0-1 1v2.75Z"></path>
                         </svg>
                     </div>
-                    <div style="flex:1;min-width:0">
+                    <div class="about-action-copy">
                         <div class="about-action-title">617-635-5114</div>
                         <div class="about-action-sub">
                             <span class="en-text">Call the school office</span>
                             <span class="es-text">Llama a la oficina</span>
                         </div>
                     </div>
-                    <button class="about-action-cta" style="border-color:#1aa37a;color:#1aa37a" tabindex="-1">
+                    <span class="about-action-cta">
                         <span class="en-text">Call</span>
                         <span class="es-text">Llamar</span>
-                    </button>
+                    </span>
                 </a>
 
                 <!-- Advisors directory -->
-                <button type="button" class="about-action-card" data-app-view="advisors">
-                    <div class="about-action-icon-wrap" style="background:#1458b8">
+                <button type="button" class="about-action-card about-action-card--advisors" data-app-view="advisors">
+                    <div class="about-action-icon-wrap">
                         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                             <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
                             <circle cx="9" cy="7" r="4"/>
@@ -821,52 +767,55 @@
                             <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
                         </svg>
                     </div>
-                    <div style="flex:1;min-width:0;text-align:left">
+                    <div class="about-action-copy">
                         <div class="about-action-title">
-                            <span class="en-text">Advisor emails</span>
-                            <span class="es-text">Correos de asesores</span>
+                            <span class="en-text">Your advisors</span>
+                            <span class="es-text">Tus asesores</span>
                         </div>
                         <div class="about-action-sub">
-                            <span class="en-text">See the full list of advisors</span>
-                            <span class="es-text">Ver la lista completa de asesores</span>
+                            <span class="en-text">Email anytime or schedule an appointment</span>
+                            <span class="es-text">Envía un correo o pide una cita</span>
                         </div>
                     </div>
-                    <span class="about-action-cta" style="border-color:#1458b8;color:#1458b8">
-                        <span class="en-text">Open</span>
-                        <span class="es-text">Abrir</span>
+                    <span class="about-action-cta">
+                        <span class="en-text">View list</span>
+                        <span class="es-text">Ver lista</span>
                     </span>
                 </button>
 
                 <!-- Email -->
-                <a href="mailto:mcreed@ebhcs.org" class="about-action-card" style="text-decoration:none">
-                    <div class="about-action-icon-wrap" style="background:#7b4ec7">
+                <a href="mailto:mcreed@ebhcs.org" class="about-action-card about-action-card--support">
+                    <div class="about-action-icon-wrap">
                         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M4 5 a2 2 0 0 1 2-2 h12 a2 2 0 0 1 2 2 v9 a2 2 0 0 1-2 2 H10 l-4 4 v-4 H6 a2 2 0 0 1-2-2 Z"></path>
                         </svg>
                     </div>
-                    <div style="flex:1;min-width:0">
+                    <div class="about-action-copy">
                         <div class="about-action-title">mcreed@ebhcs.org</div>
                         <div class="about-action-sub">
-                            <span class="en-text">Report a problem</span>
-                            <span class="es-text">Reportar problema</span>
+                            <span class="en-text">Report a problem with the site</span>
+                            <span class="es-text">Reportar un problema con el sitio</span>
                         </div>
                     </div>
-                    <button class="about-action-cta" style="border-color:#7b4ec7;color:#7b4ec7" tabindex="-1">
-                        Email
-                    </button>
+                    <span class="about-action-cta">
+                        <span class="en-text">Email</span>
+                        <span class="es-text">Correo</span>
+                    </span>
                 </a>
 
                 <!-- Advisor portal -->
                 <div class="advisor-portal-card">
-                    <div style="font-family:'Outfit',sans-serif;font-weight:800;color:#0a1d3a;font-size:15px">
-                        <span class="en-text">For advisors</span>
-                        <span class="es-text">Para consejeros</span>
+                    <div class="advisor-portal-copy">
+                        <div class="advisor-portal-title">
+                            <span class="en-text">For advisors</span>
+                            <span class="es-text">Para consejeros</span>
+                        </div>
+                        <div class="advisor-portal-sub">
+                            <span class="en-text">Sign in to post a bulletin.</span>
+                            <span class="es-text">Inicia sesión para publicar.</span>
+                        </div>
                     </div>
-                    <div style="font-size:13px;color:#475569;margin-top:4px">
-                        <span class="en-text">Sign in to post a bulletin.</span>
-                        <span class="es-text">Inicia sesión para publicar.</span>
-                    </div>
-                    <a href="admin.html" class="portal-btn" style="display:block;text-align:center;text-decoration:none;margin-top:12px">
+                    <a href="admin.html" class="portal-btn">
                         ⛵ <span class="en-text">Advisor Portal</span><span class="es-text">Portal de consejeros</span>
                     </a>
                 </div>
@@ -876,7 +825,14 @@
 
         <!-- ─── ADVISORS DIRECTORY ─────────────────────────────── -->
         <div class="page-view" id="advisorsView" data-view-panel="advisors">
-            <div class="view-hero advisors-view-hero">
+            <div class="page-back-bar">
+                <button type="button" class="page-back-btn back-home-btn" data-app-view="feed">
+                    <span class="back-home-arrow" aria-hidden="true">&larr;</span>
+                    <span class="en-text">Back to home</span>
+                    <span class="es-text">Volver al inicio</span>
+                </button>
+            </div>
+            <div class="view-hero">
                 <div class="view-hero-eyebrow">
                     <span class="en-text">Contact</span>
                     <span class="es-text">Contacto</span>
@@ -885,14 +841,16 @@
                     <span class="en-text">Your advisors</span>
                     <span class="es-text">Tus asesores</span>
                 </h1>
-                <button type="button" class="advisors-back-btn" data-app-view="feed">
-                    <span class="en-text">Back to home</span>
-                    <span class="es-text">Volver al inicio</span>
-                </button>
             </div>
 
             <div class="advisors-directory-shell">
-                <div id="advisorsDirectoryList" class="advisors-directory-list" aria-live="polite"></div>
+                <p class="advisors-directory-lead">
+                    <span class="en-text">Need help? Email your advisor anytime or ask for a meeting. Advisors can help with classes, jobs, and more.</span>
+                    <span class="es-text">¿Necesitas ayuda? Envía un correo a tu asesor cuando quieras o pide una reunión. Los asesores pueden ayudarte con clases, empleo y más.</span>
+                </p>
+                <div class="advisors-directory-panel">
+                    <div id="advisorsDirectoryList" class="advisors-directory-list" aria-live="polite"></div>
+                </div>
             </div>
         </div>
 
@@ -982,15 +940,20 @@
     </nav>
 
     <!-- ═══ CATEGORY DETAIL SHEET ══════════════════════════════════ -->
+    <div class="cat-detail-backdrop" id="catDetailBackdrop" aria-hidden="true" onclick="window.bulletinBoard && window.bulletinBoard.closeResourceDetailSheet && window.bulletinBoard.closeResourceDetailSheet()"></div>
     <div class="cat-detail-sheet" id="catDetailSheet" aria-hidden="true">
         <!-- Topbar -->
         <div class="cat-detail-topbar">
-            <button class="cat-detail-back" id="catDetailBack" aria-label="Go back">
+            <div class="cat-detail-grabber" aria-hidden="true"></div>
+            <button class="cat-detail-back" id="catDetailBack" aria-label="Go back" onclick="window.bulletinBoard && window.bulletinBoard.closeResourceDetailSheet && window.bulletinBoard.closeResourceDetailSheet()">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <path d="M15 18l-6-6 6-6"/>
                 </svg>
                 <span class="en-text">Back</span>
                 <span class="es-text">Atrás</span>
+            </button>
+            <button class="cat-detail-close" id="catDetailClose" type="button" aria-label="Close help" onclick="window.bulletinBoard && window.bulletinBoard.closeResourceDetailSheet && window.bulletinBoard.closeResourceDetailSheet()">
+                <span aria-hidden="true">&times;</span>
             </button>
             <div class="cat-detail-topbar-icon" id="catDetailIcon"></div>
             <div style="flex:1;min-width:0">
@@ -1014,6 +977,8 @@
                 </p>
             </div>
         </div>
+        <!-- Sticky footer for See all button -->
+        <div class="cat-sheet-footer" id="catSheetFooter"></div>
     </div>
 
     <script>

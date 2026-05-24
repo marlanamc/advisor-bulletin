@@ -22,7 +22,8 @@ async function seedDemoContent(page) {
       eventLink: 'https://example.org/job-fair'
     };
 
-    const resource = {
+    const resources = [
+      {
       id: 'resource-1',
       type: 'resource',
       title: 'Free Health Clinic',
@@ -38,12 +39,69 @@ async function seedDemoContent(page) {
       postedBy: 'jorge',
       datePosted: now,
       isActive: true,
-      isPublished: true
-    };
+      isPublished: true,
+      phone: '617-555-0101',
+      resourceOrder: 10
+      },
+      {
+        id: 'resource-2',
+        type: 'resource',
+        title: 'Neighborhood Health Access',
+        titleEn: 'Neighborhood Health Access',
+        titleEs: 'Acceso de Salud',
+        category: 'resource',
+        resourceCategory: 'health',
+        resourceIcon: 'heart',
+        url: 'https://example.org/health-access',
+        description: 'Help finding appointments and basic care.',
+        advisorName: 'Jorge',
+        postedBy: 'jorge',
+        datePosted: now,
+        isActive: true,
+        isPublished: true,
+        resourceOrder: 20
+      },
+      {
+        id: 'resource-3',
+        type: 'resource',
+        title: 'Family Wellness Line',
+        titleEn: 'Family Wellness Line',
+        titleEs: 'Linea de Bienestar',
+        category: 'resource',
+        resourceCategory: 'health',
+        resourceIcon: 'heart',
+        url: 'https://example.org/wellness',
+        description: 'Free support by phone.',
+        advisorName: 'Jorge',
+        postedBy: 'jorge',
+        datePosted: now,
+        isActive: true,
+        isPublished: true,
+        resourceOrder: 30
+      },
+      {
+        id: 'resource-4',
+        type: 'resource',
+        title: 'East Boston Vaccines',
+        titleEn: 'East Boston Vaccines',
+        titleEs: 'Vacunas en East Boston',
+        category: 'resource',
+        resourceCategory: 'health',
+        resourceIcon: 'heart',
+        url: 'https://example.org/vaccines',
+        description: 'Seasonal vaccine information.',
+        advisorName: 'Jorge',
+        postedBy: 'jorge',
+        datePosted: now,
+        isActive: true,
+        isPublished: true,
+        resourceOrder: 40
+      }
+    ];
 
-    window.bulletinBoard.bulletins = [post, resource];
+    window.bulletinBoard.bulletins = [post, ...resources];
     window.bulletinBoard.populateAdvisorFilters();
-    window.bulletinBoard.displayBulletins([post, resource]);
+    window.bulletinBoard.displayBulletins([post, ...resources]);
   });
 }
 
@@ -75,8 +133,85 @@ test.describe('Mobile app shell', () => {
     await page.locator('#feedStoryCats [data-app-view-cat="health"]').click();
 
     await expect(page.locator('#catDetailSheet')).toHaveClass(/open/);
+    await expect(page.locator('#catDetailSheet')).toHaveClass(/cat-detail-sheet--bottom/);
     await expect(page.locator('#catDetailTitle')).toContainText('Health');
     await expect(page.locator('#catOrgList')).toContainText('Free Health Clinic');
+    await expect.poll(async () => {
+      return page.locator('#catDetailSheet').evaluate((sheet) => Math.round(sheet.getBoundingClientRect().left));
+    }).toBe(0);
+  });
+
+  test('resource sheet shows a compact subtitle instead of a clipped description', async ({ page }) => {
+    await page.evaluate(() => {
+      const now = new Date().toISOString();
+      window.bulletinBoard.bulletins = [{
+        id: 'resource-immigration-1',
+        type: 'resource',
+        title: 'La Colaborativa',
+        titleEn: 'La Colaborativa',
+        titleEs: 'La Colaborativa',
+        category: 'resource',
+        resourceCategory: 'immigration',
+        resourceIcon: 'globe',
+        description: 'Community support for immigrants and families in Greater Boston, including food support, classes, jobs, health resources, citizenship help, and community advocacy.',
+        address: '318 Broadway, Chelsea, MA 02150',
+        phone: '617-555-0101',
+        advisorName: 'Jorge',
+        postedBy: 'jorge',
+        datePosted: now,
+        isActive: true,
+        isPublished: true,
+        resourceOrder: 10,
+      }];
+      window.bulletinBoard.displayBulletins(window.bulletinBoard.bulletins);
+    });
+
+    await page.locator('#feedStoryCats [data-app-view-cat="immigration"]').click();
+
+    const description = page.locator('#catOrgList .cat-org-description');
+    await expect(description).toContainText('318 Broadway · Chelsea');
+    await expect(description).not.toContainText('citizenship help');
+    await expect(page.locator('#catOrgList .cat-org-address')).toHaveCount(0);
+  });
+
+  test('resource sheet shows top three places and can expand', async ({ page }) => {
+    await page.locator('#feedStoryCats [data-app-view-cat="health"]').click();
+
+    await expect(page.locator('#catOrgList .cat-org-card')).toHaveCount(3);
+    await expect(page.locator('#catOrgList')).not.toContainText('East Boston Vaccines');
+    await expect(page.locator('[data-cat-show-all="health"]')).toBeVisible();
+
+    await page.locator('[data-cat-show-all="health"]').click();
+    await expect(page.locator('#catOrgList .cat-org-card')).toHaveCount(4);
+    await expect(page.locator('#catOrgList')).toContainText('East Boston Vaccines');
+  });
+
+  test('resource sheet closes from x, backdrop, and swipe down while keeping feed active', async ({ page }) => {
+    const openSheet = async () => {
+      await page.locator('#feedStoryCats [data-app-view-cat="health"]').click();
+      await expect(page.locator('#catDetailSheet')).toHaveClass(/open/);
+    };
+
+    await openSheet();
+    await page.getByLabel('Close help').click();
+    await expect(page.locator('#catDetailSheet')).not.toHaveClass(/open/);
+    await expect(page.locator('#feedView')).toHaveClass(/active/);
+
+    await openSheet();
+    await page.locator('#catDetailBackdrop').click({ position: { x: 10, y: 10 } });
+    await expect(page.locator('#catDetailSheet')).not.toHaveClass(/open/);
+    await expect(page.locator('#catDetailSheet')).toHaveClass(/cat-detail-sheet--bottom/);
+    await expect(page.locator('#feedView')).toHaveClass(/active/);
+    await expect(page.locator('#catDetailSheet')).not.toHaveClass(/cat-detail-sheet--bottom/, { timeout: 1000 });
+
+    await openSheet();
+    await page.locator('#catDetailSheet .cat-detail-topbar').evaluate((topbar) => {
+      topbar.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, clientY: 100 }));
+      document.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientY: 220 }));
+      document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, clientY: 220 }));
+    });
+    await expect(page.locator('#catDetailSheet')).not.toHaveClass(/open/);
+    await expect(page.locator('#feedView')).toHaveClass(/active/);
   });
 
   test('collapses the mobile header on scroll without hiding story shortcuts', async ({ page }) => {

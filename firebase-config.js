@@ -103,8 +103,8 @@ const RESOURCE_CATEGORY_CONFIG = {
         color: '#2f934f'
     },
     family: {
-        labelEn: 'Childcare',
-        labelEs: 'Cuidado infantil',
+        labelEn: 'Child Care',
+        labelEs: 'Cuidado de niños',
         icon: 'family',
         color: '#c99035'
     },
@@ -114,21 +114,27 @@ const RESOURCE_CATEGORY_CONFIG = {
         icon: 'abc',
         color: '#8050d1'
     },
+    hse: {
+        labelEn: 'GED / HSE',
+        labelEs: 'Equivalencia escolar',
+        icon: 'abc',
+        color: '#2563eb'
+    },
     college: {
-        labelEn: 'College & GED',
-        labelEs: 'Universidad',
+        labelEn: 'College & Careers',
+        labelEs: 'Universidad y carreras',
         icon: 'graduation',
         color: '#0a1d3a'
     },
     'legal-aid': {
-        labelEn: 'Legal help',
+        labelEn: 'Legal Help',
         labelEs: 'Ayuda legal',
         icon: 'scale',
         color: '#7c3aed'
     },
     money: {
-        labelEn: 'Money help',
-        labelEs: 'Dinero',
+        labelEn: 'Financial Help',
+        labelEs: 'Ayuda financiera',
         icon: 'money',
         color: '#1fa77e'
     },
@@ -141,13 +147,13 @@ const RESOURCE_CATEGORY_CONFIG = {
 };
 
 const STORY_BUBBLE_PREVIEW_CATEGORIES = ['immigration', 'jobs', 'housing', 'health', 'food'];
-const RESOURCE_TILE_CATEGORIES = ['jobs', 'immigration', 'housing', 'health', 'food', 'family', 'esol', 'college', 'legal-aid', 'money'];
+const RESOURCE_TILE_CATEGORIES = ['jobs', 'immigration', 'housing', 'health', 'food', 'family', 'hse', 'college', 'legal-aid', 'money'];
 
 const FEED_CATEGORY_CONTENT = {
     all: {
         icon: '✨',
         title: 'Main Feed',
-        description: 'New help, classes, jobs, and community resources from your advisors.',
+        description: 'New help, classes, jobs, and community support from your advisors.',
         chips: ['New', 'Free help', 'This week']
     },
     housing: {
@@ -182,7 +188,7 @@ const FEED_CATEGORY_CONTENT = {
     },
     food: {
         icon: '🥕',
-        title: 'Food Resources',
+        title: 'Food Help',
         description: 'Find food pantries, meal programs, and grocery help for families.',
         chips: ['Food Pantry', 'Meals', 'Delivery', 'Family Help']
     },
@@ -207,13 +213,13 @@ const FEED_CATEGORY_CONTENT = {
     childcare: {
         icon: '👨‍👩‍👧',
         title: 'Family Support',
-        description: 'Find child care, family programs, youth support, and parent resources.',
+        description: 'Find child care, family programs, youth support, and parent help.',
         chips: ['Child Care', 'Family Programs', 'Youth', 'Parent Help']
     },
     family: {
         icon: '👨‍👩‍👧',
         title: 'Family Support',
-        description: 'Find child care, family programs, youth support, and parent resources.',
+        description: 'Find child care, family programs, youth support, and parent help.',
         chips: ['Child Care', 'Family Programs', 'Youth', 'Parent Help']
     },
     training: {
@@ -344,6 +350,7 @@ class FirebaseBulletinBoard {
         this.currentView = 'feed';
         this.currentFeedCategory = 'all';
         this.currentResourceCategory = 'all';
+        this.currentDesktopResourceTopic = 'all';
         this.resourceSearchQuery = '';
         this.resourceSortMode = 'default';
         this.datesViewMode = 'list';
@@ -623,6 +630,10 @@ class FirebaseBulletinBoard {
         }
         if (desktopSearchBtn) desktopSearchBtn.addEventListener('click', syncDesktopSearch);
 
+        document.querySelectorAll('[data-lang-switch]').forEach((button) => {
+            button.addEventListener('click', () => this.updateSearchPlaceholder());
+        });
+
         // Popular search chips
         document.querySelectorAll('.feed-popular-chip').forEach(chip => {
             chip.addEventListener('click', () => {
@@ -747,6 +758,8 @@ class FirebaseBulletinBoard {
             feedCategoryClear.addEventListener('click', () => this.setFeedCategory('all'));
         }
 
+        this.setupResourceDetailSheet();
+
         document.addEventListener('click', (event) => {
             const analyticsTarget = event.target.closest('[data-analytics-action]');
             if (!analyticsTarget) return;
@@ -781,6 +794,11 @@ class FirebaseBulletinBoard {
                     this.closeSearchLayer();
                     return;
                 }
+                const resourceSheet = document.getElementById('catDetailSheet');
+                if (resourceSheet && resourceSheet.classList.contains('open')) {
+                    this.closeResourceDetailSheet();
+                    return;
+                }
                 const detailModalEl = document.getElementById('bulletinDetailModal');
                 if (detailModalEl && detailModalEl.style.display === 'flex') {
                     this.closeBulletinDetail();
@@ -807,6 +825,166 @@ class FirebaseBulletinBoard {
                 this.renderCalendar(this.filteredPosts.length > 0 ? this.filteredPosts : this.getPostBulletins(this.bulletins));
             });
         });
+
+
+        // Re-render desktop resources on viewport resize across the 768px breakpoint
+        let _lastWasDesktop = window.matchMedia('(min-width: 768px)').matches;
+        window.addEventListener('resize', () => {
+            const isDesktop = window.matchMedia('(min-width: 768px)').matches;
+            if (isDesktop !== _lastWasDesktop) {
+                _lastWasDesktop = isDesktop;
+                this.renderResourcesSections(this.getPublishedResources());
+            }
+        });
+
+        // Re-render calendar across the 1024px breakpoint (single-pane vs split)
+        let _lastWasCalSplit = window.matchMedia('(min-width: 1024px)').matches;
+        window.addEventListener('resize', () => {
+            const isCalSplit = window.matchMedia('(min-width: 1024px)').matches;
+            if (isCalSplit !== _lastWasCalSplit) {
+                _lastWasCalSplit = isCalSplit;
+                this.renderCalendar(this.filteredPosts.length > 0 ? this.filteredPosts : this.getPostBulletins(this.bulletins));
+            }
+        });
+    }
+
+    setupResourceDetailSheet() {
+        const sheet = document.getElementById('catDetailSheet');
+        const backdrop = document.getElementById('catDetailBackdrop');
+        const backBtn = document.getElementById('catDetailBack');
+        const closeBtn = document.getElementById('catDetailClose');
+        if (!sheet) return;
+
+        [backBtn, closeBtn, backdrop].forEach((element) => {
+            if (element) {
+                element.addEventListener('click', () => this.closeResourceDetailSheet());
+            }
+        });
+
+        document.addEventListener('click', (event) => {
+            if (event.target.closest('#catDetailClose, #catDetailBack, #catDetailBackdrop')) {
+                event.preventDefault();
+                event.stopPropagation();
+                this.closeResourceDetailSheet();
+            }
+        }, true);
+
+        sheet.addEventListener('click', (event) => {
+            const showAll = event.target.closest('[data-cat-show-all]');
+            if (!showAll) return;
+
+            const category = showAll.getAttribute('data-cat-show-all');
+            if (category) {
+                this.openResourceDetailSheet(category, { showAll: true });
+            }
+        });
+
+        let dragStartY = 0;
+        let dragCurrentY = 0;
+        let isDragging = false;
+        let pointerId = null;
+
+        const resetDrag = () => {
+            isDragging = false;
+            pointerId = null;
+            sheet.style.removeProperty('--cat-sheet-drag-y');
+            sheet.classList.remove('is-dragging');
+        };
+
+        sheet.addEventListener('pointerdown', (event) => {
+            if (!window.matchMedia('(max-width: 767px)').matches) return;
+            if (event.target.closest('button, a')) return;
+            const canStart = event.target.closest('.cat-detail-topbar');
+            if (!canStart) return;
+
+            pointerId = event.pointerId;
+            dragStartY = event.clientY;
+            dragCurrentY = event.clientY;
+            isDragging = true;
+            sheet.classList.add('is-dragging');
+            sheet.setPointerCapture(pointerId);
+        });
+
+        const startDrag = (clientY) => {
+            dragStartY = clientY;
+            dragCurrentY = clientY;
+            isDragging = true;
+            pointerId = 'fallback';
+            sheet.classList.add('is-dragging');
+        };
+
+        const updateDrag = (clientY) => {
+            if (!isDragging) return;
+            dragCurrentY = clientY;
+            const delta = Math.max(0, dragCurrentY - dragStartY);
+            sheet.style.setProperty('--cat-sheet-drag-y', `${delta}px`);
+        };
+
+        const endDrag = () => {
+            if (!isDragging) return;
+            const delta = Math.max(0, dragCurrentY - dragStartY);
+            resetDrag();
+            if (delta > 78) {
+                this.closeResourceDetailSheet();
+            }
+        };
+
+        sheet.addEventListener('mousedown', (event) => {
+            if (!window.matchMedia('(max-width: 767px)').matches) return;
+            if (event.target.closest('button, a')) return;
+            if (!event.target.closest('.cat-detail-topbar')) return;
+            startDrag(event.clientY);
+        });
+
+        document.addEventListener('mousemove', (event) => {
+            if (pointerId !== 'fallback') return;
+            updateDrag(event.clientY);
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (pointerId !== 'fallback') return;
+            endDrag();
+        });
+
+        sheet.addEventListener('touchstart', (event) => {
+            if (!window.matchMedia('(max-width: 767px)').matches) return;
+            if (event.target.closest('button, a')) return;
+            if (!event.target.closest('.cat-detail-topbar')) return;
+            startDrag(event.touches[0].clientY);
+        }, { passive: true });
+
+        document.addEventListener('touchmove', (event) => {
+            if (pointerId !== 'fallback' || event.touches.length === 0) return;
+            updateDrag(event.touches[0].clientY);
+        }, { passive: true });
+
+        document.addEventListener('touchend', () => {
+            if (pointerId !== 'fallback') return;
+            endDrag();
+        });
+
+        const handlePointerMove = (event) => {
+            if (!isDragging || event.pointerId !== pointerId) return;
+            dragCurrentY = event.clientY;
+            const delta = Math.max(0, dragCurrentY - dragStartY);
+            sheet.style.setProperty('--cat-sheet-drag-y', `${delta}px`);
+        };
+
+        const handlePointerUp = (event) => {
+            if (!isDragging || event.pointerId !== pointerId) return;
+            const delta = Math.max(0, dragCurrentY - dragStartY);
+            resetDrag();
+            if (delta > 78) {
+                this.closeResourceDetailSheet();
+            }
+        };
+
+        sheet.addEventListener('pointermove', handlePointerMove);
+        sheet.addEventListener('pointerup', handlePointerUp);
+        document.addEventListener('pointermove', handlePointerMove);
+        document.addEventListener('pointerup', handlePointerUp);
+
+        sheet.addEventListener('pointercancel', resetDrag);
     }
 
     setupResourceSort() {
@@ -879,8 +1057,13 @@ class FirebaseBulletinBoard {
             return;
         }
 
+        const previousView = this.currentView;
         this.currentView = view;
         document.body.setAttribute('data-current-view', view);
+
+        if (view === 'resources' && previousView !== 'resources') {
+            this.currentDesktopResourceTopic = 'all';
+        }
 
         if (view === 'advisors') {
             this.renderStudentAdvisorDirectory();
@@ -924,23 +1107,56 @@ class FirebaseBulletinBoard {
         }
     }
 
+    getAdvisorInitials(name = '') {
+        return name
+            .trim()
+            .split(/\s+/)
+            .map((part) => part[0] || '')
+            .join('')
+            .slice(0, 2)
+            .toUpperCase();
+    }
+
+    getAdvisorAvatarColor(index, total = STUDENT_ADVISOR_DIRECTORY.length) {
+        const count = Math.max(Number(total) || 1, 1);
+        // Evenly space hues around the color wheel (spectral rainbow), not tied to role or name.
+        const hue = Math.round((index * 360) / count) % 360;
+        const isYellowBand = hue >= 45 && hue <= 70;
+        const saturation = isYellowBand ? 48 : 38;
+        const lightness = isYellowBand ? 74 : 68;
+        return {
+            background: `hsl(${hue} ${saturation}% ${lightness}%)`,
+            color: `hsl(${hue} 36% 28%)`
+        };
+    }
+
     renderStudentAdvisorDirectory() {
         const list = document.getElementById('advisorsDirectoryList');
         if (!list) {
             return;
         }
 
-        list.innerHTML = STUDENT_ADVISOR_DIRECTORY.map((advisor) => {
+        list.innerHTML = STUDENT_ADVISOR_DIRECTORY.map((advisor, index) => {
             const name = this.escapeHtml(advisor.name);
             const role = this.escapeHtml(advisor.role);
             const email = this.escapeHtml(advisor.email || '');
+            const initials = this.escapeHtml(this.getAdvisorInitials(advisor.name));
+            const avatarColor = this.getAdvisorAvatarColor(index, STUDENT_ADVISOR_DIRECTORY.length);
             return `
                 <article class="advisor-dir-card">
-                    <div class="advisor-dir-card-text">
+                    <div class="advisor-dir-avatar" style="background:${avatarColor.background};color:${avatarColor.color}" aria-hidden="true">${initials}</div>
+                    <div class="advisor-dir-card-body">
                         <h2 class="advisor-dir-name">${name}</h2>
                         <p class="advisor-dir-role">${role}</p>
                     </div>
-                    <a class="advisor-dir-email" href="mailto:${email}">${email}</a>
+                    <a class="advisor-dir-email-btn" href="mailto:${email}" aria-label="Email ${name} at ${email}">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <rect x="3" y="5" width="18" height="14" rx="2"></rect>
+                            <path d="m3 7 9 6 9-6"></path>
+                        </svg>
+                        <span class="en-text">Email</span>
+                        <span class="es-text">Correo</span>
+                    </a>
                 </article>
             `;
         }).join('');
@@ -1036,7 +1252,7 @@ class FirebaseBulletinBoard {
         if (resources.length === 0) {
             return `
                 <div class="feed-category-resource-empty">
-                    <strong>No resources listed yet for this topic.</strong>
+                    <strong>No help links listed yet for this topic.</strong>
                     <span>Ask your advisor — they can point you to trusted places.</span>
                 </div>
             `;
@@ -1166,13 +1382,29 @@ class FirebaseBulletinBoard {
 
     updateSearchPlaceholder() {
         const searchInput = document.getElementById('searchInput');
-        if (!searchInput) return;
+        const desktopSearchInput = document.getElementById('desktopTopbarSearchInput');
+        const mobileInlineSearchInput = document.getElementById('mobileInlineSearchInput');
 
-        if (this.currentView === 'resources') {
-            searchInput.placeholder = 'Search resources / Buscar recursos';
-        } else {
-            searchInput.placeholder = 'Search the feed / Buscar publicaciones';
+        const isSpanish = document.body.getAttribute('data-lang') === 'ES';
+        const isResourcesView = this.currentView === 'resources';
+        const desktopPlaceholder = isResourcesView
+            ? (isSpanish ? 'Busca ayuda...' : 'Search help...')
+            : (isSpanish
+                ? 'Busca ayuda, anuncios y eventos...'
+                : 'Search for help, announcements, and events...');
+        const mobilePlaceholder = isResourcesView
+            ? (isSpanish ? 'Busca ayuda...' : 'Search help...')
+            : (isSpanish
+                ? '¿Con qué necesitas ayuda?'
+                : 'What do you need help with?');
+
+        if (desktopSearchInput) {
+            desktopSearchInput.placeholder = desktopPlaceholder;
         }
+
+        [searchInput, mobileInlineSearchInput].filter(Boolean).forEach((input) => {
+            input.placeholder = mobilePlaceholder;
+        });
     }
 
     renderFeed(bulletins) {
@@ -1214,6 +1446,7 @@ class FirebaseBulletinBoard {
     renderCalendar(bulletins) {
         const calendar = document.getElementById('bulletinCalendar');
         const emptyState = document.getElementById('calendarEmptyState');
+        const desktopGrid = document.getElementById('bulletinCalendarDesktopGrid');
         if (!calendar || !emptyState) {
             return;
         }
@@ -1222,15 +1455,50 @@ class FirebaseBulletinBoard {
         const datedBulletins = mergedBulletins.filter((bulletin) => this.bulletinHasCalendarDates(bulletin));
         if (datedBulletins.length === 0) {
             calendar.innerHTML = '';
+            if (desktopGrid) desktopGrid.innerHTML = '';
             emptyState.style.display = 'block';
             return;
         }
 
         emptyState.style.display = 'none';
         this.updateDatesViewToggle();
-        calendar.innerHTML = this.datesViewMode === 'calendar'
-            ? this.createCalendarView(mergedBulletins)
-            : this.createDatesListView(datedBulletins);
+
+        const isDesktopSplit = window.matchMedia('(min-width: 1024px)').matches;
+
+        if (isDesktopSplit) {
+            // Two-pane: list left, month grid right (toggle ignored)
+            calendar.innerHTML = this.createDatesListView(datedBulletins);
+            if (desktopGrid) {
+                desktopGrid.innerHTML = this.createCalendarView(mergedBulletins, { navigatorMode: true });
+                this.bindCalendarDayScroll(desktopGrid);
+            }
+        } else {
+            // Single-pane: respect toggle
+            calendar.innerHTML = this.datesViewMode === 'calendar'
+                ? this.createCalendarView(mergedBulletins)
+                : this.createDatesListView(datedBulletins);
+            if (desktopGrid) desktopGrid.innerHTML = '';
+        }
+    }
+
+    bindCalendarDayScroll(gridEl) {
+        // Clicking a day with events scrolls the list to that date's card.
+        gridEl.querySelectorAll('[data-calendar-day]').forEach((dayEl) => {
+            dayEl.addEventListener('click', () => {
+                const iso = dayEl.getAttribute('data-calendar-day');
+                if (!iso) return;
+                const target = document.querySelector(`[data-list-date="${iso}"]`);
+                if (!target) return;
+                const headerOffset = parseInt(
+                    getComputedStyle(document.documentElement)
+                        .getPropertyValue('--app-header-offset') || '70', 10
+                );
+                const top = window.scrollY + target.getBoundingClientRect().top - headerOffset - 16;
+                window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+                target.classList.add('list-card-pulse');
+                setTimeout(() => target.classList.remove('list-card-pulse'), 1400);
+            });
+        });
     }
 
     renderHomeUpcomingEvents(bulletins) {
@@ -1307,6 +1575,10 @@ class FirebaseBulletinBoard {
         this.renderHeroResources(resources);
         this.renderResourceCategoryFilters();
         this.renderResourceList(resources);
+        // Also populate the desktop layout whenever resources update
+        if (document.querySelector('.resources-desktop-layout')) {
+            this.renderResourcesDesktop(resources);
+        }
     }
 
     renderHeroResources(resources) {
@@ -1342,7 +1614,7 @@ class FirebaseBulletinBoard {
                     type="button"
                     class="hero-resource-card resource-${category}"
                     data-resource-category="${category}"
-                    aria-label="View ${config.labelEn} resources"
+                    aria-label="View ${config.labelEn} help"
                 >
                     <span class="hero-resource-icon" aria-hidden="true">
                         ${iconSvg}
@@ -1355,7 +1627,7 @@ class FirebaseBulletinBoard {
             `;
         }).join('');
 
-        container.innerHTML = heroCards || '<p class="hero-resources-empty">No resources available yet.</p>';
+        container.innerHTML = heroCards || '<p class="hero-resources-empty">No help links available yet.</p>';
 
         // Add click handlers
         container.querySelectorAll('.hero-resource-card').forEach((card) => {
@@ -1402,8 +1674,8 @@ class FirebaseBulletinBoard {
                 if (!config) return '';
                 const count = resources.filter((resource) => this.getResourceCategoryKey(resource) === key).length;
                 const iconSvg = RESOURCE_ICON_SVGS[config.icon] || RESOURCE_ICON_SVGS.globe;
-                const placesLabelEn = count === 1 ? 'place' : 'places';
-                const placesLabelEs = count === 1 ? 'lugar' : 'lugares';
+                const placesLabelEn = this.getResourceCountNoun(count, 'en');
+                const placesLabelEs = this.getResourceCountNoun(count, 'es');
                 return `
             <button
                 type="button"
@@ -1482,8 +1754,8 @@ class FirebaseBulletinBoard {
             emptyState.innerHTML = isSearching
                 ? '<h3>No results found</h3><p>Try a different search term or clear filters.</p><p class="empty-state-bilingual">No se encontraron resultados. Pruebe un término diferente o borre los filtros.</p>'
                 : resources.length === 0
-                    ? '<h3>No resources published yet</h3><p>Advisors can add quick links in the admin portal so they appear here for students.</p>'
-                    : '<h3>No resources in this category</h3><p>Try another category to see more support links.</p>';
+                    ? '<h3>No help links published yet</h3><p>Advisors can add quick links in the admin portal so they appear here for students.</p>'
+                    : '<h3>No help links in this category</h3><p>Try another category to see more support links.</p>';
             emptyState.style.display = 'block';
             return;
         }
@@ -1511,6 +1783,376 @@ class FirebaseBulletinBoard {
                 category.toLowerCase().includes(normalizedQuery)
             );
         });
+    }
+
+    // ─── Quick-Filter helpers ────────────────────────────────────────
+
+    isResourceFree(resource) {
+        if (resource.isFree === true || resource.free === true) return true;
+        const text = [
+            resource.highlights, resource.description, resource.title,
+            resource.titleEn, resource.titleEs
+        ].join(' ').toLowerCase();
+        return /\bfree\b|\bgratis\b|\bgratuito\b/.test(text);
+    }
+
+    isResourceWalkIn(resource) {
+        if (resource.isWalkIn === true || resource.walkIn === true) return true;
+        const text = [
+            resource.highlights, resource.description, resource.title,
+            resource.titleEn, resource.titleEs
+        ].join(' ').toLowerCase();
+        return /walk[\s-]?in|sin cita|drop[\s-]?in/.test(text);
+    }
+
+    isResourceSpanishSpoken(resource) {
+        if (Array.isArray(resource.languages)) {
+            const langs = resource.languages.join(' ').toLowerCase();
+            if (/spanish|español|espanol/.test(langs)) return true;
+        }
+        if (resource.bilingual === true) return true;
+        const text = [
+            resource.highlights, resource.description
+        ].join(' ').toLowerCase();
+        return /spanish|español|espanol|se habla/.test(text);
+    }
+
+    isResourceOpenNow(resource) {
+        const hoursText = (
+            resource.hours || resource.hoursOfOperation || resource.schedule || ''
+        ).toLowerCase().trim();
+        if (!hoursText) return false;
+        if (/24\/7|open 24/.test(hoursText)) return true;
+
+        const now = new Date();
+        const dayIndex = now.getDay(); // 0=Sun..6=Sat
+        const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+        const DAY_ALIASES = {
+            sun: 0, sunday: 0,
+            mon: 1, monday: 1,
+            tue: 2, tues: 2, tuesday: 2,
+            wed: 3, wednesday: 3,
+            thu: 4, thur: 4, thurs: 4, thursday: 4,
+            fri: 5, friday: 5,
+            sat: 6, saturday: 6
+        };
+
+        const parseTime12 = (s) => {
+            const m = s.trim().match(/^(\d{1,2})(?::(\d{2}))?\s*(am|pm)?$/i);
+            if (!m) return null;
+            let h = parseInt(m[1], 10);
+            const min = parseInt(m[2] || '0', 10);
+            const period = (m[3] || '').toLowerCase();
+            if (period === 'pm' && h !== 12) h += 12;
+            if (period === 'am' && h === 12) h = 0;
+            return h * 60 + min;
+        };
+
+        const segments = hoursText.split(/[,;|]/);
+        for (const segment of segments) {
+            const rangeParts = segment.match(
+                /([a-z]+(?:[\s-][a-z]+)?)[:\s]*([\d:]+\s*(?:am|pm)?)\s*[-–]\s*([\d:]+\s*(?:am|pm)?)/i
+            );
+            if (!rangeParts) continue;
+            const dayPart = rangeParts[1].trim().toLowerCase();
+            const openMin = parseTime12(rangeParts[2]);
+            const closeMin = parseTime12(rangeParts[3]);
+            if (openMin === null || closeMin === null) continue;
+
+            // Resolve day range (e.g. "Mon-Fri")
+            const dayRange = dayPart.split(/[-–]/).map(d => DAY_ALIASES[d.trim()]);
+            const startDay = dayRange[0] ?? -1;
+            const endDay = dayRange[1] ?? startDay;
+            if (startDay === -1) continue;
+            if (dayIndex < startDay || dayIndex > endDay) continue;
+
+            if (closeMin > openMin) {
+                if (currentMinutes >= openMin && currentMinutes < closeMin) return true;
+            } else {
+                // Wraps midnight (e.g. 10pm–2am)
+                if (currentMinutes >= openMin || currentMinutes < closeMin) return true;
+            }
+        }
+        return false;
+    }
+
+    getResourceBadgesHtml(resource) {
+        const badges = [];
+        if (this.isResourceFree(resource)) {
+            badges.push('<span class="badge badge--free"><span class="en-text">Free</span><span class="es-text">Gratis</span></span>');
+        }
+        if (this.isResourceWalkIn(resource)) {
+            badges.push('<span class="badge badge--walkin"><span class="en-text">Walk-in</span><span class="es-text">Sin cita</span></span>');
+        }
+        if (this.isResourceOpenNow(resource)) {
+            badges.push('<span class="badge badge--open"><span class="en-text">Open now</span><span class="es-text">Abierto</span></span>');
+        } else if (resource.hours || resource.hoursOfOperation) {
+            badges.push('<span class="badge badge--closed"><span class="en-text">Closed</span><span class="es-text">Cerrado</span></span>');
+        }
+        if (badges.length === 0) return '';
+        return `<div class="resource-badges-container">${badges.join('')}</div>`;
+    }
+
+    formatCompactAddress(address = '') {
+        const parts = address.split(',').map((part) => part.trim()).filter(Boolean);
+        if (parts.length >= 2) {
+            const street = parts[0];
+            const city = parts[1].replace(/\s+[A-Z]{2}(\s+\d{5}(?:-\d{4})?)?$/i, '').trim() || parts[1];
+            return `${street} · ${city}`;
+        }
+        return address.trim();
+    }
+
+    getResourceSheetSubtitle(resource) {
+        const { titleEn } = this.getResourceTitles(resource);
+        const company = (resource.company || '').trim();
+        const address = (resource.address || '').trim();
+        const shortAddress = address ? this.formatCompactAddress(address) : '';
+
+        if (shortAddress) {
+            if (company && company !== titleEn) {
+                return `${company} · ${shortAddress.split(' · ').pop()}`;
+            }
+            return shortAddress;
+        }
+
+        if (company && company !== titleEn) {
+            return company;
+        }
+
+        const description = (resource.description || '').trim();
+        if (!description) {
+            return '';
+        }
+
+        if (description.length <= 72) {
+            return description;
+        }
+
+        const cut = description.slice(0, 72);
+        const lastSpace = cut.lastIndexOf(' ');
+        return `${(lastSpace > 40 ? cut.slice(0, lastSpace) : cut).trim()}…`;
+    }
+
+    // ─── Desktop Resources Rendering ────────────────────────────────
+
+    getResourceCountNoun(count, lang = 'en') {
+        if (lang === 'es') {
+            return count === 1 ? 'recurso' : 'recursos';
+        }
+        return count === 1 ? 'resource' : 'resources';
+    }
+
+    getResourceCountText(count, lang = 'en') {
+        return `${count} ${this.getResourceCountNoun(count, lang)}`;
+    }
+
+    renderResourcesDesktop(allResources) {
+        const navContainer = document.getElementById('desktopCategoryNav');
+        const sectionsContainer = document.getElementById('resourcesDesktopSections');
+        const emptyEl = document.getElementById('resourceDesktopEmptyState');
+        if (!navContainer || !sectionsContainer) return;
+
+        // Apply search query
+        const searchQuery = document.getElementById('searchInput')?.value ||
+                            document.getElementById('desktopTopbarSearchInput')?.value || '';
+        const filtered = this.filterResourcesBySearch(allResources, searchQuery);
+
+        // Build per-category map
+        const catMap = {};
+        RESOURCE_TILE_CATEGORIES.forEach(key => { catMap[key] = []; });
+        filtered.forEach(r => {
+            const key = this.getResourceCategoryKey(r);
+            if (catMap[key]) catMap[key].push(r);
+        });
+
+        // Render sidebar nav
+        const activeTopic = this.currentDesktopResourceTopic || 'all';
+        const allButtonHtml = `
+            <button
+                type="button"
+                class="desktop-cat-btn desktop-cat-btn--all${activeTopic === 'all' ? ' active' : ''}"
+                data-desktop-cat="all"
+                style="--topic-color:#e0e7ff;--topic-text:#0a1d3a"
+                aria-label="All topics / Todos los temas"
+            >
+                <span class="desktop-cat-icon desktop-cat-icon--all" style="background:#0a1d3a" aria-hidden="true">✨</span>
+                <span class="desktop-cat-label">
+                    <span class="en-text">All</span>
+                    <span class="es-text">Todo</span>
+                </span>
+                ${filtered.length > 0 ? `<span class="desktop-cat-count" style="background:#e0e7ff;color:#0a1d3a">${filtered.length}</span>` : ''}
+            </button>
+        `;
+
+        navContainer.innerHTML = allButtonHtml + RESOURCE_TILE_CATEGORIES.map(key => {
+            const config = RESOURCE_CATEGORY_CONFIG[key];
+            if (!config) return '';
+            const count = (catMap[key] || []).length;
+            const iconSvg = RESOURCE_ICON_SVGS[config.icon] || RESOURCE_ICON_SVGS.globe;
+            return `
+                <button
+                    type="button"
+                    class="desktop-cat-btn${activeTopic === key ? ' active' : ''}"
+                    data-desktop-cat="${key}"
+                    style="--topic-color:${config.color}20;--topic-text:${config.color}"
+                    aria-label="${this.escapeAttribute(config.labelEn + ' / ' + config.labelEs)}"
+                >
+                    <span class="desktop-cat-icon" style="background:${config.color}" aria-hidden="true">${iconSvg}</span>
+                    <span class="desktop-cat-label">
+                        <span class="en-text">${this.escapeHtml(config.labelEn)}</span>
+                        <span class="es-text">${this.escapeHtml(config.labelEs)}</span>
+                    </span>
+                    ${count > 0 ? `<span class="desktop-cat-count" style="background:${config.color}20;color:${config.color}">${count}</span>` : ''}
+                </button>
+            `;
+        }).join('');
+
+        const setActiveDesktopTopic = (topic) => {
+            this.currentDesktopResourceTopic = topic || 'all';
+            navContainer.querySelectorAll('.desktop-cat-btn').forEach((button) => {
+                const buttonTopic = button.dataset.desktopCat || 'all';
+                button.classList.toggle('active', buttonTopic === this.currentDesktopResourceTopic);
+            });
+        };
+
+        // Bind sidebar button clicks → scroll to section, not open sheet
+        navContainer.querySelectorAll('.desktop-cat-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const cat = btn.dataset.desktopCat;
+                if (!cat) return;
+
+                setActiveDesktopTopic(cat);
+
+                const headerOffset = parseInt(
+                    getComputedStyle(document.documentElement)
+                        .getPropertyValue('--app-header-offset') || '70', 10
+                );
+
+                if (cat === 'all') {
+                    const scrollTarget = sectionsContainer.closest('.resources-desktop-main') || sectionsContainer;
+                    const top = window.scrollY + scrollTarget.getBoundingClientRect().top - headerOffset - 16;
+                    window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+                    return;
+                }
+
+                const target = document.getElementById(`desktop-section-${cat}`);
+                if (target) {
+                    const top = window.scrollY + target.getBoundingClientRect().top - headerOffset - 16;
+                    window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+                }
+            });
+        });
+
+        // Render main categorized sections
+        const categoriesWithResources = RESOURCE_TILE_CATEGORIES.filter(k => (catMap[k] || []).length > 0);
+
+        if (categoriesWithResources.length === 0) {
+            sectionsContainer.innerHTML = '';
+            if (emptyEl) emptyEl.style.display = 'block';
+            return;
+        }
+        if (emptyEl) emptyEl.style.display = 'none';
+
+        sectionsContainer.innerHTML = categoriesWithResources.map(key => {
+            const config = RESOURCE_CATEGORY_CONFIG[key];
+            if (!config) return '';
+            const resources = catMap[key];
+            const preview = resources.slice(0, 3);
+            const hasMore = resources.length > 3;
+            const iconSvg = RESOURCE_ICON_SVGS[config.icon] || RESOURCE_ICON_SVGS.globe;
+
+            const cardsHtml = preview.map(r => this.createResourceDetailCard(r, config, { compact: false })).join('');
+            const showAllBtn = hasMore ? `
+                <button class="cat-org-show-all desktop-section-see-all" type="button"
+                    data-desktop-show-all="${this.escapeAttribute(key)}"
+                    style="--cat-accent:${config.color}">
+                    <span class="en-text">See all ${this.escapeHtml(config.labelEn.toLowerCase())} — ${this.getResourceCountText(resources.length, 'en')}</span>
+                    <span class="es-text">Ver ${this.getResourceCountText(resources.length, 'es')}</span>
+                    <span aria-hidden="true">&rarr;</span>
+                </button>
+            ` : '';
+
+            return `
+                <section class="desktop-resource-section" id="desktop-section-${key}" style="--cat-accent:${config.color}">
+                    <div class="desktop-section-header">
+                        <span class="desktop-section-icon" style="background:${config.color}" aria-hidden="true">${iconSvg}</span>
+                        <div class="desktop-section-title-group">
+                            <h2 class="desktop-section-title">
+                                <span class="en-text">${this.escapeHtml(config.labelEn)}</span>
+                                <span class="es-text">${this.escapeHtml(config.labelEs)}</span>
+                            </h2>
+                            <p class="desktop-section-count">
+                                <span class="en-text">${this.getResourceCountText(resources.length, 'en')}</span>
+                                <span class="es-text">${this.getResourceCountText(resources.length, 'es')}</span>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="desktop-section-grid">
+                        ${cardsHtml}
+                    </div>
+                    ${showAllBtn}
+                </section>
+            `;
+        }).join('');
+
+        // Bind "See all" buttons in desktop sections
+        sectionsContainer.querySelectorAll('[data-desktop-show-all]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const cat = btn.dataset.desktopShowAll;
+                if (cat) this.openResourceDetailSheet(cat, { showAll: true });
+            });
+        });
+    }
+
+    // ─── Speech Synthesis ────────────────────────────────────────────
+
+    handleResourceSpeech(text, button) {
+        if (!window.speechSynthesis) return;
+
+        // If the same button is already speaking, cancel it
+        if (button.classList.contains('speaking')) {
+            window.speechSynthesis.cancel();
+            button.classList.remove('speaking');
+            button.setAttribute('aria-label', 'Read aloud');
+            return;
+        }
+
+        // Stop any currently speaking button
+        window.speechSynthesis.cancel();
+        document.querySelectorAll('.resource-audio-btn.speaking').forEach(b => {
+            b.classList.remove('speaking');
+            b.setAttribute('aria-label', 'Read aloud');
+        });
+
+        // Detect language
+        const isSpanish = document.documentElement.getAttribute('data-lang') === 'ES' ||
+                          document.body.classList.contains('lang-es');
+        const lang = isSpanish ? 'es-US' : 'en-US';
+
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = lang;
+
+        // Prefer a matching voice
+        const voices = window.speechSynthesis.getVoices();
+        const match = voices.find(v => v.lang === lang) ||
+                      voices.find(v => v.lang.startsWith(lang.split('-')[0]));
+        if (match) utterance.voice = match;
+
+        button.classList.add('speaking');
+        button.setAttribute('aria-label', 'Stop reading');
+
+        utterance.onend = () => {
+            button.classList.remove('speaking');
+            button.setAttribute('aria-label', 'Read aloud');
+        };
+        utterance.onerror = () => {
+            button.classList.remove('speaking');
+            button.setAttribute('aria-label', 'Read aloud');
+        };
+
+        window.speechSynthesis.speak(utterance);
     }
 
     sortResources(resources, sortMode) {
@@ -1576,7 +2218,7 @@ class FirebaseBulletinBoard {
         return normalizePostCategory(category);
     }
 
-    openResourceDetailSheet(category) {
+    openResourceDetailSheet(category, options = {}) {
         const config = RESOURCE_CATEGORY_CONFIG[category];
         const sheet = document.getElementById('catDetailSheet');
         const titleEl = document.getElementById('catDetailTitle');
@@ -1586,6 +2228,9 @@ class FirebaseBulletinBoard {
 
         const resources = this.getPublishedResources()
             .filter((resource) => this.getResourceCategoryKey(resource) === category);
+        const isMobileSheet = window.matchMedia('(max-width: 767px)').matches;
+        const shouldLimit = !options.showAll;
+        const visibleResources = shouldLimit ? resources.slice(0, 3) : resources;
         const iconSvg = RESOURCE_ICON_SVGS[config.icon] || RESOURCE_ICON_SVGS.globe;
 
         if (titleEl) {
@@ -1593,8 +2238,8 @@ class FirebaseBulletinBoard {
                 <span class="en-text">${this.escapeHtml(config.labelEn)}</span>
                 <span class="es-text">${this.escapeHtml(config.labelEs)}</span>
                 <small>
-                    <span class="en-text">${resources.length} ${resources.length === 1 ? 'resource' : 'resources'}</span>
-                    <span class="es-text">${resources.length} ${resources.length === 1 ? 'recurso' : 'recursos'}</span>
+                    <span class="en-text">${this.getResourceCountText(resources.length, 'en')}</span>
+                    <span class="es-text">${this.getResourceCountText(resources.length, 'es')}</span>
                 </small>
             `;
         }
@@ -1605,17 +2250,85 @@ class FirebaseBulletinBoard {
         }
 
         sheet.style.setProperty('--cat-accent', config.color);
-        listEl.innerHTML = resources.map((resource) => this.createResourceDetailCard(resource, config)).join('');
+        const emptyHtml = `
+            <div class="cat-org-empty">
+                <strong>No help links listed yet.</strong>
+                <span>Ask your advisor for trusted places nearby.</span>
+            </div>
+        `;
+        const showAllHtml = shouldLimit && resources.length > visibleResources.length
+            ? this.createResourceSheetShowAllButton(category, config, resources.length)
+            : '';
+        listEl.innerHTML = visibleResources.length > 0
+            ? visibleResources.map((resource) => this.createResourceDetailCard(resource, config, { compact: isMobileSheet })).join('')
+            : emptyHtml;
+
+        // Place the "See all" button in the sticky footer (outside the scroll area)
+        const footerEl = document.getElementById('catSheetFooter');
+        if (footerEl) {
+            footerEl.innerHTML = showAllHtml;
+            footerEl.style.display = showAllHtml ? '' : 'none';
+        }
+
+
+        if (this.resourceSheetCloseTimer) {
+            window.clearTimeout(this.resourceSheetCloseTimer);
+            this.resourceSheetCloseTimer = null;
+        }
 
         sheet.classList.add('open');
+        sheet.classList.toggle('cat-detail-sheet--bottom', isMobileSheet);
+        sheet.classList.toggle('cat-detail-sheet--desktop', !isMobileSheet);
+        sheet.classList.toggle('cat-detail-sheet--expanded', !shouldLimit);
         sheet.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('resource-sheet-open');
         const scroll = sheet.querySelector('.cat-detail-scroll');
         if (scroll) scroll.scrollTop = 0;
     }
 
-    createResourceDetailCard(resource, config) {
+    closeResourceDetailSheet() {
+        const sheet = document.getElementById('catDetailSheet');
+        if (sheet) {
+            const wasBottomSheet = sheet.classList.contains('cat-detail-sheet--bottom');
+            const wasDesktopSheet = sheet.classList.contains('cat-detail-sheet--desktop');
+            sheet.classList.remove('open', 'is-dragging');
+            sheet.setAttribute('aria-hidden', 'true');
+            sheet.style.removeProperty('--cat-sheet-drag-y');
+
+            if (wasBottomSheet || wasDesktopSheet) {
+                if (this.resourceSheetCloseTimer) {
+                    window.clearTimeout(this.resourceSheetCloseTimer);
+                }
+                this.resourceSheetCloseTimer = window.setTimeout(() => {
+                    this.resourceSheetCloseTimer = null;
+                    if (!sheet.classList.contains('open')) {
+                        sheet.classList.remove('cat-detail-sheet--bottom', 'cat-detail-sheet--desktop', 'cat-detail-sheet--expanded');
+                    }
+                }, 280);
+            } else {
+                sheet.classList.remove('cat-detail-sheet--bottom', 'cat-detail-sheet--desktop', 'cat-detail-sheet--expanded');
+            }
+        }
+        document.body.classList.remove('resource-sheet-open');
+    }
+
+    createResourceSheetShowAllButton(category, config, count) {
+        return `
+            <button class="cat-org-show-all" type="button" data-cat-show-all="${this.escapeAttribute(category)}" style="--cat-accent:${config.color}">
+                <span class="en-text">See all ${this.escapeHtml(config.labelEn.toLowerCase())} — ${this.getResourceCountText(count, 'en')}</span>
+                <span class="es-text">Ver ${this.getResourceCountText(count, 'es')}</span>
+                <span aria-hidden="true">&rarr;</span>
+            </button>
+        `;
+    }
+
+    createResourceDetailCard(resource, config, options = {}) {
         const { titleEn } = this.getResourceTitles(resource);
-        const description = resource.description ? this.escapeHtml(resource.description) : '';
+        const isCompact = options.compact === true;
+        const description = isCompact
+            ? this.getResourceSheetSubtitle(resource)
+            : (resource.description || '');
+        const escapedDescription = description ? this.escapeHtml(description) : '';
         const url = this.getResourceUrl(resource);
         const displayUrl = resource.websiteLabel || this.formatLinkLabel(url, this.getResourceCategoryKey(resource));
         const phone = resource.phone || '';
@@ -1647,24 +2360,29 @@ class FirebaseBulletinBoard {
                 </a>`
             : '';
 
+        const primaryActionHtml = options.compact ? (callHtml || websiteHtml || directionsHtml) : '';
         const actionCount = [callHtml, websiteHtml || directionsHtml].filter(Boolean).length;
         const logoHtml = resource.resourceLogo
             ? `<div class="cat-org-logo"><img src="${this.escapeAttribute(resource.resourceLogo)}" alt="${this.escapeAttribute(titleEn)} logo" loading="lazy"></div>`
             : '';
 
+        const badgesHtml = isCompact ? '' : this.getResourceBadgesHtml(resource);
+
         return `
             <article class="cat-org-card" style="--cat-accent:${config.color}">
                 ${logoHtml}
-                <h3 class="cat-org-name">${this.escapeHtml(titleEn)}</h3>
-                ${description ? `<p class="cat-org-description">${description}</p>` : ''}
-                ${address ? `<p class="cat-org-address">
+                <div class="cat-org-main">
+                    <h3 class="cat-org-name">${this.escapeHtml(titleEn)}</h3>
+                    ${badgesHtml}
+                    ${escapedDescription ? `<p class="cat-org-description">${escapedDescription}</p>` : ''}
+                </div>
+                ${!isCompact && address ? `<p class="cat-org-address">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#758299" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s6.25-5.9 6.25-11.1a6.25 6.25 0 1 0-12.5 0C5.75 15.1 12 21 12 21Z"/><circle cx="12" cy="9.75" r="2.5"/></svg>
                     ${this.escapeHtml(address)}
                 </p>` : ''}
                 ${languageHtml}
                 <div class="cat-org-actions ${actionCount === 1 || (websiteHtml && callHtml && !directionsHtml) ? 'cat-org-actions--stack' : ''}">
-                    ${callHtml}
-                    ${websiteHtml || directionsHtml}
+                    ${options.compact ? primaryActionHtml : `${callHtml}${websiteHtml || directionsHtml}`}
                 </div>
             </article>
         `;
@@ -3615,10 +4333,12 @@ class FirebaseBulletinBoard {
         const badgeTop = kind === 'deadline' ? 'BY' : date.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
         const badgeMain = date.getDate();
         const dotColor = kind === 'deadline' ? '#f08b1f' : meta.accent;
+        const isoDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 
         return `
             <article
                 class="dates-list-card"
+                data-list-date="${isoDate}"
                 style="--date-accent:${meta.accent};--date-tint:${meta.tint};--date-dot:${dotColor}"
                 role="button"
                 tabindex="0"
@@ -3642,7 +4362,8 @@ class FirebaseBulletinBoard {
         `;
     }
 
-    createCalendarView(bulletins) {
+    createCalendarView(bulletins, options = {}) {
+        const navigatorMode = options.navigatorMode === true;
         // Filter to only show bulletins with deadlines or events
         const calendarBulletins = bulletins.filter((bulletin) => this.bulletinHasCalendarDates(bulletin));
 
@@ -3718,7 +4439,8 @@ class FirebaseBulletinBoard {
             const dayBulletins = bulletinsByDate[dateKey] || [];
             const isToday = date.toDateString() === today.toDateString();
             
-            calendarHTML += this.createMonthlyCalendarDay(day, dayBulletins, isToday);
+            const isoDate = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            calendarHTML += this.createMonthlyCalendarDay(day, dayBulletins, isToday, { navigatorMode, isoDate });
         }
 
         calendarHTML += `
@@ -3729,14 +4451,21 @@ class FirebaseBulletinBoard {
         return calendarHTML;
     }
 
-    createMonthlyCalendarDay(day, bulletins, isToday) {
+    createMonthlyCalendarDay(day, bulletins, isToday, options = {}) {
+        const { navigatorMode = false, isoDate = '' } = options;
         const bulletinCount = bulletins.length;
         const hasBulletins = bulletinCount > 0;
-        const clickHandler = hasBulletins ? `onclick="bulletinBoard.showDayEventsByIds(${JSON.stringify(bulletins.map(b => b.id))})"` : '';
+        // In navigator mode (desktop split), click scrolls the list (bound separately).
+        // In popup mode (mobile), click opens the day's events.
+        const clickHandler = hasBulletins && !navigatorMode
+            ? `onclick="bulletinBoard.showDayEventsByIds(${JSON.stringify(bulletins.map(b => b.id))})"`
+            : '';
+        const dayAttr = hasBulletins && navigatorMode ? `data-calendar-day="${isoDate}"` : '';
 
         return `
             <div class="calendar-day ${isToday ? 'today' : ''} ${hasBulletins ? 'has-bulletins' : ''}"
                  data-bulletin-count="${bulletinCount}"
+                 ${dayAttr}
                  ${clickHandler}
                  style="${hasBulletins ? 'cursor: pointer;' : ''}">
                 <div class="calendar-day-number">

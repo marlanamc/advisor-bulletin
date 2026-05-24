@@ -317,10 +317,46 @@ body.ap-portal-active .main-content {
 
 .ap-sidebar-brand {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 20px 20px 18px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  padding: 18px 16px 16px;
   border-bottom: 1px solid rgba(255,255,255,.07);
+}
+
+.ap-sidebar-brand [data-ebhcs-brand-lockup] {
+  min-width: 0;
+}
+
+.ap-brand-lockup {
+  min-width: 0;
+}
+
+.ap-brand-lockup--sidebar .topbar-badge svg {
+  width: 32px;
+  height: 38px;
+}
+
+.ap-brand-lockup--sidebar .topbar-brand-eyebrow {
+  font-size: 8px;
+}
+
+.ap-brand-lockup--sidebar .topbar-brand-name {
+  font-size: 14px;
+}
+
+.ap-brand-lockup--sidebar .topbar-brand-sub {
+  font-size: 8px;
+}
+
+.ap-brand-portal-tag {
+  font-family: var(--ap-font-head);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.42);
+  padding-left: 2px;
 }
 
 .ap-brand-icon {
@@ -1809,10 +1845,37 @@ details.ap-accordion > summary.ap-accordion-trigger {
 
 .ap-phone-status {
   background: var(--ap-navy);
-  padding: 8px 16px 6px;
+  padding: 8px 12px 6px;
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.ap-phone-status [data-ebhcs-brand-lockup] {
+  flex: 1;
+  min-width: 0;
+}
+
+.ap-brand-lockup--preview {
+  gap: 6px;
+}
+
+.ap-brand-lockup--preview .topbar-badge svg {
+  width: 22px;
+  height: 26px;
+}
+
+.ap-brand-lockup--preview .topbar-brand-eyebrow {
+  font-size: 6px;
+}
+
+.ap-brand-lockup--preview .topbar-brand-name {
+  font-size: 0.62rem;
+  letter-spacing: 0.02em;
+}
+
+.ap-brand-lockup--preview .topbar-brand-sub {
+  font-size: 6px;
 }
 
 .ap-phone-app-icon {

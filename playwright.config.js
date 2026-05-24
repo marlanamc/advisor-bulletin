@@ -22,7 +22,7 @@ module.exports = defineConfig({
     },
     {
       name: 'mobile',
-      testIgnore: ['**/advisor-redesign.spec.js'],
+      testIgnore: ['**/advisor-redesign.spec.js', '**/resource-desktop.spec.js'],
       use: {
         ...devices['Pixel 5'],
         viewport: { width: 390, height: 844 },
@@ -30,7 +30,7 @@ module.exports = defineConfig({
     },
     {
       name: 'mobile-small',
-      testIgnore: ['**/advisor-redesign.spec.js'],
+      testIgnore: ['**/advisor-redesign.spec.js', '**/resource-desktop.spec.js'],
       use: {
         ...devices['Pixel 5'],
         viewport: { width: 375, height: 667 },
