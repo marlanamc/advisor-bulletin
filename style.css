@@ -9776,6 +9776,14 @@ body:not([data-lang="ES"]) .en-text { display: inline; }
     gap: 8px;
 }
 
+.topbar-end {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+    min-width: 0;
+}
+
 .desktop-topnav {
     display: none;
 }
@@ -11226,9 +11234,9 @@ body:has(#loginRequired) {
     .desktop-topnav {
         display: flex;
         align-items: center;
-        justify-content: center;
+        justify-content: flex-end;
         gap: 6px;
-        flex: 1;
+        flex: 0 0 auto;
         min-width: 0;
     }
 
@@ -12231,11 +12239,18 @@ body:has(#loginRequired) {
         max-width: min(52vw, 420px);
     }
 
+    .topbar-end {
+        gap: 18px;
+        flex: 1;
+        justify-content: flex-end;
+    }
+
     .desktop-topbar-search {
         display: flex;
         align-items: center;
-        flex: 1 1 620px;
-        max-width: 680px;
+        flex: 0 1 420px;
+        width: min(420px, 34vw);
+        max-width: 480px;
         height: 48px;
         gap: 12px;
         padding: 4px 5px 4px 18px;
@@ -12281,7 +12296,6 @@ body:has(#loginRequired) {
         display: flex;
         align-items: center;
         gap: 6px;
-        margin-left: auto;
     }
 
     /* Hide Home in top nav on wide desktop (feed is default from brand); keep Resources like mobile bottom nav. */
@@ -12952,40 +12966,23 @@ body:has(#loginRequired) {
         top: calc(var(--app-header-offset) + 12px);
     }
 
-    /* Topbar: full-width search on its own row so brand, nav, and language stay reachable */
+    /* Topbar: keep nav, search, and language together on the right */
     .topbar-inner {
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
         row-gap: 10px;
         column-gap: 16px;
     }
 
-    .topbar-brand {
-        order: 1;
-        min-width: 0;
-    }
-
-    .desktop-topnav {
-        order: 2;
-        margin-left: auto !important;
-        flex: 0 1 auto;
-        min-width: 0;
-        flex-wrap: wrap;
+    .topbar-end {
+        gap: 12px;
+        flex-wrap: nowrap;
         justify-content: flex-end;
-        row-gap: 6px;
-        column-gap: 4px;
-    }
-
-    .topbar-actions {
-        order: 3;
-        flex: 0 0 auto;
     }
 
     .desktop-topbar-search {
-        order: 10;
-        flex: 1 1 100%;
-        min-width: 0;
-        max-width: none;
-        width: 100%;
+        flex: 0 1 280px;
+        width: min(280px, 28vw);
+        max-width: 320px;
     }
 
     .desktop-topnav-btn {
@@ -13307,6 +13304,128 @@ body:has(#loginRequired) {
 
 .resources-back-home-btn {
     display: none;
+}
+
+/* ─── In-page category detail header (mobile Help view) ────────────── */
+
+/* While drilled into a category on the Help page, hide the "Find help today"
+   hero and the existing back-to-home bar so the colored banner stands alone. */
+body[data-current-view="resources"].resource-category-detail-open #resourcesView .view-hero,
+body[data-current-view="resources"].resource-category-detail-open #resourcesView .page-back-bar {
+    display: none;
+}
+
+.resource-category-detail {
+    position: relative;
+    margin: 12px 16px 18px;
+    padding: 18px 20px 22px;
+    border-radius: 24px;
+    background: var(--cat-accent, #0a1d3a);
+    color: #fff;
+    overflow: hidden;
+    isolation: isolate;
+    box-shadow: 0 12px 32px rgba(10, 29, 58, 0.18);
+}
+
+/* Soft circular decoration in the top-right, mirroring the mockup. */
+.resource-category-detail::after {
+    content: "";
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    width: 200px;
+    height: 200px;
+    background: rgba(255, 255, 255, 0.16);
+    border-radius: 50%;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.resource-category-detail-back {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px 8px 14px;
+    border: 0;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.resource-category-detail-back:hover,
+.resource-category-detail-back:focus-visible {
+    background: rgba(255, 255, 255, 0.3);
+    outline: none;
+}
+
+.resource-category-detail-back:active {
+    transform: scale(0.97);
+}
+
+.resource-category-detail-title {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: flex-end;
+    gap: 14px;
+    margin-top: 28px;
+}
+
+.resource-category-detail-icon {
+    flex: 0 0 auto;
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent !important;
+    color: #fff;
+}
+
+.resource-category-detail-icon svg {
+    width: 28px;
+    height: 28px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+}
+
+.resource-category-detail-text {
+    min-width: 0;
+    padding-bottom: 2px;
+}
+
+.resource-category-detail-text h2 {
+    margin: 0;
+    font-size: 36px;
+    line-height: 1;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: #fff;
+}
+
+.resource-category-detail-text p {
+    margin: 6px 0 0;
+    font-size: 15px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.88);
+}
+
+@media (min-width: 768px) {
+    /* Desktop Help page uses a different layout; hide the in-page header there. */
+    .resource-category-detail {
+        display: none !important;
+    }
 }
 
 .resources-prototype-grid {

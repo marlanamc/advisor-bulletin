@@ -52,17 +52,7 @@
                     </div>
                 </a>
             </div>
-            <div class="desktop-topbar-search" role="search">
-                <svg class="desktop-topbar-search-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <circle cx="11" cy="11" r="7"></circle>
-                    <path d="m17 17 4 4"></path>
-                </svg>
-                <input id="desktopTopbarSearchInput" type="text" class="desktop-topbar-search-input" placeholder="Search for help, announcements, and events..." autocomplete="off" spellcheck="false">
-                <button id="desktopTopbarSearchBtn" class="desktop-topbar-search-btn" type="button">
-                    <span class="en-text">Search</span>
-                    <span class="es-text">Buscar</span>
-                </button>
-            </div>
+            <div class="topbar-end">
             <nav class="desktop-topnav" aria-label="Main navigation">
                 <button class="desktop-topnav-btn active" data-app-view="feed" type="button">
                     <span class="en-text">Home</span>
@@ -85,6 +75,17 @@
                     <span class="es-text">Info</span>
                 </button>
             </nav>
+            <div class="desktop-topbar-search" role="search">
+                <svg class="desktop-topbar-search-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="11" cy="11" r="7"></circle>
+                    <path d="m17 17 4 4"></path>
+                </svg>
+                <input id="desktopTopbarSearchInput" type="text" class="desktop-topbar-search-input" placeholder="Search for help, announcements, and events..." autocomplete="off" spellcheck="false">
+                <button id="desktopTopbarSearchBtn" class="desktop-topbar-search-btn" type="button">
+                    <span class="en-text">Search</span>
+                    <span class="es-text">Buscar</span>
+                </button>
+            </div>
             <div class="topbar-actions">
                 <button id="mobileSearchTrigger" class="topbar-search-btn mobile-search-trigger" type="button" aria-label="Open search" aria-expanded="false">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -96,6 +97,7 @@
                     <button class="lang-btn active" data-lang-switch="EN" type="button">EN</button>
                     <button class="lang-btn" data-lang-switch="ES" type="button">ES</button>
                 </div>
+            </div>
             </div>
         </div>
     </header>
@@ -609,6 +611,11 @@
 
                 <div class="resources-prototype-grid" id="resourceCategoryFilters" aria-label="Help categories">
                     <!-- Resource category tiles render here -->
+                </div>
+
+                <!-- Category detail header (mobile in-page view, replaces tiles when a category is selected) -->
+                <div class="resource-category-detail" id="resourceCategoryDetail" hidden>
+                    <!-- Back button + category title render here -->
                 </div>
 
                 <!-- Help list -->

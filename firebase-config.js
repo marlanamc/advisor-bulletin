@@ -841,6 +841,25 @@ class FirebaseBulletinBoard {
                         contentType: 'category'
                     });
                 }
+
+                // On the Help page (mobile), drill into the full category list in-page
+                // instead of opening the bottom sheet. Homepage / desktop still use the sheet.
+                const isMobileResourcesView =
+                    this.currentView === 'resources' &&
+                    window.matchMedia('(max-width: 767px)').matches;
+                if (isMobileResourcesView && category !== 'all') {
+                    const keyMap = {
+                        job: 'jobs',
+                        childcare: 'family',
+                        money: 'money',
+                        esol: 'esol',
+                        college: 'college',
+                        'legal-aid': 'legal-aid',
+                    };
+                    this.switchResourceCategory(keyMap[category] || category);
+                    return;
+                }
+
                 this.openResourceShortcut(category);
             });
         }
@@ -1171,6 +1190,12 @@ class FirebaseBulletinBoard {
 
         if (view === 'resources' && previousView !== 'resources') {
             this.currentDesktopResourceTopic = 'all';
+        }
+
+        // Leaving Help: reset the in-page category drill so the next visit lands on tiles.
+        if (previousView === 'resources' && view !== 'resources') {
+            this.currentResourceCategory = 'all';
+            document.body.classList.remove('resource-category-detail-open');
         }
 
         if (view === 'advisors') {
@@ -1854,6 +1879,69 @@ class FirebaseBulletinBoard {
         container.innerHTML = tiles;
     }
 
+    renderResourceCategoryDetailHeader(exploring) {
+        const header = document.getElementById('resourceCategoryDetail');
+        const tiles = document.getElementById('resourceCategoryFilters');
+        if (!header) return;
+
+        const category = this.currentResourceCategory;
+        const config = category && category !== 'all' ? RESOURCE_CATEGORY_CONFIG[category] : null;
+
+        if (!exploring || !config) {
+            header.hidden = true;
+            header.style.display = 'none';
+            header.innerHTML = '';
+            if (tiles) {
+                tiles.hidden = false;
+                tiles.style.removeProperty('display');
+            }
+            document.body.classList.remove('resource-category-detail-open');
+            return;
+        }
+
+        document.body.classList.add('resource-category-detail-open');
+
+        const allResources = this.getPublishedResources()
+            .filter((resource) => this.resourceMatchesCategory(resource, category));
+        const iconSvg = RESOURCE_ICON_SVGS[config.icon] || RESOURCE_ICON_SVGS.globe;
+
+        header.hidden = false;
+        header.style.removeProperty('display');
+        if (tiles) {
+            tiles.hidden = true;
+            tiles.style.display = 'none';
+        }
+
+        header.style.setProperty('--cat-accent', config.color);
+        header.innerHTML = `
+            <button type="button" class="resource-category-detail-back" data-resource-detail-back>
+                <span aria-hidden="true">&larr;</span>
+                <span class="en-text">Back</span>
+                <span class="es-text">Atrás</span>
+            </button>
+            <div class="resource-category-detail-title">
+                <span class="resource-category-detail-icon" style="background:${config.color}" aria-hidden="true">${iconSvg}</span>
+                <div class="resource-category-detail-text">
+                    <h2>
+                        <span class="en-text">${this.escapeHtml(config.labelEn)}</span>
+                        <span class="es-text">${this.escapeHtml(config.labelEs)}</span>
+                    </h2>
+                    <p>
+                        <span class="en-text">${this.getResourceCountText(allResources.length, 'en')}</span>
+                        <span class="es-text">${this.getResourceCountText(allResources.length, 'es')}</span>
+                    </p>
+                </div>
+            </div>
+        `;
+
+        const backBtn = header.querySelector('[data-resource-detail-back]');
+        if (backBtn) {
+            backBtn.addEventListener('click', () => {
+                this.switchResourceCategory('all');
+            });
+        }
+    }
+
     renderResourceList(resources) {
         const container = document.getElementById('resourcesList');
         const emptyState = document.getElementById('resourceEmptyState');
@@ -1868,6 +1956,9 @@ class FirebaseBulletinBoard {
         const exploring =
             (this.currentResourceCategory && this.currentResourceCategory !== 'all') ||
             (this.resourceSearchQuery && this.resourceSearchQuery.trim() !== '');
+
+        // Drive the mobile in-page category view (header + back button, hides tiles).
+        this.renderResourceCategoryDetailHeader(exploring);
 
         if (!exploring) {
             container.innerHTML = '';
