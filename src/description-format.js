@@ -1,6 +1,7 @@
 import {
     formatRichTextInline,
     formatRichTextPreview,
+    getRichTextPlainLength,
     normalizeRichTextMarkers,
 } from './rich-text.js';
 
@@ -77,9 +78,18 @@ export function htmlToMarkdown(root) {
 function syncEditorToTextarea(editor, textarea) {
     const markdown = htmlToMarkdown(editor);
     const maxLength = Number(textarea.maxLength) || 0;
-    const nextValue = maxLength > 0 && markdown.length > maxLength
-        ? markdown.slice(0, maxLength)
-        : markdown;
+    let nextValue = markdown;
+
+    if (maxLength > 0 && getRichTextPlainLength(markdown) > maxLength) {
+        for (let end = markdown.length; end > 0; end -= 1) {
+            const candidate = markdown.slice(0, end).trim();
+            if (getRichTextPlainLength(candidate) <= maxLength) {
+                nextValue = candidate;
+                break;
+            }
+        }
+    }
+
     const normalizedValue = normalizeRichTextMarkers(nextValue);
 
     if (normalizedValue !== markdown) {
@@ -88,6 +98,21 @@ function syncEditorToTextarea(editor, textarea) {
 
     textarea.value = normalizedValue;
     textarea.dispatchEvent(new Event('input', { bubbles: true }));
+}
+
+export function getRichTextFieldValue(textareaId, root = document) {
+    const textarea = root.getElementById(textareaId);
+    if (!textarea) {
+        return '';
+    }
+
+    const editor = root.getElementById(`${textareaId}Editor`);
+    if (editor) {
+        syncEditorToTextarea(editor, textarea);
+        return textarea.value;
+    }
+
+    return textarea.value || '';
 }
 
 export function syncRichEditorsToForm(root = document) {

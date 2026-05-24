@@ -12,7 +12,7 @@ import {
     getMultiSessionFeedSortMs,
     getNextSessionStartMs,
 } from './src/event-sessions.js'
-import { initDescriptionFormatToolbars, refreshRichEditors, syncRichEditorsToForm } from './src/description-format.js'
+import { initDescriptionFormatToolbars, refreshRichEditors, syncRichEditorsToForm, getRichTextFieldValue } from './src/description-format.js'
 import { collection, doc, query, where, orderBy, onSnapshot, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, serverTimestamp, Timestamp, writeBatch } from 'firebase/firestore'
 
 installClientErrorLogger('admin')
@@ -1471,6 +1471,9 @@ class FirebaseAdminPanel {
         try {
             syncRichEditorsToForm();
             const formData = new FormData(e.target);
+            formData.set('description', getRichTextFieldValue('description').trim());
+            formData.set('summaryEs', getRichTextFieldValue('summaryEs').trim());
+            formData.set('resourceDescription', getRichTextFieldValue('resourceDescription').trim());
             if (this.contentMode === 'event') {
                 const hasEndDate = Boolean((formData.get('endDate') || '').trim());
                 formData.set('contentType', 'post');
@@ -1501,6 +1504,9 @@ class FirebaseAdminPanel {
                 : `${submittedLabel} saved successfully! Check the Manage tab.`;
             if (submittedType === 'post') {
                 successMessage += ' It should appear on the student feed shortly.';
+                if (formData.get('summaryEs')) {
+                    successMessage += ' Students in Español see Spanish Summary instead of Description when a summary is filled in.';
+                }
             }
             this.showTemporaryMessage(successMessage, 'success');
         } catch (error) {
@@ -3506,8 +3512,18 @@ class FirebaseAdminPanel {
 
     async saveBulletin(bulletin, editingId = null) {
         try {
-            // Calculate approximate document size
-            const bulletinStr = JSON.stringify(bulletin);
+            let payload = { ...bulletin };
+            delete payload.id;
+
+            if (editingId) {
+                // Text/metadata updates should not re-send embedded flyer assets.
+                if (payload.image) delete payload.image;
+                if (payload.imageEs) delete payload.imageEs;
+                if (payload.pdfUrl) delete payload.pdfUrl;
+                if (payload.resourceLogo) delete payload.resourceLogo;
+            }
+
+            const bulletinStr = JSON.stringify(payload);
             const sizeInBytes = new Blob([bulletinStr]).size;
             const sizeInMB = (sizeInBytes / (1024 * 1024)).toFixed(2);
 
@@ -3518,9 +3534,9 @@ class FirebaseAdminPanel {
             }
 
             if (editingId) {
-                await updateDoc(doc(db, 'bulletins', editingId), bulletin);
+                await updateDoc(doc(db, 'bulletins', editingId), payload);
             } else {
-                await addDoc(collection(db, 'bulletins'), bulletin);
+                await addDoc(collection(db, 'bulletins'), payload);
             }
 
             // Reload bulletins to show updated data
