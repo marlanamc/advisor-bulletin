@@ -4106,14 +4106,7 @@ class FirebaseBulletinBoard {
             return '';
         }
 
-        const div = document.createElement('div');
-        div.textContent = normalizeRichTextMarkers(rawText || '');
-        const safeText = div.innerHTML;
-
-        const formatted = this.applyInlineFormatting(safeText)
-            .split(/\n{2,}/)
-            .map(segment => `<p>${segment.replace(/\n/g, '<br>')}</p>`)
-            .join('');
+        const formatted = renderRichTextInline(rawText, { wrapParagraphs: true });
 
         if (!collapsed) {
             return `<div class="description-content expanded">${formatted}</div>`;

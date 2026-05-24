@@ -77,15 +77,55 @@ function formatInlineSegment(rawText) {
     return applyInlineFormatting(escapeHtmlText(normalizeRichTextMarkers(rawText)));
 }
 
-export function formatRichTextInline(rawText) {
+export function normalizeInlineBullets(text) {
+    if (!text) {
+        return '';
+    }
+
+    return String(text)
+        .split('\n')
+        .map((line) => {
+            if (/^\s*-\s+/.test(line)) {
+                return line;
+            }
+
+            const parts = line.split(/\s-\s+/);
+            if (parts.length < 2) {
+                return line;
+            }
+
+            let intro = parts[0].trim();
+            let items = parts.slice(1).map((item) => item.trim()).filter(Boolean);
+
+            if (intro.startsWith('-')) {
+                const firstItem = intro.replace(/^-\s*/, '').trim();
+                if (firstItem) {
+                    items.unshift(firstItem);
+                }
+                intro = '';
+            }
+
+            const rows = [];
+            if (intro) {
+                rows.push(intro);
+            }
+            items.forEach((item) => rows.push(`- ${item}`));
+            return rows.join('\n');
+        })
+        .join('\n');
+}
+
+export function formatRichTextInline(rawText, options = {}) {
     if (!rawText) {
         return '';
     }
 
-    const normalized = normalizeRichTextMarkers(String(rawText));
+    const wrapParagraphs = options.wrapParagraphs === true;
+    const normalized = normalizeRichTextMarkers(normalizeInlineBullets(String(rawText)));
     const lines = normalized.split('\n');
     const parts = [];
     let bulletLines = [];
+    let textBuffer = [];
 
     const flushBullets = () => {
         if (!bulletLines.length) {
@@ -98,9 +138,20 @@ export function formatRichTextInline(rawText) {
         bulletLines = [];
     };
 
-    lines.forEach((line, index) => {
+    const flushText = () => {
+        if (!textBuffer.length) {
+            return;
+        }
+
+        const inner = textBuffer.map((line) => formatInlineSegment(line)).join('<br>');
+        parts.push(wrapParagraphs ? `<p>${inner}</p>` : inner);
+        textBuffer = [];
+    };
+
+    lines.forEach((line) => {
         const bulletMatch = line.match(/^-\s+(.*)$/);
         if (bulletMatch) {
+            flushText();
             bulletLines.push(bulletMatch[1]);
             return;
         }
@@ -108,18 +159,14 @@ export function formatRichTextInline(rawText) {
         flushBullets();
 
         if (line.trim() === '') {
-            if (index < lines.length - 1) {
-                parts.push('<br>');
-            }
+            flushText();
             return;
         }
 
-        parts.push(formatInlineSegment(line));
-        if (index < lines.length - 1) {
-            parts.push('<br>');
-        }
+        textBuffer.push(line);
     });
 
+    flushText();
     flushBullets();
     return parts.join('');
 }

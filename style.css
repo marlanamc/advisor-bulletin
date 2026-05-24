@@ -15389,9 +15389,13 @@ body:has(#loginRequired) {
 }
 
 .post-detail-description ul {
-    margin: 0.35em 0 0.35em 1.1em;
+    margin: 0.35em 0 0.75em 1.1em;
     padding-left: 0.85em;
     list-style: disc;
+}
+
+.post-detail-description .description-content ul {
+    margin-top: 0.5em;
 }
 
 .post-detail-description li {
