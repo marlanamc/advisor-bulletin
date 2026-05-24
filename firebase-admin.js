@@ -12,7 +12,7 @@ import {
     getMultiSessionFeedSortMs,
     getNextSessionStartMs,
 } from './src/event-sessions.js'
-import { initDescriptionFormatToolbars } from './src/description-format.js'
+import { initDescriptionFormatToolbars, refreshRichEditors } from './src/description-format.js'
 import { collection, doc, query, where, orderBy, onSnapshot, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, serverTimestamp, Timestamp, writeBatch } from 'firebase/firestore'
 
 installClientErrorLogger('admin')
@@ -2329,6 +2329,7 @@ class FirebaseAdminPanel {
 
         // Scroll form into view
         document.getElementById('bulletinForm')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        refreshRichEditors();
     }
 
     canManageAllPosts() {
@@ -2947,6 +2948,7 @@ class FirebaseAdminPanel {
     applyInlineFormatting(html) {
         return (html || '')
             .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\+\+(.+?)\+\+/g, '<u>$1</u>')
             .replace(/\*(.+?)\*/g, '<em>$1</em>')
             .replace(/`(.+?)`/g, '<code>$1</code>');
     }
@@ -3547,6 +3549,7 @@ class FirebaseAdminPanel {
 
         // Clear form
         document.getElementById('bulletinForm').reset();
+        refreshRichEditors();
 
         // Clear image preview and cached data
         const imagePreview = document.getElementById('imagePreview');

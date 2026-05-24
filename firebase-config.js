@@ -4078,6 +4078,7 @@ class FirebaseBulletinBoard {
     applyInlineFormatting(html) {
         return (html || '')
             .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\+\+(.+?)\+\+/g, '<u>$1</u>')
             .replace(/\*(.+?)\*/g, '<em>$1</em>')
             .replace(/`(.+?)`/g, '<code>$1</code>');
     }

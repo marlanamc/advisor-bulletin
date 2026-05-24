@@ -1922,16 +1922,64 @@ body.ap-portal-active .main-content {
   border-radius: var(--ap-r-md) var(--ap-r-md) 0 0;
 }
 
-.ap-create-form-col .ap-rich-field .ap-toolbar + textarea {
+.ap-create-form-col .ap-rich-field .ap-toolbar + .ap-rich-editor {
   border-radius: 0 0 var(--ap-r-md) var(--ap-r-md);
   border-top: none;
+}
+
+.ap-create-form-col .ap-rich-field .ap-rich-source {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.ap-create-form-col .ap-rich-field .ap-rich-editor {
+  width: 100%;
+  min-height: 110px;
+  padding: 10px 13px;
+  border-radius: 0 0 var(--ap-r-md) var(--ap-r-md);
+  border: 1.5px solid var(--ap-border);
+  border-top: none;
+  background: var(--ap-surface);
+  font-family: var(--ap-font-body);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--ap-text);
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.ap-create-form-col .ap-rich-field .ap-rich-editor:focus {
+  border-color: var(--ap-blue);
+  box-shadow: 0 0 0 3px rgba(26,86,219,.1);
+}
+
+.ap-create-form-col .ap-rich-field .ap-rich-editor.is-empty::before {
+  content: attr(data-placeholder);
+  color: var(--ap-text-3);
+  pointer-events: none;
+}
+
+.ap-create-form-col .ap-rich-field:focus-within .ap-rich-editor {
+  border-color: var(--ap-blue);
+  box-shadow: 0 0 0 3px rgba(26,86,219,.1);
 }
 
 .ap-create-form-col .ap-rich-field:focus-within .ap-toolbar {
   border-color: var(--ap-blue);
 }
 
-.ap-create-form-col .ap-rich-field:focus-within .ap-toolbar + textarea {
+.ap-create-form-col .ap-rich-field:focus-within .ap-toolbar + .ap-rich-editor {
   border-top: none;
 }
 

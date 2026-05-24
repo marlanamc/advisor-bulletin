@@ -540,13 +540,13 @@
                                     <button type="button" class="ap-toolbar-btn" data-format="italic" title="Italic (⌘I)" aria-label="Italic">
                                         <em>I</em>
                                     </button>
-                                    <span class="ap-toolbar-divider" aria-hidden="true"></span>
-                                    <button type="button" class="ap-toolbar-btn ap-toolbar-chip" data-insert="**When:** " aria-label="Insert When label">When</button>
-                                    <button type="button" class="ap-toolbar-btn ap-toolbar-chip" data-insert="**Where:** " aria-label="Insert Where label">Where</button>
+                                    <button type="button" class="ap-toolbar-btn" data-format="underline" title="Underline (⌘U)" aria-label="Underline">
+                                        <u>U</u>
+                                    </button>
                                 </div>
                                 <textarea id="description" name="description" rows="4" placeholder="Share the details about this opportunity..." maxlength="2000" class="required"></textarea>
                                 <div class="field-feedback" id="descriptionFeedback"></div>
-                                <small class="input-help required">Highlight key details with the toolbar — use <strong>When</strong> and <strong>Where</strong> labels so students can scan quickly.</small>
+                                <small class="input-help required">What you type is what students see. Use the toolbar for bold, italic, or underline.</small>
                             </div>
 
                             <div class="form-group required-field advisor-field-group" style="padding: 0 22px; margin-bottom: 0;">
@@ -737,12 +737,12 @@
                                     <button type="button" class="ap-toolbar-btn" data-format="italic" title="Italic (⌘I)" aria-label="Italic">
                                         <em>I</em>
                                     </button>
-                                    <span class="ap-toolbar-divider" aria-hidden="true"></span>
-                                    <button type="button" class="ap-toolbar-btn ap-toolbar-chip" data-insert="**When:** " aria-label="Insert When label">When</button>
-                                    <button type="button" class="ap-toolbar-btn ap-toolbar-chip" data-insert="**Where:** " aria-label="Insert Where label">Where</button>
+                                    <button type="button" class="ap-toolbar-btn" data-format="underline" title="Underline (⌘U)" aria-label="Underline">
+                                        <u>U</u>
+                                    </button>
                                 </div>
                                 <textarea id="resourceDescription" name="resourceDescription" rows="3" maxlength="240" placeholder="One sentence about what students will find or who should use it."></textarea>
-                                <small class="input-help">Use the toolbar to bold key details like hours or location.</small>
+                                <small class="input-help">Formatted text appears exactly as students will read it.</small>
                             </div>
 
                             <div class="field-group double">
@@ -953,12 +953,12 @@
                                         <button type="button" class="ap-toolbar-btn" data-format="italic" title="Italic (⌘I)" aria-label="Italic">
                                             <em>I</em>
                                         </button>
-                                        <span class="ap-toolbar-divider" aria-hidden="true"></span>
-                                        <button type="button" class="ap-toolbar-btn ap-toolbar-chip" data-insert="**Cuándo:** " aria-label="Insert Cuándo label">Cuándo</button>
-                                        <button type="button" class="ap-toolbar-btn ap-toolbar-chip" data-insert="**Dónde:** " aria-label="Insert Dónde label">Dónde</button>
+                                        <button type="button" class="ap-toolbar-btn" data-format="underline" title="Underline (⌘U)" aria-label="Underline">
+                                            <u>U</u>
+                                        </button>
                                     </div>
                                     <textarea id="summaryEs" name="summaryEs" rows="3" maxlength="600" placeholder="Resumen en español"></textarea>
-                                    <small class="input-help">Shown to students when they switch to Español. Use the toolbar to highlight <strong>Cuándo</strong> and <strong>Dónde</strong>.</small>
+                                    <small class="input-help">Shown when students switch to Español. Formatting appears exactly as students will read it.</small>
                                 </div>
                             </div>
                         </div>
@@ -1588,6 +1588,7 @@
             var txt = raw.length > 110 ? raw.slice(0, 108) + '…' : raw;
             return escPreview(txt)
                 .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\+\+(.+?)\+\+/g, '<u>$1</u>')
                 .replace(/\*(.+?)\*/g, '<em>$1</em>');
         }
 
