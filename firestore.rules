@@ -95,7 +95,7 @@ service cloud.firestore {
     }
 
     function isPrivilegedAdvisor(email) {
-      return email == 'admin@ebhcs.org' || email == 'leah@ebhcs.org';
+      return email == 'admin@ebhcs.org' || email == 'leah@ebhcs.org' || email == 'mcreed@ebhcs.org';
     }
 
     function validateBulletinData(data) {
@@ -136,6 +136,13 @@ service cloud.firestore {
         && (!('titleEs' in data) || data.titleEs is string)
         && (!('summaryEs' in data) || data.summaryEs is string)
         && (!('url' in data) || data.url is string)
+        && (!('address' in data) || data.address is string)
+        && (!('phone' in data) || data.phone is string)
+        && (!('phoneMode' in data) || data.phoneMode is string)
+        && (!('hours' in data) || data.hours is string)
+        && (!('languages' in data) || data.languages is list)
+        && (!('highlights' in data) || data.highlights is string)
+        && (!('datePosted' in data) || data.datePosted is timestamp)
         && (!('resourceOrder' in data) || data.resourceOrder == null || data.resourceOrder is int || data.resourceOrder is float);
 
       let validPost = data.type == 'post'

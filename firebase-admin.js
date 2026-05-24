@@ -1509,7 +1509,7 @@ class FirebaseAdminPanel {
             let errorMessage = `Error saving ${this.getCurrentContentLabel().toLowerCase()}. Please try again.`;
 
             if (error.code === 'permission-denied') {
-                errorMessage = 'You don\'t have permission to perform this action. Please check your login status.';
+                errorMessage = 'Post blocked by security rules. Try signing out and back in. If it persists, contact an admin — your account email must match your @ebhcs.org login.';
             } else if (error.code === 'unavailable') {
                 errorMessage = 'Service temporarily unavailable. Please try again in a moment.';
             } else if (error.message?.includes('network')) {
@@ -3526,9 +3526,17 @@ class FirebaseAdminPanel {
         };
     }
 
+    getAuthPostedBy() {
+        const email = auth.currentUser?.email || this.currentUser?.email || '';
+        if (email.includes('@')) {
+            return email.split('@')[0].toLowerCase();
+        }
+        return (this.currentUser?.username || '').toLowerCase();
+    }
+
     async createBulletin(formData) {
         const bulletin = this.buildBulletinObject(formData);
-        bulletin.postedBy = this.currentUser.username;
+        bulletin.postedBy = this.getAuthPostedBy();
         bulletin.datePosted = serverTimestamp();
         bulletin.createdAt = serverTimestamp();
         bulletin.updatedAt = serverTimestamp();
@@ -3753,6 +3761,10 @@ class FirebaseAdminPanel {
 
         if (bulletin.eventLink && !/^https?:\/\//i.test(bulletin.eventLink)) {
             bulletin.eventLink = `https://${bulletin.eventLink}`;
+        }
+
+        if (!bulletin.category) {
+            throw new Error('Please select a category.');
         }
 
         return bulletin;
