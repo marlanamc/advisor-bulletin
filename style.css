@@ -15388,6 +15388,26 @@ body:has(#loginRequired) {
     margin-bottom: 0;
 }
 
+.post-detail-description ul {
+    margin: 0.35em 0 0.35em 1.1em;
+    padding-left: 0.85em;
+    list-style: disc;
+}
+
+.post-detail-description li {
+    margin: 0.2em 0;
+}
+
+.pc__desc ul {
+    margin: 0.35em 0 0.35em 1.1em;
+    padding-left: 0.85em;
+    list-style: disc;
+}
+
+.pc__desc li {
+    margin: 0.15em 0;
+}
+
 .post-detail-description .description-content {
     max-height: none;
 }

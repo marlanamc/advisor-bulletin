@@ -1964,6 +1964,16 @@ body.ap-portal-active .main-content {
   box-shadow: 0 0 0 3px rgba(26,86,219,.1);
 }
 
+.ap-create-form-col .ap-rich-field .ap-rich-editor ul {
+  margin: 0.35em 0 0.35em 1.25em;
+  padding-left: 0.85em;
+  list-style: disc;
+}
+
+.ap-create-form-col .ap-rich-field .ap-rich-editor li {
+  margin: 0.15em 0;
+}
+
 .ap-create-form-col .ap-rich-field .ap-rich-editor.is-empty::before {
   content: attr(data-placeholder);
   color: var(--ap-text-3);

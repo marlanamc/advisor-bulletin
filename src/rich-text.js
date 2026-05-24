@@ -67,15 +67,61 @@ export function applyInlineFormatting(html) {
         .replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, '<em>$1</em>');
 }
 
+function escapeHtmlText(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function formatInlineSegment(rawText) {
+    return applyInlineFormatting(escapeHtmlText(normalizeRichTextMarkers(rawText)));
+}
+
 export function formatRichTextInline(rawText) {
     if (!rawText) {
         return '';
     }
 
-    const normalized = normalizeRichTextMarkers(rawText);
-    const div = document.createElement('div');
-    div.textContent = normalized;
-    return applyInlineFormatting(div.innerHTML).replace(/\n/g, '<br>');
+    const normalized = normalizeRichTextMarkers(String(rawText));
+    const lines = normalized.split('\n');
+    const parts = [];
+    let bulletLines = [];
+
+    const flushBullets = () => {
+        if (!bulletLines.length) {
+            return;
+        }
+
+        parts.push(
+            `<ul>${bulletLines.map((line) => `<li>${formatInlineSegment(line)}</li>`).join('')}</ul>`
+        );
+        bulletLines = [];
+    };
+
+    lines.forEach((line, index) => {
+        const bulletMatch = line.match(/^-\s+(.*)$/);
+        if (bulletMatch) {
+            bulletLines.push(bulletMatch[1]);
+            return;
+        }
+
+        flushBullets();
+
+        if (line.trim() === '') {
+            if (index < lines.length - 1) {
+                parts.push('<br>');
+            }
+            return;
+        }
+
+        parts.push(formatInlineSegment(line));
+        if (index < lines.length - 1) {
+            parts.push('<br>');
+        }
+    });
+
+    flushBullets();
+    return parts.join('');
 }
 
 export function formatRichTextPreview(rawText, maxPlainLength = 110) {

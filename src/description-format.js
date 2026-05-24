@@ -1,5 +1,5 @@
 import {
-    applyInlineFormatting,
+    formatRichTextInline,
     formatRichTextPreview,
     normalizeRichTextMarkers,
 } from './rich-text.js';
@@ -17,10 +17,7 @@ export function markdownToHtml(rawText) {
         return '';
     }
 
-    const normalized = normalizeRichTextMarkers(rawText);
-    const div = document.createElement('div');
-    div.textContent = normalized;
-    return applyInlineFormatting(div.innerHTML).replace(/\n/g, '<br>');
+    return formatRichTextInline(rawText);
 }
 
 export function htmlToMarkdown(root) {
@@ -47,6 +44,18 @@ export function htmlToMarkdown(root) {
         }
         if (tag === 'u') {
             return inner.trim() ? `++${inner.trim()}++` : '';
+        }
+        if (tag === 'ul' || tag === 'ol') {
+            return Array.from(node.children)
+                .filter((child) => child.tagName.toLowerCase() === 'li')
+                .map((child) => {
+                    const item = Array.from(child.childNodes).map(walk).join('').replace(/\n+$/, '').trim();
+                    return item ? `- ${item}\n` : '';
+                })
+                .join('');
+        }
+        if (tag === 'li') {
+            return inner;
         }
         if (tag === 'br') {
             return '\n';
@@ -111,6 +120,8 @@ function applyEditorFormat(editor, format) {
         document.execCommand('italic', false, null);
     } else if (format === 'underline') {
         document.execCommand('underline', false, null);
+    } else if (format === 'bullet') {
+        document.execCommand('insertUnorderedList', false, null);
     }
 }
 
