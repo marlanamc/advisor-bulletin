@@ -9,6 +9,7 @@ import {
     getMultiSessionFeedSortMs,
     getNextSessionStartMs,
     getSessionEndMs,
+    sessionsShareSameTime,
 } from './src/event-sessions.js'
 import { collection, addDoc, query, where, orderBy, onSnapshot, serverTimestamp } from 'firebase/firestore'
 
@@ -364,6 +365,7 @@ class FirebaseBulletinBoard {
         this.datesViewMode = 'list';
         this.isSearchLayerOpen = false;
         this.trackedCardViews = new Set();
+        this.activeDetailBulletinId = null;
         this.handleHashChange = this.handleHashRouting.bind(this);
         this.handleDescriptionToggle = this.handleDescriptionToggle.bind(this);
         this.init();
@@ -543,22 +545,66 @@ class FirebaseBulletinBoard {
         const sessions = this.getBulletinEventSessions(bulletin);
         if (!sessions.length) return '';
 
-        const lines = formatSessionsDetailLines(
-            sessions,
-            (date) => {
-                const parsed = this.parseStoredYmdLocal(date);
-                return parsed
-                    ? parsed.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })
-                    : date;
-            },
-            (start, end) => this.formatTimeRange(start, end)
-        );
-
-        if (lines.length === 1) {
-            return lines[0];
+        if (sessions.length === 1) {
+            const session = sessions[0];
+            const parsed = this.parseStoredYmdLocal(session.date);
+            const dateLabel = parsed
+                ? parsed.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })
+                : session.date;
+            const timeLabel = this.formatTimeRange(session.startTime, session.endTime);
+            return timeLabel ? `${dateLabel} · ${timeLabel}` : dateLabel;
         }
 
-        return lines.join(' · ');
+        const sameTime = sessionsShareSameTime(sessions);
+        const timeLabel = sameTime ? this.formatTimeRange(sessions[0].startTime, sessions[0].endTime) : '';
+        if (timeLabel) {
+            return `${sessions.length} sessions · ${timeLabel}`;
+        }
+        return `${sessions.length} sessions`;
+    }
+
+    buildSessionDatesDetailHtml(bulletin) {
+        const sessions = this.getBulletinEventSessions(bulletin);
+        if (!sessions.length) return '';
+
+        const formatDate = (date) => {
+            const parsed = this.parseStoredYmdLocal(date);
+            return parsed
+                ? parsed.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })
+                : date;
+        };
+
+        if (sessions.length === 1) {
+            const session = sessions[0];
+            const timeLabel = this.formatTimeRange(session.startTime, session.endTime);
+            const line = timeLabel
+                ? `${formatDate(session.date)} · ${timeLabel}`
+                : formatDate(session.date);
+            return `<small>${this.escapeHtml(line)}</small>`;
+        }
+
+        const sameTime = sessionsShareSameTime(sessions);
+        const sharedTime = sameTime ? this.formatTimeRange(sessions[0].startTime, sessions[0].endTime) : '';
+        const items = sessions.map((session) => {
+            const dateLabel = formatDate(session.date);
+            if (sameTime) {
+                return `<li>${this.escapeHtml(dateLabel)}</li>`;
+            }
+            const timeLabel = this.formatTimeRange(session.startTime, session.endTime);
+            if (!timeLabel) {
+                return `<li>${this.escapeHtml(dateLabel)}</li>`;
+            }
+            return `<li><span class="post-detail-session-date">${this.escapeHtml(dateLabel)}</span><span class="post-detail-session-time">${this.escapeHtml(timeLabel)}</span></li>`;
+        }).join('');
+
+        const sharedTimeHtml = sharedTime
+            ? `<p class="post-detail-session-shared-time">${this.escapeHtml(sharedTime)} each session</p>`
+            : '';
+
+        return `
+            ${sharedTimeHtml}
+            <ul class="post-detail-session-list">${items}</ul>
+        `;
     }
 
     bulletinHasCalendarDates(bulletin) {
@@ -645,7 +691,10 @@ class FirebaseBulletinBoard {
         if (desktopSearchBtn) desktopSearchBtn.addEventListener('click', syncDesktopSearch);
 
         document.querySelectorAll('[data-lang-switch]').forEach((button) => {
-            button.addEventListener('click', () => this.updateSearchPlaceholder());
+            button.addEventListener('click', () => {
+                const lang = button.getAttribute('data-lang-switch') || 'EN';
+                this.setLanguage(lang);
+            });
         });
 
         // Popular search chips
@@ -1402,6 +1451,29 @@ class FirebaseBulletinBoard {
 
         trigger.classList.toggle('active', shouldShow && (this.isSearchLayerOpen || hasActiveSearch));
         trigger.setAttribute('aria-expanded', shouldShow && this.isSearchLayerOpen ? 'true' : 'false');
+    }
+
+    setLanguage(lang) {
+        const normalized = lang === 'ES' ? 'ES' : 'EN';
+        document.body.setAttribute('data-lang', normalized);
+        document.documentElement.setAttribute('data-lang', normalized);
+
+        document.querySelectorAll('[data-lang-switch]').forEach((button) => {
+            button.classList.toggle('active', button.getAttribute('data-lang-switch') === normalized);
+        });
+
+        this.updateSearchPlaceholder();
+
+        if (this.currentView === 'resources') {
+            this.renderResourcesSections(this.getPublishedResources());
+        } else {
+            this.applyFilters();
+        }
+
+        const detailModal = document.getElementById('bulletinDetailModal');
+        if (this.activeDetailBulletinId && detailModal?.style.display === 'flex') {
+            this.showBulletinDetail(this.activeDetailBulletinId);
+        }
     }
 
     updateSearchPlaceholder() {
@@ -2851,6 +2923,7 @@ class FirebaseBulletinBoard {
     }
 
     showBulletinDetail(bulletinId) {
+        this.activeDetailBulletinId = bulletinId;
         const modal = document.getElementById('bulletinDetailModal');
         const body = document.getElementById('bulletinDetailBody');
         if (!modal || !body) {
@@ -2879,6 +2952,7 @@ class FirebaseBulletinBoard {
     }
 
     closeBulletinDetail(updateHash = true) {
+        this.activeDetailBulletinId = null;
         const modal = document.getElementById('bulletinDetailModal');
         if (!modal) {
             return;
@@ -3095,6 +3169,8 @@ class FirebaseBulletinBoard {
         const meta = this.getCatMeta(bulletin.category);
         const postedDate = this.formatPostedDate(bulletin.datePosted);
         const importantDate = this.getDetailImportantDate(bulletin);
+        const sessionCount = bulletin.dateType === 'sessions' ? this.getBulletinEventSessions(bulletin).length : 0;
+        const isMultiSessionDetail = sessionCount > 1;
         const isDeadlineClose = importantDate && importantDate.kind === 'deadline' && this.isDeadlineClose(importantDate.raw);
         const isExpired = this.isBulletinExpired(bulletin);
         const initial = (bulletin.advisorName || '?').charAt(0).toUpperCase();
@@ -3147,12 +3223,14 @@ class FirebaseBulletinBoard {
                         <span>${authorHtml}</span>
                     </div>
                     ${importantDate ? `
-                        <div class="post-detail-date ${isDeadlineClose && !isExpired ? 'post-detail-date--urgent' : ''}">
+                        <div class="post-detail-date ${isDeadlineClose && !isExpired ? 'post-detail-date--urgent' : ''}${isMultiSessionDetail ? ' post-detail-date--sessions' : ''}">
                             <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
-                            <span>
-                                <strong>Important date</strong>
-                                <small>${this.escapeHtml(importantDate.label)}</small>
-                            </span>
+                            <div class="post-detail-date-copy">
+                                <strong>${isMultiSessionDetail ? 'Session dates' : 'Important date'}</strong>
+                                ${isMultiSessionDetail
+                                    ? this.buildSessionDatesDetailHtml(bulletin)
+                                    : `<small>${this.escapeHtml(importantDate.label)}</small>`}
+                            </div>
                         </div>
                     ` : ''}
                     ${descriptionHtml ? `<div class="post-detail-description">${descriptionHtml}</div>` : ''}

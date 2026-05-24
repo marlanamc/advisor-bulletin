@@ -16,9 +16,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <script type="module" crossorigin src="/assets/main-CR8HD0r7.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/event-sessions-C_vMLss1.js">
-  <link rel="stylesheet" crossorigin href="/assets/event-sessions-VGjDonMt.css">
+  <script type="module" crossorigin src="/assets/main-Dstn3RLl.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/event-sessions-NTv6ueQO.js">
+  <link rel="stylesheet" crossorigin href="/assets/event-sessions-DZA66ig5.css">
 </head>
 <body>
 
@@ -1004,17 +1004,7 @@
             window.addEventListener('scroll', syncHeaderCollapsed, { passive: true });
         }
 
-        // ── Language toggle ────────────────────────────────────
-        document.querySelectorAll('[data-lang-switch]').forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                var lang = this.getAttribute('data-lang-switch');
-                document.body.setAttribute('data-lang', lang);
-                document.querySelectorAll('[data-lang-switch]').forEach(function (b) {
-                    b.classList.toggle('active', b.getAttribute('data-lang-switch') === lang);
-                });
-            });
-        });
-
+        // Language toggle is handled by firebase-config.js via bulletinBoard.setLanguage().
         // ── Feed search bar triggers search layer ──────────────
         var feedSearchTrigger = document.getElementById('feedSearchTrigger');
         var mobileSearchTrigger = document.getElementById('mobileSearchTrigger');

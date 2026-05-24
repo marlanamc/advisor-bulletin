@@ -1002,17 +1002,7 @@
             window.addEventListener('scroll', syncHeaderCollapsed, { passive: true });
         }
 
-        // ── Language toggle ────────────────────────────────────
-        document.querySelectorAll('[data-lang-switch]').forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                var lang = this.getAttribute('data-lang-switch');
-                document.body.setAttribute('data-lang', lang);
-                document.querySelectorAll('[data-lang-switch]').forEach(function (b) {
-                    b.classList.toggle('active', b.getAttribute('data-lang-switch') === lang);
-                });
-            });
-        });
-
+        // Language toggle is handled by firebase-config.js via bulletinBoard.setLanguage().
         // ── Feed search bar triggers search layer ──────────────
         var feedSearchTrigger = document.getElementById('feedSearchTrigger');
         var mobileSearchTrigger = document.getElementById('mobileSearchTrigger');

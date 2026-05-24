@@ -993,23 +993,15 @@
                             </div>
                         </div>
 
-                        <div class="form-actions">
-                            <button type="button" class="preview-btn" onclick="previewBulletin()">Preview</button>
-                            <button type="submit" class="submit-btn" id="postBulletinBtn">Post Bulletin</button>
-                        </div>
                     </form>
                 </div>
             </div><!-- /postTab -->
 
                             <!-- ── New v2 form actions bar ── -->
                             <div class="ap-form-actions">
-                                <button type="button" class="ap-btn-save-draft" onclick="previewBulletin()">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                                    Preview
-                                </button>
-                                <button type="submit" form="bulletinForm" class="ap-btn-submit">
+                                <button type="submit" form="bulletinForm" class="ap-btn-submit" id="postBulletinBtn">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-                                    Post to Students
+                                    <span class="ap-btn-submit-label">Post to Students</span>
                                 </button>
                             </div>
 
@@ -1399,21 +1391,6 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
         </div>
         <span id="apToastMsg">Post published!</span>
-    </div>
-
-    <!-- Preview Modal -->
-    <div id="previewModal" class="modal">
-        <div class="modal-content preview-modal-content">
-            <span class="close" onclick="closePreview()">&times;</span>
-            <h3>Preview</h3>
-            <div id="previewContent" class="preview-content">
-                <!-- Preview will be shown here -->
-            </div>
-            <div class="preview-actions">
-                <button onclick="closePreview()" class="cancel-btn">Edit</button>
-                <button onclick="submitFromPreview()" class="submit-btn">Post Bulletin</button>
-            </div>
-        </div>
     </div>
 
     <footer>

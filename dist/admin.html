@@ -9,9 +9,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Lexend:wght@300;400;500;600;700;800&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
-  <script type="module" crossorigin src="/assets/admin-BorDom2y.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/event-sessions-C_vMLss1.js">
-  <link rel="stylesheet" crossorigin href="/assets/event-sessions-VGjDonMt.css">
+  <script type="module" crossorigin src="/assets/admin-CUdcaLyr.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/event-sessions-NTv6ueQO.js">
+  <link rel="stylesheet" crossorigin href="/assets/event-sessions-DZA66ig5.css">
   <link rel="stylesheet" crossorigin href="/assets/admin-B2B-3ZTa.css">
 </head>
 <body>
@@ -995,23 +995,15 @@
                             </div>
                         </div>
 
-                        <div class="form-actions">
-                            <button type="button" class="preview-btn" onclick="previewBulletin()">Preview</button>
-                            <button type="submit" class="submit-btn" id="postBulletinBtn">Post Bulletin</button>
-                        </div>
                     </form>
                 </div>
             </div><!-- /postTab -->
 
                             <!-- ── New v2 form actions bar ── -->
                             <div class="ap-form-actions">
-                                <button type="button" class="ap-btn-save-draft" onclick="previewBulletin()">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                                    Preview
-                                </button>
-                                <button type="submit" form="bulletinForm" class="ap-btn-submit">
+                                <button type="submit" form="bulletinForm" class="ap-btn-submit" id="postBulletinBtn">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-                                    Post to Students
+                                    <span class="ap-btn-submit-label">Post to Students</span>
                                 </button>
                             </div>
 
@@ -1401,21 +1393,6 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
         </div>
         <span id="apToastMsg">Post published!</span>
-    </div>
-
-    <!-- Preview Modal -->
-    <div id="previewModal" class="modal">
-        <div class="modal-content preview-modal-content">
-            <span class="close" onclick="closePreview()">&times;</span>
-            <h3>Preview</h3>
-            <div id="previewContent" class="preview-content">
-                <!-- Preview will be shown here -->
-            </div>
-            <div class="preview-actions">
-                <button onclick="closePreview()" class="cancel-btn">Edit</button>
-                <button onclick="submitFromPreview()" class="submit-btn">Post Bulletin</button>
-            </div>
-        </div>
     </div>
 
     <footer>

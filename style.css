@@ -15288,6 +15288,53 @@ body:has(#loginRequired) {
     display: block;
 }
 
+.post-detail-date-copy {
+    flex: 1;
+    min-width: 0;
+}
+
+.post-detail-date--sessions {
+    align-items: flex-start;
+}
+
+.post-detail-session-shared-time {
+    margin: 8px 0 10px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    line-height: 1.35;
+    color: #7c2d12;
+}
+
+.post-detail-session-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 8px;
+    max-height: 280px;
+    overflow-y: auto;
+}
+
+.post-detail-session-list li {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 10px;
+    align-items: baseline;
+    padding: 8px 10px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.58);
+    font-size: 0.92rem;
+    font-weight: 700;
+    line-height: 1.35;
+    color: #7c2d12;
+}
+
+.post-detail-session-time {
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: #9a3412;
+}
+
 .post-detail-date strong {
     font-family: 'Outfit', sans-serif;
     font-size: 14px;

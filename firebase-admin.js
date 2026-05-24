@@ -223,14 +223,6 @@ class FirebaseAdminPanel {
 
         this.syncFlyerUploadUI();
 
-        // Close preview modal when clicking outside (but NOT login modal - that's annoying during login)
-        window.addEventListener('click', (e) => {
-            const previewModal = document.getElementById('previewModal');
-            if (e.target === previewModal) {
-                this.closePreview();
-            }
-        });
-
         this.setContentType('post', { preserveFields: true, silent: true });
 
         // Manage tab: search, sort, filter
@@ -968,6 +960,20 @@ class FirebaseAdminPanel {
         return this.contentType === 'resource' ? 'Resource' : 'Bulletin';
     }
 
+    setSubmitButtonLabel(label) {
+        const submitBtn = document.getElementById('postBulletinBtn');
+        if (!submitBtn) return;
+
+        let labelEl = submitBtn.querySelector('.ap-btn-submit-label');
+        if (!labelEl) {
+            labelEl = document.createElement('span');
+            labelEl.className = 'ap-btn-submit-label';
+            submitBtn.appendChild(labelEl);
+        }
+
+        labelEl.textContent = label;
+    }
+
     setContentType(type, options = {}) {
         const isEvent = type === 'event';
         const nextType = type === 'resource' ? 'resource' : 'post';
@@ -1046,8 +1052,6 @@ class FirebaseAdminPanel {
         }
 
         const heading = document.querySelector('.post-form-container h4');
-        const previewBtn = document.querySelector('.preview-btn');
-        const submitBtn = document.getElementById('postBulletinBtn');
 
         if (heading) {
             if (this.isEditMode) {
@@ -1057,16 +1061,12 @@ class FirebaseAdminPanel {
             }
         }
 
-        if (previewBtn) {
-            previewBtn.textContent = nextType === 'resource' ? 'Preview Resource' : isEvent ? 'Preview Event' : 'Preview Post';
-        }
-
-        if (submitBtn) {
-            if (this.isEditMode) {
-                submitBtn.textContent = nextType === 'resource' ? 'Update Resource' : 'Update Bulletin';
-            } else {
-                submitBtn.textContent = nextType === 'resource' ? 'Publish Resource' : isEvent ? 'Add Event Date' : 'Post Bulletin';
-            }
+        if (this.isEditMode) {
+            this.setSubmitButtonLabel(nextType === 'resource' ? 'Update Resource' : 'Update Bulletin');
+        } else {
+            this.setSubmitButtonLabel(
+                nextType === 'resource' ? 'Publish Resource' : isEvent ? 'Add Event Date' : 'Post to Students'
+            );
         }
 
         if (!options.preserveFields && nextType === 'resource') {
@@ -1461,7 +1461,7 @@ class FirebaseAdminPanel {
         this.isSubmitting = true;
 
         // Show loading state
-        const submitBtn = e.target.querySelector('button[type="submit"]');
+        const submitBtn = document.getElementById('postBulletinBtn');
         submitBtn.classList.add('btn-loading');
         submitBtn.disabled = true;
 
@@ -1521,9 +1521,11 @@ class FirebaseAdminPanel {
             // Reset loading state
             submitBtn.classList.remove('btn-loading');
             submitBtn.disabled = false;
-            submitBtn.textContent = this.isEditMode
-                ? (this.contentType === 'resource' ? 'Update Resource' : 'Update Bulletin')
-                : (this.contentType === 'resource' ? 'Publish Resource' : 'Post Bulletin');
+            this.setSubmitButtonLabel(
+                this.isEditMode
+                    ? (this.contentType === 'resource' ? 'Update Resource' : 'Update Bulletin')
+                    : (this.contentType === 'resource' ? 'Publish Resource' : 'Post to Students')
+            );
             this.isSubmitting = false;
         }
     }
@@ -2299,8 +2301,7 @@ class FirebaseAdminPanel {
         document.getElementById('bulletinForm').dataset.editingId = bulletinId;
 
         // Change submit button text
-        const submitBtn = document.querySelector('#bulletinForm button[type="submit"]');
-        submitBtn.textContent = isResource ? 'Update Resource' : 'Update Bulletin';
+        this.setSubmitButtonLabel(isResource ? 'Update Resource' : 'Update Bulletin');
 
         // Show edit mode banner
         const formHeader = document.getElementById('formHeader');
@@ -2850,261 +2851,6 @@ class FirebaseAdminPanel {
         });
     }
 
-    // Preview functionality
-    previewBulletin() {
-        const contentType = document.getElementById('contentType')?.value || this.contentType || 'post';
-
-        if (contentType === 'resource') {
-            const titleEn = document.getElementById('resourceTitleEn').value.trim();
-            const titleEs = document.getElementById('resourceTitleEs').value.trim();
-            const resourceCategory = document.getElementById('resourceCategory').value;
-            const rawUrl = document.getElementById('resourceUrl').value.trim();
-            const description = document.getElementById('resourceDescription').value.trim();
-            const highlights = document.getElementById('resourceHighlights').value.trim();
-            const resourceIcon = document.getElementById('resourceCategory')?.dataset?.suggestedIcon || 'globe';
-            const resourceOrder = document.getElementById('resourceOrder').value.trim();
-            const isPublished = document.getElementById('resourcePublished').checked;
-
-            if (!titleEn || !resourceCategory || !rawUrl) {
-                this.showTemporaryMessage('Please fill in the English title, category, and URL before previewing.', 'warning');
-                return;
-            }
-
-            const url = /^https?:\/\//i.test(rawUrl) ? rawUrl : `https://${rawUrl}`;
-
-            this.showPreview({
-                type: 'resource',
-                title: titleEn,
-                titleEn,
-                titleEs: titleEs || titleEn,
-                resourceCategory,
-                resourceIcon,
-                url,
-                eventLink: url,
-                description,
-                highlights,
-                resourceOrder,
-                isPublished,
-                advisorName: this.currentUser?.name || document.getElementById('advisorName').value || 'Advisor',
-                datePosted: new Date()
-            });
-            return;
-        }
-
-        const title = document.getElementById('title').value;
-        const category = document.getElementById('category').value;
-        const description = document.getElementById('description').value;
-        const titleEs = document.getElementById('titleEs')?.value || '';
-        const summaryEs = document.getElementById('summaryEs')?.value || '';
-        const company = document.getElementById('company').value;
-        const contact = document.getElementById('contact').value;
-        const classType = document.getElementById('classType').value;
-        const eventLink = document.getElementById('eventLink').value;
-        const advisorName = document.getElementById('advisorName').value;
-
-        // Get new date structure
-        const dateType = document.getElementById('dateType')?.value || '';
-        const eventDate = document.getElementById('eventDate')?.value || '';
-        const startDate = document.getElementById('startDate')?.value || '';
-        const endDate = document.getElementById('endDate')?.value || '';
-        const startTime = document.getElementById('startTime')?.value || '';
-        const endTime = document.getElementById('endTime')?.value || '';
-        const eventLocation = document.getElementById('eventLocation')?.value || '';
-
-        if (!title || !category || !advisorName) {
-            this.showTemporaryMessage('Please fill in the title, category, and your name before previewing.', 'warning');
-            return;
-        }
-
-        const bulletin = {
-            title,
-            titleEs,
-            category,
-            description,
-            summaryEs,
-            company,
-            contact,
-            dateType,
-            eventDate,
-            startDate,
-            endDate,
-            startTime,
-            endTime,
-            eventLocation,
-            eventLink,
-            classType,
-            advisorName,
-            datePosted: new Date(),
-            image: document.getElementById('imagePreview')?.querySelector('img')?.src || null,
-            imageEs: document.getElementById('imageEsPreview')?.querySelector('img')?.src || null,
-            pdfUrl: document.getElementById('pdfPreview').querySelector('.pdf-preview-container') ? 'preview-pdf' : null
-        };
-
-        this.showPreview(bulletin);
-    }
-
-    showPreview(bulletin) {
-        const previewContent = document.getElementById('previewContent');
-        if (this.isResourceBulletin(bulletin)) {
-            previewContent.innerHTML = this.createResourcePreviewCard(bulletin);
-            document.getElementById('previewModal').style.display = 'block';
-            return;
-        }
-
-        const isDeadlineClose = bulletin.deadline && this.isDeadlineClose(bulletin.deadline);
-        const descriptionHtml = this.renderPreviewDescription(bulletin.description || '');
-
-        previewContent.innerHTML = `
-            <div class="bulletin-card">
-                <div class="bulletin-header">
-                    <span class="category-badge category-${bulletin.category}">
-                        ${this.getCategoryDisplay(bulletin.category)}
-                    </span>
-                    <div class="bulletin-title">${this.escapeHtml(bulletin.title)}</div>
-                </div>
-
-                ${bulletin.image ? `
-                    <div class="bulletin-image">
-                        ${bulletin.imageEs ? '<small style="color:#64748b;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;display:block">English Version</small>' : ''}
-                        <img src="${bulletin.image}" alt="Bulletin image" class="card-image">
-                    </div>
-                ` : ''}
-
-                ${bulletin.imageEs ? `
-                    <div class="bulletin-image" style="margin-top:12px">
-                        <small style="color:#64748b;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;display:block">Spanish Version</small>
-                        <img src="${bulletin.imageEs}" alt="Spanish bulletin image" class="card-image">
-                    </div>
-                ` : ''}
-
-                <div class="bulletin-description">
-                    ${descriptionHtml}
-                </div>
-
-                <div class="bulletin-meta">
-                    ${bulletin.company ? `
-                        <div class="meta-item">
-                            <strong>Organization:</strong> ${this.escapeHtml(bulletin.company)}
-                        </div>
-                    ` : ''}
-
-                    ${bulletin.classType ? `
-                        <div class="meta-item">
-                            <strong>Class Type:</strong> ${this.getClassTypeDisplay(bulletin.classType)}
-                        </div>
-                    ` : ''}
-
-                    ${bulletin.contact ? `
-                        <div class="meta-item">
-                            <strong>Contact:</strong> ${this.escapeHtml(bulletin.contact).replace(/\\n/g, '<br>')}
-                        </div>
-                    ` : ''}
-
-                    ${bulletin.eventLink ? `
-                        <div class="meta-item">
-                            <strong>Link:</strong> <a href="${this.escapeAttribute(bulletin.eventLink)}" target="_blank" rel="noopener">${this.escapeHtml(this.formatLinkLabel(bulletin.eventLink, bulletin.category))}</a>
-                        </div>
-                    ` : ''}
-
-                    ${this.renderPreviewDateInfo(bulletin)}
-
-                    ${bulletin.deadline ? `
-                        <div class="meta-item ${isDeadlineClose ? 'deadline-warning' : ''}">
-                            <strong>Deadline:</strong> ${new Date(bulletin.deadline).toLocaleDateString()}
-                            ${isDeadlineClose ? ' (Soon!)' : ''}
-                        </div>
-                    ` : ''}
-
-                    <div class="posted-by">
-                        Posted by ${this.escapeHtml(bulletin.advisorName)}
-                    </div>
-                </div>
-            </div>
-        `;
-
-        document.getElementById('previewModal').style.display = 'block';
-    }
-
-    createResourcePreviewCard(resource) {
-        const titleEn = resource.titleEn || resource.title || '';
-        const titleEs = resource.titleEs || titleEn;
-        const categoryLabel = this.getResourceCategoryLabel(resource.resourceCategory);
-        const iconLabel = ADMIN_RESOURCE_ICON_LABELS[resource.resourceIcon] || ADMIN_RESOURCE_ICON_LABELS.auto;
-
-        return `
-            <div class="bulletin-card resource-preview-card">
-                <div class="bulletin-header">
-                    <span class="category-badge category-resource">Resource</span>
-                    <div class="bulletin-title">${this.escapeHtml(titleEn)}</div>
-                </div>
-                <div class="resource-preview-meta">
-                    <p><strong>Spanish Title:</strong> ${this.escapeHtml(titleEs)}</p>
-                    <p><strong>Category:</strong> ${this.escapeHtml(categoryLabel)}</p>
-                    <p><strong>Icon:</strong> ${this.escapeHtml(iconLabel)}</p>
-                    <p><strong>Published:</strong> ${resource.isPublished !== false ? 'Yes' : 'No'}</p>
-                    <p><strong>Link:</strong> <a href="${this.escapeAttribute(resource.url || resource.eventLink)}" target="_blank" rel="noopener">Open resource</a></p>
-                    ${resource.description ? `<p><strong>Description:</strong> ${this.escapeHtml(resource.description)}</p>` : ''}
-                    ${resource.resourceOrder !== '' && resource.resourceOrder !== undefined && resource.resourceOrder !== null ? `<p><strong>Display Order:</strong> ${this.escapeHtml(String(resource.resourceOrder))}</p>` : ''}
-                    <p class="resource-preview-internal"><strong>Internal — Posted by:</strong> ${this.escapeHtml(resource.advisorName || '')} <span class="resource-preview-internal-note">(not shown to students)</span></p>
-                </div>
-            </div>
-        `;
-    }
-
-    closePreview() {
-        document.getElementById('previewModal').style.display = 'none';
-    }
-
-    submitFromPreview() {
-        this.closePreview();
-        const form = document.getElementById('bulletinForm');
-        const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
-        form.dispatchEvent(submitEvent);
-    }
-
-    renderPreviewDateInfo(bulletin) {
-        let html = '';
-        const dateType = bulletin.dateType;
-
-        if (!dateType) return html;
-
-        if (dateType === 'deadline' && bulletin.eventDate) {
-            html += `<div class="meta-item"><strong>Application Deadline:</strong> ${this.formatDateLocal(bulletin.eventDate)}</div>`;
-        } else if (dateType === 'event' && bulletin.eventDate) {
-            html += `<div class="meta-item"><strong>Event Date:</strong> ${this.formatDateLocal(bulletin.eventDate)}</div>`;
-        } else if (dateType === 'range') {
-            html += `<div class="meta-item"><strong>Event Dates:</strong> ${this.formatDateLocal(bulletin.startDate)} - ${this.formatDateLocal(bulletin.endDate)}</div>`;
-        } else if (dateType === 'sessions') {
-            const sessions = this.getBulletinEventSessions(bulletin);
-            if (sessions.length) {
-                const lines = formatSessionsDetailLines(
-                    sessions,
-                    (date) => this.formatDateLocal(date),
-                    (start, end) => this.formatTimeRange(start, end)
-                );
-                html += `<div class="meta-item"><strong>Session Dates:</strong><br>${lines.map((line) => this.escapeHtml(line)).join('<br>')}</div>`;
-            }
-        }
-
-        // Add time range if specified (single-date events only)
-        if ((bulletin.startTime || bulletin.endTime) && (dateType === 'event' || dateType === 'range')) {
-            const timeRange = this.formatTimeRange(bulletin.startTime, bulletin.endTime);
-            if (timeRange) {
-                html += `<div class="meta-item"><strong>Time:</strong> ${timeRange}</div>`;
-            }
-        }
-
-        // Add event location/format if specified
-        if (bulletin.eventLocation && (dateType === 'event' || dateType === 'range' || dateType === 'sessions')) {
-            const locationText = bulletin.eventLocation === 'in-person' ? 'In-Person' :
-                               bulletin.eventLocation === 'online' ? 'Online' :
-                               bulletin.eventLocation === 'hybrid' ? 'Hybrid (In-Person & Online)' : bulletin.eventLocation;
-            html += `<div class="meta-item"><strong>Format:</strong> ${locationText}</div>`;
-        }
-
-        return html;
-    }
-
     // Utility Methods
     getManageCardTitle(bulletin) {
         if (this.isResourceBulletin(bulletin)) {
@@ -3193,18 +2939,6 @@ class FirebaseAdminPanel {
         const div = document.createElement('div');
         div.textContent = rawText || '';
         return this.applyInlineFormatting(div.innerHTML);
-    }
-
-    renderPreviewDescription(rawText) {
-        if (!rawText) {
-            return '';
-        }
-
-        const formatted = this.formatRichText(rawText);
-        return formatted
-            .split(/\n{2,}/)
-            .map(segment => `<p>${segment.replace(/\n/g, '<br>')}</p>`)
-            .join('');
     }
 
     applyInlineFormatting(html) {
@@ -4017,26 +3751,6 @@ function handleTabKeydown(event, tabName) {
     }
 }
 
-function previewBulletin() {
-    if (window.adminPanel) {
-        window.adminPanel.previewBulletin();
-    } else {
-        console.error('Admin panel not initialized yet');
-    }
-}
-
-function closePreview() {
-    if (window.adminPanel) {
-        window.adminPanel.closePreview();
-    }
-}
-
-function submitFromPreview() {
-    if (window.adminPanel) {
-        window.adminPanel.submitFromPreview();
-    }
-}
-
 function toggleDateFields() {
     const dateType = document.getElementById('dateType').value;
     const dateFields = document.getElementById('dateFields');
@@ -4112,8 +3826,5 @@ document.addEventListener('DOMContentLoaded', () => {
     window.adminPanel = adminPanel;
     window.showTab = showTab;
     window.handleTabKeydown = handleTabKeydown;
-    window.previewBulletin = previewBulletin;
-    window.closePreview = closePreview;
-    window.submitFromPreview = submitFromPreview;
     window.toggleDateFields = toggleDateFields;
 });
