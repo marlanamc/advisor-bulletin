@@ -204,7 +204,7 @@
         </div>
     </div>
 
-    <!-- Hidden nav for script.js tab switching (sr-only) -->
+    <!-- Hidden screen-reader nav; wired by firebase-config.js -->
     <nav class="header-tabs sr-only" aria-label="Main sections" aria-hidden="true">
         <button class="section-nav-btn active" data-app-view="feed" type="button">Feed / Inicio</button>
         <button class="section-nav-btn" data-app-view="calendar" type="button">Calendar / Calendario</button>
@@ -227,7 +227,7 @@
         <!-- ─── FEED VIEW ─────────────────────────────────────── -->
         <div class="page-view active" id="feedView" data-view-panel="feed">
 
-            <!-- mobile-inline-search kept for script.js compat but hidden -->
+            <!-- Hidden mobile inline search input; populated by firebase-config.js -->
             <div class="mobile-inline-search" id="mobileInlineSearch" style="display:none!important">
                 <div class="mobile-inline-search-inner">
                     <input id="mobileInlineSearchInput" type="text" class="mobile-inline-search-input"
