@@ -368,6 +368,7 @@ class FirebaseBulletinBoard {
         this.currentFeedCategory = 'all';
         this.currentResourceCategory = 'all';
         this.currentDesktopResourceTopic = 'all';
+        this.expandedDesktopResourceSections = new Set();
         this.resourceSearchQuery = '';
         this.resourceSortMode = 'default';
         this.datesViewMode = 'list';
@@ -842,24 +843,6 @@ class FirebaseBulletinBoard {
                     });
                 }
 
-                // On the Help page (mobile), drill into the full category list in-page
-                // instead of opening the bottom sheet. Homepage / desktop still use the sheet.
-                const isMobileResourcesView =
-                    this.currentView === 'resources' &&
-                    window.matchMedia('(max-width: 767px)').matches;
-                if (isMobileResourcesView && category !== 'all') {
-                    const keyMap = {
-                        job: 'jobs',
-                        childcare: 'family',
-                        money: 'money',
-                        esol: 'esol',
-                        college: 'college',
-                        'legal-aid': 'legal-aid',
-                    };
-                    this.switchResourceCategory(keyMap[category] || category);
-                    return;
-                }
-
                 this.openResourceShortcut(category);
             });
         }
@@ -1001,7 +984,8 @@ class FirebaseBulletinBoard {
             if (showAll) {
                 const category = showAll.getAttribute('data-cat-show-all');
                 if (category) {
-                    this.openResourceDetailSheet(category, { showAll: true });
+                    this.closeResourceDetailSheet();
+                    this.navigateToResourceCategory(category, { expandDesktop: true });
                 }
                 return;
             }
@@ -1195,13 +1179,17 @@ class FirebaseBulletinBoard {
         this.currentView = view;
         document.body.setAttribute('data-current-view', view);
 
-        if (view === 'resources' && previousView !== 'resources') {
+        if (view === 'resources' && previousView !== 'resources' && !options.preserveResourceNavigation) {
             this.currentDesktopResourceTopic = 'all';
+            this.currentResourceCategory = 'all';
+            this.expandedDesktopResourceSections.clear();
         }
 
         // Leaving Help: reset the in-page category drill so the next visit lands on tiles.
         if (previousView === 'resources' && view !== 'resources') {
             this.currentResourceCategory = 'all';
+            this.currentDesktopResourceTopic = 'all';
+            this.expandedDesktopResourceSections.clear();
             document.body.classList.remove('resource-category-detail-open');
         }
 
@@ -1894,7 +1882,9 @@ class FirebaseBulletinBoard {
         const category = this.currentResourceCategory;
         const config = category && category !== 'all' ? RESOURCE_CATEGORY_CONFIG[category] : null;
 
-        if (!exploring || !config) {
+        const isMobileResourcesLayout = window.matchMedia('(max-width: 767px)').matches;
+
+        if (!exploring || !config || !isMobileResourcesLayout) {
             header.hidden = true;
             header.style.display = 'none';
             header.innerHTML = '';
@@ -1957,9 +1947,8 @@ class FirebaseBulletinBoard {
             return;
         }
 
-        // Resources tab: keep category tiles as the landing view. Show the grid only when
-        // searching or when an explicit category filter is active — not merely because
-        // the Resources view is open (tiles already open category detail sheets on tap).
+        // Resources tab: keep category tiles as the landing view. Show the list when
+        // searching or when a category shortcut lands here with an active filter.
         const exploring =
             (this.currentResourceCategory && this.currentResourceCategory !== 'all') ||
             (this.resourceSearchQuery && this.resourceSearchQuery.trim() !== '');
@@ -2323,8 +2312,9 @@ class FirebaseBulletinBoard {
             const config = RESOURCE_CATEGORY_CONFIG[key];
             if (!config) return '';
             const resources = catMap[key];
-            const preview = resources.slice(0, 3);
-            const hasMore = resources.length > 3;
+            const isExpanded = this.expandedDesktopResourceSections.has(key);
+            const preview = isExpanded ? resources : resources.slice(0, 3);
+            const hasMore = !isExpanded && resources.length > 3;
             const iconSvg = RESOURCE_ICON_SVGS[config.icon] || RESOURCE_ICON_SVGS.globe;
 
             const cardsHtml = preview.map(r => this.createHelpResourceCard(r, config)).join('');
@@ -2365,7 +2355,7 @@ class FirebaseBulletinBoard {
         sectionsContainer.querySelectorAll('[data-desktop-show-all]').forEach(btn => {
             btn.addEventListener('click', () => {
                 const cat = btn.dataset.desktopShowAll;
-                if (cat) this.openResourceDetailSheet(cat, { showAll: true });
+                if (cat) this.navigateToResourceCategory(cat, { expandDesktop: true });
             });
         });
     }
@@ -2451,7 +2441,7 @@ class FirebaseBulletinBoard {
         this.renderResourcesSections(this.getPublishedResources());
     }
 
-    openResourceShortcut(category) {
+    normalizeResourceCategoryKey(category) {
         const keyMap = {
             job: 'jobs',
             childcare: 'family',
@@ -2460,8 +2450,57 @@ class FirebaseBulletinBoard {
             college: 'college',
             'legal-aid': 'legal-aid',
         };
-        const resourceKey = keyMap[category] || category;
-        this.openResourceDetailSheet(resourceKey);
+        return keyMap[category] || category;
+    }
+
+    scrollToDesktopResourceSection(category) {
+        if (!category || category === 'all') {
+            return;
+        }
+
+        const navContainer = document.getElementById('desktopCategoryNav');
+        if (navContainer) {
+            navContainer.querySelectorAll('.desktop-cat-btn').forEach((button) => {
+                button.classList.toggle('active', button.dataset.desktopCat === category);
+            });
+        }
+
+        const headerOffset = parseInt(
+            getComputedStyle(document.documentElement).getPropertyValue('--app-header-offset') || '70',
+            10
+        );
+        const target = document.getElementById(`desktop-section-${category}`);
+        if (target) {
+            const top = window.scrollY + target.getBoundingClientRect().top - headerOffset - 16;
+            window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+        }
+    }
+
+    navigateToResourceCategory(category, options = {}) {
+        const resourceKey = this.normalizeResourceCategoryKey(category);
+        const isDesktop = window.matchMedia('(min-width: 768px)').matches;
+
+        if (isDesktop && options.expandDesktop && resourceKey && resourceKey !== 'all') {
+            this.expandedDesktopResourceSections.add(resourceKey);
+        }
+
+        if (isDesktop) {
+            this.currentDesktopResourceTopic = resourceKey;
+        } else {
+            this.currentResourceCategory = resourceKey;
+        }
+        this.switchView('resources', { preserveResourceNavigation: true, skipRender: true });
+        this.renderResourcesSections(this.getPublishedResources());
+
+        if (isDesktop) {
+            requestAnimationFrame(() => {
+                this.scrollToDesktopResourceSection(resourceKey);
+            });
+        }
+    }
+
+    openResourceShortcut(category) {
+        this.navigateToResourceCategory(category);
     }
 
     setFeedCategory(category = 'all') {
@@ -2907,7 +2946,15 @@ class FirebaseBulletinBoard {
             ? `<div class="mobile-resource-card__langs">${languages.slice(0, 4).map((lang) => `<span class="mobile-resource-card__lang">${this.escapeHtml(lang)}</span>`).join('')}</div>`
             : '';
 
-        const callBtn = phone && tel
+        const isDesktopCard = window.matchMedia('(min-width: 768px)').matches;
+        const phoneHtml = phone && isDesktopCard
+            ? `<p class="mobile-resource-card__phone">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.25 7.75c0 5.1 5.9 11 11 11h1.75a1 1 0 0 0 1-1v-3.2a1 1 0 0 0-.78-.98l-3.14-.7a1 1 0 0 0-.96.29l-.92.98a13.84 13.84 0 0 1-4.34-4.34l.98-.92a1 1 0 0 0 .29-.96l-.7-3.14A1 1 0 0 0 8.45 4H5.25a1 1 0 0 0-1 1v2.75Z"/></svg>
+                    <span>${this.escapeHtml(phone)}</span>
+                </p>`
+            : '';
+
+        const callBtn = phone && tel && !isDesktopCard
             ? `<a class="mobile-resource-card__btn mobile-resource-card__btn--primary"
                   href="${this.escapeAttribute(tel)}"
                   data-analytics-action="resource_call"
@@ -2992,6 +3039,7 @@ class FirebaseBulletinBoard {
                     ${servicesHtml}
                     ${hoursHtml}
                     ${languagesHtml}
+                    ${phoneHtml}
                     ${addressHtml}
                     ${actionsHtml}
                 </div>
@@ -3874,7 +3922,7 @@ class FirebaseBulletinBoard {
         // If on resources view, use context-aware search for resources
         if (this.currentView === 'resources') {
             this.resourceSearchQuery = searchTerm;
-            this.renderResourceList(this.getPublishedResources());
+            this.renderResourcesSections(this.getPublishedResources());
             this.syncHeaderSearchButton();
             return;
         }

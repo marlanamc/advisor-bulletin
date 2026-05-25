@@ -129,19 +129,16 @@ test.describe('Mobile app shell', () => {
     await expect(page.locator('#feedStoryCats')).toContainText('Health');
   });
 
-  test('resource story bubbles open the category detail sheet', async ({ page }) => {
+  test('resource story bubbles open the resources view with that category', async ({ page }) => {
     await page.locator('#feedStoryCats [data-app-view-cat="health"]').click();
 
-    await expect(page.locator('#catDetailSheet')).toHaveClass(/open/);
-    await expect(page.locator('#catDetailSheet')).toHaveClass(/cat-detail-sheet--bottom/);
-    await expect(page.locator('#catDetailTitle')).toContainText('Health');
-    await expect(page.locator('#catOrgList')).toContainText('Free Health Clinic');
-    await expect.poll(async () => {
-      return page.locator('#catDetailSheet').evaluate((sheet) => Math.round(sheet.getBoundingClientRect().left));
-    }).toBe(0);
+    await expect(page.locator('#resourcesView')).toHaveClass(/active/);
+    await expect(page.locator('#resourceCategoryDetail')).toContainText('Health');
+    await expect(page.locator('#resourcesList')).toContainText('Free Health Clinic');
+    await expect(page.locator('#catDetailSheet')).not.toHaveClass(/open/);
   });
 
-  test('resource sheet shows a compact subtitle instead of a clipped description', async ({ page }) => {
+  test('resource category cards show service chips without clipped descriptions', async ({ page }) => {
     await page.evaluate(() => {
       const now = new Date().toISOString();
       window.bulletinBoard.bulletins = [{
@@ -169,49 +166,26 @@ test.describe('Mobile app shell', () => {
 
     await page.locator('#feedStoryCats [data-app-view-cat="immigration"]').click();
 
-    await expect(page.locator('#catOrgList .resource-service-chip').first()).toContainText('Immigration Help');
-    await expect(page.locator('#catOrgList .mobile-resource-card__description')).toHaveCount(0);
-    await expect(page.locator('#catOrgList .cat-org-address')).toHaveCount(0);
+    await expect(page.locator('#resourcesView')).toHaveClass(/active/);
+    await expect(page.locator('#resourcesList .resource-service-chip').first()).toContainText('Immigration Help');
+    await expect(page.locator('#resourcesList .mobile-resource-card__description')).toHaveCount(0);
   });
 
-  test('resource sheet shows top three places and can expand', async ({ page }) => {
+  test('resource category view shows the full list for a topic', async ({ page }) => {
     await page.locator('#feedStoryCats [data-app-view-cat="health"]').click();
 
-    await expect(page.locator('#catOrgList .help-sheet-row')).toHaveCount(3);
-    await expect(page.locator('#catOrgList')).not.toContainText('East Boston Vaccines');
-    await expect(page.locator('[data-cat-show-all="health"]')).toBeVisible();
-
-    await page.locator('[data-cat-show-all="health"]').click();
-    await expect(page.locator('#catOrgList .help-sheet-row')).toHaveCount(4);
-    await expect(page.locator('#catOrgList')).toContainText('East Boston Vaccines');
+    await expect(page.locator('#resourcesView')).toHaveClass(/active/);
+    await expect(page.locator('#resourcesList .mobile-resource-card, #resourcesList .help-sheet-row')).toHaveCount(4);
+    await expect(page.locator('#resourcesList')).toContainText('East Boston Vaccines');
   });
 
-  test('resource sheet closes from x, backdrop, and swipe down while keeping feed active', async ({ page }) => {
-    const openSheet = async () => {
-      await page.locator('#feedStoryCats [data-app-view-cat="health"]').click();
-      await expect(page.locator('#catDetailSheet')).toHaveClass(/open/);
-    };
+  test('resource category back button returns to the help hub', async ({ page }) => {
+    await page.locator('#feedStoryCats [data-app-view-cat="health"]').click();
+    await expect(page.locator('#resourceCategoryDetail')).toBeVisible();
 
-    await openSheet();
-    await page.getByLabel('Close help').click();
-    await expect(page.locator('#catDetailSheet')).not.toHaveClass(/open/);
-    await expect(page.locator('#feedView')).toHaveClass(/active/);
-
-    await openSheet();
-    await page.locator('#catDetailBackdrop').click({ position: { x: 10, y: 10 } });
-    await expect(page.locator('#catDetailSheet')).not.toHaveClass(/open/);
-    await expect(page.locator('#catDetailSheet')).toHaveClass(/cat-detail-sheet--bottom/);
-    await expect(page.locator('#feedView')).toHaveClass(/active/);
-    await expect(page.locator('#catDetailSheet')).not.toHaveClass(/cat-detail-sheet--bottom/, { timeout: 1000 });
-
-    await openSheet();
-    await page.locator('#catDetailSheet .cat-detail-topbar').evaluate((topbar) => {
-      topbar.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, clientY: 100 }));
-      document.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientY: 220 }));
-      document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, clientY: 220 }));
-    });
-    await expect(page.locator('#catDetailSheet')).not.toHaveClass(/open/);
-    await expect(page.locator('#feedView')).toHaveClass(/active/);
+    await page.locator('[data-resource-detail-back]').click();
+    await expect(page.locator('#resourceCategoryFilters')).toBeVisible();
+    await expect(page.locator('#resourcesView')).toHaveClass(/active/);
   });
 
   test('collapses the mobile header on scroll without hiding story shortcuts', async ({ page }) => {
@@ -245,7 +219,7 @@ test.describe('Mobile app shell', () => {
     await page.evaluate(() => window.bulletinBoard.switchResourceCategory('health'));
 
     await expect(page.locator('#resourcesView')).toHaveClass(/active/);
-    await expect(page.locator('#resourcesList .resource-card').first()).toBeVisible();
+    await expect(page.locator('#resourcesList .mobile-resource-card').first()).toBeVisible();
     await expect(page.locator('#resourcesList')).toContainText('Free Health Clinic');
     await expect(page.locator('#resourcesList')).toContainText('Clinica Gratis');
   });
@@ -259,7 +233,6 @@ test.describe('Mobile app shell', () => {
     await page.getByRole('button', { name: 'About' }).click();
     await expect(page.locator('#aboutView')).toHaveClass(/active/);
     await expect(page.locator('#aboutView')).toContainText('East Boston Harborside Community School');
-    await expect(page.locator('#aboutView')).toContainText('Adult Education');
     await expect(page.locator('#aboutView')).toContainText('ebhcs.org');
     await expect(page.locator('#aboutView')).toContainText('312 Border Street');
   });

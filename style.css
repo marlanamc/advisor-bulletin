@@ -12163,16 +12163,34 @@ body:has(#loginRequired) {
     margin: 0;
     flex: 1;
     min-width: 0;
-    font-family: 'Outfit', sans-serif;
-    font-size: 11px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 22px;
     font-weight: 900;
-    color: #1e293b;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    line-height: 1.15;
+    color: #0a1d3a;
+    letter-spacing: 0;
+    text-transform: none;
+    line-height: 1.08;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.feed-section-label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+    flex: 1;
+}
+
+.feed-section-kicker {
+    color: #6d28d9;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    line-height: 1;
 }
 
 .feed-page-heading .en-text,
@@ -12185,9 +12203,9 @@ body:has(#loginRequired) {
     display: flex;
     align-items: flex-end;
     justify-content: space-between;
-    gap: 10px;
+    gap: 16px;
     padding: 0 0 6px;
-    margin-top: -2px;
+    margin-top: 8px;
 }
 
 .desktop-section-eyebrow {
@@ -13308,11 +13326,13 @@ body:has(#loginRequired) {
 
 /* ─── In-page category detail header (mobile Help view) ────────────── */
 
-/* While drilled into a category on the Help page, hide the "Find help today"
-   hero and the existing back-to-home bar so the colored banner stands alone. */
-body[data-current-view="resources"].resource-category-detail-open #resourcesView .view-hero,
-body[data-current-view="resources"].resource-category-detail-open #resourcesView .page-back-bar {
-    display: none;
+/* Mobile only: while drilled into a category, hide the hero/back bar so the
+   colored category banner stands alone. Desktop keeps the back-to-home bar. */
+@media (max-width: 767px) {
+    body[data-current-view="resources"].resource-category-detail-open #resourcesView .view-hero,
+    body[data-current-view="resources"].resource-category-detail-open #resourcesView .page-back-bar {
+        display: none;
+    }
 }
 
 .resource-category-detail {
@@ -13697,7 +13717,8 @@ body[data-current-view="resources"].resource-category-detail-open #resourcesView
     grid-column: 1 / -1;
 }
 
-.mobile-resource-card__address {
+.mobile-resource-card__address,
+.mobile-resource-card__phone {
     display: flex;
     align-items: flex-start;
     gap: 8px;
@@ -13709,7 +13730,8 @@ body[data-current-view="resources"].resource-category-detail-open #resourcesView
     color: #64748b;
 }
 
-.mobile-resource-card__address svg {
+.mobile-resource-card__address svg,
+.mobile-resource-card__phone svg {
     flex: 0 0 auto;
     width: 16px;
     height: 16px;
@@ -17116,7 +17138,22 @@ body[data-current-view="resources"].resource-category-detail-open #resourcesView
 }
 
 .desktop-section-see-all {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
     align-self: flex-start;
+    min-height: 52px;
+    margin-top: 8px;
+    padding: 0 20px;
+    border: 0;
+    border-radius: 14px;
+    background: #0a1d3a;
+    color: #fff;
+    cursor: pointer;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 900;
 }
 
 /* Position the audio button absolutely in the card top-right */
