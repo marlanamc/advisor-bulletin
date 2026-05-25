@@ -1841,16 +1841,9 @@
             return getPreviewCardIconSvg(key);
         }
 
-        function plainPreviewSummary(raw, max) {
+        function plainPreviewSummary(raw) {
             if (!raw) return '';
-            var text = String(raw).replace(/\s+/g, ' ').trim();
-            if (!text) return '';
-            if (text.length > max) {
-                var cut = text.slice(0, max);
-                var lastSpace = cut.lastIndexOf(' ');
-                text = ((lastSpace > 40 ? cut.slice(0, lastSpace) : cut).trim()) + '…';
-            }
-            return text;
+            return String(raw).replace(/\s+/g, ' ').trim();
         }
 
         function translatePreviewChipEs(label) {
@@ -1864,8 +1857,8 @@
             var accent = PREVIEW_RESOURCE_COLORS[category] || '#0a1d3a';
             var title = data.title || 'Resource title';
             var titleEs = data.titleEs || '';
-            var descEn = plainPreviewSummary(data.desc, 140);
-            var descEs = plainPreviewSummary(data.summaryEs || data.desc, 140);
+            var descEn = plainPreviewSummary(data.desc);
+            var descEs = plainPreviewSummary(data.summaryEs || data.desc);
             var logoSrc = data.logoSrc || '';
             var iconSvg = previewResourceIcon(category);
 

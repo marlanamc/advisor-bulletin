@@ -2743,10 +2743,7 @@ details.ap-accordion > summary.ap-accordion-trigger {
   line-height: 1.45;
   font-weight: 500;
   color: #475569;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  overflow-wrap: anywhere;
 }
 
 .ap-preview-card .mobile-resource-card__summary--placeholder {

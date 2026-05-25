@@ -15,6 +15,7 @@ import {
     applyInlineFormatting as applyRichTextInlineFormatting,
     formatRichTextInline as renderRichTextInline,
     formatRichTextPlainPreview,
+    toRichTextPlainText,
     getRichTextPlainLength,
     normalizeRichTextMarkers,
     truncateRichText,
@@ -2186,20 +2187,16 @@ class FirebaseBulletinBoard {
         return raw;
     }
 
-    // One-line card subtitle that differentiates resources within a category.
-    // Renders both languages in en-text/es-text spans so the lang toggle works
-    // without a re-render. Falls back across languages when only one is set.
+    // Card summary shown on resource tiles. Renders both languages in en-text/es-text
+    // spans so the lang toggle works without a re-render. Falls back across languages
+    // when only one is set.
     getResourceCardSummaryHtml(resource) {
         if (!resource) return '';
         const en = (resource.description || '').trim();
         const es = (resource.summaryEs || '').trim();
         if (!en && !es) return '';
-        const enPlain = en
-            ? formatRichTextPlainPreview(en, 140)
-            : formatRichTextPlainPreview(es, 140);
-        const esPlain = es
-            ? formatRichTextPlainPreview(es, 140)
-            : formatRichTextPlainPreview(en, 140);
+        const enPlain = en ? toRichTextPlainText(en) : toRichTextPlainText(es);
+        const esPlain = es ? toRichTextPlainText(es) : toRichTextPlainText(en);
         if (!enPlain && !esPlain) return '';
         return `<p class="mobile-resource-card__summary">
             <span class="en-text">${this.escapeHtml(enPlain)}</span>

@@ -9,10 +9,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Lexend:wght@300;400;500;600;700;800&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
-  <script type="module" crossorigin src="/assets/admin-D0Jn1FE_.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/rich-text-cMRJC-u6.js">
-  <link rel="stylesheet" crossorigin href="/assets/rich-text-CkVRW_Zb.css">
-  <link rel="stylesheet" crossorigin href="/assets/admin-ZNAx4FQ9.css">
+  <script type="module" crossorigin src="/assets/admin-CyzM3Byt.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/rich-text-BtEYm1iH.js">
+  <link rel="stylesheet" crossorigin href="/assets/rich-text-vNrOe5_9.css">
+  <link rel="stylesheet" crossorigin href="/assets/admin-BFF3eGYE.css">
 </head>
 <body>
     <header>
@@ -1843,16 +1843,9 @@
             return getPreviewCardIconSvg(key);
         }
 
-        function plainPreviewSummary(raw, max) {
+        function plainPreviewSummary(raw) {
             if (!raw) return '';
-            var text = String(raw).replace(/\s+/g, ' ').trim();
-            if (!text) return '';
-            if (text.length > max) {
-                var cut = text.slice(0, max);
-                var lastSpace = cut.lastIndexOf(' ');
-                text = ((lastSpace > 40 ? cut.slice(0, lastSpace) : cut).trim()) + '…';
-            }
-            return text;
+            return String(raw).replace(/\s+/g, ' ').trim();
         }
 
         function translatePreviewChipEs(label) {
@@ -1866,8 +1859,8 @@
             var accent = PREVIEW_RESOURCE_COLORS[category] || '#0a1d3a';
             var title = data.title || 'Resource title';
             var titleEs = data.titleEs || '';
-            var descEn = plainPreviewSummary(data.desc, 140);
-            var descEs = plainPreviewSummary(data.summaryEs || data.desc, 140);
+            var descEn = plainPreviewSummary(data.desc);
+            var descEs = plainPreviewSummary(data.summaryEs || data.desc);
             var logoSrc = data.logoSrc || '';
             var iconSvg = previewResourceIcon(category);
 

@@ -51,6 +51,9 @@ test.describe('Desktop resource shortcuts', () => {
     await expect(page.locator('#desktop-section-food .mobile-resource-card__phone').first()).toContainText('617-555-0101');
     await expect(page.locator('#desktop-section-food .mobile-resource-card__btn--primary')).toHaveCount(0);
     await expect(page.locator('#desktop-section-food')).toContainText('Weekend community supper');
+    await expect(page.locator('#desktop-section-food .mobile-resource-card__summary').nth(1)).toContainText(
+      'Neighborhood pantry lookup and referrals.'
+    );
     await expect(page.locator('#desktop-section-food [data-desktop-show-all="food"]')).toHaveCount(0);
     await expect(page.locator('#catDetailSheet')).not.toHaveClass(/open/);
   });

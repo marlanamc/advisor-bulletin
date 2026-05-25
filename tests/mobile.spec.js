@@ -169,6 +169,9 @@ test.describe('Mobile app shell', () => {
     await expect(page.locator('#resourcesView')).toHaveClass(/active/);
     await expect(page.locator('#resourcesList .resource-service-chip').first()).toContainText('Immigration Help');
     await expect(page.locator('#resourcesList .mobile-resource-card__description')).toHaveCount(0);
+    await expect(page.locator('#resourcesList .mobile-resource-card__summary').first()).toContainText(
+      'Community support for immigrants and families in Greater Boston, including food support, classes, jobs, health resources, citizenship help, and community advocacy.'
+    );
   });
 
   test('resource category view shows the full list for a topic', async ({ page }) => {
