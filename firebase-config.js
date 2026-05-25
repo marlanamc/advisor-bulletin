@@ -1914,7 +1914,7 @@ class FirebaseBulletinBoard {
 
         header.style.setProperty('--cat-accent', config.color);
         header.innerHTML = `
-            <button type="button" class="resource-category-detail-back" data-resource-detail-back>
+            <button type="button" class="resource-category-detail-back" data-resource-detail-back aria-label="Back to help categories">
                 <span aria-hidden="true">&larr;</span>
                 <span class="en-text">Back</span>
                 <span class="es-text">Atrás</span>
@@ -2002,7 +2002,21 @@ class FirebaseBulletinBoard {
         }
 
         emptyState.style.display = 'none';
-        container.innerHTML = visibleResources.map((resource) => this.createResourceCard(resource)).join('');
+
+        // Mobile category drill-in uses the shared help card; desktop search keeps legacy cards.
+        const useHelpResourceCard =
+            window.matchMedia('(max-width: 767px)').matches &&
+            this.currentResourceCategory &&
+            this.currentResourceCategory !== 'all';
+        const categoryConfig = useHelpResourceCard
+            ? RESOURCE_CATEGORY_CONFIG[this.currentResourceCategory]
+            : null;
+
+        container.innerHTML = visibleResources
+            .map((resource) => useHelpResourceCard
+                ? this.createHelpResourceCard(resource, categoryConfig)
+                : this.createResourceCard(resource))
+            .join('');
     }
 
     filterResourcesBySearch(resources, query) {
@@ -2304,7 +2318,7 @@ class FirebaseBulletinBoard {
             const hasMore = resources.length > 3;
             const iconSvg = RESOURCE_ICON_SVGS[config.icon] || RESOURCE_ICON_SVGS.globe;
 
-            const cardsHtml = preview.map(r => this.createResourceDetailCard(r, config, { compact: false })).join('');
+            const cardsHtml = preview.map(r => this.createHelpResourceCard(r, config)).join('');
             const showAllBtn = hasMore ? `
                 <button class="cat-org-show-all desktop-section-see-all" type="button"
                     data-desktop-show-all="${this.escapeAttribute(key)}"
@@ -2501,7 +2515,11 @@ class FirebaseBulletinBoard {
             ? this.createResourceSheetShowAllButton(category, config, resources.length)
             : '';
         listEl.innerHTML = visibleResources.length > 0
-            ? visibleResources.map((resource) => this.createResourceDetailCard(resource, config, { compact: isMobileSheet })).join('')
+            ? visibleResources.map((resource) => (
+                isMobileSheet
+                    ? this.createResourceDetailCard(resource, config, { compact: true })
+                    : this.createHelpResourceCard(resource, config)
+            )).join('')
             : emptyHtml;
 
         // Place the "See all" button in the sticky footer (outside the scroll area)
@@ -2793,6 +2811,129 @@ class FirebaseBulletinBoard {
                     </svg>
                 </button>
             </div>
+        `;
+    }
+
+    createHelpResourceCard(resource, categoryConfig) {
+        const { titleEn, titleEs } = this.getResourceTitles(resource);
+        const categoryKey = this.getResourceCategoryKey(resource);
+        const config = categoryConfig || this.getResourceCategoryConfig(resource);
+        const accent = config?.color || '#0a1d3a';
+
+        const url = this.getResourceUrl(resource);
+        const hasUrl = url && url !== '#';
+        const phone = (resource.phone || '').trim();
+        const tel = resource.tel || (phone ? `tel:${phone.replace(/[^0-9+]/g, '')}` : '');
+        const address = (resource.address || '').trim();
+        const mapUrl = resource.mapUrl || (address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}` : '');
+
+        const logo = resource.resourceLogo || '';
+        const logoTile = logo
+            ? `<img src="${this.escapeAttribute(logo)}" alt="" loading="lazy">`
+            : `<span class="mobile-resource-card__icon-fallback" style="background:${accent}" aria-hidden="true">${this.getResourceIconSvg(resource)}</span>`;
+
+        const postDescription = this.getPostDescription(resource);
+        const descriptionHtml = postDescription
+            ? `<div class="mobile-resource-card__description">${this.renderFormattedDescription(postDescription, `${resource.id}-mobile`, false)}</div>`
+            : '';
+
+        const badgesHtml = this.getResourceBadgesHtml(resource);
+
+        const languages = Array.isArray(resource.languages) && resource.languages.length
+            ? resource.languages
+            : this.parseResourceHighlights(resource.highlights);
+        const languagesHtml = languages.length
+            ? `<div class="mobile-resource-card__langs">${languages.slice(0, 4).map((lang) => `<span class="mobile-resource-card__lang">${this.escapeHtml(lang)}</span>`).join('')}</div>`
+            : '';
+
+        const callBtn = phone && tel
+            ? `<a class="mobile-resource-card__btn mobile-resource-card__btn--primary"
+                  href="${this.escapeAttribute(tel)}"
+                  data-analytics-action="resource_call"
+                  data-analytics-post-id="${this.escapeAttribute(resource.id || '')}"
+                  data-analytics-category="${this.escapeAttribute(categoryKey)}"
+                  data-analytics-content-type="resource"
+                  aria-label="Call ${this.escapeAttribute(titleEn)}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.25 7.75c0 5.1 5.9 11 11 11h1.75a1 1 0 0 0 1-1v-3.2a1 1 0 0 0-.78-.98l-3.14-.7a1 1 0 0 0-.96.29l-.92.98a13.84 13.84 0 0 1-4.34-4.34l.98-.92a1 1 0 0 0 .29-.96l-.7-3.14A1 1 0 0 0 8.45 4H5.25a1 1 0 0 0-1 1v2.75Z"/></svg>
+                    <span class="en-text">Call</span>
+                    <span class="es-text">Llamar</span>
+                </a>`
+            : '';
+
+        const websiteBtn = hasUrl
+            ? `<a class="mobile-resource-card__btn mobile-resource-card__btn--secondary"
+                  href="${this.escapeAttribute(url)}"
+                  target="_blank"
+                  rel="noopener"
+                  data-analytics-action="resource_open"
+                  data-analytics-post-id="${this.escapeAttribute(resource.id || '')}"
+                  data-analytics-category="${this.escapeAttribute(categoryKey)}"
+                  data-analytics-content-type="resource"
+                  aria-label="Open ${this.escapeAttribute(titleEn)} website">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>
+                    <span class="en-text">Website</span>
+                    <span class="es-text">Sitio</span>
+                </a>`
+            : '';
+
+        const directionsBtn = mapUrl
+            ? `<a class="mobile-resource-card__btn mobile-resource-card__btn--secondary mobile-resource-card__btn--directions"
+                  href="${this.escapeAttribute(mapUrl)}"
+                  target="_blank"
+                  rel="noopener"
+                  data-analytics-action="resource_open"
+                  data-analytics-post-id="${this.escapeAttribute(resource.id || '')}"
+                  data-analytics-category="${this.escapeAttribute(categoryKey)}"
+                  data-analytics-content-type="resource"
+                  aria-label="Get directions to ${this.escapeAttribute(titleEn)}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s6.25-5.9 6.25-11.1a6.25 6.25 0 1 0-12.5 0C5.75 15.1 12 21 12 21Z"/><circle cx="12" cy="9.75" r="2.5"/></svg>
+                    <span class="en-text">Directions</span>
+                    <span class="es-text">Cómo llegar</span>
+                </a>`
+            : '';
+
+        const actionButtons = [callBtn, websiteBtn, directionsBtn].filter(Boolean);
+        const actionsModifier = actionButtons.length === 1
+            ? ' mobile-resource-card__actions--single'
+            : actionButtons.length >= 3
+                ? ' mobile-resource-card__actions--triple'
+                : '';
+        const actionsHtml = actionButtons.length
+            ? `<div class="mobile-resource-card__actions${actionsModifier}">${actionButtons.join('')}</div>`
+            : '';
+
+        const addressHtml = address
+            ? `<p class="mobile-resource-card__address">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s6.25-5.9 6.25-11.1a6.25 6.25 0 1 0-12.5 0C5.75 15.1 12 21 12 21Z"/><circle cx="12" cy="9.75" r="2.5"/></svg>
+                    ${this.escapeHtml(address)}
+                </p>`
+            : '';
+
+        const shareTitle = this.escapeHtml(titleEn).replace(/'/g, '&#39;');
+
+        return `
+            <article class="mobile-resource-card mobile-resource-card--${categoryKey}"
+                     style="--cat-accent:${accent}"
+                     data-resource-id="${this.escapeAttribute(resource.id || '')}">
+                <button type="button"
+                        class="mobile-resource-card__share"
+                        onclick="shareBulletin('${resource.id || ''}','${shareTitle}')"
+                        aria-label="Share ${this.escapeAttribute(titleEn)}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4"/><path d="m15.4 6.5-6.8 4"/></svg>
+                </button>
+                <div class="mobile-resource-card__logo-tile">${logoTile}</div>
+                <div class="mobile-resource-card__body">
+                    <div class="mobile-resource-card__heading">
+                        <h3 class="mobile-resource-card__title">${this.escapeHtml(titleEn)}</h3>
+                        ${titleEs && titleEs !== titleEn ? `<p class="mobile-resource-card__subtitle">${this.escapeHtml(titleEs)}</p>` : ''}
+                        ${badgesHtml}
+                    </div>
+                    ${descriptionHtml}
+                    ${languagesHtml}
+                    ${addressHtml}
+                    ${actionsHtml}
+                </div>
+            </article>
         `;
     }
 

@@ -48,7 +48,7 @@ test.describe('Desktop resource shortcut panel', () => {
     await expect(sheet).toHaveClass(/cat-detail-sheet--desktop/);
     await expect(sheet).not.toHaveClass(/cat-detail-sheet--bottom/);
     await expect(page.locator('#catDetailTitle')).toContainText('Food');
-    await expect(page.locator('#catOrgList .cat-org-card')).toHaveCount(3);
+    await expect(page.locator('#catOrgList .mobile-resource-card')).toHaveCount(3);
     await expect(page.locator('#catOrgList')).not.toContainText('Weekend community supper');
     await expect(page.locator('[data-cat-show-all="food"]')).toBeVisible();
     await expect.poll(async () => {
@@ -63,7 +63,7 @@ test.describe('Desktop resource shortcut panel', () => {
     await page.evaluate(() => window.bulletinBoard.openResourceShortcut('food'));
     await page.locator('[data-cat-show-all="food"]').click();
 
-    await expect(page.locator('#catOrgList .cat-org-card')).toHaveCount(4);
+    await expect(page.locator('#catOrgList .mobile-resource-card')).toHaveCount(4);
     await expect(page.locator('#catOrgList')).toContainText('Weekend community supper');
 
     await page.locator('#catDetailBackdrop').click({ position: { x: 10, y: 10 } });
