@@ -1318,6 +1318,10 @@ class FirebaseBulletinBoard {
             this.renderStudentAdvisorDirectory();
         }
 
+        if (view === 'about') {
+            this.renderAboutAdvisorList();
+        }
+
         if (window.matchMedia('(max-width: 768px)').matches) {
             scrollWindowTo(0);
         }
@@ -1417,6 +1421,38 @@ class FirebaseBulletinBoard {
                 </article>
             `;
         }).join('');
+    }
+
+    renderAboutAdvisorList() {
+        const list = document.getElementById('aboutAdvisorList');
+        if (!list) {
+            return;
+        }
+        if (list.dataset.rendered === 'true') {
+            return;
+        }
+
+        list.innerHTML = STUDENT_ADVISOR_DIRECTORY.map((advisor, index) => {
+            const name = this.escapeHtml(advisor.name);
+            const role = this.escapeHtml(advisor.role);
+            const email = this.escapeHtml(advisor.email || '');
+            const initials = this.escapeHtml(this.getAdvisorInitials(advisor.name));
+            const avatarColor = this.getAdvisorAvatarColor(index, STUDENT_ADVISOR_DIRECTORY.length);
+            return `
+                <a class="about-advisor-row" href="mailto:${email}" aria-label="Email ${name} at ${email}">
+                    <span class="about-advisor-row-avatar" style="background:${avatarColor.background};color:${avatarColor.color}" aria-hidden="true">${initials}</span>
+                    <span class="about-advisor-row-text">
+                        <span class="about-advisor-row-name">${name}</span>
+                        <span class="about-advisor-row-role">${role}</span>
+                    </span>
+                    <svg class="about-advisor-row-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <rect x="3" y="5" width="18" height="14" rx="2"></rect>
+                        <path d="m3 7 9 6 9-6"></path>
+                    </svg>
+                </a>
+            `;
+        }).join('');
+        list.dataset.rendered = 'true';
     }
 
     displayBulletins(filteredBulletins = null) {

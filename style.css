@@ -10625,9 +10625,132 @@ a.about-action-card {
     --about-accent-fg: #ffffff;
 }
 
+.about-action-card--hours {
+    --about-accent-bg: #d97706;   /* amber */
+    --about-accent-fg: #ffffff;
+}
+
 .about-action-card--support {
     --about-accent-bg: #7c3aed;   /* legal-aid violet */
     --about-accent-fg: #ffffff;
+}
+
+.about-action-card--static {
+    cursor: default;
+}
+
+.about-action-card--static:hover {
+    border-color: #e6ebf4;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04), 0 4px 12px rgba(10, 29, 58, 0.04);
+    transform: none;
+}
+
+/* ── About page advisor accordion ─────────────────────────── */
+.about-advisor-accordion {
+    background: #fff;
+    border: 1px solid #e6ebf4;
+    border-radius: 16px;
+    margin-bottom: 10px;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04), 0 4px 12px rgba(10, 29, 58, 0.04);
+    overflow: hidden;
+}
+
+.about-advisor-accordion-trigger {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px;
+    cursor: pointer;
+    list-style: none;
+    transition: background 0.18s ease;
+}
+
+.about-advisor-accordion-trigger::-webkit-details-marker {
+    display: none;
+}
+
+.about-advisor-accordion-trigger:hover {
+    background: #f8fafc;
+}
+
+.about-advisor-accordion-trigger .about-action-copy {
+    flex: 1;
+    min-width: 0;
+}
+
+.about-advisor-accordion-chevron {
+    flex-shrink: 0;
+    color: #64748b;
+    transition: transform 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.about-advisor-accordion[open] .about-advisor-accordion-chevron {
+    transform: rotate(180deg);
+}
+
+.about-advisor-accordion-body {
+    padding: 4px 10px 12px;
+    border-top: 1px solid #eef2f7;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.about-advisor-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    border-radius: 12px;
+    text-decoration: none;
+    color: inherit;
+    transition: background 0.15s ease;
+}
+
+.about-advisor-row:hover {
+    background: #f1f5f9;
+}
+
+.about-advisor-row-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 800;
+    font-size: 13px;
+    flex-shrink: 0;
+}
+
+.about-advisor-row-text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+}
+
+.about-advisor-row-name {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 800;
+    font-size: 14px;
+    color: #0a1d3a;
+}
+
+.about-advisor-row-role {
+    font-size: 12px;
+    color: #64748b;
+    margin-top: 2px;
+}
+
+.about-advisor-row-icon {
+    flex-shrink: 0;
+    color: #64748b;
 }
 
 .about-action-title {
