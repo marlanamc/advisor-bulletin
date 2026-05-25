@@ -369,6 +369,7 @@ class FirebaseBulletinBoard {
         this.currentResourceCategory = 'all';
         this.currentDesktopResourceTopic = 'all';
         this.expandedDesktopResourceSections = new Set();
+        this.mobileResourceCategoryReturnView = 'categories';
         this.resourceSearchQuery = '';
         this.resourceSortMode = 'default';
         this.datesViewMode = 'list';
@@ -1190,6 +1191,7 @@ class FirebaseBulletinBoard {
             this.currentResourceCategory = 'all';
             this.currentDesktopResourceTopic = 'all';
             this.expandedDesktopResourceSections.clear();
+            this.mobileResourceCategoryReturnView = 'categories';
             document.body.classList.remove('resource-category-detail-open');
         }
 
@@ -1910,11 +1912,15 @@ class FirebaseBulletinBoard {
         }
 
         header.style.setProperty('--cat-accent', config.color);
+        const returnToFeed = this.mobileResourceCategoryReturnView === 'feed';
         header.innerHTML = `
-            <button type="button" class="resource-category-detail-back" data-resource-detail-back aria-label="Back to help categories">
+            <button type="button" class="resource-category-detail-back" data-resource-detail-back aria-label="${returnToFeed ? 'Back to home' : 'Back to help categories'}">
                 <span aria-hidden="true">&larr;</span>
-                <span class="en-text">Back</span>
-                <span class="es-text">Atrás</span>
+                ${returnToFeed
+                    ? `<span class="en-text">Back to home</span>
+                       <span class="es-text">Volver al inicio</span>`
+                    : `<span class="en-text">Back</span>
+                       <span class="es-text">Atrás</span>`}
             </button>
             <div class="resource-category-detail-title">
                 <span class="resource-category-detail-icon" style="background:${config.color}" aria-hidden="true">${iconSvg}</span>
@@ -1934,6 +1940,11 @@ class FirebaseBulletinBoard {
         const backBtn = header.querySelector('[data-resource-detail-back]');
         if (backBtn) {
             backBtn.addEventListener('click', () => {
+                if (this.mobileResourceCategoryReturnView === 'feed') {
+                    this.switchView('feed', { preserveResourceNavigation: false });
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    return;
+                }
                 this.switchResourceCategory('all');
             });
         }
@@ -2479,6 +2490,7 @@ class FirebaseBulletinBoard {
     navigateToResourceCategory(category, options = {}) {
         const resourceKey = this.normalizeResourceCategoryKey(category);
         const isDesktop = window.matchMedia('(min-width: 768px)').matches;
+        const entryView = this.currentView;
 
         if (isDesktop && options.expandDesktop && resourceKey && resourceKey !== 'all') {
             this.expandedDesktopResourceSections.add(resourceKey);
@@ -2488,6 +2500,7 @@ class FirebaseBulletinBoard {
             this.currentDesktopResourceTopic = resourceKey;
         } else {
             this.currentResourceCategory = resourceKey;
+            this.mobileResourceCategoryReturnView = entryView === 'resources' ? 'categories' : 'feed';
         }
         this.switchView('resources', { preserveResourceNavigation: true, skipRender: true });
         this.renderResourcesSections(this.getPublishedResources());

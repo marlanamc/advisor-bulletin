@@ -179,13 +179,24 @@ test.describe('Mobile app shell', () => {
     await expect(page.locator('#resourcesList')).toContainText('East Boston Vaccines');
   });
 
-  test('resource category back button returns to the help hub', async ({ page }) => {
+  test('resource category back from home shortcut returns to feed', async ({ page }) => {
     await page.locator('#feedStoryCats [data-app-view-cat="health"]').click();
+    await expect(page.locator('#resourceCategoryDetail')).toBeVisible();
+
+    await page.locator('[data-resource-detail-back]').click();
+    await expect(page.locator('#feedView')).toHaveClass(/active/);
+    await expect(page.locator('#resourcesView')).not.toHaveClass(/active/);
+  });
+
+  test('resource category back from help tab returns to category tiles', async ({ page }) => {
+    await page.locator('.mobile-tab[data-app-view="resources"]').click();
+    await page.locator('#resourceCategoryFilters [data-resource-category="health"]').click();
     await expect(page.locator('#resourceCategoryDetail')).toBeVisible();
 
     await page.locator('[data-resource-detail-back]').click();
     await expect(page.locator('#resourceCategoryFilters')).toBeVisible();
     await expect(page.locator('#resourcesView')).toHaveClass(/active/);
+    await expect(page.locator('#feedView')).not.toHaveClass(/active/);
   });
 
   test('collapses the mobile header on scroll without hiding story shortcuts', async ({ page }) => {
