@@ -3404,6 +3404,7 @@ class FirebaseBulletinBoard {
         modal.style.display = 'none';
         modal.setAttribute('aria-hidden', 'true');
         document.body.classList.remove('modal-open');
+        document.body.style.overflow = '';
 
         if (updateHash && window.location.hash.startsWith('#bulletin-')) {
             history.replaceState(null, '', window.location.pathname + window.location.search);

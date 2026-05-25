@@ -7217,11 +7217,15 @@ a {
         position: fixed;
         width: 100%;
         overflow: hidden;
-        touch-action: none;
+    }
+
+    .bulletin-detail-modal .bulletin-detail-content {
+        touch-action: pan-y;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
     }
 
     /* Better momentum scrolling in scroll containers */
-    .bulletin-detail-content,
     .modal-content {
         -webkit-overflow-scrolling: touch;
         overscroll-behavior: contain;

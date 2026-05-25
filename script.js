@@ -2294,7 +2294,11 @@ setTimeout(() => {
         if (openBtn) openBtn.href = src;
         lightbox.classList.add('open');
         lightbox.setAttribute('aria-hidden', 'false');
-        document.body.style.overflow = 'hidden';
+        if (!document.body.classList.contains('modal-open')
+            && !document.body.classList.contains('search-layer-open')
+            && !document.body.classList.contains('resource-sheet-open')) {
+            document.body.style.overflow = 'hidden';
+        }
 
         // After load, check if portrait/tall poster — let it scroll rather than shrink
         lightboxImg.onload = function () {

@@ -8,6 +8,12 @@ function getLightboxElements() {
     };
 }
 
+function usesClassBasedScrollLock() {
+    return document.body.classList.contains('modal-open')
+        || document.body.classList.contains('search-layer-open')
+        || document.body.classList.contains('resource-sheet-open');
+}
+
 export function isImageLightboxOpen() {
     const { lightbox } = getLightboxElements();
     return Boolean(lightbox && lightbox.classList.contains('open'));
@@ -26,7 +32,11 @@ export function openImageLightbox(src) {
     }
     lightbox.classList.add('open');
     lightbox.setAttribute('aria-hidden', 'false');
-    document.body.style.overflow = 'hidden';
+
+    // Modal/sheet layers already lock page scroll via body classes.
+    if (!usesClassBasedScrollLock()) {
+        document.body.style.overflow = 'hidden';
+    }
 
     lightboxImg.onload = function () {
         const ratio = lightboxImg.naturalHeight / lightboxImg.naturalWidth;
@@ -44,9 +54,11 @@ export function closeImageLightbox() {
 
     lightbox.classList.remove('open');
     lightbox.setAttribute('aria-hidden', 'true');
-    if (!document.body.classList.contains('modal-open')) {
-        document.body.style.overflow = '';
-    }
+
+    // Always clear the lightbox inline lock. Class-based locks (modal-open, etc.)
+    // continue to manage page scroll when those layers stay open.
+    document.body.style.overflow = '';
+
     lightboxImg.src = '';
     lightboxImg.classList.remove('is-tall');
 }
