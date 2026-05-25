@@ -35,14 +35,24 @@ const TAB_CATEGORY_DEFAULTS = {
 };
 
 const CHIP_ALIASES = new Map([
-  ['food stamp/snap', 'SNAP Assistance'],
-  ['food stamps', 'SNAP Assistance'],
-  ['snap', 'SNAP Assistance'],
-  ['snap assistance', 'SNAP Assistance'],
+  ['food stamp/snap', 'SNAP Help'],
+  ['food stamps', 'SNAP Help'],
+  ['snap', 'SNAP Help'],
+  ['snap assistance', 'SNAP Help'],
+  ['snap help', 'SNAP Help'],
+  ['health insurance help', 'Health Insurance Help'],
   ['community service/immigration', 'Immigration Help'],
   ['immigration consultation', 'Immigration Help'],
+  ['citizenship assistance', 'Citizenship Help'],
   ['grocery bags', 'Grocery Bags'],
   ['food pantry', 'Food Pantry'],
+  ['free diapers & wipes', 'Free Diapers'],
+  ['free diapers and wipes', 'Free Diapers'],
+  ['housing advocacy', 'Housing Help'],
+  ['housing support', 'Housing Help'],
+  ['legal assistance', 'Legal Help'],
+  ['legal support', 'Legal Help'],
+  ['career center and language', 'Job Training'],
   ['tax prep', 'Tax Help'],
   ['vita', 'Tax Help'],
   ['free tax prep', 'Tax Help'],
@@ -174,11 +184,11 @@ function resolveCategory(row) {
   const override = (row.resourceCategory || '').trim().toLowerCase();
   if (override && VALID_CATEGORIES.has(override)) return override;
 
-  const tabKey = (row.sheetTab || '').trim().toLowerCase();
+  const tabKey = (row.sheetTab || row.sourceName || '').trim().toLowerCase();
   const fromTab = TAB_CATEGORY_DEFAULTS[tabKey];
   if (fromTab) return fromTab;
 
-  throw new Error(`Unknown category for tab "${row.sheetTab}" — set resourceCategory on row for org "${row.orgName}"`);
+  throw new Error(`Unknown category for source "${row.sheetTab || row.sourceName}" — set resourceCategory on row for org "${row.orgName}"`);
 }
 
 function normalizeUrl(url) {

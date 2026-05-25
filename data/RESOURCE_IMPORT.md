@@ -2,14 +2,17 @@
 
 Use this workflow to curate resources in Google Sheets, export CSV, and import them into Firestore as **unpublished** drafts for advisor review.
 
+The launch CSV is intentionally selective. It should contain roughly **30-50 high-value resources**, not every row in the advisor guide.
+
 ## CSV columns
 
 | Column | Required | Notes |
 |--------|----------|-------|
 | `include` | Yes | `Y` to import, anything else skips the row |
-| `sheetTab` | Yes | Original Google Sheet tab name (used for default category) |
+| `sourceName` | No | Source sheet/file name for advisor review context |
+| `sheetTab` | No | Backward-compatible source tab name; used for category defaults if `resourceCategory` is blank |
+| `orgName` | Yes | Organization name -> `titleEn` / card title |
 | `resourceCategory` | No | Override tab default — see mapping below |
-| `orgName` | Yes | Organization name → `titleEn` / card title |
 | `serviceChips` | Yes* | Short labels, semicolon- or comma-separated (max 5 after merge) |
 | `url` | No* | Website — auto-prefixed with `https://` if missing |
 | `address` | No* | Street address for directions |
@@ -18,6 +21,10 @@ Use this workflow to curate resources in Google Sheets, export CSV, and import t
 | `languages` | No | Semicolon- or comma-separated (e.g. `ENG; ESP`) |
 | `advisorName` | No | Defaults to `Import` if blank |
 | `description` | No | Optional advisor notes — **detail view only**, not on cards |
+| `launchPriority` | No | Review-only ranking; not imported into Firestore |
+| `verificationStatus` | No | Review-only status such as `guide-link-trusted` or `needs-review-trusted` |
+| `excludeReason` | No | Review-only reason when a row is kept in a working sheet but not imported |
+| `sourceRow` | No | Review-only original spreadsheet row number |
 
 \* At least one of `url`, `address`, or `phone` is required. At least one `serviceChip` **or** `description` is required.
 
@@ -38,11 +45,12 @@ Valid categories match the student app: `immigration`, `jobs`, `housing`, `healt
 
 - **Student-relevant** — EBHS students can realistically use it
 - **Actionable** — has phone, address, or website (not dead links)
-- **Specific** — can be summarized in 1–3 chips (refine or skip vague rows)
+- **Specific** — can be summarized in 1–5 chips (refine or skip vague rows)
 - **Not duplicate** — same org + category merges into one card with combined chips
 - **Category fits** — one primary Help topic per resource
+- **Low-literacy card copy** — service chips are the student-facing summary; put schedules and conditions in `hours` or `description`
 
-Target **~30–60 resources** for launch, not every sheet row.
+Target **30-50 resources** for launch, not every sheet row.
 
 ## Chip normalization (automatic in import script)
 
@@ -50,9 +58,13 @@ Common phrase mappings:
 
 | Source text | Normalized chip |
 |-------------|-----------------|
-| Food Stamp/SNAP, SNAP, Food Stamps | SNAP Assistance |
+| Food Stamp/SNAP, SNAP, Food Stamps | SNAP Help |
 | Community Service/Immigration | Immigration Help |
 | Grocery bags | Grocery Bags |
+| Free diapers & wipes | Free Diapers |
+| Housing Advocacy, Housing Support | Housing Help |
+| Legal Assistance, Legal Support | Legal Help |
+| Health insurance help | Health Insurance Help |
 | Tax prep, VITA | Tax Help |
 
 Schedule text trailing a chip label is stripped; put schedules in `hours` instead.
@@ -89,4 +101,4 @@ Imported resources default to **`isPublished: false`**.
 
 ## Template file
 
-Start from [`resource-import-template.csv`](./resource-import-template.csv) — it includes three sample rows for dry-run testing.
+Start from [`resource-import-template.csv`](./resource-import-template.csv) — it contains the curated v1 launch set from the advisor guide.

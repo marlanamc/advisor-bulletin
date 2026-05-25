@@ -1007,12 +1007,6 @@
             syncHeaderOffset();
             var ro = new ResizeObserver(syncHeaderOffset);
             ro.observe(header);
-
-            function syncHeaderCollapsed() {
-                header.classList.toggle('collapsed', window.scrollY > 50);
-            }
-            syncHeaderCollapsed();
-            window.addEventListener('scroll', syncHeaderCollapsed, { passive: true });
         }
 
         var storyRowWrap = document.querySelector('#feedView > .story-row-wrap.story-row-wrap--bilingual');
@@ -1020,6 +1014,7 @@
         var storyRowIsCompact = false;
         var STORY_ROW_COMPACT_ON = 96;
         var STORY_ROW_COMPACT_OFF = 48;
+        var scrollIdleTimer;
 
         function syncStoryRowCompact() {
             if (!storyRowWrap) {
@@ -1050,8 +1045,24 @@
             });
         }
 
+        function onPageScroll() {
+            document.body.classList.add('is-scrolling');
+            clearTimeout(scrollIdleTimer);
+            scrollIdleTimer = window.setTimeout(function () {
+                document.body.classList.remove('is-scrolling');
+            }, 140);
+
+            if (header) {
+                header.classList.toggle('collapsed', window.scrollY > 50);
+            }
+            queueStoryRowCompactSync();
+        }
+
+        if (header) {
+            header.classList.toggle('collapsed', window.scrollY > 50);
+        }
         syncStoryRowCompact();
-        window.addEventListener('scroll', queueStoryRowCompactSync, { passive: true });
+        window.addEventListener('scroll', onPageScroll, { passive: true });
         if (document.body) {
             new MutationObserver(queueStoryRowCompactSync).observe(document.body, {
                 attributes: true,

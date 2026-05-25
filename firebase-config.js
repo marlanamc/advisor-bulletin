@@ -23,6 +23,24 @@ import { collection, addDoc, query, where, orderBy, onSnapshot, serverTimestamp 
 
 installClientErrorLogger('student')
 
+function prefersInstantScroll() {
+    return window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+}
+
+function getScrollBehavior(override) {
+    if (override) {
+        return override;
+    }
+    return prefersInstantScroll() ? 'auto' : 'smooth';
+}
+
+function scrollWindowTo(top, behavior) {
+    window.scrollTo({
+        top: Math.max(0, top),
+        behavior: getScrollBehavior(behavior)
+    });
+}
+
 const STUDENT_ANALYTICS_ACTIONS = new Set([
     'card_view',
     'detail_open',
@@ -694,7 +712,7 @@ class FirebaseBulletinBoard {
                 if (nextView) {
                     this.switchView(nextView);
                     if (button.hasAttribute('data-scroll-home')) {
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                        scrollWindowTo(0);
                     }
                 }
             });
@@ -1163,10 +1181,7 @@ class FirebaseBulletinBoard {
         }, { passive: true });
 
         btn.addEventListener('click', () => {
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
+            scrollWindowTo(0);
         });
     }
 
@@ -1200,7 +1215,7 @@ class FirebaseBulletinBoard {
         }
 
         if (window.matchMedia('(max-width: 768px)').matches) {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            scrollWindowTo(0);
         }
 
         document.querySelectorAll('[data-view-panel]').forEach((panel) => {
@@ -1665,7 +1680,7 @@ class FirebaseBulletinBoard {
                         .getPropertyValue('--app-header-offset') || '70', 10
                 );
                 const top = window.scrollY + target.getBoundingClientRect().top - headerOffset - 16;
-                window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+                scrollWindowTo(top);
                 target.classList.add('list-card-pulse');
                 setTimeout(() => target.classList.remove('list-card-pulse'), 1400);
             });
@@ -1942,7 +1957,7 @@ class FirebaseBulletinBoard {
             backBtn.addEventListener('click', () => {
                 if (this.mobileResourceCategoryReturnView === 'feed') {
                     this.switchView('feed', { preserveResourceNavigation: false });
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    scrollWindowTo(0);
                     return;
                 }
                 this.switchResourceCategory('all');
@@ -2297,14 +2312,14 @@ class FirebaseBulletinBoard {
                 if (cat === 'all') {
                     const scrollTarget = sectionsContainer.closest('.resources-desktop-main') || sectionsContainer;
                     const top = window.scrollY + scrollTarget.getBoundingClientRect().top - headerOffset - 16;
-                    window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+                    scrollWindowTo(top);
                     return;
                 }
 
                 const target = document.getElementById(`desktop-section-${cat}`);
                 if (target) {
                     const top = window.scrollY + target.getBoundingClientRect().top - headerOffset - 16;
-                    window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+                    scrollWindowTo(top);
                 }
             });
         });
@@ -2483,7 +2498,7 @@ class FirebaseBulletinBoard {
         const target = document.getElementById(`desktop-section-${category}`);
         if (target) {
             const top = window.scrollY + target.getBoundingClientRect().top - headerOffset - 16;
-            window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+            scrollWindowTo(top);
         }
     }
 
@@ -2722,10 +2737,7 @@ class FirebaseBulletinBoard {
         const gap = options.gap ?? 20;
         const top = window.scrollY + element.getBoundingClientRect().top - headerHeight - gap;
 
-        window.scrollTo({
-            top: Math.max(0, top),
-            behavior: options.behavior || 'smooth'
-        });
+        scrollWindowTo(top, options.behavior);
     }
 
     getStoryBubbleResources(resources) {
@@ -3344,7 +3356,7 @@ class FirebaseBulletinBoard {
 
         // Apply highlight effect
         targetCard.classList.add('hash-highlight');
-        targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        targetCard.scrollIntoView({ behavior: getScrollBehavior(), block: 'center' });
 
         setTimeout(() => {
             targetCard.classList.remove('hash-highlight');

@@ -7220,8 +7220,7 @@ a {
         touch-action: none;
     }
 
-    /* Better momentum scrolling */
-    .bulletin-grid,
+    /* Better momentum scrolling in scroll containers */
     .bulletin-detail-content,
     .modal-content {
         -webkit-overflow-scrolling: touch;
@@ -7277,13 +7276,26 @@ a {
 /* Smooth Scrolling for All Mobile */
 @media (max-width: 768px) {
     html {
-        scroll-behavior: smooth;
+        scroll-behavior: auto;
         -webkit-text-size-adjust: 100%;
     }
 
-    /* Prevent bounce effect on body */
     body {
+        overscroll-behavior-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Don't animate sticky feed chrome mid-gesture on touch devices */
+    body.is-scrolling #feedView > .story-row-wrap.story-row-wrap--bilingual,
+    body.is-scrolling #feedView > .story-row-wrap.story-row-wrap--bilingual * {
+        transition: none !important;
+    }
+
+    /* Horizontal bubble strip: don't steal vertical page scroll */
+    #feedView > .story-row-wrap--bilingual .story-row {
+        overscroll-behavior-x: contain;
         overscroll-behavior-y: none;
+        -webkit-overflow-scrolling: touch;
     }
 }
 
@@ -9926,7 +9938,6 @@ body[data-current-view="feed"] #feedView > .story-row-wrap.story-row-wrap--bilin
         padding 0.24s ease,
         box-shadow 0.24s ease,
         top 0.24s ease;
-    contain: layout style;
 }
 
 /* Compact pinned strip after scrolling — one label per bubble, tighter layout */
