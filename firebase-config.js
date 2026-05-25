@@ -182,7 +182,74 @@ const RESOURCE_CATEGORY_CONFIG = {
 };
 
 const STORY_BUBBLE_PREVIEW_CATEGORIES = ['immigration', 'jobs', 'housing', 'health', 'food'];
-const RESOURCE_TILE_CATEGORIES = ['jobs', 'immigration', 'housing', 'health', 'food', 'family', 'hse', 'college', 'legal-aid', 'money'];
+const RESOURCE_TILE_CATEGORIES = ['immigration', 'jobs', 'housing', 'health', 'food', 'family', 'hse', 'college', 'legal-aid', 'money'];
+
+// Spanish translations for the canonical service-chip vocabulary used on
+// resource cards. Lookup is case-insensitive and falls back to the English
+// label when no entry exists, so unmapped chips still render (untranslated).
+const RESOURCE_CHIP_ES = {
+    'baby supplies': 'Artículos para bebés',
+    'basic needs': 'Necesidades básicas',
+    'cash assistance': 'Ayuda en efectivo',
+    'childcare': 'Cuidado infantil',
+    'citizenship help': 'Ayuda con ciudadanía',
+    'clothing': 'Ropa',
+    'college': 'Universidad',
+    'community help': 'Ayuda comunitaria',
+    'credential evaluation': 'Evaluación de credenciales',
+    'crisis hotline': 'Línea de crisis',
+    'crisis support': 'Apoyo en crisis',
+    'dental care': 'Atención dental',
+    'document translation': 'Traducción de documentos',
+    'emergency food pantry': 'Despensa de emergencia',
+    'english classes': 'Clases de inglés',
+    'essentials': 'Artículos esenciales',
+    'family help': 'Ayuda familiar',
+    'family programs': 'Programas familiares',
+    'family resource center': 'Centro de recursos familiares',
+    'family shelter': 'Refugio familiar',
+    'family support': 'Apoyo familiar',
+    'find legal help': 'Encuentre ayuda legal',
+    'find a clinic': 'Encuentre una clínica',
+    'food benefits': 'Beneficios de alimentos',
+    'food help': 'Ayuda alimentaria',
+    'food hotline': 'Línea de alimentos',
+    'food pantry': 'Despensa de alimentos',
+    'free diapers': 'Pañales gratis',
+    'free food': 'Comida gratis',
+    'fuel help': 'Ayuda con calefacción',
+    'grocery bags': 'Bolsas de comestibles',
+    'health care': 'Atención médica',
+    'health insurance help': 'Ayuda con seguro médico',
+    'hot meals': 'Comidas calientes',
+    'housing help': 'Ayuda con vivienda',
+    'immigrant support': 'Apoyo a inmigrantes',
+    'immigration help': 'Ayuda con inmigración',
+    'job training': 'Capacitación laboral',
+    'legal help': 'Ayuda legal',
+    'legal information': 'Información legal',
+    'low cost produce': 'Productos a bajo costo',
+    'mobile food pantry': 'Despensa móvil',
+    'parent support': 'Apoyo a padres',
+    'preschool': 'Preescolar',
+    'public housing': 'Vivienda pública',
+    'refugee support': 'Apoyo a refugiados',
+    'rent help': 'Ayuda con renta',
+    'snap help': 'Ayuda con SNAP',
+    'tax help': 'Ayuda con impuestos',
+    'tenant rights': 'Derechos del inquilino',
+    'trauma support': 'Apoyo en trauma',
+    'unemployment help': 'Ayuda con desempleo',
+    'utility help': 'Ayuda con servicios',
+    'wic help': 'Ayuda con WIC',
+    'worker rights': 'Derechos del trabajador',
+};
+
+function translateResourceChipEs(label) {
+    const text = String(label || '').trim();
+    if (!text) return '';
+    return RESOURCE_CHIP_ES[text.toLowerCase()] || text;
+}
 
 const FEED_CATEGORY_CONTENT = {
     all: {
@@ -1783,9 +1850,11 @@ class FirebaseBulletinBoard {
             }
         });
 
-        // If no resources, show the preview categories
+        // Always render in canonical sidebar order so the homepage bubbles
+        // and the resources view sidebar stay perfectly aligned. Falls back
+        // to the preview list before any resources exist.
         const categoriesToShow = categoriesWithResources.size > 0
-            ? Array.from(categoriesWithResources)
+            ? RESOURCE_TILE_CATEGORIES.filter((key) => categoriesWithResources.has(key))
             : STORY_BUBBLE_PREVIEW_CATEGORIES;
 
         const heroCards = categoriesToShow.map((category) => {
@@ -2096,12 +2165,57 @@ class FirebaseBulletinBoard {
         return /spanish|español|espanol|se habla/.test(text);
     }
 
+    // ENG + ESP is the assumed baseline for East Boston resources, so we
+    // suppress it in card/detail rendering. Anything different (Spanish-only,
+    // additional languages) still surfaces.
+    isDefaultLanguageSet(languages) {
+        if (!Array.isArray(languages)) return false;
+        const normalized = languages
+            .map((l) => String(l || '').trim().toUpperCase())
+            .filter(Boolean);
+        if (normalized.length !== 2) return false;
+        return normalized.includes('ENG') && normalized.includes('ESP');
+    }
+
+    getDisplayableLanguages(source) {
+        if (!source) return [];
+        const raw = Array.isArray(source.languages)
+            ? source.languages
+            : String(source.languages || '').split(',').map((s) => s.trim()).filter(Boolean);
+        if (this.isDefaultLanguageSet(raw)) return [];
+        return raw;
+    }
+
+    // One-line card subtitle that differentiates resources within a category.
+    // Renders both languages in en-text/es-text spans so the lang toggle works
+    // without a re-render. Falls back across languages when only one is set.
+    getResourceCardSummaryHtml(resource) {
+        if (!resource) return '';
+        const en = (resource.description || '').trim();
+        const es = (resource.summaryEs || '').trim();
+        if (!en && !es) return '';
+        const enPlain = en
+            ? formatRichTextPlainPreview(en, 140)
+            : formatRichTextPlainPreview(es, 140);
+        const esPlain = es
+            ? formatRichTextPlainPreview(es, 140)
+            : formatRichTextPlainPreview(en, 140);
+        if (!enPlain && !esPlain) return '';
+        return `<p class="mobile-resource-card__summary">
+            <span class="en-text">${this.escapeHtml(enPlain)}</span>
+            <span class="es-text">${this.escapeHtml(esPlain)}</span>
+        </p>`;
+    }
+
+    // Returns true if open now, false if a schedule was parsed and we are
+    // outside it, or undefined if the hours text was empty/unparseable. The
+    // tri-state lets callers distinguish "currently closed" from "unknown".
     isResourceOpenNow(resource) {
         const hoursText = (
             resource.hours || resource.hoursOfOperation || resource.schedule || ''
         ).toLowerCase().trim();
-        if (!hoursText) return false;
-        if (/24\/7|open 24/.test(hoursText)) return true;
+        if (!hoursText) return undefined;
+        if (/24\s*\/\s*7|24\s*hours|open\s*24|any\s*time|anytime|always\s*open|24\s*hr/.test(hoursText)) return true;
 
         const now = new Date();
         const dayIndex = now.getDay(); // 0=Sun..6=Sat
@@ -2128,6 +2242,7 @@ class FirebaseBulletinBoard {
             return h * 60 + min;
         };
 
+        let parsedAnySegment = false;
         const segments = hoursText.split(/[,;|]/);
         for (const segment of segments) {
             const rangeParts = segment.match(
@@ -2139,21 +2254,20 @@ class FirebaseBulletinBoard {
             const closeMin = parseTime12(rangeParts[3]);
             if (openMin === null || closeMin === null) continue;
 
-            // Resolve day range (e.g. "Mon-Fri")
             const dayRange = dayPart.split(/[-–]/).map(d => DAY_ALIASES[d.trim()]);
             const startDay = dayRange[0] ?? -1;
             const endDay = dayRange[1] ?? startDay;
             if (startDay === -1) continue;
+            parsedAnySegment = true;
             if (dayIndex < startDay || dayIndex > endDay) continue;
 
             if (closeMin > openMin) {
                 if (currentMinutes >= openMin && currentMinutes < closeMin) return true;
             } else {
-                // Wraps midnight (e.g. 10pm–2am)
                 if (currentMinutes >= openMin || currentMinutes < closeMin) return true;
             }
         }
-        return false;
+        return parsedAnySegment ? false : undefined;
     }
 
     getResourceBadgesHtml(resource) {
@@ -2164,9 +2278,10 @@ class FirebaseBulletinBoard {
         if (this.isResourceWalkIn(resource)) {
             badges.push('<span class="badge badge--walkin"><span class="en-text">Walk-in</span><span class="es-text">Sin cita</span></span>');
         }
-        if (this.isResourceOpenNow(resource)) {
+        const openState = this.isResourceOpenNow(resource);
+        if (openState === true) {
             badges.push('<span class="badge badge--open"><span class="en-text">Open now</span><span class="es-text">Abierto</span></span>');
-        } else if (resource.hours || resource.hoursOfOperation) {
+        } else if (openState === false) {
             badges.push('<span class="badge badge--closed"><span class="en-text">Closed</span><span class="es-text">Cerrado</span></span>');
         }
         if (badges.length === 0) return '';
@@ -2338,21 +2453,9 @@ class FirebaseBulletinBoard {
             const config = RESOURCE_CATEGORY_CONFIG[key];
             if (!config) return '';
             const resources = catMap[key];
-            const isExpanded = this.expandedDesktopResourceSections.has(key);
-            const preview = isExpanded ? resources : resources.slice(0, 3);
-            const hasMore = !isExpanded && resources.length > 3;
             const iconSvg = RESOURCE_ICON_SVGS[config.icon] || RESOURCE_ICON_SVGS.globe;
 
-            const cardsHtml = preview.map(r => this.createHelpResourceCard(r, config)).join('');
-            const showAllBtn = hasMore ? `
-                <button class="cat-org-show-all desktop-section-see-all" type="button"
-                    data-desktop-show-all="${this.escapeAttribute(key)}"
-                    style="--cat-accent:${config.color}">
-                    <span class="en-text">See all ${this.escapeHtml(config.labelEn.toLowerCase())} — ${this.getResourceCountText(resources.length, 'en')}</span>
-                    <span class="es-text">Ver ${this.getResourceCountText(resources.length, 'es')}</span>
-                    <span aria-hidden="true">&rarr;</span>
-                </button>
-            ` : '';
+            const cardsHtml = resources.map(r => this.createHelpResourceCard(r, config)).join('');
 
             return `
                 <section class="desktop-resource-section" id="desktop-section-${key}" style="--cat-accent:${config.color}">
@@ -2372,18 +2475,9 @@ class FirebaseBulletinBoard {
                     <div class="desktop-section-grid">
                         ${cardsHtml}
                     </div>
-                    ${showAllBtn}
                 </section>
             `;
         }).join('');
-
-        // Bind "See all" buttons in desktop sections
-        sectionsContainer.querySelectorAll('[data-desktop-show-all]').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const cat = btn.dataset.desktopShowAll;
-                if (cat) this.navigateToResourceCategory(cat, { expandDesktop: true });
-            });
-        });
     }
 
     // ─── Speech Synthesis ────────────────────────────────────────────
@@ -2675,7 +2769,7 @@ class FirebaseBulletinBoard {
         const address = resource.address || '';
         const mapUrl = resource.mapUrl || (address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}` : '');
         const languages = Array.isArray(resource.languages)
-            ? resource.languages
+            ? this.getDisplayableLanguages(resource)
             : this.parseResourceHighlights(resource.highlights);
         const languageHtml = languages.length > 0
             ? `<div class="cat-org-langs">${languages.slice(0, 5).map((lang) => `<span class="cat-org-lang-tag">${this.escapeHtml(lang)}</span>`).join('')}</div>`
@@ -2711,8 +2805,10 @@ class FirebaseBulletinBoard {
             <article class="cat-org-card" style="--cat-accent:${config.color}">
                 ${logoHtml}
                 <div class="cat-org-main">
-                    <h3 class="cat-org-name">${this.escapeHtml(titleEn)}</h3>
-                    ${badgesHtml}
+                    <div class="cat-org-title-row">
+                        <h3 class="cat-org-name">${this.escapeHtml(titleEn)}</h3>
+                        ${badgesHtml}
+                    </div>
                     ${escapedDescription ? `<p class="cat-org-description">${escapedDescription}</p>` : ''}
                 </div>
                 ${!isCompact && address ? `<p class="cat-org-address">
@@ -2966,7 +3062,7 @@ class FirebaseBulletinBoard {
 
         const badgesHtml = this.getResourceBadgesHtml(resource);
 
-        const languages = Array.isArray(resource.languages) ? resource.languages : [];
+        const languages = this.getDisplayableLanguages(resource);
         const languagesHtml = languages.length
             ? `<div class="mobile-resource-card__langs">${languages.slice(0, 4).map((lang) => `<span class="mobile-resource-card__lang">${this.escapeHtml(lang)}</span>`).join('')}</div>`
             : '';
@@ -3057,10 +3153,13 @@ class FirebaseBulletinBoard {
                 <div class="mobile-resource-card__logo-tile">${logoTile}</div>
                 <div class="mobile-resource-card__body">
                     <div class="mobile-resource-card__heading">
-                        <h3 class="mobile-resource-card__title">${this.escapeHtml(titleEn)}</h3>
+                        <div class="mobile-resource-card__title-row">
+                            <h3 class="mobile-resource-card__title">${this.escapeHtml(titleEn)}</h3>
+                            ${badgesHtml}
+                        </div>
                         ${titleEs && titleEs !== titleEn ? `<p class="mobile-resource-card__subtitle">${this.escapeHtml(titleEs)}</p>` : ''}
-                        ${badgesHtml}
                     </div>
+                    ${this.getResourceCardSummaryHtml(resource)}
                     ${servicesHtml}
                     ${hoursHtml}
                     ${languagesHtml}
@@ -3087,7 +3186,11 @@ class FirebaseBulletinBoard {
         const max = options.max ?? 5;
         const services = this.getResourceServices(resource, max);
         if (!services.length) return '';
-        return `<div class="resource-service-chips">${services.map((service) => `<span class="resource-service-chip">${this.escapeHtml(service)}</span>`).join('')}</div>`;
+        return `<div class="resource-service-chips">${services.map((service) => {
+            const en = this.escapeHtml(service);
+            const es = this.escapeHtml(translateResourceChipEs(service));
+            return `<span class="resource-service-chip"><span class="en-text">${en}</span><span class="es-text">${es}</span></span>`;
+        }).join('')}</div>`;
     }
 
     parseResourceHighlights(highlights, max = 5) {
@@ -3715,13 +3818,13 @@ class FirebaseBulletinBoard {
                                 </div>
                             ` : ''}
 
-                            ${(bulletin.languages && (Array.isArray(bulletin.languages) ? bulletin.languages.length > 0 : bulletin.languages)) ? `
+                            ${this.getDisplayableLanguages(bulletin).length ? `
                                 <div style="display: flex; gap: 12px; align-items: flex-start;">
                                     <div style="color: ${meta.accent}; margin-top: 2px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg></div>
                                     <div>
                                         <strong style="display: block; font-size: 0.8rem; color: #64748b; text-transform: uppercase;">Languages</strong>
                                         <div style="display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap;">
-                                            ${this.getLanguageTagsHtml(bulletin.languages)}
+                                            ${this.getLanguageTagsHtml(this.getDisplayableLanguages(bulletin))}
                                         </div>
                                     </div>
                                 </div>
@@ -3855,10 +3958,7 @@ class FirebaseBulletinBoard {
         if (!bulletin) return false;
         if ((bulletin.address || '').trim()) return true;
         if ((bulletin.hours || '').trim()) return true;
-        const languages = Array.isArray(bulletin.languages)
-            ? bulletin.languages
-            : String(bulletin.languages || '').split(',').map((s) => s.trim()).filter(Boolean);
-        return languages.length > 0;
+        return this.getDisplayableLanguages(bulletin).length > 0;
     }
 
     getDetailLinkActionLabel(category) {

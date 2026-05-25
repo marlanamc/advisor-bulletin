@@ -9,10 +9,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Lexend:wght@300;400;500;600;700;800&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
-  <script type="module" crossorigin src="/assets/admin-B5qJAOSf.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/rich-text-Czp1Evdj.js">
-  <link rel="stylesheet" crossorigin href="/assets/rich-text-C36DXCdx.css">
-  <link rel="stylesheet" crossorigin href="/assets/admin-7rTobGcR.css">
+  <script type="module" crossorigin src="/assets/admin-D0Jn1FE_.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/rich-text-cMRJC-u6.js">
+  <link rel="stylesheet" crossorigin href="/assets/rich-text-CkVRW_Zb.css">
+  <link rel="stylesheet" crossorigin href="/assets/admin-ZNAx4FQ9.css">
 </head>
 <body>
     <header>
@@ -159,11 +159,25 @@
                         Dashboard
                     </button>
 
-                    <button class="ap-nav-item" type="button" onclick="apShowPage('posts')" id="apNavPosts">
+                    <button class="ap-nav-item" type="button" onclick="apShowPage('bulletins')" id="apNavBulletins">
                         <div class="ap-nav-icon">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
                         </div>
-                        My Posts
+                        My Bulletins
+                    </button>
+
+                    <button class="ap-nav-item" type="button" onclick="apShowPage('resources')" id="apNavResources">
+                        <div class="ap-nav-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                        </div>
+                        My Resources
+                    </button>
+
+                    <button class="ap-nav-item" type="button" onclick="apShowPage('events')" id="apNavEvents">
+                        <div class="ap-nav-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                        </div>
+                        My Events
                     </button>
 
                     <button class="ap-nav-item" type="button" onclick="apShowPage('stats')" id="apNavStats">
@@ -741,37 +755,17 @@
                                 <div class="resource-service-presets" id="resourceServicePresets" aria-label="Suggested services"></div>
                             </div>
 
-                            <div class="form-group ap-rich-field">
-                                <label for="resourceDescription">Additional notes (optional)</label>
-                                <div
-                                    class="ap-toolbar"
-                                    role="toolbar"
-                                    aria-label="Resource notes formatting"
-                                    aria-controls="resourceDescription"
-                                    data-rich-toolbar
-                                >
-                                    <button type="button" class="ap-toolbar-btn" data-format="bold" title="Bold (⌘B)" aria-label="Bold">
-                                        <strong>B</strong>
-                                    </button>
-                                    <button type="button" class="ap-toolbar-btn" data-format="italic" title="Italic (⌘I)" aria-label="Italic">
-                                        <em>I</em>
-                                    </button>
-                                    <button type="button" class="ap-toolbar-btn" data-format="underline" title="Underline (⌘U)" aria-label="Underline">
-                                        <u>U</u>
-                                    </button>
-                                    <button type="button" class="ap-toolbar-btn" data-format="bullet" title="Bullet list" aria-label="Bullet list">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
-                                            <line x1="9" y1="6" x2="20" y2="6"></line>
-                                            <line x1="9" y1="12" x2="20" y2="12"></line>
-                                            <line x1="9" y1="18" x2="20" y2="18"></line>
-                                            <circle cx="4" cy="6" r="1.5" fill="currentColor" stroke="none"></circle>
-                                            <circle cx="4" cy="12" r="1.5" fill="currentColor" stroke="none"></circle>
-                                            <circle cx="4" cy="18" r="1.5" fill="currentColor" stroke="none"></circle>
-                                        </svg>
-                                    </button>
+                            <div class="field-group double">
+                                <div class="form-group">
+                                    <label for="resourceDescription">Card summary (English)</label>
+                                    <textarea id="resourceDescription" name="resourceDescription" rows="2" maxlength="160" placeholder="One short sentence — what makes this resource different?"></textarea>
+                                    <small class="input-help">Shown right under the title on every card. Be specific (e.g. <em>"Hospitality jobs and training"</em> instead of <em>"Job training services"</em>).</small>
                                 </div>
-                                <textarea id="resourceDescription" name="resourceDescription" rows="3" maxlength="240" placeholder="Extra details for the More info view only — not shown on cards."></textarea>
-                                <small class="input-help">Optional. Shown only when students tap <strong>More info</strong>, not on help cards.</small>
+                                <div class="form-group">
+                                    <label for="resourceSummaryEs">Card summary (Español)</label>
+                                    <textarea id="resourceSummaryEs" name="resourceSummaryEs" rows="2" maxlength="160" placeholder="Una oración corta en español"></textarea>
+                                    <small class="input-help">El mismo resumen en español. Si lo dejas vacío, los estudiantes en Español verán la versión en inglés.</small>
+                                </div>
                             </div>
 
                             <div class="field-group double">
@@ -804,15 +798,15 @@
                                 <div class="form-group">
                                     <label>Languages Spoken</label>
                                     <div class="language-chip-picker" data-field="resourceLanguages">
-                                        <label class="lang-chip-input"><input type="checkbox" name="resourceLanguages" value="ENG"><span>ENG</span></label>
-                                        <label class="lang-chip-input"><input type="checkbox" name="resourceLanguages" value="ESP"><span>ESP</span></label>
+                                        <label class="lang-chip-input"><input type="checkbox" name="resourceLanguages" value="ENG" checked><span>ENG</span></label>
+                                        <label class="lang-chip-input"><input type="checkbox" name="resourceLanguages" value="ESP" checked><span>ESP</span></label>
                                         <label class="lang-chip-input"><input type="checkbox" name="resourceLanguages" value="POR"><span>POR</span></label>
                                         <label class="lang-chip-input"><input type="checkbox" name="resourceLanguages" value="KRE"><span>KRE</span></label>
                                         <label class="lang-chip-input"><input type="checkbox" name="resourceLanguages" value="ARA"><span>ARA</span></label>
                                         <label class="lang-chip-input"><input type="checkbox" name="resourceLanguages" value="VIE"><span>VIE</span></label>
                                         <label class="lang-chip-input"><input type="checkbox" name="resourceLanguages" value="CHI"><span>CHI</span></label>
                                     </div>
-                                    <small class="input-help">Select all languages available for this resource.</small>
+                                    <small class="input-help">ENG and ESP are the assumed defaults — only adjust if this resource is different.</small>
                                 </div>
                             </div>
 
@@ -1234,7 +1228,8 @@
                             <option value="category">By Category</option>
                             <option value="deadline">By Deadline</option>
                         </select>
-                        <select id="manageContentTypeSelect" class="ap-select" style="width:auto;min-width:148px;padding:8px 34px 8px 12px;font-size:.82rem;" title="Filter by content type">
+                        <!-- Hidden state holder: dedicated sidebar pages (My Bulletins / My Resources / My Events) drive this. -->
+                        <select id="manageContentTypeSelect" class="ap-select" style="display:none" aria-hidden="true" tabindex="-1">
                             <option value="all">All types</option>
                             <option value="bulletin">Bulletins</option>
                             <option value="resource">Resources</option>
@@ -1540,20 +1535,43 @@
     (function() {
         // ── Page navigation ──────────────────────────────────────────
         var PAGES = {
-            dashboard: { el: 'apPageDashboard', nav: 'apNavDashboard', title: 'Dashboard' },
-            create:    { el: 'apPageCreate',    nav: 'apNavCreate',    title: 'Create Post' },
-            posts:     { el: 'apPagePosts',     nav: 'apNavPosts',     title: 'My Posts' },
-            stats:     { el: 'apPageStats',     nav: 'apNavStats',     title: 'Stats' },
-            advisors:  { el: 'apPageAdvisors',  nav: 'apNavAdvisors',  title: 'Advisors' },
+            dashboard: { el: 'apPageDashboard', nav: 'apNavDashboard',  title: 'Dashboard' },
+            create:    { el: 'apPageCreate',    nav: 'apNavCreate',     title: 'Create Post' },
+            posts:     { el: 'apPagePosts',     nav: 'apNavBulletins',  title: 'All Posts' },
+            bulletins: { el: 'apPagePosts',     nav: 'apNavBulletins',  title: 'My Bulletins' },
+            resources: { el: 'apPagePosts',     nav: 'apNavResources',  title: 'My Resources' },
+            events:    { el: 'apPagePosts',     nav: 'apNavEvents',     title: 'My Events' },
+            stats:     { el: 'apPageStats',     nav: 'apNavStats',      title: 'Stats' },
+            advisors:  { el: 'apPageAdvisors',  nav: 'apNavAdvisors',   title: 'Advisors' },
+        };
+
+        var POSTS_PAGE_FILTERS = {
+            posts:     { contentType: 'all',      sort: 'newest' },
+            bulletins: { contentType: 'bulletin', sort: 'newest' },
+            resources: { contentType: 'resource', sort: 'category' },
+            events:    { contentType: 'event',    sort: 'newest' },
         };
 
         window.apShowPage = function(page) {
+            // Several nav entries (bulletins/resources/events) share the same
+            // page element (apPagePosts), and posts/bulletins share the same
+            // nav button. Deduplicate so a later iteration doesn't toggle off
+            // an element a previous one just turned on.
+            var targetEl  = PAGES[page] && PAGES[page].el;
+            var targetNav = PAGES[page] && PAGES[page].nav;
+            var seenEls = {}, seenNavs = {};
             Object.keys(PAGES).forEach(function(k) {
                 var p = PAGES[k];
-                var el = document.getElementById(p.el);
-                var nav = document.getElementById(p.nav);
-                if (el) el.classList.toggle('active', k === page);
-                if (nav) nav.classList.toggle('active', k === page);
+                if (p.el && !seenEls[p.el]) {
+                    seenEls[p.el] = true;
+                    var el = document.getElementById(p.el);
+                    if (el) el.classList.toggle('active', p.el === targetEl);
+                }
+                if (p.nav && !seenNavs[p.nav]) {
+                    seenNavs[p.nav] = true;
+                    var nav = document.getElementById(p.nav);
+                    if (nav) nav.classList.toggle('active', p.nav === targetNav);
+                }
             });
             var titleEl = document.getElementById('apTopbarTitle');
             if (titleEl && PAGES[page]) titleEl.textContent = PAGES[page].title;
@@ -1572,6 +1590,31 @@
                 var ap = window.adminPanel;
                 if (typeof ap.renumberVisibleFormSteps === 'function') {
                     ap.renumberVisibleFormSteps();
+                }
+            }
+            if (POSTS_PAGE_FILTERS[page]) {
+                var preset = POSTS_PAGE_FILTERS[page];
+                var setFilter = function(id, value) {
+                    var el = document.getElementById(id);
+                    if (!el || el.value === value) return;
+                    el.value = value;
+                    el.dispatchEvent(new Event('change', { bubbles: true }));
+                };
+                setFilter('manageContentTypeSelect', preset.contentType);
+                setFilter('manageFilterSelect', 'all');
+                setFilter('manageSortSelect', preset.sort);
+
+                var heading = document.querySelector('#apPagePosts h1');
+                if (heading) heading.textContent = PAGES[page].title;
+                var subhead = document.querySelector('#apPagePosts h1 + p');
+                if (subhead) {
+                    var subtitleByPage = {
+                        bulletins: 'Announcements, jobs, and other bulletins you have published.',
+                        resources: 'Help links shown in the resources view, grouped by category.',
+                        events:    'Calendar events you have published.',
+                        posts:     'All content you have published.',
+                    };
+                    subhead.textContent = subtitleByPage[page] || subtitleByPage.posts;
                 }
             }
         };
@@ -1700,6 +1743,9 @@
                 'career-fair': '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>',
                 money: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',
                 childcare: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+                family: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+                jobs: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>',
+                'legal-aid': '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l-3 7H3l5.5 4-2 7L12 17l5.5 3-2-7L21 9h-6z"/></svg>',
                 announcement: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>',
             };
             return icons[category] || icons.announcement;
@@ -1751,15 +1797,176 @@
             cardWrap.innerHTML = buildBulletinPreviewShell('', '', '', '', '');
         }
 
-        function resourceCategoryLabel(value) {
-            var labels = {
-                immigration: 'Immigration',
-                jobs: 'Jobs',
-                housing: 'Housing',
-                health: 'Health',
-                'legal-aid': 'Legal Aid'
-            };
-            return labels[value] || 'Resource';
+        var PREVIEW_RESOURCE_COLORS = {
+            immigration: '#0d9488',
+            jobs: '#24498f',
+            housing: '#df6b4a',
+            health: '#df477f',
+            food: '#2f934f',
+            family: '#c99035',
+            esol: '#8050d1',
+            hse: '#2563eb',
+            college: '#0a1d3a',
+            'legal-aid': '#7c3aed',
+            money: '#1fa77e'
+        };
+
+        var PREVIEW_CHIP_ES = {
+            'baby supplies': 'Artículos para bebés',
+            'basic needs': 'Necesidades básicas',
+            'cash assistance': 'Ayuda en efectivo',
+            'childcare': 'Cuidado infantil',
+            'citizenship help': 'Ayuda con ciudadanía',
+            'clothing': 'Ropa',
+            'community help': 'Ayuda comunitaria',
+            'emergency food pantry': 'Despensa de emergencia',
+            'english classes': 'Clases de inglés',
+            'family help': 'Ayuda familiar',
+            'family support': 'Apoyo familiar',
+            'food help': 'Ayuda alimentaria',
+            'food pantry': 'Despensa de alimentos',
+            'free diapers': 'Pañales gratis',
+            'free food': 'Comida gratis',
+            'health care': 'Atención médica',
+            'housing help': 'Ayuda con vivienda',
+            'immigration help': 'Ayuda con inmigración',
+            'job training': 'Capacitación laboral',
+            'legal help': 'Ayuda legal',
+            'rent help': 'Ayuda con renta',
+            'snap help': 'Ayuda con SNAP',
+            'tax help': 'Ayuda con impuestos',
+            'wic help': 'Ayuda con WIC'
+        };
+
+        function previewResourceIcon(category) {
+            var key = category === 'jobs' ? 'job' : (category === 'family' ? 'childcare' : category);
+            return getPreviewCardIconSvg(key);
+        }
+
+        function plainPreviewSummary(raw, max) {
+            if (!raw) return '';
+            var text = String(raw).replace(/\s+/g, ' ').trim();
+            if (!text) return '';
+            if (text.length > max) {
+                var cut = text.slice(0, max);
+                var lastSpace = cut.lastIndexOf(' ');
+                text = ((lastSpace > 40 ? cut.slice(0, lastSpace) : cut).trim()) + '…';
+            }
+            return text;
+        }
+
+        function translatePreviewChipEs(label) {
+            var text = String(label || '').trim();
+            if (!text) return '';
+            return PREVIEW_CHIP_ES[text.toLowerCase()] || text;
+        }
+
+        function buildResourcePreviewCard(data) {
+            var category = data.category || '';
+            var accent = PREVIEW_RESOURCE_COLORS[category] || '#0a1d3a';
+            var title = data.title || 'Resource title';
+            var titleEs = data.titleEs || '';
+            var descEn = plainPreviewSummary(data.desc, 140);
+            var descEs = plainPreviewSummary(data.summaryEs || data.desc, 140);
+            var logoSrc = data.logoSrc || '';
+            var iconSvg = previewResourceIcon(category);
+
+            var logoTile = logoSrc
+                ? '<img src="' + escPreview(logoSrc) + '" alt="">'
+                : '<span class="mobile-resource-card__icon-fallback" style="background:' + accent + '" aria-hidden="true">' + iconSvg + '</span>';
+
+            var headingHtml =
+                '<div class="mobile-resource-card__heading">' +
+                    '<div class="mobile-resource-card__title-row">' +
+                        '<h3 class="mobile-resource-card__title">' + escPreview(title) + '</h3>' +
+                    '</div>' +
+                    (titleEs && titleEs !== title
+                        ? '<p class="mobile-resource-card__subtitle">' + escPreview(titleEs) + '</p>'
+                        : '') +
+                '</div>';
+
+            var summaryHtml = (descEn || descEs)
+                ? '<p class="mobile-resource-card__summary">' +
+                    '<span class="en-text">' + escPreview(descEn || descEs) + '</span>' +
+                    '<span class="es-text">' + escPreview(descEs || descEn) + '</span>' +
+                  '</p>'
+                : '<p class="mobile-resource-card__summary mobile-resource-card__summary--placeholder">' +
+                    '<span class="en-text">Card summary appears here</span>' +
+                  '</p>';
+
+            var chipsHtml = (data.highlights || []).length
+                ? '<div class="resource-service-chips">' + data.highlights.map(function(service) {
+                    return '<span class="resource-service-chip">' +
+                        '<span class="en-text">' + escPreview(service) + '</span>' +
+                        '<span class="es-text">' + escPreview(translatePreviewChipEs(service)) + '</span>' +
+                    '</span>';
+                }).join('') + '</div>'
+                : '';
+
+            var hoursHtml = data.hours
+                ? '<p class="mobile-resource-card__hours">' + escPreview(data.hours) + '</p>'
+                : '';
+
+            var langsHtml = (data.languages || []).length
+                ? '<div class="mobile-resource-card__langs">' + data.languages.map(function(lang) {
+                    return '<span class="mobile-resource-card__lang">' + escPreview(lang) + '</span>';
+                }).join('') + '</div>'
+                : '';
+
+            var addressHtml = data.address
+                ? '<p class="mobile-resource-card__address">' +
+                    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s6.25-5.9 6.25-11.1a6.25 6.25 0 1 0-12.5 0C5.75 15.1 12 21 12 21Z"/><circle cx="12" cy="9.75" r="2.5"/></svg>' +
+                    escPreview(data.address) +
+                  '</p>'
+                : '';
+
+            var callBtn = data.phone
+                ? '<span class="mobile-resource-card__btn mobile-resource-card__btn--primary" aria-hidden="true">' +
+                    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.25 7.75c0 5.1 5.9 11 11 11h1.75a1 1 0 0 0 1-1v-3.2a1 1 0 0 0-.78-.98l-3.14-.7a1 1 0 0 0-.96.29l-.92.98a13.84 13.84 0 0 1-4.34-4.34l.98-.92a1 1 0 0 0 .29-.96l-.7-3.14A1 1 0 0 0 8.45 4H5.25a1 1 0 0 0-1 1v2.75Z"/></svg>' +
+                    '<span class="en-text">Call</span><span class="es-text">Llamar</span>' +
+                  '</span>'
+                : '';
+
+            var websiteBtn = data.url
+                ? '<span class="mobile-resource-card__btn mobile-resource-card__btn--secondary" aria-hidden="true">' +
+                    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>' +
+                    '<span class="en-text">Website</span><span class="es-text">Sitio</span>' +
+                  '</span>'
+                : '';
+
+            var directionsBtn = data.address
+                ? '<span class="mobile-resource-card__btn mobile-resource-card__btn--secondary mobile-resource-card__btn--directions" aria-hidden="true">' +
+                    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s6.25-5.9 6.25-11.1a6.25 6.25 0 1 0-12.5 0C5.75 15.1 12 21 12 21Z"/><circle cx="12" cy="9.75" r="2.5"/></svg>' +
+                    '<span class="en-text">Directions</span><span class="es-text">Cómo llegar</span>' +
+                  '</span>'
+                : '';
+
+            var actionButtons = [callBtn, websiteBtn, directionsBtn].filter(Boolean);
+            var actionsModifier = actionButtons.length === 1
+                ? ' mobile-resource-card__actions--single'
+                : actionButtons.length >= 3
+                    ? ' mobile-resource-card__actions--triple'
+                    : '';
+            var actionsHtml = actionButtons.length
+                ? '<div class="mobile-resource-card__actions' + actionsModifier + '">' + actionButtons.join('') + '</div>'
+                : '';
+
+            return '' +
+                '<article class="mobile-resource-card mobile-resource-card--' + escPreview(category || 'resource') + ' ap-preview-resource-mock" style="--cat-accent:' + accent + '">' +
+                    '<button type="button" class="mobile-resource-card__share" tabindex="-1" aria-hidden="true">' +
+                        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4"/><path d="m15.4 6.5-6.8 4"/></svg>' +
+                    '</button>' +
+                    '<div class="mobile-resource-card__logo-tile">' + logoTile + '</div>' +
+                    '<div class="mobile-resource-card__body">' +
+                        headingHtml +
+                        summaryHtml +
+                        chipsHtml +
+                        hoursHtml +
+                        langsHtml +
+                        addressHtml +
+                        actionsHtml +
+                    '</div>' +
+                '</article>';
         }
 
         function syncPreview() {
@@ -1773,54 +1980,32 @@
                 var titleEs = (document.getElementById('resourceTitleEs')?.value || '').trim();
                 var category = document.getElementById('resourceCategory')?.value || '';
                 var desc = (document.getElementById('resourceDescription')?.value || '').trim();
+                var summaryEs = (document.getElementById('resourceSummaryEs')?.value || '').trim();
                 var highlights = (document.getElementById('resourceHighlights')?.value || '').split(',').map(function(h) { return h.trim(); }).filter(Boolean).slice(0, 5);
                 var logoImg = document.querySelector('#resourceLogoPreview .preview-image');
                 var logoSrc = logoImg && logoImg.getAttribute('src') ? logoImg.getAttribute('src') : '';
+                var url = (document.getElementById('resourceUrl')?.value || '').trim();
+                var phone = (document.getElementById('resourcePhone')?.value || '').trim();
+                var address = (document.getElementById('resourceAddress')?.value || '').trim();
+                var hours = (document.getElementById('resourceHours')?.value || '').trim();
+                var languages = Array.from(document.querySelectorAll('input[name="resourceLanguages"]:checked')).map(function(el) {
+                    return el.value;
+                }).slice(0, 4);
 
-                var RESOURCE_CAT_ICONS = {
-                    immigration: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3a14.5 14.5 0 0 1 0 18M3 12h18"/><path d="M4.2 7.5h15.6M4.2 16.5h15.6"/></svg>',
-                    jobs:        '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>',
-                    housing:     '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>',
-                    health:      '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>',
-                    'legal-aid': '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l-3 7H3l5.5 4-2 7L12 17l5.5 3-2-7L21 9h-6z"/></svg>'
-                };
-                var RESOURCE_CAT_META = {
-                    immigration: { start: '#2563eb', end: '#1d4ed8', soft: '#dbeafe', labelEs: 'Inmigración' },
-                    jobs:        { start: '#0f766e', end: '#0d9488', soft: '#ccfbf1', labelEs: 'Trabajos' },
-                    housing:     { start: '#f97316', end: '#ea580c', soft: '#ffedd5', labelEs: 'Vivienda' },
-                    health:      { start: '#dc2626', end: '#b91c1c', soft: '#fee2e2', labelEs: 'Salud' },
-                    'legal-aid': { start: '#7c3aed', end: '#5b21b6', soft: '#ede9fe', labelEs: 'Ayuda Legal' }
-                };
-
-                var meta = RESOURCE_CAT_META[category] || { start: '#334155', end: '#0f172a', soft: '#e2e8f0', labelEs: 'Recurso' };
-                var iconSvg = RESOURCE_CAT_ICONS[category] || '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>';
-
-                var iconHtml = logoSrc
-                    ? '<div class="ap-preview-resource-icon ap-preview-resource-icon--logo" aria-hidden="true"><img src="' + escPreview(logoSrc) + '" alt=""></div>'
-                    : '<div class="ap-preview-resource-icon" aria-hidden="true">' + iconSvg + '</div>';
-
-                var catLabel = resourceCategoryLabel(category);
-                var pillsHtml = catLabel
-                    ? '<div class="ap-preview-resource-pills"><span>' + escPreview(catLabel) + '</span>' + (titleEs ? '<span>' + escPreview(meta.labelEs) + '</span>' : '') + '</div>'
-                    : '';
-
-                var highlightHtml = highlights.length
-                    ? '<div class="ap-preview-resource-highlights">' + highlights.map(function(h) { return '<span>' + escPreview(h) + '</span>'; }).join('') + '</div>'
-                    : '';
-
-                cardWrap.innerHTML =
-                    '<div class="ap-preview-resource-card resource-card-' + category + '" style="--story-start:' + meta.start + '; --story-end:' + meta.end + '; --story-soft-start:' + meta.soft + '">' +
-                        '<div class="ap-preview-resource-inner">' +
-                            iconHtml +
-                            '<div class="ap-preview-resource-body">' +
-                                pillsHtml +
-                                '<div class="ap-preview-resource-title">' + escPreview(title || 'Resource title') + '</div>' +
-                                (titleEs ? '<div class="ap-preview-resource-subtitle">' + escPreview(titleEs) + '</div>' : '') +
-                                highlightHtml +
-                                (desc ? '<div class="ap-preview-resource-notes">' + formatPreviewDescription(desc) + '</div>' : '') +
-                            '</div>' +
-                        '</div>' +
-                    '</div>';
+                cardWrap.innerHTML = buildResourcePreviewCard({
+                    title: title,
+                    titleEs: titleEs,
+                    category: category,
+                    desc: desc,
+                    summaryEs: summaryEs,
+                    highlights: highlights,
+                    logoSrc: logoSrc,
+                    url: url,
+                    phone: phone,
+                    address: address,
+                    hours: hours,
+                    languages: languages
+                });
                 setPreviewNav('resources');
                 return;
             }
@@ -2015,7 +2200,7 @@
 
         // ── Bind live preview to title/desc ──────────────────────────
         function bindPreviewListeners() {
-            ['title','category','resourceTitleEn','resourceTitleEs','description','summaryEs','resourceDescription','advisorName','resourceAdvisorName','resourceCategory','resourceUrl','resourceHighlights','resourcePhone','resourceAddress','resourceHours','resourcePublished','dateType','eventDate','startDate','endDate','startTime','endTime','location','eventLink','eventLocation'].forEach(function(id) {
+            ['title','category','resourceTitleEn','resourceTitleEs','description','summaryEs','resourceDescription','resourceSummaryEs','advisorName','resourceAdvisorName','resourceCategory','resourceUrl','resourceHighlights','resourcePhone','resourceAddress','resourceHours','resourcePublished','dateType','eventDate','startDate','endDate','startTime','endTime','location','eventLink','eventLocation'].forEach(function(id) {
                 var el = document.getElementById(id);
                 if (!el) return;
                 el.addEventListener('input', syncPreview);

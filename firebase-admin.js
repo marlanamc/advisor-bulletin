@@ -2235,6 +2235,10 @@ class FirebaseAdminPanel {
             }
             document.getElementById('resourceUrl').value = bulletin.url || bulletin.eventLink || '';
             document.getElementById('resourceDescription').value = bulletin.description || '';
+            const resourceSummaryEsField = document.getElementById('resourceSummaryEs');
+            if (resourceSummaryEsField) {
+                resourceSummaryEsField.value = bulletin.summaryEs || '';
+            }
             const serviceLabels = Array.isArray(bulletin.services) && bulletin.services.length
                 ? bulletin.services.join(', ')
                 : (bulletin.highlights || '');
@@ -3462,9 +3466,10 @@ class FirebaseAdminPanel {
 
             const servicesRaw = (formData.get('resourceHighlights') || '').trim();
             const services = servicesRaw.split(',').map((part) => part.trim()).filter(Boolean).slice(0, 5);
-            const resourceNotes = (formData.get('resourceDescription') || '').trim();
-            if (!services.length && !resourceNotes) {
-                throw new Error('Add at least one service chip, or additional notes for students.');
+            const resourceSummaryEn = (formData.get('resourceDescription') || '').trim();
+            const resourceSummaryEs = (formData.get('resourceSummaryEs') || '').trim();
+            if (!services.length && !resourceSummaryEn) {
+                throw new Error('Add at least one service chip, or a card summary so students can tell this resource apart.');
             }
 
             return {
@@ -3478,7 +3483,8 @@ class FirebaseAdminPanel {
                 resourceLogo: null,
                 url,
                 eventLink: url,
-                description: resourceNotes,
+                description: resourceSummaryEn,
+                summaryEs: resourceSummaryEs,
                 highlights: services.join(', '),
                 services,
                 advisorName: advisorName,
@@ -3639,9 +3645,8 @@ class FirebaseAdminPanel {
         document.querySelectorAll('input[name="resourcePhoneMode"][value="call"]').forEach(r => r.checked = true);
         document.querySelectorAll('input[name="contactPhoneMode"][value="call"]').forEach(r => r.checked = true);
 
-        // Reset language chips
         document.querySelectorAll('input[name="resourceLanguages"], input[name="contactLanguages"]').forEach(cb => {
-            cb.checked = false;
+            cb.checked = cb.value === 'ENG' || cb.value === 'ESP';
         });
 
         // Reset date fields

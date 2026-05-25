@@ -73,12 +73,13 @@ const CATEGORY_ICONS = {
 
 function prompt(question, { hidden = false } = {}) {
   return new Promise((resolvePrompt) => {
-    const rl = createInterface({ input: stdin, output: stdout });
+    const rl = createInterface({ input: stdin, output: stdout, terminal: true });
     if (hidden) {
-      const onData = () => stdout.write('*');
-      stdin.on('data', onData);
+      rl.stdoutMuted = true;
+      rl._writeToOutput = (text) => {
+        rl.output.write(rl.stdoutMuted ? '*' : text);
+      };
       rl.question(question, (answer) => {
-        stdin.removeListener('data', onData);
         stdout.write('\n');
         rl.close();
         resolvePrompt(answer);
@@ -198,6 +199,21 @@ function normalizeUrl(url) {
   return `https://${trimmed}`;
 }
 
+// CSV "description" cells are written as
+//   "English summary. Español: Resumen en español."
+// We split them so the English half lands in `description` and the Spanish
+// half lands in `summaryEs`. If the delimiter is missing, English absorbs the
+// whole cell and Spanish stays blank.
+function splitBilingualDescription(raw) {
+  const text = String(raw || '').trim();
+  if (!text) return { en: '', es: '' };
+  const match = text.match(/\bEspañol\s*[:\-—]\s*/i);
+  if (!match) return { en: text, es: '' };
+  const en = text.slice(0, match.index).trim().replace(/[\s,;:.\-—]+$/, '');
+  const es = text.slice(match.index + match[0].length).trim();
+  return { en, es };
+}
+
 function mergeResources(map, row) {
   const orgName = (row.orgName || '').trim();
   const category = resolveCategory(row);
@@ -209,7 +225,7 @@ function mergeResources(map, row) {
   const phone = (row.phone || '').trim();
   const hours = (row.hours || '').trim();
   const languages = splitList(row.languages);
-  const description = (row.description || '').trim();
+  const { en: description, es: summaryEs } = splitBilingualDescription(row.description);
   const advisorName = (row.advisorName || '').trim() || 'Import';
 
   if (!orgName) throw new Error('Row missing orgName');
@@ -232,6 +248,7 @@ function mergeResources(map, row) {
       hours,
       languages: [...new Set(languages)],
       description,
+      summaryEs,
       advisorName,
       sourceRows: 1,
     });
@@ -251,6 +268,11 @@ function mergeResources(map, row) {
       ? `${existing.description}\n\n${description}`
       : description;
   }
+  if (summaryEs) {
+    existing.summaryEs = existing.summaryEs
+      ? `${existing.summaryEs}\n\n${summaryEs}`
+      : summaryEs;
+  }
 }
 
 function buildFirestoreDoc(resource) {
@@ -268,9 +290,11 @@ function buildFirestoreDoc(resource) {
     url,
     eventLink: url,
     description: resource.description || '',
+    summaryEs: resource.summaryEs || '',
     highlights: services.join(', '),
     services,
     advisorName: resource.advisorName,
+    postedBy: 'admin',
     address: resource.address || '',
     phone: resource.phone || '',
     phoneMode: 'call',
@@ -346,7 +370,13 @@ async function writeResources(db, resources, { dryRun, useAdmin }) {
   for (const resource of resources) {
     const doc = buildFirestoreDoc(resource);
     if (dryRun) {
-      console.log(`[dry-run] ${doc.titleEn} (${doc.resourceCategory}) → ${doc.services.join(', ')}`);
+      const enPreview = doc.description ? `${doc.description.slice(0, 60)}${doc.description.length > 60 ? '…' : ''}` : '(no description)';
+      const esPreview = doc.summaryEs ? `${doc.summaryEs.slice(0, 60)}${doc.summaryEs.length > 60 ? '…' : ''}` : '(no summaryEs)';
+      console.log(`[dry-run] ${doc.titleEn} (${doc.resourceCategory})`);
+      console.log(`           chips: ${doc.services.join(', ')}`);
+      console.log(`           hours: ${doc.hours || '(none)'}`);
+      console.log(`           EN: ${enPreview}`);
+      console.log(`           ES: ${esPreview}`);
       written += 1;
       continue;
     }

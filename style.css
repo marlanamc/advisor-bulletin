@@ -13818,6 +13818,19 @@ body:has(#loginRequired) {
     gap: 4px;
 }
 
+.mobile-resource-card__title-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px 12px;
+}
+
+.mobile-resource-card__title-row .mobile-resource-card__title {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
 .mobile-resource-card__title {
     margin: 0;
     font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
@@ -13838,11 +13851,26 @@ body:has(#loginRequired) {
     line-height: 1.3;
 }
 
-.mobile-resource-card__heading .resource-badges-container {
+.mobile-resource-card__summary {
+    margin: 0;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 14.5px;
+    font-weight: 500;
+    line-height: 1.45;
+    color: #475569;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.mobile-resource-card__title-row .resource-badges-container {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
-    margin-top: 6px;
+    flex: 0 0 auto;
+    margin: 2px 0 0;
+    justify-content: flex-end;
 }
 
 .mobile-resource-card__description {
@@ -14249,6 +14277,25 @@ body:has(#loginRequired) {
     background: #fff;
     box-shadow: 0 2px 0 rgba(10, 29, 58, 0.04), 0 10px 24px rgba(10, 29, 58, 0.07);
     gap: 14px;
+}
+
+.cat-org-title-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px 12px;
+}
+
+.cat-org-title-row .cat-org-name {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.cat-org-title-row .resource-badges-container {
+    flex: 0 0 auto;
+    margin: 4px 0 0;
+    justify-content: flex-end;
 }
 
 .cat-org-name {
@@ -17522,7 +17569,7 @@ body:has(#loginRequired) {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
-    margin: 8px 0 12px;
+    margin: 0;
 }
 
 .badge {

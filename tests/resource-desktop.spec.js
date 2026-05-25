@@ -40,27 +40,18 @@ test.describe('Desktop resource shortcuts', () => {
     await seedDesktopResources(page);
   });
 
-  test('opens the resources view and scrolls to the selected section', async ({ page }) => {
+  test('opens the resources view and shows every resource in the selected section', async ({ page }) => {
     await page.evaluate(() => window.bulletinBoard.openResourceShortcut('food'));
 
     await expect(page.locator('#resourcesView')).toHaveClass(/active/);
     await expect(page.locator('#resourcesView .back-home-btn')).toBeVisible();
     await expect(page.locator('#desktop-section-food')).toBeVisible();
     await expect(page.locator('#desktop-section-food')).toContainText('Food');
-    await expect(page.locator('#desktop-section-food .mobile-resource-card')).toHaveCount(3);
+    await expect(page.locator('#desktop-section-food .mobile-resource-card')).toHaveCount(4);
     await expect(page.locator('#desktop-section-food .mobile-resource-card__phone').first()).toContainText('617-555-0101');
     await expect(page.locator('#desktop-section-food .mobile-resource-card__btn--primary')).toHaveCount(0);
-    await expect(page.locator('#desktop-section-food')).not.toContainText('Weekend community supper');
-    await expect(page.locator('#desktop-section-food [data-desktop-show-all="food"]')).toBeVisible();
-    await expect(page.locator('#catDetailSheet')).not.toHaveClass(/open/);
-  });
-
-  test('expands a desktop section inline instead of opening a sheet', async ({ page }) => {
-    await page.evaluate(() => window.bulletinBoard.openResourceShortcut('food'));
-    await page.locator('#desktop-section-food [data-desktop-show-all="food"]').click();
-
-    await expect(page.locator('#desktop-section-food .mobile-resource-card')).toHaveCount(4);
     await expect(page.locator('#desktop-section-food')).toContainText('Weekend community supper');
+    await expect(page.locator('#desktop-section-food [data-desktop-show-all="food"]')).toHaveCount(0);
     await expect(page.locator('#catDetailSheet')).not.toHaveClass(/open/);
   });
 });
