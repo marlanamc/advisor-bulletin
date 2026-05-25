@@ -12657,8 +12657,23 @@ body:has(#loginRequired) {
     .desktop-home-aside {
         position: sticky;
         top: calc(var(--app-header-offset) + 12px);
+        max-height: calc(100vh - var(--app-header-offset) - 24px);
         display: grid;
         gap: 14px;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        scrollbar-gutter: stable;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(15, 23, 42, 0.22) transparent;
+    }
+
+    .desktop-home-aside::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .desktop-home-aside::-webkit-scrollbar-thumb {
+        background: rgba(15, 23, 42, 0.18);
+        border-radius: 999px;
     }
 
     .side-panel {
@@ -13176,10 +13191,6 @@ body:has(#loginRequired) {
 
     .app-main {
         min-height: calc(100vh - var(--app-header-offset));
-    }
-
-    .desktop-home-aside {
-        top: calc(var(--app-header-offset) + 12px);
     }
 
     /* Topbar: keep nav, search, and language together on the right */
@@ -15639,7 +15650,8 @@ body:has(#loginRequired) {
     }
 
     .desktop-home-aside {
-        top: 100px;
+        top: calc(var(--app-header-offset) + 12px);
+        max-height: calc(100vh - var(--app-header-offset) - 24px);
         gap: 18px;
     }
 
