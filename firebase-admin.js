@@ -978,6 +978,35 @@ class FirebaseAdminPanel {
         return 'bulletin';
     }
 
+    getManagePageForContentKind(kind) {
+        if (kind === 'resource') return 'resources';
+        if (kind === 'event') return 'events';
+        return 'bulletins';
+    }
+
+    getManagePageForContentMode(mode) {
+        if (mode === 'resource') return 'resources';
+        if (mode === 'event') return 'events';
+        return 'bulletins';
+    }
+
+    getManagePageLabel(page) {
+        return {
+            resources: 'My Resources',
+            events: 'My Events',
+            bulletins: 'My Bulletins',
+            posts: 'All Posts',
+        }[page] || 'My Bulletins';
+    }
+
+    navigateToManagePage(page = 'bulletins') {
+        if (typeof window.apShowPage === 'function') {
+            window.apShowPage(page);
+            return;
+        }
+        this.showTab('manage');
+    }
+
     getCurrentContentLabel() {
         return this.contentType === 'resource' ? 'Resource' : 'Bulletin';
     }
@@ -1248,7 +1277,7 @@ class FirebaseAdminPanel {
 
     // Tab Management
     showTab(tabName) {
-        const v2PageMap = { post: 'create', manage: 'posts', advisors: 'advisors' };
+        const v2PageMap = { post: 'create', manage: 'bulletins', advisors: 'advisors' };
         if (typeof window.apShowPage === 'function' && v2PageMap[tabName]) {
             window.apShowPage(v2PageMap[tabName]);
         }
@@ -1587,11 +1616,17 @@ class FirebaseAdminPanel {
 
             // Reset form after successful submission
             this.pendingHighlightId = newBulletinId;
-            this.resetForm();
+            const managePage = submittedType === 'resource'
+                ? 'resources'
+                : this.contentMode === 'event'
+                    ? 'events'
+                    : 'bulletins';
+            this.resetForm({ managePage });
 
+            const manageLabel = this.getManagePageLabel(managePage);
             let successMessage = wasEditMode
                 ? `${submittedLabel} updated successfully!`
-                : `${submittedLabel} saved successfully! Check the Manage tab.`;
+                : `${submittedLabel} saved successfully! Check ${manageLabel}.`;
             if (submittedType === 'post') {
                 successMessage += ' It should appear on the student feed shortly.';
                 if (formData.get('summaryEs')) {
@@ -2252,6 +2287,8 @@ class FirebaseAdminPanel {
             this.showTemporaryMessage('Could not find that bulletin. Try refreshing the page.', 'error');
             return;
         }
+
+        this.editReturnManagePage = this.getManagePageForContentKind(bulletin);
 
         // Switch to post tab
         this.showTab('post');
@@ -3658,7 +3695,12 @@ class FirebaseAdminPanel {
         }
     }
 
-    resetForm() {
+    resetForm(options = {}) {
+        const managePage = options.managePage
+            || this.editReturnManagePage
+            || this.getManagePageForContentMode(this.contentMode);
+        this.editReturnManagePage = null;
+
         // Reset edit mode
         this.isEditMode = false;
         this.editingBulletinId = null;
@@ -3719,8 +3761,10 @@ class FirebaseAdminPanel {
             section.classList.remove('open');
         });
 
-        // Switch back to manage tab
-        this.showTab('manage');
+        // Return to the matching workspace list (resources, events, or bulletins).
+        if (!options.stayOnCreate) {
+            this.navigateToManagePage(managePage);
+        }
     }
 
     isMineOrManaged(bulletin) {
