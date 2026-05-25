@@ -3453,6 +3453,10 @@ class FirebaseBulletinBoard {
 
     showDayEventsByIds(ids) {
         const bulletins = ids.map(id => this.bulletins.find(b => b.id === id)).filter(Boolean);
+        if (bulletins.length === 1) {
+            this.showBulletinDetail(bulletins[0].id);
+            return;
+        }
         this.showDayEvents(bulletins);
     }
 
@@ -5086,7 +5090,7 @@ class FirebaseBulletinBoard {
         // In navigator mode (desktop split), click scrolls the list (bound separately).
         // In popup mode (mobile), click opens the day's events.
         const clickHandler = hasBulletins && !navigatorMode
-            ? `onclick="bulletinBoard.showDayEventsByIds(${JSON.stringify(bulletins.map(b => b.id))})"`
+            ? `onclick='window.bulletinBoard && window.bulletinBoard.showDayEventsByIds(${JSON.stringify(bulletins.map(b => b.id))})'`
             : '';
         const dayAttr = hasBulletins && navigatorMode ? `data-calendar-day="${isoDate}"` : '';
 

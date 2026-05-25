@@ -4246,7 +4246,7 @@ button[disabled] {
         display: grid;
         width: max-content;
         max-width: calc(100% - 48px);
-        margin: 22px auto 10px;
+        margin: 14px auto 8px;
     }
 
     #calendarView .dates-view-toggle,
@@ -11663,6 +11663,32 @@ body:has(#loginRequired) {
 #advisorsView,
 #aboutView {
     background: #f4f6fb;
+}
+
+#calendarView > .view-hero {
+    padding-bottom: 14px;
+}
+
+#calendarView .dates-view-toggle {
+    display: grid;
+    width: max-content;
+    max-width: calc(100% - 40px);
+    margin: 10px auto 2px;
+}
+
+@media (max-width: 767px) {
+    #calendarView > .view-hero {
+        padding: 14px 16px 10px;
+        margin-bottom: 0;
+    }
+
+    #calendarView > .view-hero h1 {
+        margin-bottom: 0;
+    }
+
+    #calendarView .dates-view-toggle {
+        margin: 8px auto 0;
+    }
 }
 
 /* ── Calendar page: list + month-grid split at desktop sizes ───── */
