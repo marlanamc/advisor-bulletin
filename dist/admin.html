@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Lexend:wght@300;400;500;600;700;800&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
-  <script type="module" crossorigin src="/assets/admin-9OHlH-fd.js"></script>
+  <script type="module" crossorigin src="/assets/admin-B7wv1ylI.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/rich-text-rBW_Rsoq.js">
   <link rel="stylesheet" crossorigin href="/assets/rich-text-vNrOe5_9.css">
   <link rel="stylesheet" crossorigin href="/assets/admin-BFF3eGYE.css">
@@ -712,19 +712,13 @@
                                 </div>
                             </div>
 
-                            <div class="field-group double">
-                                <div class="form-group required-field">
-                                    <label for="resourceCategory" class="required">Resource Category</label>
-                                    <select id="resourceCategory" name="resourceCategory" data-resource-required="true">
-                                        <option value="">Select a category</option>
-                                        <option value="immigration">Immigration / Inmigración</option>
-                                        <option value="jobs">Jobs / Empleos</option>
-                                        <option value="housing">Housing / Vivienda</option>
-                                        <option value="health">Health / Salud</option>
-                                        <option value="legal-aid">Legal Aid / Ayuda Legal</option>
-                                    </select>
-                                </div>
-
+                            <div class="ap-category-picker-block form-group required-field">
+                                <label for="resourceCategory" class="required">Resource Category</label>
+                                <small class="input-help ap-category-picker-help">Choose where students find this in Find Help — same topics as the student app.</small>
+                                <select id="resourceCategory" name="resourceCategory" data-resource-required="true" required class="required ap-category-select-sr" tabindex="-1" aria-hidden="true">
+                                    <option value="">Select a category</option>
+                                </select>
+                                <div class="advisor-category-picker" id="resourceCategoryPicker" role="group" aria-label="Resource category"></div>
                             </div>
 
                             <div class="form-group required-field">

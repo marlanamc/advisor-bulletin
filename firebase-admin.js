@@ -19,13 +19,28 @@ installClientErrorLogger('admin')
 import { onAuthStateChanged, signOut, sendPasswordResetEmail } from 'firebase/auth'
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage'
 
-const ADMIN_RESOURCE_CATEGORY_LABELS = {
-    immigration: 'Immigration / Inmigracion',
-    jobs: 'Jobs / Empleos',
-    housing: 'Housing / Vivienda',
-    health: 'Health / Salud',
-    'legal-aid': 'Legal Aid / Ayuda Legal'
-};
+// Matches student Help tiles (RESOURCE_TILE_CATEGORIES) plus ESOL resources.
+const ADMIN_RESOURCE_CATEGORIES = [
+    ['immigration', 'Immigration / Inmigración', '🌎', 'shield'],
+    ['jobs', 'Jobs / Empleos', '💼', 'briefcase'],
+    ['food', 'Food / Comida', '🍽️', 'food'],
+    ['family', 'Child Care / Cuidado de niños', '👨‍👩‍👧', 'family'],
+    ['health', 'Health / Salud', '❤️', 'heart'],
+    ['housing', 'Housing / Vivienda', '🏠', 'home'],
+    ['legal-aid', 'Legal Help / Ayuda legal', '⚖️', 'scale'],
+    ['money', 'Financial Help / Ayuda financiera', '💵', 'money'],
+    ['esol', 'English Class / Inglés', '🗣️', 'abc'],
+    ['hse', 'GED / HSE / Equivalencia escolar', '📚', 'abc'],
+    ['college', 'College & Careers / Universidad y carreras', '🎓', 'graduation'],
+];
+
+const ADMIN_RESOURCE_CATEGORY_LABELS = Object.fromEntries(
+    ADMIN_RESOURCE_CATEGORIES.map(([key, label]) => [key, label])
+);
+
+const ADMIN_RESOURCE_CATEGORY_ICONS = Object.fromEntries(
+    ADMIN_RESOURCE_CATEGORIES.map(([key, , , icon]) => [key, icon])
+);
 
 const ADMIN_RESOURCE_ICON_LABELS = {
     auto: 'Auto',
@@ -165,9 +180,13 @@ class FirebaseAdminPanel {
             });
         });
 
+        this.populateResourceCategoryField();
         const resourceCategory = document.getElementById('resourceCategory');
         if (resourceCategory) {
-            resourceCategory.addEventListener('change', (event) => this.handleResourceCategoryChange(event.target.value));
+            resourceCategory.addEventListener('change', (event) => {
+                this.handleResourceCategoryChange(event.target.value);
+                this.syncResourceCategoryPicker(event.target.value);
+            });
         }
 
         // Form validation
@@ -1146,19 +1165,50 @@ class FirebaseAdminPanel {
         });
     }
 
+    populateResourceCategoryField() {
+        const select = document.getElementById('resourceCategory');
+        const picker = document.getElementById('resourceCategoryPicker');
+        if (!select) return;
+
+        const current = select.value;
+        select.innerHTML = '<option value="">Select a category</option>' +
+            ADMIN_RESOURCE_CATEGORIES.map(([key, label]) => (
+                `<option value="${this.escapeAttribute(key)}">${this.escapeHtml(label)}</option>`
+            )).join('');
+        if (current) {
+            select.value = current;
+        }
+
+        if (picker) {
+            picker.innerHTML = ADMIN_RESOURCE_CATEGORIES.map(([key, label, emoji]) => {
+                const shortLabel = label.split(' / ')[0];
+                return `<button type="button" data-resource-category-pick="${this.escapeAttribute(key)}">${emoji} ${this.escapeHtml(shortLabel)}</button>`;
+            }).join('');
+
+            picker.querySelectorAll('[data-resource-category-pick]').forEach((button) => {
+                button.addEventListener('click', (event) => {
+                    const category = event.currentTarget.getAttribute('data-resource-category-pick');
+                    if (!category) return;
+                    select.value = category;
+                    select.dispatchEvent(new Event('change', { bubbles: true }));
+                });
+            });
+        }
+
+        this.syncResourceCategoryPicker(select.value);
+    }
+
+    syncResourceCategoryPicker(category) {
+        document.querySelectorAll('[data-resource-category-pick]').forEach((button) => {
+            button.classList.toggle('active', button.getAttribute('data-resource-category-pick') === category);
+        });
+    }
+
     handleResourceCategoryChange(category) {
         const categorySelect = document.getElementById('resourceCategory');
         if (!categorySelect || !category) return;
 
-        const defaultIcons = {
-            immigration: 'shield',
-            jobs: 'briefcase',
-            housing: 'home',
-            health: 'heart',
-            'legal-aid': 'scale'
-        };
-
-        categorySelect.dataset.suggestedIcon = defaultIcons[category] || 'globe';
+        categorySelect.dataset.suggestedIcon = ADMIN_RESOURCE_CATEGORY_ICONS[category] || 'globe';
         this.renderResourceServicePresets(category);
     }
 
@@ -1173,11 +1223,12 @@ class FirebaseAdminPanel {
             jobs: ['Job Search', 'Resume Help', 'Interview Prep', 'Training Programs'],
             housing: ['Housing Search', 'Rental Assistance', 'Tenant Rights'],
             health: ['Primary Care', 'Mental Health', 'Insurance Help', 'Vaccines'],
-            family: ['Child Care', 'Family Support', 'Parent Resources'],
+            family: ['Child Care', 'Family Support', 'Parent Resources', 'Free Diapers'],
+            esol: ['English Classes', 'ESOL', 'Conversation Groups'],
             hse: ['GED Classes', 'HSE Prep', 'Adult Education'],
             college: ['College Advising', 'FAFSA Help', 'Scholarships'],
             'legal-aid': ['Legal Consultation', 'Know Your Rights', 'Court Help'],
-            money: ['Tax Help', 'Financial Coaching', 'Benefits Screening']
+            money: ['Tax Help', 'Financial Coaching', 'Benefits Screening', 'SNAP Help']
         }[category] || [];
 
         container.innerHTML = presets.map((label) => (
@@ -2229,6 +2280,7 @@ class FirebaseAdminPanel {
             document.getElementById('resourceTitleEn').value = bulletin.titleEn || bulletin.title || '';
             document.getElementById('resourceTitleEs').value = bulletin.titleEs || '';
             document.getElementById('resourceCategory').value = bulletin.resourceCategory || '';
+            this.syncResourceCategoryPicker(bulletin.resourceCategory || '');
             if (bulletin.resourceIcon) {
                 const categoryEl = document.getElementById('resourceCategory');
                 if (categoryEl) categoryEl.dataset.suggestedIcon = bulletin.resourceIcon;
