@@ -21,6 +21,7 @@ import {
     truncateRichText,
 } from './src/rich-text.js'
 import { collection, addDoc, query, where, orderBy, onSnapshot, serverTimestamp } from 'firebase/firestore'
+import { ensureAppVersionCurrent } from './src/app-update.js'
 
 installClientErrorLogger('student')
 
@@ -482,7 +483,7 @@ class FirebaseBulletinBoard {
     // --- bulletin cache helpers ---
     // Cache key includes the origin so localhost and prod never share state.
     static CACHE_KEY = 'ebhcs_bulletins_v1';
-    static CACHE_TTL = 30 * 60 * 1000; // 30 minutes
+    static CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
     _readCache() {
         try {
@@ -5405,7 +5406,9 @@ window.closeShareModal = closeShareModal;
 
 // Initialize the bulletin board when page loads
 let bulletinBoard;
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    const canContinue = await ensureAppVersionCurrent();
+    if (!canContinue) return;
     bulletinBoard = new FirebaseBulletinBoard();
     // Expose for global access after initialization
     window.bulletinBoard = bulletinBoard;
