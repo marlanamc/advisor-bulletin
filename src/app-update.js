@@ -1,74 +1,70 @@
 const VERSION_KEY = 'ebhcs_app_version';
-const BULLETIN_CACHE_KEY = 'ebhcs_bulletins_v1';
+const VERSION_CHECK_INTERVAL_MS = 60 * 1000;
+const VERSION_FETCH_TIMEOUT_MS = 4000;
 
-let versionCheckPromise = null;
 let checking = false;
 let initialized = false;
+let lastVersionCheckAt = 0;
 
 async function fetchDeployedVersion() {
-    const res = await fetch(`/version.json?${Date.now()}`, { cache: 'no-store' });
-    if (!res.ok) return null;
-    const data = await res.json();
-    const value = data?.v ?? data?.version;
-    return value == null ? null : String(value);
-}
+    const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    const timeoutId = controller
+        ? setTimeout(() => controller.abort(), VERSION_FETCH_TIMEOUT_MS)
+        : null;
 
-function clearBulletinCache() {
     try {
-        sessionStorage.removeItem(BULLETIN_CACHE_KEY);
+        const res = await fetch(`/version.json?${Date.now()}`, {
+            cache: 'no-store',
+            signal: controller?.signal,
+        });
+        if (!res.ok) return null;
+        const data = await res.json();
+        const value = data?.v ?? data?.version;
+        return value == null ? null : String(value);
     } catch {
-        // ignore
+        return null;
+    } finally {
+        if (timeoutId) clearTimeout(timeoutId);
     }
 }
 
 async function runVersionCheck({ allowReload = true } = {}) {
-    if (checking) {
-        return versionCheckPromise ?? true;
-    }
+    if (checking) return;
     checking = true;
+    lastVersionCheckAt = Date.now();
 
-    const work = (async () => {
-        try {
-            const next = await fetchDeployedVersion();
-            if (!next) return true;
+    try {
+        const next = await fetchDeployedVersion();
+        if (!next) return;
 
-            const prev = sessionStorage.getItem(VERSION_KEY);
-            if (prev && prev !== next) {
-                sessionStorage.setItem(VERSION_KEY, next);
-                clearBulletinCache();
-                if (allowReload) {
-                    location.reload();
-                    return false;
-                }
-            } else if (!prev) {
-                sessionStorage.setItem(VERSION_KEY, next);
+        const prev = sessionStorage.getItem(VERSION_KEY);
+        if (prev && prev !== next) {
+            sessionStorage.setItem(VERSION_KEY, next);
+            if (allowReload) {
+                location.reload();
             }
-            return true;
-        } catch {
-            return true;
-        } finally {
-            checking = false;
+            return;
         }
-    })();
-
-    versionCheckPromise = work;
-    return work;
+        if (!prev) {
+            sessionStorage.setItem(VERSION_KEY, next);
+        }
+    } catch {
+        // Offline or dev — keep running the cached app.
+    } finally {
+        checking = false;
+    }
 }
 
 export function initAppUpdateCheck() {
     if (typeof document === 'undefined' || initialized) return;
     initialized = true;
-    runVersionCheck();
-    document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible') {
-            runVersionCheck();
-        }
-    });
-}
 
-export async function ensureAppVersionCurrent() {
-    if (!versionCheckPromise) {
-        initAppUpdateCheck();
-    }
-    return versionCheckPromise ?? true;
+    // Run in the background so Firestore and the feed can start immediately.
+    runVersionCheck();
+
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState !== 'visible') return;
+        if (Date.now() - lastVersionCheckAt < VERSION_CHECK_INTERVAL_MS) return;
+        runVersionCheck();
+    });
 }

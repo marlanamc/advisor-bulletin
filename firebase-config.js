@@ -21,7 +21,6 @@ import {
     truncateRichText,
 } from './src/rich-text.js'
 import { collection, addDoc, query, where, orderBy, onSnapshot, serverTimestamp } from 'firebase/firestore'
-import { ensureAppVersionCurrent } from './src/app-update.js'
 
 installClientErrorLogger('student')
 
@@ -463,6 +462,7 @@ class FirebaseBulletinBoard {
         this.isSearchLayerOpen = false;
         this.trackedCardViews = new Set();
         this.activeDetailBulletinId = null;
+        this.bulletinsHydrated = false;
         this.handleHashChange = this.handleHashRouting.bind(this);
         this.handleDescriptionToggle = this.handleDescriptionToggle.bind(this);
         this.init();
@@ -508,33 +508,68 @@ class FirebaseBulletinBoard {
         }
     }
 
+    showBulletinsLoading() {
+        const grid = document.getElementById('bulletinGrid');
+        const emptyState = document.getElementById('feedEmptyState');
+        if (emptyState) {
+            emptyState.style.display = 'none';
+        }
+        if (grid) {
+            grid.innerHTML = `
+                <div class="feed-loading-state" role="status" aria-live="polite">
+                    <p>Loading posts…</p>
+                    <p class="empty-state-bilingual">Cargando publicaciones…</p>
+                </div>
+            `;
+        }
+    }
+
+    applyBulletinSnapshot(snapshot) {
+        const next = [];
+        snapshot.forEach((docSnap) => {
+            next.push({
+                id: docSnap.id,
+                ...this.normalizeBulletin(docSnap.data()),
+            });
+        });
+
+        this.bulletins = next;
+        this.bulletinsHydrated = true;
+        this._writeCache(this.bulletins);
+        this.populateAdvisorFilters();
+        this.renderResourceCategoryFilters();
+        this.displayBulletins();
+    }
+
     setupRealtimeListener() {
         // Render from cache immediately so the feed appears before Firestore responds.
         const cached = this._readCache();
         if (cached && cached.length > 0) {
             this.bulletins = cached;
+            this.bulletinsHydrated = true;
             this.populateAdvisorFilters();
             this.renderResourceCategoryFilters();
             this.displayBulletins();
+        } else {
+            this.showBulletinsLoading();
         }
 
-        const q = query(collection(db, 'bulletins'), where('isActive', '==', true), orderBy('datePosted', 'desc'))
+        const q = query(collection(db, 'bulletins'), where('isActive', '==', true), orderBy('datePosted', 'desc'));
         onSnapshot(q, (snapshot) => {
-            this.bulletins = [];
-            snapshot.forEach((doc) => {
-                this.bulletins.push({
-                    id: doc.id,
-                    ...this.normalizeBulletin(doc.data())
-                });
-            });
-            this._writeCache(this.bulletins);
-            this.populateAdvisorFilters();
-            this.renderResourceCategoryFilters();
-            this.displayBulletins();
+            // Ignore empty cache-only snapshots while the server response is still pending.
+            if (snapshot.empty && snapshot.metadata.fromCache && !this.bulletinsHydrated) {
+                return;
+            }
+            this.applyBulletinSnapshot(snapshot);
         }, (error) => {
             console.error('Error loading bulletins:', error);
+            this.bulletinsHydrated = true;
             const grid = document.getElementById('bulletinGrid');
             if (grid) {
+                if (this.bulletins.length > 0) {
+                    this.displayBulletins();
+                    return;
+                }
                 grid.innerHTML = '<div class="feed-load-error" role="alert"><p>Could not load posts. Check your connection and try again.</p><p class="empty-state-bilingual">No se pudieron cargar las publicaciones. Comprueba tu conexión.</p></div>';
             }
         });
@@ -1666,6 +1701,11 @@ class FirebaseBulletinBoard {
         const grid = document.getElementById('bulletinGrid');
         const emptyState = document.getElementById('feedEmptyState');
         if (!grid || !emptyState) {
+            return;
+        }
+
+        if (!this.bulletinsHydrated) {
+            this.showBulletinsLoading();
             return;
         }
 
@@ -5406,10 +5446,7 @@ window.closeShareModal = closeShareModal;
 
 // Initialize the bulletin board when page loads
 let bulletinBoard;
-document.addEventListener('DOMContentLoaded', async () => {
-    const canContinue = await ensureAppVersionCurrent();
-    if (!canContinue) return;
+document.addEventListener('DOMContentLoaded', () => {
     bulletinBoard = new FirebaseBulletinBoard();
-    // Expose for global access after initialization
     window.bulletinBoard = bulletinBoard;
 });

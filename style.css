@@ -2437,6 +2437,17 @@ header h2 {
     padding: 16px 0;
 }
 
+.feed-loading-state {
+    text-align: center;
+    padding: 48px 24px;
+    color: #64748b;
+    font-weight: 600;
+}
+
+.feed-loading-state p {
+    margin: 0 0 6px;
+}
+
 /* =====================================================
    EMPTY STATES
    Friendly messages when no content is available
