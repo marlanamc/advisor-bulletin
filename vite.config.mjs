@@ -19,6 +19,19 @@ export default defineConfig({
         main: resolve(__dirname, 'index.html'),
         admin: resolve(__dirname, 'admin.html'),
       },
+      output: {
+        // Keep shared utilities (rich-text, event-sessions, etc.) in their own
+        // chunk per-entry. Prevents the advisor-portal CSS from being preloaded
+        // on the student page just because both pages import rich-text.js.
+        manualChunks(id) {
+          if (id.includes('node_modules/firebase')) {
+            return 'firebase-vendor'
+          }
+          if (id.includes('node_modules/pdfjs-dist')) {
+            return 'pdfjs-vendor'
+          }
+        },
+      },
     },
   },
   plugins: [emitDeployVersionFile()],

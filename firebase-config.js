@@ -1,4 +1,4 @@
-import { db, auth, storage } from './src/firebase.js'
+import { db } from './src/firebase-student.js'
 import { STUDENT_ADVISOR_DIRECTORY } from './src/advisor-directory.js'
 import { installClientErrorLogger } from './src/error-logger.js'
 import { normalizePostCategory, getPostCategoryDisplay } from './src/feed-categories.js'

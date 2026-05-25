@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>How to Use the Bulletin Board — For Admins</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root{--navy:#0f172a;--navy-2:#1e293b;--cyan:#0ea5e9;--cyan-2:#0284c7;--gold:#ffc857;--bg:#f4f6fb;--card:#fff;--muted:#64748b;--line:#e2e8f0;--admin:#a855f7}
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;height:100%;background:var(--bg);color:var(--navy);font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  .deck{min-height:100dvh;display:flex;flex-direction:column;padding:max(env(safe-area-inset-top),16px) 16px max(env(safe-area-inset-bottom),16px)}
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:4px 4px 12px;font-size:13px;color:var(--muted)}
+  .topbar strong{color:var(--navy-2);font-family:'Outfit',sans-serif;font-weight:700;letter-spacing:.2px}
+  .stage{flex:1;display:flex;align-items:center;justify-content:center}
+  .slide{display:none;width:100%;max-width:680px;background:var(--card);border-radius:18px;padding:28px 26px;box-shadow:0 10px 30px rgba(15,23,42,.08);border:1px solid var(--line)}
+  .slide.active{display:block;animation:in .25s ease}
+  @keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .eyebrow{display:inline-block;background:var(--gold);color:var(--navy);font-weight:700;font-size:12px;letter-spacing:.4px;text-transform:uppercase;padding:4px 10px;border-radius:999px;margin-bottom:14px}
+  .eyebrow.admin{background:var(--admin);color:#fff}
+  h1{font-family:'Outfit',sans-serif;font-size:28px;line-height:1.2;margin:0 0 12px;color:var(--navy)}
+  h2{font-family:'Outfit',sans-serif;font-size:18px;margin:14px 0 6px;color:var(--navy)}
+  p{font-size:16px;line-height:1.55;margin:0 0 12px;color:var(--navy-2)}
+  ul{padding-left:20px;margin:0 0 12px}
+  li{font-size:16px;line-height:1.5;margin-bottom:6px;color:var(--navy-2)}
+  .shot{margin:14px 0;border:2px dashed #cbd5e1;border-radius:12px;background:#f8fafc;color:var(--muted);font-size:13px;padding:22px 16px;text-align:center;min-height:140px;display:flex;align-items:center;justify-content:center}
+  .tip{background:#fff7e0;border:1px solid #ffd97a;border-radius:12px;padding:12px 14px;font-size:15px;color:#7a5b00;margin-top:8px}
+  .note{background:#e0f2fe;border:1px solid #7dd3fc;border-radius:12px;padding:12px 14px;font-size:15px;color:#075985;margin-top:8px}
+  .warn{background:#fef2f2;border:1px solid #fca5a5;border-radius:12px;padding:12px 14px;font-size:15px;color:#991b1b;margin-top:8px}
+  .steps{counter-reset:step;padding:0;list-style:none;margin:0 0 12px}
+  .steps li{counter-increment:step;position:relative;padding-left:36px;font-size:16px;margin-bottom:10px}
+  .steps li::before{content:counter(step);position:absolute;left:0;top:0;width:26px;height:26px;border-radius:50%;background:var(--cyan);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:14px}
+  .twoCol{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .twoCol .box{background:#f8fafc;border:1px solid var(--line);border-radius:12px;padding:14px}
+  .twoCol h2{margin-top:0;font-size:16px}
+  code{background:#f1f5f9;border:1px solid var(--line);border-radius:6px;padding:1px 6px;font-family:'SF Mono',ui-monospace,Menlo,monospace;font-size:14px}
+  .nav{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 4px 4px;max-width:680px;margin:0 auto;width:100%}
+  button{appearance:none;border:0;background:var(--navy);color:#fff;font:600 15px/1 'Inter',sans-serif;padding:14px 20px;border-radius:12px;cursor:pointer;min-width:96px}
+  button.primary{background:var(--cyan)}
+  button:disabled{opacity:.3;cursor:not-allowed}
+  .dots{display:flex;gap:6px;justify-content:center;flex:1;flex-wrap:wrap}
+  .dot{width:7px;height:7px;border-radius:50%;background:#cbd5e1}
+  .dot.on{background:var(--navy);width:18px;border-radius:4px;transition:.2s}
+  .dot.adminMark{background:#e9d5ff}
+  .dot.adminMark.on{background:var(--admin)}
+  .tocBtn{appearance:none;border:1px solid var(--line);background:#fff;color:var(--navy-2);font:600 12px/1 'Inter',sans-serif;padding:8px 12px;border-radius:999px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+  .tocBtn:hover{background:#f1f5f9}
+  .toc{position:fixed;inset:0;background:rgba(15,23,42,.55);display:none;align-items:flex-start;justify-content:center;padding:24px 16px;z-index:50}
+  .toc.open{display:flex}
+  .tocCard{background:#fff;border-radius:18px;max-width:520px;width:100%;max-height:85vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.3);border:1px solid var(--line)}
+  .tocHead{position:sticky;top:0;background:#fff;padding:18px 20px 12px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
+  .tocHead h3{margin:0;font-family:'Outfit',sans-serif;font-size:18px;color:var(--navy)}
+  .tocClose{appearance:none;border:0;background:#f1f5f9;color:var(--navy-2);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:18px;line-height:1}
+  .tocList{padding:8px 0}
+  .tocGroup{padding:14px 20px 6px;font-family:'Outfit',sans-serif;font-weight:700;font-size:11px;letter-spacing:.5px;text-transform:uppercase;color:var(--muted)}
+  .tocItem{display:flex;align-items:center;gap:12px;padding:12px 20px;cursor:pointer;border:0;background:transparent;width:100%;text-align:left;font:500 15px/1.4 'Inter',sans-serif;color:var(--navy-2);border-bottom:1px solid #f1f5f9}
+  .tocItem:hover{background:#f8fafc}
+  .tocItem.current{background:#e0f2fe;color:var(--navy)}
+  .tocItem.adminItem.current{background:#f3e8ff}
+  .tocNum{width:26px;height:26px;border-radius:50%;background:#f1f5f9;color:var(--muted);font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .tocItem.current .tocNum{background:var(--cyan);color:#fff}
+  .tocItem.adminItem.current .tocNum{background:var(--admin);color:#fff}
+  .tocItem.adminItem .tocNum{background:#f3e8ff;color:var(--admin)}
+  .sectionDivider{display:flex;align-items:center;gap:10px;margin:0 0 10px;color:var(--admin);font-family:'Outfit',sans-serif;font-weight:700;font-size:13px;letter-spacing:.5px;text-transform:uppercase}
+  .sectionDivider::before,.sectionDivider::after{content:"";flex:1;height:1px;background:#e9d5ff}
+  @media (max-width:520px){h1{font-size:24px}.slide{padding:22px 18px}.twoCol{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="deck">
+  <div class="topbar">
+    <strong>Bulletin Board · Admin Guide</strong>
+    <button class="tocBtn" id="tocBtn" aria-label="Open table of contents">☰ Contents <span id="counter">1 / 18</span></button>
+  </div>
+
+  <div class="toc" id="toc" role="dialog" aria-modal="true" aria-label="Table of contents">
+    <div class="tocCard">
+      <div class="tocHead">
+        <h3>Jump to a slide</h3>
+        <button class="tocClose" id="tocClose" aria-label="Close">✕</button>
+      </div>
+      <div class="tocList" id="tocList"></div>
+    </div>
+  </div>
+
+  <div class="stage" id="stage">
+
+    <!-- ============ ADMIN-ONLY OVERVIEW ============ -->
+
+    <section class="slide" data-kind="admin">
+      <span class="eyebrow admin">Admin</span>
+      <h1>Welcome, admin.</h1>
+      <p>You can do everything an advisor can do — plus override posts, manage advisor accounts, and configure the site.</p>
+      <p>This guide covers admin-only powers first, then walks through the full advisor workflow so you have it all in one place.</p>
+    </section>
+
+    <section class="slide" data-kind="admin">
+      <span class="eyebrow admin">Admin</span>
+      <h1>What admins can do that advisors can't</h1>
+      <ul>
+        <li><strong>Edit or delete anyone's posts</strong> — useful for cleanup, corrections, or take-downs.</li>
+        <li><strong>Manage advisor accounts</strong> — add, edit, remove advisors and reset passwords from the <strong>Manage Advisors</strong> page.</li>
+        <li><strong>Edit office hours & advisor directory</strong> on the About page.</li>
+      </ul>
+      <div class="note">ℹ️ Admin accounts today: admin@ebhcs.org and leah@ebhcs.org.</div>
+    </section>
+
+    <section class="slide" data-kind="admin">
+      <span class="eyebrow admin">Admin</span>
+      <h1>The Manage Advisors page</h1>
+      <p>In the Advisor Portal you'll see a <strong>Manage Advisors</strong> page (admins only). Everything you need to add, edit, reset, or remove an advisor lives here — no Firebase console required.</p>
+      <div class="shot">[ Screenshot: Manage Advisors page with the "Add New Advisor" form and advisor cards ]</div>
+    </section>
+
+    <section class="slide" data-kind="admin">
+      <span class="eyebrow admin">Admin</span>
+      <h1>Adding a new advisor</h1>
+      <ol class="steps">
+        <li>Open <strong>Manage Advisors</strong> in the Advisor Portal.</li>
+        <li>Fill in the <strong>Add New Advisor</strong> form:
+          <ul>
+            <li><strong>Username</strong> — their email prefix (e.g. <code>jsmith</code>).</li>
+            <li><strong>Display name</strong> — what students see on bulletins.</li>
+            <li><strong>Email</strong> — their <code>@ebhcs.org</code> address.</li>
+            <li>Toggle <strong>Admin</strong> on only if they should manage all posts and advisors.</li>
+          </ul>
+        </li>
+        <li>Click <strong>+ Add Advisor</strong>.</li>
+        <li>Share their starting password: <code>ebhcs2025</code>. They'll be asked to change it on first sign-in.</li>
+      </ol>
+      <div class="warn">⚠️ Only @ebhcs.org emails work. Anything else will be rejected at login.</div>
+    </section>
+
+    <section class="slide" data-kind="admin">
+      <span class="eyebrow admin">Admin</span>
+      <h1>Editing or removing an advisor</h1>
+      <p>Each advisor card on the Manage Advisors page has three buttons:</p>
+      <ul>
+        <li><strong>Edit</strong> — update their display name, email, or admin status.</li>
+        <li><strong>Reset password</strong> — sends them a reset link (or sets it back to the default).</li>
+        <li><strong>Remove</strong> — deletes their account. Their existing posts stay; new ones can't be made.</li>
+      </ul>
+      <div class="shot">[ Screenshot: Advisor card with Edit / Remove / Reset password buttons ]</div>
+      <div class="tip">💡 The Admin account card has no Remove button — you can't delete the root admin from the UI.</div>
+    </section>
+
+    <section class="slide" data-kind="admin">
+      <span class="eyebrow admin">Admin</span>
+      <h1>Removing or overriding a post</h1>
+      <p>When you're logged in as an admin, every post card shows <strong>Edit</strong> and <strong>Delete</strong> — even posts you didn't create.</p>
+      <div class="shot">[ Screenshot: Post card with admin override buttons visible ]</div>
+      <div class="tip">💡 Before deleting, consider editing instead — fewer broken links and less confusion for students who already saw it.</div>
+    </section>
+
+    <section class="slide" data-kind="admin">
+      <span class="eyebrow admin">Admin</span>
+      <h1>Office hours & advisor directory</h1>
+      <p>The About page shows office hours and the full advisor directory. These were recently added — they're editable from the admin dashboard.</p>
+      <div class="shot">[ Screenshot: About page on mobile with office hours and directory accordion ]</div>
+    </section>
+
+    <section class="slide" data-kind="admin">
+      <span class="eyebrow admin">Admin</span>
+      <h1>Who to escalate to</h1>
+      <p>For anything you can't fix from the Manage Advisors page — site issues, bugs, weird errors, deeper account problems — contact <strong>Marlie (mcreed@ebhcs.org)</strong>.</p>
+      <div class="note">ℹ️ Marlie is the only one with Firebase / backend access. If something seems off behind the scenes, that's the right escalation path.</div>
+      <p>Next up: the full advisor workflow, in case you ever need to walk a new advisor through it (or do it yourself).</p>
+    </section>
+
+    <!-- ============ ADVISOR WORKFLOW (same as advisors.html) ============ -->
+
+    <section class="slide">
+      <div class="sectionDivider">Advisor workflow starts here</div>
+      <span class="eyebrow">Welcome</span>
+      <h1>The advisor workflow, start to finish.</h1>
+      <p>Everything below is what your advisors see. Helpful to know if you're training someone or filling in.</p>
+    </section>
+
+    <section class="slide">
+      <span class="eyebrow">The two big ideas</span>
+      <h1>Bulletins vs. Resources</h1>
+      <div class="twoCol">
+        <div class="box">
+          <h2>📣 Bulletins</h2>
+          <p>The <strong>live feed</strong>. Timely things: a job opening this month, a workshop next week, a deadline. Newest-first.</p>
+        </div>
+        <div class="box">
+          <h2>🧭 Resources</h2>
+          <p><strong>Always there</strong>. Permanent help links by topic — housing, immigration, food, health, jobs.</p>
+        </div>
+      </div>
+      <div class="tip">💡 Rule of thumb: if it has a deadline, it's a bulletin. If it'll still be useful next year, it's a resource.</div>
+    </section>
+
+    <section class="slide">
+      <span class="eyebrow">Step 1</span>
+      <h1>Logging in</h1>
+      <ol class="steps">
+        <li>Scroll to the bottom of any page (or open the <strong>About</strong> page) and tap <strong>Advisor Portal</strong>.</li>
+        <li>Sign in with an <strong>@ebhcs.org</strong> email.</li>
+        <li>First time? Default password is <code>ebhcs2025</code>. You'll be asked to change it right away.</li>
+      </ol>
+      <div class="shot">[ Screenshot: Advisor login page ]</div>
+    </section>
+
+    <section class="slide">
+      <span class="eyebrow">Step 2</span>
+      <h1>The dashboard, in one look</h1>
+      <ul>
+        <li><strong>My posts</strong> — everything published, with edit and delete.</li>
+        <li><strong>Analytics</strong> — views and clicks over 7, 30, or 90 days.</li>
+        <li><strong>Create</strong> — new bulletin, calendar event, or resource.</li>
+      </ul>
+      <div class="shot">[ Screenshot: Advisor dashboard overview ]</div>
+    </section>
+
+    <section class="slide">
+      <span class="eyebrow">Posting</span>
+      <h1>Post a bulletin</h1>
+      <ol class="steps">
+        <li>Click <strong>Create → Bulletin</strong>.</li>
+        <li>Add a clear title and a short description.</li>
+        <li>Optional: attach a PDF (max 10MB) or a link.</li>
+        <li>Hit <strong>Publish</strong>. It shows up in the student feed instantly.</li>
+      </ol>
+      <div class="shot">[ Screenshot: New bulletin form ]</div>
+      <div class="tip">💡 Short titles win. "Summer internship — apply by June 1" beats "Important opportunity for students."</div>
+    </section>
+
+    <section class="slide">
+      <span class="eyebrow">Posting</span>
+      <h1>How the calendar works</h1>
+      <p>There are two ways things end up on the calendar:</p>
+      <div class="twoCol">
+        <div class="box">
+          <h2>📣 Bulletin with a date</h2>
+          <p>If a bulletin has an event date attached (a workshop, deadline, fair), it <strong>automatically</strong> shows up on the calendar too. Post it once.</p>
+        </div>
+        <div class="box">
+          <h2>🗓️ Calendar event</h2>
+          <p>For <strong>date-only</strong> items that aren't a bulletin — Memorial Day, First Day of School, February Break, early dismissal. No long description needed.</p>
+        </div>
+      </div>
+      <div class="tip">💡 If you'd write a paragraph about it, post a bulletin. If it's just a date students should know, make it a calendar event.</div>
+      <div class="shot">[ Screenshot: Calendar view showing both a bulletin event and a date-only event ]</div>
+    </section>
+
+    <section class="slide">
+      <span class="eyebrow">Posting</span>
+      <h1>Add a resource</h1>
+      <p>Use this for evergreen help — things that stay useful all year. Pick a category (Immigration, Housing, Health, etc.), give it a title, and paste the link.</p>
+      <div class="note">ℹ️ All advisors can see and reorder resources — try to avoid duplicates. Search the category first.</div>
+      <div class="shot">[ Screenshot: New resource form with category dropdown ]</div>
+    </section>
+
+    <section class="slide">
+      <span class="eyebrow">Know what's working</span>
+      <h1>Analytics</h1>
+      <p>Each post shows views and link clicks. Switch the date range (7 / 30 / 90 days) to see trends.</p>
+      <div class="shot">[ Screenshot: Analytics dashboard with date toggle ]</div>
+      <div class="tip">💡 Lots of views but no clicks? The title is great but the content needs work.</div>
+    </section>
+
+    <section class="slide">
+      <span class="eyebrow">Cleanup</span>
+      <h1>Edit or delete posts</h1>
+      <ul>
+        <li>Advisors can edit or delete <strong>their own</strong> posts any time.</li>
+        <li>As admin, you can edit or delete <strong>anyone's</strong> — use it sparingly and let the original author know.</li>
+      </ul>
+      <div class="shot">[ Screenshot: Post card with Edit / Delete buttons ]</div>
+    </section>
+
+    <section class="slide">
+      <span class="eyebrow">Install it like an app</span>
+      <h1>Add it to your home screen or desktop</h1>
+      <div class="twoCol">
+        <div class="box">
+          <h2>📱 iPhone (Safari)</h2>
+          <p>Share button → <strong>Add to Home Screen</strong> → Add.</p>
+        </div>
+        <div class="box">
+          <h2>🤖 Android (Chrome)</h2>
+          <p>Menu <strong>⋮</strong> → <strong>Install app</strong>.</p>
+        </div>
+        <div class="box">
+          <h2>💻 Mac / Windows</h2>
+          <p>Chrome or Edge: address bar <strong>Install</strong> icon → Install.</p>
+        </div>
+        <div class="box">
+          <h2>✅ Why bother?</h2>
+          <p>Opens faster, lives next to your other apps, and works offline for cached posts.</p>
+        </div>
+      </div>
+      <div class="shot">[ Screenshot: Install prompt on desktop Chrome ]</div>
+    </section>
+
+    <section class="slide">
+      <span class="eyebrow">Done</span>
+      <h1>That's the whole tour.</h1>
+      <p>Bookmark this page — re-run it any time, or share the link with a new advisor.</p>
+      <div class="tip">💡 The student version lives at <code>/onboarding/students.html</code>. Send it to a class when you onboard them.</div>
+    </section>
+
+  </div>
+
+  <div class="nav">
+    <button id="back" aria-label="Previous slide">◀ Back</button>
+    <div class="dots" id="dots"></div>
+    <button id="next" class="primary" aria-label="Next slide">Next ▶</button>
+  </div>
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const back = document.getElementById('back');
+  const next = document.getElementById('next');
+  const dots = document.getElementById('dots');
+  const counter = document.getElementById('counter');
+  const tocBtn = document.getElementById('tocBtn');
+  const toc = document.getElementById('toc');
+  const tocClose = document.getElementById('tocClose');
+  const tocList = document.getElementById('tocList');
+  let i = 0;
+  let lastKind = null;
+  slides.forEach((s, idx) => {
+    const d = document.createElement('span');
+    const isAdmin = s.dataset.kind === 'admin';
+    d.className = 'dot' + (idx === 0 ? ' on' : '') + (isAdmin ? ' adminMark' : '');
+    dots.appendChild(d);
+
+    const kind = isAdmin ? 'admin' : 'advisor';
+    if (kind !== lastKind) {
+      const g = document.createElement('div');
+      g.className = 'tocGroup';
+      g.textContent = isAdmin ? 'Admin only' : 'Advisor workflow';
+      tocList.appendChild(g);
+      lastKind = kind;
+    }
+    const title = s.querySelector('h1')?.textContent || ('Slide ' + (idx + 1));
+    const item = document.createElement('button');
+    item.className = 'tocItem' + (idx === 0 ? ' current' : '') + (isAdmin ? ' adminItem' : '');
+    item.innerHTML = '<span class="tocNum">' + (idx + 1) + '</span><span>' + title + '</span>';
+    item.addEventListener('click', () => { show(idx); closeToc(); });
+    tocList.appendChild(item);
+  });
+  function show(n){
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach((s, idx) => s.classList.toggle('active', idx === i));
+    dots.querySelectorAll('.dot').forEach((d, idx) => d.classList.toggle('on', idx === i));
+    tocList.querySelectorAll('.tocItem').forEach((it, idx) => it.classList.toggle('current', idx === i));
+    counter.textContent = (i + 1) + ' / ' + slides.length;
+    back.disabled = i === 0;
+    next.textContent = i === slides.length - 1 ? 'Done ✓' : 'Next ▶';
+    window.scrollTo(0, 0);
+  }
+  function openToc(){ toc.classList.add('open'); }
+  function closeToc(){ toc.classList.remove('open'); }
+  tocBtn.addEventListener('click', openToc);
+  tocClose.addEventListener('click', closeToc);
+  toc.addEventListener('click', e => { if (e.target === toc) closeToc(); });
+  back.addEventListener('click', () => show(i - 1));
+  next.addEventListener('click', () => { if (i < slides.length - 1) show(i + 1); });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeToc();
+    if (toc.classList.contains('open')) return;
+    if (e.key === 'ArrowRight') show(i + 1);
+    if (e.key === 'ArrowLeft') show(i - 1);
+  });
+  let sx = null;
+  document.addEventListener('touchstart', e => { sx = e.touches[0].clientX; }, {passive:true});
+  document.addEventListener('touchend', e => { if (sx === null) return; const dx = e.changedTouches[0].clientX - sx; if (Math.abs(dx) > 50) show(i + (dx < 0 ? 1 : -1)); sx = null; });
+  // Fix counter total in case slide count differs from hardcoded value
+  counter.textContent = '1 / ' + slides.length;
+</script>
+</body>
+</html>
