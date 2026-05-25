@@ -9912,6 +9912,119 @@ body:not([data-lang="ES"]) .en-text { display: inline; }
     background: #fff;
     padding: 4px 0 10px;
     border-bottom: 1px solid #e2e8f0;
+    transition: padding 0.24s ease, box-shadow 0.24s ease;
+}
+
+/* Home feed: keep Help topic bubbles visible while scrolling posts */
+body[data-current-view="feed"] #feedView > .story-row-wrap.story-row-wrap--bilingual {
+    position: sticky;
+    top: var(--app-header-offset, 56px);
+    z-index: 150;
+    background: #fff;
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
+    transition:
+        padding 0.24s ease,
+        box-shadow 0.24s ease,
+        top 0.24s ease;
+    contain: layout style;
+}
+
+/* Compact pinned strip after scrolling — one label per bubble, tighter layout */
+body[data-current-view="feed"] #feedView > .story-row-wrap.story-row-wrap--compact {
+    padding: 2px 0 6px;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.1);
+}
+
+body[data-current-view="feed"] #feedView > .story-row-wrap.story-row-wrap--compact .story-row-label {
+    padding-bottom: 2px;
+}
+
+body[data-current-view="feed"] #feedView > .story-row-wrap.story-row-wrap--compact .story-row-title,
+body[data-current-view="feed"] #feedView > .story-row-wrap.story-row-wrap--compact .story-row-see-all-text {
+    opacity: 0;
+    max-height: 0;
+    margin: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+body[data-current-view="feed"] #feedView > .story-row-wrap.story-row-wrap--compact .story-row-kicker {
+    font-size: 10px;
+    letter-spacing: 0.14em;
+}
+
+body[data-current-view="feed"] #feedView > .story-row-wrap.story-row-wrap--compact .story-row {
+    gap: 8px;
+    padding: 2px 12px 4px;
+}
+
+body[data-current-view="feed"] #feedView > .story-row-wrap.story-row-wrap--compact .story-bubble {
+    width: 62px;
+    gap: 3px;
+}
+
+body[data-current-view="feed"] #feedView > .story-row-wrap.story-row-wrap--compact .story-bubble-ring {
+    width: 54px;
+    height: 54px;
+    padding: 2px;
+}
+
+body[data-current-view="feed"] #feedView > .story-row-wrap.story-row-wrap--compact .story-bubble-icon svg {
+    width: 36px;
+    height: 36px;
+}
+
+body[data-current-view="feed"] #feedView > .story-row-wrap.story-row-wrap--compact .story-bubble-label {
+    font-size: 10px;
+    max-width: 62px;
+    -webkit-line-clamp: 1;
+    line-clamp: 1;
+}
+
+body[data-current-view="feed"] #feedView > .story-row-wrap.story-row-wrap--compact .story-bubble-label.es-text {
+    opacity: 0;
+    max-height: 0;
+    margin-top: 0 !important;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+body[data-lang="ES"][data-current-view="feed"] #feedView > .story-row-wrap.story-row-wrap--compact .story-bubble-label.en-text {
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+body[data-lang="ES"][data-current-view="feed"] #feedView > .story-row-wrap.story-row-wrap--compact .story-bubble-label.es-text {
+    opacity: 1;
+    max-height: 1.4em;
+    display: -webkit-box !important;
+    color: #0a1d3a;
+    font-weight: 800;
+    font-size: 10px;
+    margin-top: 0;
+}
+
+body[data-current-view="feed"] #feedView > .story-row-wrap.story-row-wrap--compact .story-bubble-ring,
+body[data-current-view="feed"] #feedView > .story-row-wrap.story-row-wrap--compact .story-bubble-label {
+    transition: width 0.24s ease, height 0.24s ease, font-size 0.24s ease, opacity 0.24s ease, max-height 0.24s ease, margin 0.24s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .story-row-wrap,
+    body[data-current-view="feed"] #feedView > .story-row-wrap.story-row-wrap--bilingual,
+    .story-row-label,
+    .story-row-title,
+    .story-row-see-all-text,
+    .story-row,
+    .story-bubble,
+    .story-bubble-ring,
+    .story-bubble-icon svg,
+    .story-bubble-label,
+    .story-row-wrap--bilingual .story-bubble-label.es-text {
+        transition: none !important;
+    }
 }
 
 .story-row-label {
@@ -9925,6 +10038,7 @@ body:not([data-lang="ES"]) .en-text { display: inline; }
     color: #475569;
     padding: 8px 14px 4px;
     font-family: 'Plus Jakarta Sans', sans-serif;
+    transition: padding 0.24s ease;
 }
 
 .story-row-kicker {
@@ -9934,6 +10048,7 @@ body:not([data-lang="ES"]) .en-text { display: inline; }
     letter-spacing: 0.14em;
     line-height: 1;
     text-transform: uppercase;
+    transition: font-size 0.24s ease, letter-spacing 0.24s ease;
 }
 
 .story-row-title {
@@ -9943,6 +10058,15 @@ body:not([data-lang="ES"]) .en-text { display: inline; }
     letter-spacing: 0;
     line-height: 1.08;
     text-transform: none;
+    max-height: 1.4em;
+    overflow: hidden;
+    transition: opacity 0.24s ease, max-height 0.24s ease, margin 0.24s ease;
+}
+
+.story-row-see-all-text {
+    overflow: hidden;
+    max-height: 1.4em;
+    transition: opacity 0.24s ease, max-height 0.24s ease;
 }
 
 .story-row {
@@ -9952,6 +10076,7 @@ body:not([data-lang="ES"]) .en-text { display: inline; }
     overflow-x: auto;
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
+    transition: gap 0.24s ease, padding 0.24s ease;
 }
 
 .story-row::-webkit-scrollbar { display: none; }
@@ -9968,6 +10093,7 @@ body:not([data-lang="ES"]) .en-text { display: inline; }
     padding: 0;
     flex-shrink: 0;
     width: 76px;
+    transition: width 0.24s ease, gap 0.24s ease;
 }
 
 .desktop-resource-shortcuts {
@@ -9982,6 +10108,7 @@ body:not([data-lang="ES"]) .en-text { display: inline; }
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: width 0.24s ease, height 0.24s ease, padding 0.24s ease;
 }
 
 .story-bubble-inner {
@@ -10004,6 +10131,10 @@ body:not([data-lang="ES"]) .en-text { display: inline; }
     font-size: 28px;
 }
 
+.story-bubble-icon svg {
+    transition: width 0.24s ease, height 0.24s ease;
+}
+
 .story-bubble-label {
     font-size: 12px;
     font-weight: 700;
@@ -10016,6 +10147,7 @@ body:not([data-lang="ES"]) .en-text { display: inline; }
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
+    transition: font-size 0.24s ease, max-width 0.24s ease, opacity 0.24s ease, max-height 0.24s ease, margin 0.24s ease;
 }
 
 /* ── Feed section label ───────────────────────────────────── */
@@ -11463,6 +11595,8 @@ body:has(#loginRequired) {
     font-weight: 600;
     font-size: 11px;
     margin-top: -2px;
+    max-height: 1.4em;
+    transition: opacity 0.24s ease, max-height 0.24s ease, margin 0.24s ease, font-size 0.24s ease;
 }
 
 /* Collapse the inline desktop search into an icon trigger at all sizes.
@@ -11752,6 +11886,38 @@ body:has(#loginRequired) {
         font-weight: 900;
         line-height: 1.08;
         white-space: normal;
+    }
+
+    body[data-current-view="feed"] #feedView > .story-row-wrap.story-row-wrap--compact.story-row-wrap--mobile {
+        padding: 8px 20px 10px;
+        margin: 0;
+        border-radius: 0;
+    }
+
+    body[data-current-view="feed"] #feedView > .story-row-wrap.story-row-wrap--compact.story-row-wrap--mobile .story-bubble {
+        width: 88px;
+        gap: 6px;
+    }
+
+    body[data-current-view="feed"] #feedView > .story-row-wrap.story-row-wrap--compact.story-row-wrap--mobile .story-bubble-ring {
+        width: 72px;
+        height: 72px;
+    }
+
+    body[data-current-view="feed"] #feedView > .story-row-wrap.story-row-wrap--compact.story-row-wrap--mobile .story-bubble-icon svg {
+        width: 48px;
+        height: 48px;
+    }
+
+    body[data-current-view="feed"] #feedView > .story-row-wrap.story-row-wrap--compact.story-row-wrap--mobile .story-bubble-label {
+        max-width: 88px;
+        font-size: 14px;
+        -webkit-line-clamp: 1;
+        line-clamp: 1;
+    }
+
+    body[data-current-view="feed"] #feedView > .story-row-wrap.story-row-wrap--compact.story-row-wrap--mobile .story-row {
+        gap: 20px;
     }
 
     .story-row-wrap--bilingual .story-bubble-label.es-text {
@@ -12181,6 +12347,14 @@ body:has(#loginRequired) {
     gap: 4px;
     min-width: 0;
     flex: 1;
+    padding: 0;
+    margin-top: 0;
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    color: inherit;
+    letter-spacing: normal;
+    text-transform: none;
 }
 
 .feed-section-kicker {
@@ -12191,6 +12365,14 @@ body:has(#loginRequired) {
     letter-spacing: 0.18em;
     text-transform: uppercase;
     line-height: 1;
+}
+
+.feed-section-kicker .en-text,
+.feed-section-kicker .es-text {
+    font-weight: inherit;
+    color: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
 }
 
 .feed-page-heading .en-text,
@@ -12206,6 +12388,22 @@ body:has(#loginRequired) {
     gap: 16px;
     padding: 0 0 6px;
     margin-top: 8px;
+}
+
+@media (max-width: 768px) {
+    .feed-section-kicker {
+        font-size: 10px;
+        letter-spacing: 0.12em;
+    }
+
+    .feed-page-heading {
+        font-size: 20px;
+    }
+
+    .desktop-section-heading {
+        gap: 12px;
+        margin-top: 6px;
+    }
 }
 
 .desktop-section-eyebrow {
@@ -16471,6 +16669,37 @@ body:has(#loginRequired) {
         font-size: 13px;
         font-weight: 900;
         line-height: 1.12;
+    }
+
+    body[data-current-view="feed"] #feedView > .story-row-wrap.story-row-wrap--compact.story-row-wrap--mobile {
+        margin: 10px auto 8px;
+        padding: 8px 18px 10px;
+    }
+
+    body[data-current-view="feed"] #feedView > .story-row-wrap.story-row-wrap--compact.story-row-wrap--mobile .story-row-label {
+        padding: 0 8px 4px;
+    }
+
+    body[data-current-view="feed"] #feedView > .story-row-wrap.story-row-wrap--compact.story-row-wrap--mobile .story-bubble {
+        width: 68px;
+        gap: 5px;
+    }
+
+    body[data-current-view="feed"] #feedView > .story-row-wrap.story-row-wrap--compact.story-row-wrap--mobile .story-bubble-ring {
+        width: 58px;
+        height: 58px;
+    }
+
+    body[data-current-view="feed"] #feedView > .story-row-wrap.story-row-wrap--compact.story-row-wrap--mobile .story-bubble-icon svg {
+        width: 42px;
+        height: 42px;
+    }
+
+    body[data-current-view="feed"] #feedView > .story-row-wrap.story-row-wrap--compact.story-row-wrap--mobile .story-bubble-label {
+        max-width: 68px;
+        font-size: 12px;
+        -webkit-line-clamp: 1;
+        line-clamp: 1;
     }
 }
 

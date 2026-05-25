@@ -442,7 +442,10 @@
 
                     <div class="desktop-section-heading">
                         <div class="feed-section-label">
-                            <span class="feed-section-kicker">FROM EBHCS STAFF &middot; PERSONAL EBHCS</span>
+                            <span class="feed-section-kicker">
+                                <span class="en-text">From EBHCS Staff</span>
+                                <span class="es-text">Personal EBHCS</span>
+                            </span>
                             <h1 class="feed-page-heading">
                                 <span class="en-text">What&rsquo;s New</span>
                                 <span class="es-text">Novedades</span>
@@ -1010,6 +1013,50 @@
             }
             syncHeaderCollapsed();
             window.addEventListener('scroll', syncHeaderCollapsed, { passive: true });
+        }
+
+        var storyRowWrap = document.querySelector('#feedView > .story-row-wrap.story-row-wrap--bilingual');
+        var storyRowCompactPending = false;
+        var storyRowIsCompact = false;
+        var STORY_ROW_COMPACT_ON = 96;
+        var STORY_ROW_COMPACT_OFF = 48;
+
+        function syncStoryRowCompact() {
+            if (!storyRowWrap) {
+                return;
+            }
+            if (document.body.getAttribute('data-current-view') !== 'feed') {
+                storyRowIsCompact = false;
+                storyRowWrap.classList.remove('story-row-wrap--compact');
+                return;
+            }
+            var y = window.scrollY;
+            if (!storyRowIsCompact && y > STORY_ROW_COMPACT_ON) {
+                storyRowIsCompact = true;
+            } else if (storyRowIsCompact && y < STORY_ROW_COMPACT_OFF) {
+                storyRowIsCompact = false;
+            }
+            storyRowWrap.classList.toggle('story-row-wrap--compact', storyRowIsCompact);
+        }
+
+        function queueStoryRowCompactSync() {
+            if (storyRowCompactPending) {
+                return;
+            }
+            storyRowCompactPending = true;
+            requestAnimationFrame(function () {
+                storyRowCompactPending = false;
+                syncStoryRowCompact();
+            });
+        }
+
+        syncStoryRowCompact();
+        window.addEventListener('scroll', queueStoryRowCompactSync, { passive: true });
+        if (document.body) {
+            new MutationObserver(queueStoryRowCompactSync).observe(document.body, {
+                attributes: true,
+                attributeFilter: ['data-current-view']
+            });
         }
 
         // Language toggle is handled by firebase-config.js via bulletinBoard.setLanguage().
