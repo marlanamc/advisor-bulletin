@@ -2771,12 +2771,38 @@ details.ap-accordion > summary.ap-accordion-trigger {
 }
 
 .ap-preview-resource-highlights span::before {
-  content: '';
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: var(--story-start, #0d9488);
-  flex-shrink: 0;
+    content: none;
+}
+
+.ap-preview-resource-notes {
+    margin-top: 8px;
+    font-size: 0.82rem;
+    line-height: 1.45;
+    color: var(--ap-text-3);
+}
+
+.resource-service-presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.resource-service-preset-btn {
+    border: 1px solid var(--ap-border-mid);
+    background: var(--ap-surface-2);
+    color: var(--ap-text-2);
+    border-radius: 999px;
+    padding: 5px 11px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.resource-service-preset-btn:hover {
+    border-color: var(--ap-accent);
+    color: var(--ap-accent);
+    background: #fff;
 }
 
 /* Bulletin preview — matches real .pc card */

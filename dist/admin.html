@@ -9,10 +9,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Lexend:wght@300;400;500;600;700;800&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
-  <script type="module" crossorigin src="/assets/admin-Dy9U_gQA.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/rich-text-BTXUmwuv.js">
-  <link rel="stylesheet" crossorigin href="/assets/rich-text-DEXnbNmX.css">
-  <link rel="stylesheet" crossorigin href="/assets/admin-CflT6KC3.css">
+  <script type="module" crossorigin src="/assets/admin-B5qJAOSf.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/rich-text-Czp1Evdj.js">
+  <link rel="stylesheet" crossorigin href="/assets/rich-text-C36DXCdx.css">
+  <link rel="stylesheet" crossorigin href="/assets/admin-7rTobGcR.css">
 </head>
 <body>
     <header>
@@ -734,12 +734,19 @@
                                 <div id="resourceLogoPreview" class="image-preview" style="margin-top: 10px;"></div>
                             </div>
 
+                            <div class="form-group required-field">
+                                <label for="resourceHighlights" class="required">Services offered</label>
+                                <input type="text" id="resourceHighlights" name="resourceHighlights" maxlength="200" placeholder="e.g., SNAP Assistance, Food Pantry, Tax Help" data-resource-required="true">
+                                <small class="input-help">Comma-separated short labels students scan first (max 5). Example: <strong>Immigration Help, Free Consultation</strong></small>
+                                <div class="resource-service-presets" id="resourceServicePresets" aria-label="Suggested services"></div>
+                            </div>
+
                             <div class="form-group ap-rich-field">
-                                <label for="resourceDescription">Short Description (optional)</label>
+                                <label for="resourceDescription">Additional notes (optional)</label>
                                 <div
                                     class="ap-toolbar"
                                     role="toolbar"
-                                    aria-label="Resource description formatting"
+                                    aria-label="Resource notes formatting"
                                     aria-controls="resourceDescription"
                                     data-rich-toolbar
                                 >
@@ -763,8 +770,8 @@
                                         </svg>
                                     </button>
                                 </div>
-                                <textarea id="resourceDescription" name="resourceDescription" rows="3" maxlength="240" placeholder="One sentence about what students will find or who should use it."></textarea>
-                                <small class="input-help">Formatted text appears exactly as students will read it.</small>
+                                <textarea id="resourceDescription" name="resourceDescription" rows="3" maxlength="240" placeholder="Extra details for the More info view only — not shown on cards."></textarea>
+                                <small class="input-help">Optional. Shown only when students tap <strong>More info</strong>, not on help cards.</small>
                             </div>
 
                             <div class="field-group double">
@@ -824,12 +831,6 @@
                                     <option value="Leah">Leah</option>
                                     <option value="Administrator">Administrator</option>
                                 </select>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="resourceHighlights">Quick Highlights (optional)</label>
-                                <input type="text" id="resourceHighlights" name="resourceHighlights" maxlength="150" placeholder="e.g., Free consultation, Legal help, Workshops">
-                                <small class="input-help">Comma-separated. Max 3 short phrases shown as scannable bullet points.</small>
                             </div>
 
                             <div class="field-group double">
@@ -1772,7 +1773,7 @@
                 var titleEs = (document.getElementById('resourceTitleEs')?.value || '').trim();
                 var category = document.getElementById('resourceCategory')?.value || '';
                 var desc = (document.getElementById('resourceDescription')?.value || '').trim();
-                var highlights = (document.getElementById('resourceHighlights')?.value || '').split(',').map(function(h) { return h.trim(); }).filter(Boolean).slice(0, 3);
+                var highlights = (document.getElementById('resourceHighlights')?.value || '').split(',').map(function(h) { return h.trim(); }).filter(Boolean).slice(0, 5);
                 var logoImg = document.querySelector('#resourceLogoPreview .preview-image');
                 var logoSrc = logoImg && logoImg.getAttribute('src') ? logoImg.getAttribute('src') : '';
 
@@ -1815,8 +1816,8 @@
                                 pillsHtml +
                                 '<div class="ap-preview-resource-title">' + escPreview(title || 'Resource title') + '</div>' +
                                 (titleEs ? '<div class="ap-preview-resource-subtitle">' + escPreview(titleEs) + '</div>' : '') +
-                                (desc ? '<div class="ap-preview-resource-desc">' + formatPreviewDescription(desc) + '</div>' : '') +
                                 highlightHtml +
+                                (desc ? '<div class="ap-preview-resource-notes">' + formatPreviewDescription(desc) + '</div>' : '') +
                             '</div>' +
                         '</div>' +
                     '</div>';

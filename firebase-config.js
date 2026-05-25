@@ -2037,11 +2037,13 @@ class FirebaseBulletinBoard {
             const { titleEn, titleEs } = this.getResourceTitles(resource);
             const description = resource.description || '';
             const category = this.getResourceCategoryKey(resource);
+            const services = this.getResourceServices(resource).join(' ');
 
             return (
                 titleEn.toLowerCase().includes(normalizedQuery) ||
                 titleEs.toLowerCase().includes(normalizedQuery) ||
                 description.toLowerCase().includes(normalizedQuery) ||
+                services.toLowerCase().includes(normalizedQuery) ||
                 category.toLowerCase().includes(normalizedQuery)
             );
         });
@@ -2829,19 +2831,24 @@ class FirebaseBulletinBoard {
 
     createHelpResourceSheetRow(resource, categoryConfig) {
         const { titleEn } = this.getResourceTitles(resource);
-        const categoryKey = this.getResourceCategoryKey(resource);
         const config = categoryConfig || this.getResourceCategoryConfig(resource);
         const accent = config?.color || '#0a1d3a';
         const address = (resource.address || '').trim();
         const phone = (resource.phone || '').trim();
+        const services = this.getResourceServices(resource);
+        const chipsHtml = services.length
+            ? this.getResourceServiceChipsHtml(resource, { max: 2 })
+            : '';
 
         let meta = '';
-        if (address) {
-            meta = this.formatCompactAddress(address);
-        } else if (phone) {
-            meta = phone;
-        } else {
-            meta = this.getResourceSheetSubtitle(resource);
+        if (!services.length) {
+            if (address) {
+                meta = this.formatCompactAddress(address);
+            } else if (phone) {
+                meta = phone;
+            } else {
+                meta = this.getResourceSheetSubtitle(resource);
+            }
         }
 
         const logo = resource.resourceLogo || '';
@@ -2854,7 +2861,7 @@ class FirebaseBulletinBoard {
                 <div class="help-sheet-row__mark">${markHtml}</div>
                 <div class="help-sheet-row__copy">
                     <h3 class="help-sheet-row__title">${this.escapeHtml(titleEn)}</h3>
-                    ${meta ? `<p class="help-sheet-row__meta">${this.escapeHtml(meta)}</p>` : ''}
+                    ${chipsHtml || (meta ? `<p class="help-sheet-row__meta">${this.escapeHtml(meta)}</p>` : '')}
                 </div>
                 <button type="button"
                         class="help-sheet-row__more"
@@ -2887,15 +2894,15 @@ class FirebaseBulletinBoard {
             : `<span class="mobile-resource-card__icon-fallback" style="background:${accent}" aria-hidden="true">${this.getResourceIconSvg(resource)}</span>`;
 
         const postDescription = this.getPostDescription(resource);
-        const descriptionHtml = postDescription
-            ? `<div class="mobile-resource-card__description">${this.renderFormattedDescription(postDescription, `${resource.id}-mobile`, false)}</div>`
+        const servicesHtml = this.getResourceServiceChipsHtml(resource);
+        const hours = (resource.hours || '').trim();
+        const hoursHtml = hours
+            ? `<p class="mobile-resource-card__hours">${this.escapeHtml(hours)}</p>`
             : '';
 
         const badgesHtml = this.getResourceBadgesHtml(resource);
 
-        const languages = Array.isArray(resource.languages) && resource.languages.length
-            ? resource.languages
-            : this.parseResourceHighlights(resource.highlights);
+        const languages = Array.isArray(resource.languages) ? resource.languages : [];
         const languagesHtml = languages.length
             ? `<div class="mobile-resource-card__langs">${languages.slice(0, 4).map((lang) => `<span class="mobile-resource-card__lang">${this.escapeHtml(lang)}</span>`).join('')}</div>`
             : '';
@@ -2982,7 +2989,8 @@ class FirebaseBulletinBoard {
                         ${titleEs && titleEs !== titleEn ? `<p class="mobile-resource-card__subtitle">${this.escapeHtml(titleEs)}</p>` : ''}
                         ${badgesHtml}
                     </div>
-                    ${descriptionHtml}
+                    ${servicesHtml}
+                    ${hoursHtml}
                     ${languagesHtml}
                     ${addressHtml}
                     ${actionsHtml}
@@ -2991,11 +2999,29 @@ class FirebaseBulletinBoard {
         `;
     }
 
-    parseResourceHighlights(highlights) {
+    getResourceServices(resource, max = 5) {
+        if (!resource) return [];
+        if (Array.isArray(resource.services) && resource.services.length) {
+            return resource.services
+                .map((item) => String(item || '').trim())
+                .filter(Boolean)
+                .slice(0, max);
+        }
+        return this.parseResourceHighlights(resource.highlights, max);
+    }
+
+    getResourceServiceChipsHtml(resource, options = {}) {
+        const max = options.max ?? 5;
+        const services = this.getResourceServices(resource, max);
+        if (!services.length) return '';
+        return `<div class="resource-service-chips">${services.map((service) => `<span class="resource-service-chip">${this.escapeHtml(service)}</span>`).join('')}</div>`;
+    }
+
+    parseResourceHighlights(highlights, max = 5) {
         if (!highlights) return [];
-        if (Array.isArray(highlights)) return highlights.slice(0, 3);
+        if (Array.isArray(highlights)) return highlights.slice(0, max);
         if (typeof highlights === 'string') {
-            return highlights.split(',').map(h => h.trim()).filter(Boolean).slice(0, 3);
+            return highlights.split(',').map(h => h.trim()).filter(Boolean).slice(0, max);
         }
         return [];
     }
@@ -3525,7 +3551,17 @@ class FirebaseBulletinBoard {
                 ? `<strong>${this.escapeHtml(bulletin.advisorName || 'Advisor')}</strong>`
                 : `<strong>${this.escapeHtml(bulletin.advisorName || 'Advisor')}</strong> · ${postedDate}`;
         const postDescription = this.getPostDescription(bulletin);
-        const descriptionHtml = postDescription ? this.renderFormattedDescription(postDescription, `${bulletin.id}-detail`) : '';
+        const isResource = this.isResourceBulletin(bulletin);
+        const resourceServicesHtml = isResource ? this.getResourceServiceChipsHtml(bulletin) : '';
+        const formattedDescription = postDescription
+            ? this.renderFormattedDescription(postDescription, `${bulletin.id}-detail`)
+            : '';
+        const postDescriptionBlock = !isResource && formattedDescription
+            ? `<div class="post-detail-description">${formattedDescription}</div>`
+            : '';
+        const resourceNotesHtml = isResource && formattedDescription
+            ? `<div class="post-detail-description post-detail-description--notes"><p class="post-detail-notes-label"><span class="en-text">Additional notes</span><span class="es-text">Notas adicionales</span></p>${formattedDescription}</div>`
+            : '';
         const tagValues = [bulletin.classType ? this.getClassTypeDisplay(bulletin.classType) : '', bulletin.company || '', bulletin.eventLocation || '']
             .filter(Boolean)
             .slice(0, 3);
@@ -3565,6 +3601,7 @@ class FirebaseBulletinBoard {
                         <span class="es-text">${this.escapeHtml(meta.labelEs.toUpperCase())}</span>
                     </p>
                     <h2>${this.escapeHtml(this.getPostTitle(bulletin))}</h2>
+                    ${resourceServicesHtml}
                     ${isExpired ? '<p class="post-detail-expired">Expired</p>' : ''}
                     <div class="post-detail-author">
                         <span class="post-detail-avatar" style="background:${meta.accent}">${this.escapeHtml(initial)}</span>
@@ -3581,7 +3618,7 @@ class FirebaseBulletinBoard {
                             </div>
                         </div>
                     ` : ''}
-                    ${descriptionHtml ? `<div class="post-detail-description">${descriptionHtml}</div>` : ''}
+                    ${postDescriptionBlock}
                     
                     ${showDetailInfoGrid ? `
                         <div class="post-detail-info-grid" style="margin-top: 24px; display: grid; gap: 16px; background: #f8fafc; padding: 20px; border-radius: 16px; border: 1px solid #e2e8f0;">
@@ -3612,6 +3649,8 @@ class FirebaseBulletinBoard {
                             ` : ''}
                         </div>
                     ` : ''}
+
+                    ${resourceNotesHtml}
 
                     ${tagValues.length ? `<div class="post-detail-tags">${tagValues.map((tag) => `<span>${this.escapeHtml(tag)}</span>`).join('')}</div>` : ''}
                     ${bulletin.contact ? `<div class="post-detail-contact-note">${this.escapeHtml(bulletin.contact).replace(/\n/g, '<br>')}</div>` : ''}

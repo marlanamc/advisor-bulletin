@@ -13616,6 +13616,55 @@ body[data-current-view="resources"].resource-category-detail-open #resourcesView
     gap: 6px;
 }
 
+.resource-service-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.resource-service-chip {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    padding: 5px 11px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--cat-accent, #0a1d3a) 10%, #f1f5f9);
+    color: color-mix(in srgb, var(--cat-accent, #0a1d3a) 82%, #0a1d3a);
+    border: 1px solid color-mix(in srgb, var(--cat-accent, #0a1d3a) 18%, #e2e8f0);
+}
+
+.help-sheet-row__copy .resource-service-chips {
+    margin-top: 2px;
+}
+
+.help-sheet-row__copy .resource-service-chip {
+    font-size: 11px;
+    padding: 4px 9px;
+}
+
+.mobile-resource-card__hours {
+    margin: 0;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 13px;
+    line-height: 1.4;
+    font-weight: 600;
+    color: #64748b;
+}
+
+.post-detail-panel .resource-service-chips {
+    margin: 10px 0 4px;
+}
+
+.post-detail-notes-label {
+    margin: 0 0 8px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #64748b;
+}
+
 .mobile-resource-card__lang {
     font-family: 'Plus Jakarta Sans', sans-serif;
     font-size: 12px;

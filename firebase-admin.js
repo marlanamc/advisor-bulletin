@@ -1088,6 +1088,11 @@ class FirebaseAdminPanel {
             this.applySchoolEventPreset('calendar-only', { keepContentMode: true });
         }
 
+        if (nextType === 'resource') {
+            const category = document.getElementById('resourceCategory')?.value || '';
+            this.renderResourceServicePresets(category);
+        }
+
         this.renumberVisibleFormSteps();
     }
 
@@ -1154,6 +1159,40 @@ class FirebaseAdminPanel {
         };
 
         categorySelect.dataset.suggestedIcon = defaultIcons[category] || 'globe';
+        this.renderResourceServicePresets(category);
+    }
+
+    renderResourceServicePresets(category) {
+        const container = document.getElementById('resourceServicePresets');
+        const input = document.getElementById('resourceHighlights');
+        if (!container || !input) return;
+
+        const presets = {
+            food: ['Food Pantry', 'SNAP Assistance', 'Hot Meals', 'Grocery Bags'],
+            immigration: ['Immigration Help', 'Citizenship Help', 'Legal Consultation'],
+            jobs: ['Job Search', 'Resume Help', 'Interview Prep', 'Training Programs'],
+            housing: ['Housing Search', 'Rental Assistance', 'Tenant Rights'],
+            health: ['Primary Care', 'Mental Health', 'Insurance Help', 'Vaccines'],
+            family: ['Child Care', 'Family Support', 'Parent Resources'],
+            hse: ['GED Classes', 'HSE Prep', 'Adult Education'],
+            college: ['College Advising', 'FAFSA Help', 'Scholarships'],
+            'legal-aid': ['Legal Consultation', 'Know Your Rights', 'Court Help'],
+            money: ['Tax Help', 'Financial Coaching', 'Benefits Screening']
+        }[category] || [];
+
+        container.innerHTML = presets.map((label) => (
+            `<button type="button" class="resource-service-preset-btn" data-service-preset="${this.escapeAttribute(label)}">${this.escapeHtml(label)}</button>`
+        )).join('');
+
+        container.querySelectorAll('[data-service-preset]').forEach((button) => {
+            button.addEventListener('click', () => {
+                const value = button.getAttribute('data-service-preset') || '';
+                const current = input.value.split(',').map((part) => part.trim()).filter(Boolean);
+                if (!value || current.includes(value) || current.length >= 5) return;
+                input.value = [...current, value].join(', ');
+                input.dispatchEvent(new Event('input', { bubbles: true }));
+            });
+        });
     }
 
     // Tab Management
@@ -2196,7 +2235,11 @@ class FirebaseAdminPanel {
             }
             document.getElementById('resourceUrl').value = bulletin.url || bulletin.eventLink || '';
             document.getElementById('resourceDescription').value = bulletin.description || '';
-            document.getElementById('resourceHighlights').value = bulletin.highlights || '';
+            const serviceLabels = Array.isArray(bulletin.services) && bulletin.services.length
+                ? bulletin.services.join(', ')
+                : (bulletin.highlights || '');
+            document.getElementById('resourceHighlights').value = serviceLabels;
+            this.renderResourceServicePresets(bulletin.resourceCategory || '');
             document.getElementById('resourcePublished').checked = bulletin.isPublished !== false;
             document.getElementById('resourceOrder').value = bulletin.resourceOrder ?? '';
             this.populateAdvisorSelects(bulletin.advisorName || '');
@@ -2638,7 +2681,7 @@ class FirebaseAdminPanel {
                     <p><strong>Published:</strong> ${bulletin.isPublished !== false ? 'Yes' : 'No — hidden from students'}</p>
                     ${bulletin.url || bulletin.eventLink ? `<p><strong>Link:</strong> <a href="${this.escapeAttribute(bulletin.url || bulletin.eventLink)}" target="_blank" rel="noopener">Open resource</a></p>` : ''}
                     ${bulletin.description ? `<p><strong>Description:</strong> ${this.escapeHtml(bulletin.description)}</p>` : ''}
-                    ${bulletin.highlights ? `<p><strong>Highlights:</strong> ${this.escapeHtml(bulletin.highlights)}</p>` : ''}
+                    ${bulletin.highlights ? `<p><strong>Services:</strong> ${this.escapeHtml(bulletin.highlights)}</p>` : ''}
                     ${bulletin.address ? `<p><strong>Address:</strong> ${this.escapeHtml(bulletin.address)}</p>` : ''}
                     ${bulletin.phone ? `<p><strong>Phone:</strong> ${this.escapeHtml(bulletin.phone)} (${this.escapeHtml(bulletin.phoneMode || 'call')})</p>` : ''}
                     ${Array.isArray(bulletin.languages) && bulletin.languages.length ? `<p><strong>Languages:</strong> ${bulletin.languages.map(lang => this.escapeHtml(lang)).join(', ')}</p>` : ''}
@@ -3417,6 +3460,13 @@ class FirebaseAdminPanel {
                 throw new Error('Please select who is posting this resource.');
             }
 
+            const servicesRaw = (formData.get('resourceHighlights') || '').trim();
+            const services = servicesRaw.split(',').map((part) => part.trim()).filter(Boolean).slice(0, 5);
+            const resourceNotes = (formData.get('resourceDescription') || '').trim();
+            if (!services.length && !resourceNotes) {
+                throw new Error('Add at least one service chip, or additional notes for students.');
+            }
+
             return {
                 type: 'resource',
                 title: titleEn,
@@ -3428,8 +3478,9 @@ class FirebaseAdminPanel {
                 resourceLogo: null,
                 url,
                 eventLink: url,
-                description: (formData.get('resourceDescription') || '').trim(),
-                highlights: (formData.get('resourceHighlights') || '').trim(),
+                description: resourceNotes,
+                highlights: services.join(', '),
+                services,
                 advisorName: advisorName,
                 address: (formData.get('resourceAddress') || '').trim(),
                 phone: (formData.get('resourcePhone') || '').trim(),

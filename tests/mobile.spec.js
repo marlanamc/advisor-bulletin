@@ -154,6 +154,7 @@ test.describe('Mobile app shell', () => {
         resourceCategory: 'immigration',
         resourceIcon: 'globe',
         description: 'Community support for immigrants and families in Greater Boston, including food support, classes, jobs, health resources, citizenship help, and community advocacy.',
+        highlights: 'Immigration Help, Food Support, Citizenship Help',
         address: '318 Broadway, Chelsea, MA 02150',
         phone: '617-555-0101',
         advisorName: 'Jorge',
@@ -168,7 +169,7 @@ test.describe('Mobile app shell', () => {
 
     await page.locator('#feedStoryCats [data-app-view-cat="immigration"]').click();
 
-    await expect(page.locator('#catOrgList .help-sheet-row__meta')).toContainText('318 Broadway · Chelsea');
+    await expect(page.locator('#catOrgList .resource-service-chip').first()).toContainText('Immigration Help');
     await expect(page.locator('#catOrgList .mobile-resource-card__description')).toHaveCount(0);
     await expect(page.locator('#catOrgList .cat-org-address')).toHaveCount(0);
   });
