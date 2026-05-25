@@ -15905,13 +15905,22 @@ body:has(#loginRequired) {
     left: 22px;
     right: auto;
     z-index: 40;
-    width: 48px;
-    height: 48px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
     border: 0;
     border-radius: 999px;
     background: rgba(10, 29, 58, 0.76);
     color: #fff;
     box-shadow: none;
+}
+
+.bulletin-detail-modal .close-detail svg {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
 }
 
 .bulletin-detail-modal .close-detail:hover,
@@ -16362,10 +16371,15 @@ body:has(#loginRequired) {
     }
 
     .bulletin-detail-modal .close-detail {
-        top: max(18px, env(safe-area-inset-top));
-        left: 18px;
-        width: 48px;
-        height: 48px;
+        top: max(16px, env(safe-area-inset-top));
+        left: 16px;
+        width: 58px;
+        height: 58px;
+    }
+
+    .bulletin-detail-modal .close-detail svg {
+        width: 30px;
+        height: 30px;
     }
 
     .post-detail-page {
