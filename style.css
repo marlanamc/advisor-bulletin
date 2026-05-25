@@ -16032,37 +16032,9 @@ body:has(#loginRequired) {
 .post-detail-hero-art {
     position: absolute;
     inset: 0;
-    background: linear-gradient(180deg, #86b9ff 0%, var(--detail-tint, #dbeafe) 100%);
-}
-
-.post-detail-sun {
-    position: absolute;
-    top: 58px;
-    right: 50px;
-    width: 78px;
-    height: 78px;
-    border-radius: 50%;
-    background: #ffd166;
-}
-
-.post-detail-wave {
-    position: absolute;
-    left: -14%;
-    right: -14%;
-    height: 96px;
-    border-radius: 50% 50% 0 0;
-}
-
-.post-detail-wave-one {
-    bottom: 34px;
-    background: #24498f;
-    transform: rotate(-3deg);
-}
-
-.post-detail-wave-two {
-    bottom: 8px;
-    background: rgba(36, 73, 143, 0.58);
-    transform: rotate(2deg);
+    background:
+        radial-gradient(120% 80% at 50% 115%, color-mix(in srgb, var(--detail-accent, #0284c7) 26%, #ffffff) 0%, transparent 68%),
+        linear-gradient(180deg, #ffffff 0%, var(--detail-tint, #e0f2fe) 100%);
 }
 
 .post-detail-icon {
@@ -16078,9 +16050,30 @@ body:has(#loginRequired) {
     color: #fff;
 }
 
+.post-detail-hero--art-only .post-detail-icon {
+    top: 45%;
+    bottom: auto;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 112px;
+    height: 112px;
+    border-radius: 28px;
+    background: linear-gradient(155deg, #234a85 0%, #0a1d3a 100%);
+    border: 2.5px solid rgba(201, 168, 76, 0.92);
+    box-shadow:
+        0 14px 32px rgba(10, 29, 58, 0.22),
+        inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
 .post-detail-icon svg {
     width: 62px;
     height: 62px;
+}
+
+.post-detail-hero--art-only .post-detail-icon svg {
+    width: 54px;
+    height: 54px;
+    margin-top: -1px;
 }
 
 .post-detail-panel {
@@ -16444,6 +16437,20 @@ body:has(#loginRequired) {
         width: 108px;
         height: 108px;
         border-radius: 28px;
+    }
+
+    .post-detail-hero--art-only .post-detail-icon {
+        top: 45%;
+        bottom: auto;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 104px;
+        height: 104px;
+    }
+
+    .post-detail-hero--art-only .post-detail-icon svg {
+        width: 50px;
+        height: 50px;
     }
 
     .post-detail-panel {

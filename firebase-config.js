@@ -3479,6 +3479,10 @@ class FirebaseBulletinBoard {
         return map[category] || { accent: '#475569', tint: '#f1f5f9', grad: 'linear-gradient(145deg,#e2e8f0 0%,#f1f5f9 100%)', label: category, labelEs: category, badge: 'INFO', emoji: '📌' };
     }
 
+    getSchoolBoatIconSvg() {
+        return `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 4.5v10.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/><path d="M12 4.5 19 14.5H12Z" fill="rgba(255,255,255,0.18)" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"/><path d="M12 9 5 16h14" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 16c1.35 2.35 3.55 3.5 6 3.5s4.65-1.15 6-3.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/><path d="M4 19.5h16" stroke="#c9a84c" stroke-width="1.6" stroke-linecap="round"/></svg>`;
+    }
+
     getCardIconSvg(category) {
         const icons = {
             job: `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="38" height="38"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>`,
@@ -3661,11 +3665,8 @@ class FirebaseBulletinBoard {
                     <span class="es-text">Toca para ampliar</span>
                 </span>
             </button>`
-            : `<div class="post-detail-hero-art" style="--detail-accent:${meta.accent};--detail-tint:${meta.tint}">
-                <div class="post-detail-sun"></div>
-                <div class="post-detail-wave post-detail-wave-one"></div>
-                <div class="post-detail-wave post-detail-wave-two"></div>
-                <div class="post-detail-icon" style="background:${meta.accent}">${this.getCardIconSvg(bulletin.category)}</div>
+            : `<div class="post-detail-hero-art">
+                <div class="post-detail-icon">${this.getSchoolBoatIconSvg()}</div>
             </div>`;
 
         return `
