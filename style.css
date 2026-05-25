@@ -13668,6 +13668,15 @@ body[data-current-view="resources"].resource-category-detail-open #resourcesView
     stroke: #94a3b8;
 }
 
+.mobile-resource-card__meta {
+    margin: 0;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 14px;
+    line-height: 1.35;
+    font-weight: 600;
+    color: #64748b;
+}
+
 .mobile-resource-card__btn {
     display: inline-flex;
     align-items: center;
@@ -14379,8 +14388,119 @@ body[data-current-view="resources"].resource-category-detail-open #resourcesView
     }
 
     .cat-detail-sheet.cat-detail-sheet--bottom #catOrgList {
-        gap: 10px;
-        padding: 0 18px;
+        gap: 8px;
+        padding: 4px 16px 12px;
+    }
+
+    .help-sheet-row {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 12px;
+        min-height: 72px;
+        padding: 12px 12px 12px 14px;
+        border: 1px solid color-mix(in srgb, var(--cat-accent, #0d9488) 18%, #e2e8f0);
+        border-radius: 14px;
+        background: #fff;
+    }
+
+    .help-sheet-row__mark {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        overflow: hidden;
+        display: grid;
+        place-items: center;
+        flex-shrink: 0;
+        background: #f8fafc;
+    }
+
+    .help-sheet-row__mark img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        padding: 4px;
+    }
+
+    .help-sheet-row__icon-fallback {
+        width: 100%;
+        height: 100%;
+        display: grid;
+        place-items: center;
+        color: #fff;
+    }
+
+    .help-sheet-row__icon-fallback svg {
+        width: 22px;
+        height: 22px;
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 2;
+    }
+
+    .help-sheet-row__copy {
+        min-width: 0;
+        display: grid;
+        gap: 2px;
+    }
+
+    .help-sheet-row__title {
+        margin: 0;
+        font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+        font-size: 16px;
+        font-weight: 800;
+        line-height: 1.15;
+        color: #0a1d3a;
+        display: -webkit-box;
+        overflow: hidden;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
+
+    .help-sheet-row__meta {
+        margin: 0;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 13px;
+        font-weight: 600;
+        line-height: 1.3;
+        color: #64748b;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .help-sheet-row__more {
+        flex-shrink: 0;
+        display: inline-flex;
+        align-items: center;
+        gap: 2px;
+        min-height: 36px;
+        padding: 0 10px 0 12px;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 999px;
+        background: #fff;
+        color: var(--cat-accent, #0a1d3a);
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        white-space: nowrap;
+    }
+
+    .help-sheet-row__more svg {
+        width: 16px;
+        height: 16px;
+        flex: 0 0 auto;
+    }
+
+    .help-sheet-row__more:active {
+        transform: scale(0.98);
+        background: #f8fafc;
+    }
+
+    .help-sheet-row__more:focus-visible {
+        outline: 3px solid rgba(46, 122, 240, 0.36);
+        outline-offset: 2px;
     }
 
     .cat-detail-sheet.cat-detail-sheet--bottom .cat-org-card {

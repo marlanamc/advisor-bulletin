@@ -168,21 +168,20 @@ test.describe('Mobile app shell', () => {
 
     await page.locator('#feedStoryCats [data-app-view-cat="immigration"]').click();
 
-    const description = page.locator('#catOrgList .cat-org-description');
-    await expect(description).toContainText('318 Broadway · Chelsea');
-    await expect(description).not.toContainText('citizenship help');
+    await expect(page.locator('#catOrgList .help-sheet-row__meta')).toContainText('318 Broadway · Chelsea');
+    await expect(page.locator('#catOrgList .mobile-resource-card__description')).toHaveCount(0);
     await expect(page.locator('#catOrgList .cat-org-address')).toHaveCount(0);
   });
 
   test('resource sheet shows top three places and can expand', async ({ page }) => {
     await page.locator('#feedStoryCats [data-app-view-cat="health"]').click();
 
-    await expect(page.locator('#catOrgList .cat-org-card')).toHaveCount(3);
+    await expect(page.locator('#catOrgList .help-sheet-row')).toHaveCount(3);
     await expect(page.locator('#catOrgList')).not.toContainText('East Boston Vaccines');
     await expect(page.locator('[data-cat-show-all="health"]')).toBeVisible();
 
     await page.locator('[data-cat-show-all="health"]').click();
-    await expect(page.locator('#catOrgList .cat-org-card')).toHaveCount(4);
+    await expect(page.locator('#catOrgList .help-sheet-row')).toHaveCount(4);
     await expect(page.locator('#catOrgList')).toContainText('East Boston Vaccines');
   });
 

@@ -998,11 +998,18 @@ class FirebaseBulletinBoard {
 
         sheet.addEventListener('click', (event) => {
             const showAll = event.target.closest('[data-cat-show-all]');
-            if (!showAll) return;
+            if (showAll) {
+                const category = showAll.getAttribute('data-cat-show-all');
+                if (category) {
+                    this.openResourceDetailSheet(category, { showAll: true });
+                }
+                return;
+            }
 
-            const category = showAll.getAttribute('data-cat-show-all');
-            if (category) {
-                this.openResourceDetailSheet(category, { showAll: true });
+            const moreBtn = event.target.closest('[data-resource-more]');
+            if (moreBtn) {
+                event.preventDefault();
+                this.openResourceFromSheet(moreBtn.getAttribute('data-resource-more'));
             }
         });
 
@@ -2517,7 +2524,7 @@ class FirebaseBulletinBoard {
         listEl.innerHTML = visibleResources.length > 0
             ? visibleResources.map((resource) => (
                 isMobileSheet
-                    ? this.createResourceDetailCard(resource, config, { compact: true })
+                    ? this.createHelpResourceSheetRow(resource, config)
                     : this.createHelpResourceCard(resource, config)
             )).join('')
             : emptyHtml;
@@ -2811,6 +2818,53 @@ class FirebaseBulletinBoard {
                     </svg>
                 </button>
             </div>
+        `;
+    }
+
+    openResourceFromSheet(resourceId) {
+        if (!resourceId) return;
+        this.closeResourceDetailSheet();
+        this.showBulletinDetail(resourceId);
+    }
+
+    createHelpResourceSheetRow(resource, categoryConfig) {
+        const { titleEn } = this.getResourceTitles(resource);
+        const categoryKey = this.getResourceCategoryKey(resource);
+        const config = categoryConfig || this.getResourceCategoryConfig(resource);
+        const accent = config?.color || '#0a1d3a';
+        const address = (resource.address || '').trim();
+        const phone = (resource.phone || '').trim();
+
+        let meta = '';
+        if (address) {
+            meta = this.formatCompactAddress(address);
+        } else if (phone) {
+            meta = phone;
+        } else {
+            meta = this.getResourceSheetSubtitle(resource);
+        }
+
+        const logo = resource.resourceLogo || '';
+        const markHtml = logo
+            ? `<img src="${this.escapeAttribute(logo)}" alt="" loading="lazy">`
+            : `<span class="help-sheet-row__icon-fallback" style="background:${accent}" aria-hidden="true">${this.getResourceIconSvg(resource)}</span>`;
+
+        return `
+            <article class="help-sheet-row" style="--cat-accent:${accent}" data-resource-id="${this.escapeAttribute(resource.id || '')}">
+                <div class="help-sheet-row__mark">${markHtml}</div>
+                <div class="help-sheet-row__copy">
+                    <h3 class="help-sheet-row__title">${this.escapeHtml(titleEn)}</h3>
+                    ${meta ? `<p class="help-sheet-row__meta">${this.escapeHtml(meta)}</p>` : ''}
+                </div>
+                <button type="button"
+                        class="help-sheet-row__more"
+                        data-resource-more="${this.escapeAttribute(resource.id || '')}"
+                        aria-label="More info about ${this.escapeAttribute(titleEn)}">
+                    <span class="en-text">More info</span>
+                    <span class="es-text">Más info</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+                </button>
+            </article>
         `;
     }
 
@@ -3220,7 +3274,7 @@ class FirebaseBulletinBoard {
             return;
         }
 
-        const bulletin = this.getPostBulletins(this.bulletins).find(b => b.id === bulletinId)
+        const bulletin = this.bulletins.find((b) => b.id === bulletinId)
             || SCHOOL_CALENDAR_ANCHORS.find((b) => b.id === bulletinId);
 
         if (!bulletin) {
@@ -3477,6 +3531,10 @@ class FirebaseBulletinBoard {
             .slice(0, 3);
         const contactAction = this.getDetailContactAction(bulletin);
         const showDetailInfoGrid = this.hasDetailInfoGridContent(bulletin);
+        const resourceUrl = this.isResourceBulletin(bulletin) ? this.getResourceUrl(bulletin) : '';
+        const detailExternalLink = resourceUrl && resourceUrl !== '#'
+            ? resourceUrl
+            : (bulletin.eventLink || '');
         const currentLang = document.body.getAttribute('data-lang') || 'EN';
         const displayImage = (currentLang === 'ES' && bulletin.imageEs) ? bulletin.imageEs : bulletin.image;
 
@@ -3570,10 +3628,10 @@ class FirebaseBulletinBoard {
                                 <span><strong>View PDF</strong><small>Open attachment</small></span>
                             </button>
                         ` : ''}
-                        ${bulletin.eventLink ? `
-                            <a href="${this.escapeAttribute(bulletin.eventLink)}" target="_blank" rel="noopener" class="post-detail-action post-detail-action--outline" data-analytics-action="link_click" data-analytics-post-id="${this.escapeAttribute(bulletin.id)}" data-analytics-category="${this.escapeAttribute(bulletin.category)}" data-analytics-content-type="post">
+                        ${detailExternalLink ? `
+                            <a href="${this.escapeAttribute(detailExternalLink)}" target="_blank" rel="noopener" class="post-detail-action post-detail-action--outline" data-analytics-action="link_click" data-analytics-post-id="${this.escapeAttribute(bulletin.id)}" data-analytics-category="${this.escapeAttribute(bulletin.category)}" data-analytics-content-type="post">
                                 <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>
-                                <span><strong>${this.escapeHtml(this.getDetailLinkActionLabel(bulletin.category))}</strong><small>${this.escapeHtml(this.getDisplayHost(bulletin.eventLink))}</small></span>
+                                <span><strong>${this.escapeHtml(this.getDetailLinkActionLabel(bulletin.category))}</strong><small>${this.escapeHtml(this.getDisplayHost(detailExternalLink))}</small></span>
                             </a>
                         ` : ''}
                         <button type="button" class="post-detail-action post-detail-action--share" onclick="shareBulletin('${bulletin.id}','${this.escapeHtml(bulletin.title || '').replace(/'/g,"&#39;")}')">
