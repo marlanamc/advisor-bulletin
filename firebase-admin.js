@@ -433,8 +433,9 @@ class FirebaseAdminPanel {
         const input = document.getElementById(inputId);
         if (!zone || !input) return;
 
-        const acceptFile = fieldName === 'image' ? isFlyerImageFile : isImageOnlyFile;
-        const rejectMessage = fieldName === 'image'
+        const acceptsFlyerPdf = fieldName === 'image' || fieldName === 'imageEs';
+        const acceptFile = acceptsFlyerPdf ? isFlyerImageFile : isImageOnlyFile;
+        const rejectMessage = acceptsFlyerPdf
             ? 'Please drop a PNG, JPG, or PDF under 10MB.'
             : 'Please drop a PNG or JPG under 10MB.';
 
@@ -1063,7 +1064,7 @@ class FirebaseAdminPanel {
         const categoryInput = document.getElementById('category');
         const advisorNameInput = document.getElementById('advisorName');
         if (titleInput) titleInput.required = nextMode === 'post' || nextMode === 'event';
-        if (categoryInput) categoryInput.required = nextMode === 'post';
+        if (categoryInput) categoryInput.required = false;
         if (advisorNameInput) advisorNameInput.required = nextMode === 'post' || nextMode === 'event';
         const descriptionInput = document.getElementById('description');
         if (descriptionInput) descriptionInput.required = nextMode === 'post' || nextMode === 'event';
@@ -1231,6 +1232,9 @@ class FirebaseAdminPanel {
         document.querySelectorAll('[data-resource-category-pick]').forEach((button) => {
             button.classList.toggle('active', button.getAttribute('data-resource-category-pick') === category);
         });
+        if (category) {
+            this.clearCategoryValidation('resourceCategory');
+        }
     }
 
     handleResourceCategoryChange(category) {
@@ -1558,6 +1562,53 @@ class FirebaseAdminPanel {
         document.querySelectorAll('[data-category-pick]').forEach((button) => {
             button.classList.toggle('active', button.getAttribute('data-category-pick') === category);
         });
+        if (category) {
+            this.clearCategoryValidation('category');
+        }
+    }
+
+    clearCategoryValidation(selectId) {
+        const select = document.getElementById(selectId);
+        const block = select?.closest('.ap-category-picker-block');
+        if (!select || !block) return;
+
+        select.classList.remove('invalid');
+        select.removeAttribute('aria-invalid');
+        block.classList.remove('invalid');
+    }
+
+    validateRequiredCategorySelection(formData) {
+        if (this.contentMode === 'event') {
+            return true;
+        }
+
+        const submittedType = (formData.get('contentType') || this.contentType || 'post') === 'resource' ? 'resource' : 'post';
+        const selectId = submittedType === 'resource' ? 'resourceCategory' : 'category';
+        const category = (formData.get(selectId) || '').trim();
+
+        if (category) {
+            this.clearCategoryValidation(selectId);
+            return true;
+        }
+
+        const select = document.getElementById(selectId);
+        const block = select?.closest('.ap-category-picker-block');
+        const message = submittedType === 'resource'
+            ? 'Choose a resource category before publishing.'
+            : 'Choose a bulletin category before posting.';
+
+        if (select) {
+            select.classList.add('invalid');
+            select.setAttribute('aria-invalid', 'true');
+        }
+
+        if (block) {
+            block.classList.add('invalid');
+            block.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        this.showTemporaryMessage(message, 'error');
+        return false;
     }
 
     syncClassTypeForCategory(category) {
@@ -1593,6 +1644,9 @@ class FirebaseAdminPanel {
             formData.set('description', getRichTextFieldValue('description').trim());
             formData.set('summaryEs', getRichTextFieldValue('summaryEs').trim());
             formData.set('resourceDescription', getRichTextFieldValue('resourceDescription').trim());
+            if (!this.validateRequiredCategorySelection(formData)) {
+                return;
+            }
             if (this.contentMode === 'event') {
                 const hasEndDate = Boolean((formData.get('endDate') || '').trim());
                 formData.set('contentType', 'post');
@@ -1675,7 +1729,7 @@ class FirebaseAdminPanel {
             if (this[pendingKey] && this[pendingKey].signature === signature) {
                 processedImage = this[pendingKey];
                 usedCachedImage = true;
-            } else if (fieldName === 'image' && isPdfFile(file)) {
+            } else if ((fieldName === 'image' || fieldName === 'imageEs') && isPdfFile(file)) {
                 const flyerSource = await this.prepareFlyerSourceFile(file, fieldName);
                 processedImage = {
                     ...(await this.prepareImageForUpload(flyerSource.uploadFile)),
@@ -1717,12 +1771,14 @@ class FirebaseAdminPanel {
                 this.showTemporaryMessage(processedImage.infoMessage, 'info');
             } else if (fieldName === 'image' && isPdfFile(file) && !usedCachedImage) {
                 this.showTemporaryMessage('PDF flyer converted. Students will see page 1 on the board and can open the full PDF from the post.', 'success');
+            } else if (fieldName === 'imageEs' && isPdfFile(file) && !usedCachedImage) {
+                this.showTemporaryMessage('Spanish PDF flyer converted. Students will see page 1 when they switch to Español.', 'success');
             }
         } catch (error) {
             console.error('Image processing error:', error);
             const message = typeof error === 'string'
                 ? error
-                : (fieldName === 'image' && isPdfFile(file)
+                : ((fieldName === 'image' || fieldName === 'imageEs') && isPdfFile(file)
                     ? 'Flyer upload failed. Please try a different PDF or upload a JPG/PNG instead.'
                     : 'Image upload failed. Please try uploading a JPG/PNG under 10MB.');
             this.showTemporaryMessage(message, 'error');
@@ -1837,17 +1893,9 @@ class FirebaseAdminPanel {
         }
 
         if (file) {
-            if (fieldName !== 'image' && isPdfFile(file)) {
-                this.showTemporaryMessage('PDF flyers can only be uploaded in the English flyer field.', 'error');
-                e.target.value = '';
-                preview.innerHTML = '';
-                this[pendingKey] = null;
-                return;
-            }
-
             try {
                 let flyerSource;
-                if (fieldName === 'image') {
+                if (fieldName === 'image' || fieldName === 'imageEs') {
                     if (isPdfFile(file)) {
                         this.showTemporaryMessage('Converting PDF flyer preview...', 'info');
                     }
@@ -1919,13 +1967,16 @@ class FirebaseAdminPanel {
                 } else if (sizeWarning) {
                     this.showTemporaryMessage(sizeWarning, 'info');
                 } else if (flyerSource.convertedFromPdf) {
-                    this.showTemporaryMessage('PDF preview ready. The full PDF will be attached when you post.', 'info');
+                    const pdfReadyMessage = fieldName === 'image'
+                        ? 'PDF preview ready. The full PDF will be attached when you post.'
+                        : 'Spanish PDF preview ready. Page 1 will show when students switch to Español.';
+                    this.showTemporaryMessage(pdfReadyMessage, 'info');
                 }
             } catch (error) {
                 console.error('Image preview error:', error);
                 const message = typeof error === 'string'
                     ? error
-                    : (fieldName === 'image' && isPdfFile(file)
+                    : ((fieldName === 'image' || fieldName === 'imageEs') && isPdfFile(file)
                         ? 'Could not read this PDF. Try a different file or export page 1 as a PNG/JPG.'
                         : 'Could not process this image. Please try a smaller JPG or PNG.');
                 this.showTemporaryMessage(message, 'error');
@@ -2027,20 +2078,23 @@ class FirebaseAdminPanel {
     }
 
     async prepareFlyerSourceFile(file, fieldName = 'image') {
-        if (fieldName === 'image' && isPdfFile(file)) {
+        if ((fieldName === 'image' || fieldName === 'imageEs') && isPdfFile(file)) {
             if (file.size > 10 * 1024 * 1024) {
                 throw 'PDF file too large. Please select a PDF under 10MB.';
             }
 
             const { convertPdfFirstPageToImageFile } = await import('./src/pdf-flyer.js');
             const converted = await convertPdfFirstPageToImageFile(file);
+            const multiPageWarning = fieldName === 'image'
+                ? `This PDF has ${converted.pageCount} pages. Page 1 will show on the board; the full PDF will be attached.`
+                : `This PDF has ${converted.pageCount} pages. Page 1 will be used for the Spanish flyer.`;
             return {
                 uploadFile: converted.imageFile,
                 sourcePdf: file,
                 convertedFromPdf: true,
                 pdfPageCount: converted.pageCount,
                 warnings: converted.pageCount > 1
-                    ? [`This PDF has ${converted.pageCount} pages. Page 1 will show on the board; the full PDF will be attached.`]
+                    ? [multiPageWarning]
                     : []
             };
         }

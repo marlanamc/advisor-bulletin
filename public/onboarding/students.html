@@ -37,6 +37,10 @@
   ul{padding-left:20px;margin:0 0 12px}
   li{font-size:17px;line-height:1.5;margin-bottom:6px;color:var(--navy-2)}
   .shot{margin:16px 0;border:2px dashed #cbd5e1;border-radius:12px;background:#f8fafc;color:var(--muted);font-size:13px;padding:24px 16px;text-align:center;min-height:160px;display:flex;align-items:center;justify-content:center}
+  .qrBlock{margin:20px auto 4px;display:flex;align-items:center;gap:18px;max-width:460px;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:#f8fafc}
+  .qrBlock img{width:190px;height:190px;display:block;flex:0 0 auto;border-radius:8px;background:#fff}
+  .qrBlock p{margin:0;font-size:17px;line-height:1.35;color:var(--navy-2)}
+  .qrBlock strong{display:block;margin-bottom:5px;color:var(--navy);font-family:'Outfit',sans-serif;font-size:19px}
   .tip{background:var(--gold-soft);border:1px solid #fde68a;border-radius:12px;padding:12px 14px;font-size:15px;color:#92400e;margin-top:8px}
   .steps{counter-reset:step;padding:0;list-style:none;margin:0 0 12px}
   .steps li{counter-increment:step;position:relative;padding-left:36px;font-size:16px;margin-bottom:10px}
@@ -62,14 +66,15 @@
   .tocItem.current{background:#e0f2fe;color:var(--navy)}
   .tocNum{width:26px;height:26px;border-radius:50%;background:#f1f5f9;color:var(--muted);font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
   .tocItem.current .tocNum{background:var(--cyan);color:#fff}
-  @media (max-width:420px){h1{font-size:24px}.slide{padding:22px 18px}p,li{font-size:16px}}
+  @media (max-width:520px){.qrBlock{max-width:300px;flex-direction:column;text-align:center}.qrBlock img{width:180px;height:180px}}
+  @media (max-width:420px){h1{font-size:24px}.slide{padding:22px 18px}p,li{font-size:16px}.qrBlock{gap:10px}.qrBlock img{width:170px;height:170px}.qrBlock p{font-size:14px}.qrBlock strong{font-size:16px}}
 </style>
 </head>
 <body>
 <div class="deck">
   <div class="topbar">
     <div class="topbar-brand">
-      <img src="/images/ebhcs-topbar-logo.png" alt="EBHCS" />
+      <img src="onboarding-photos/ebhcs-topbar-logo.png" alt="EBHCS" />
       <div class="titles">
         <strong>Bulletin Board · Student Guide</strong>
         <small>East Boston Harborside Community School</small>
@@ -91,25 +96,29 @@
   <div class="stage" id="stage">
 
     <section class="slide active">
-      <div class="heroLogo"><img src="/images/ebhcs-topbar-logo.png" alt="East Boston Harborside Community School" /></div>
+      <div class="heroLogo"><img src="onboarding-photos/ebhcs-topbar-logo.png" alt="East Boston Harborside Community School" /></div>
       <span class="eyebrow">Welcome</span>
       <h1>Hi! 👋 This is the EBHCS Bulletin Board.</h1>
       <p>Your advisors at East Boston Harborside post things here for you — jobs, ESOL classes, college info, immigration help, food and housing, events, and more.</p>
       <p>This guide takes 2 minutes. Tap <strong>Next</strong> to start.</p>
+      <div class="qrBlock">
+        <img src="onboarding-photos/qrcode_ebhcsjobboard.web.app.png" alt="QR code for the EBHCS Bulletin Board" />
+        <p><strong>Open it on your phone</strong> Scan this code to go to the EBHCS Bulletin Board.</p>
+      </div>
     </section>
 
     <section class="slide">
       <span class="eyebrow">The two big ideas</span>
       <h1>Bulletins = the live feed</h1>
       <p>When an advisor — Leah, Jerome, Carmen, Mike, anyone — posts something new, it shows up on the home screen. The newest stuff is at the top.</p>
-      <div class="shot">[ Capture as: shots/feed.png — Home feed with 2–3 bulletin cards ]</div>
+      <div class="shot">[ Capture as: onboarding-photos/feed.png — Home feed with 2–3 bulletin cards ]</div>
     </section>
 
     <section class="slide">
       <span class="eyebrow">The two big ideas</span>
       <h1>Resources = always there</h1>
       <p>Need help with housing, food, immigration, ESOL, college &amp; GED, money, or health? Tap <strong>Find Help</strong>. These links stay there all the time — you can come back any day.</p>
-      <div class="shot">[ Capture as: shots/find-help.png — Find Help page with category cards ]</div>
+      <div class="shot">[ Capture as: onboarding-photos/find-help.png — Find Help page with category cards ]</div>
     </section>
 
     <section class="slide">
@@ -119,7 +128,7 @@
         <li><strong>Calendar</strong> — see what's coming up at EBHCS (events, deadlines, school breaks).</li>
         <li><strong>About</strong> — office hours, the school address, and your advisors' names and emails.</li>
       </ul>
-      <div class="shot">[ Capture as: shots/bottom-nav.png — Bottom nav bar with Feed, Calendar, Find Help, About ]</div>
+      <div class="shot">[ Capture as: onboarding-photos/bottom-nav.png — Bottom nav bar with Feed, Calendar, Find Help, About ]</div>
     </section>
 
     <section class="slide">
@@ -130,7 +139,7 @@
         <li>Tap <strong>See your advisor</strong> to open the list.</li>
         <li>Find your advisor, then tap the <strong>✉️ email icon</strong> next to their name to send a message.</li>
       </ol>
-      <div class="shot">[ Capture as: shots/advisor-list.png — About page with the advisor list expanded ]</div>
+      <div class="shot">[ Capture as: onboarding-photos/advisor-list.png — About page with the advisor list expanded ]</div>
       <div class="tip">💡 You can also stop by during <strong>office hours</strong> — they're on the same About page, right above the advisor list.</div>
     </section>
 
@@ -138,7 +147,7 @@
       <span class="eyebrow">In your language</span>
       <h1>You can switch to Spanish anytime.</h1>
       <p>Tap the <strong>EN / ES</strong> button at the top to change the language. Puedes cambiar al español cuando quieras.</p>
-      <div class="shot">[ Capture as: shots/lang-toggle.png — EN / ES toggle in the header ]</div>
+      <div class="shot">[ Capture as: onboarding-photos/lang-toggle.png — EN / ES toggle in the header ]</div>
     </section>
 
     <section class="slide">
@@ -150,7 +159,7 @@
         <li>Scroll and tap <strong>Add to Home Screen</strong>.</li>
         <li>Tap <strong>Add</strong>.</li>
       </ol>
-      <div class="shot">[ Capture as: shots/iphone-install.png — iPhone Safari Share menu with "Add to Home Screen" highlighted ]</div>
+      <div class="shot">[ Capture as: onboarding-photos/iphone-install.png — iPhone Safari Share menu with "Add to Home Screen" highlighted ]</div>
     </section>
 
     <section class="slide">
@@ -162,7 +171,7 @@
         <li>Tap <strong>Add to Home screen</strong> or <strong>Install app</strong>.</li>
         <li>Tap <strong>Install</strong>.</li>
       </ol>
-      <div class="shot">[ Capture as: shots/android-install.png — Android Chrome menu with "Install app" highlighted ]</div>
+      <div class="shot">[ Capture as: onboarding-photos/android-install.png — Android Chrome menu with "Install app" highlighted ]</div>
     </section>
 
     <section class="slide">

@@ -197,6 +197,19 @@ body.ap-portal-active .main-content {
   color: #fff;
 }
 
+.ap-create-form-col .ap-category-picker-block.invalid {
+  border-radius: var(--ap-r-md);
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+}
+
+.ap-create-form-col .ap-category-picker-block.invalid .ap-category-picker-help {
+  color: #b91c1c;
+}
+
+.ap-create-form-col .ap-category-picker-block.invalid .advisor-category-picker button {
+  border-color: rgba(220, 38, 38, 0.48);
+}
+
 .ap-create-form-col .form-section .file-input {
   width: 100%;
   padding: 8px;

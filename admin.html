@@ -600,7 +600,7 @@
                             <div class="ap-category-picker-block category-field-group">
                                 <label for="category" class="required">Category</label>
                                 <small class="input-help ap-category-picker-help">Choose the topic students use to find this post. For permanent links, use Resources.</small>
-                                <select id="category" name="category" required class="required ap-category-select-sr" tabindex="-1" aria-hidden="true">
+                                <select id="category" name="category" class="required ap-category-select-sr" tabindex="-1" aria-hidden="true">
                                     <option value="">Select a category</option>
                                     <option value="job">Job Opportunity</option>
                                     <option value="training">Training / Workshop</option>
@@ -683,11 +683,11 @@
                                         </div>
                                         <div>
                                             <div class="ap-upload-dropzone-title">Upload Spanish flyer</div>
-                                            <div class="ap-upload-dropzone-sub">PNG or JPG · max 10MB</div>
+                                            <div class="ap-upload-dropzone-sub">PNG, JPG, or PDF · max 10MB</div>
                                         </div>
                                         <span class="ap-upload-lang-badge" aria-hidden="true">ES</span>
                                     </div>
-                                    <input type="file" id="imageEs" name="imageEs" accept="image/*" class="file-input" style="display: none;" aria-label="Upload Spanish flyer">
+                                    <input type="file" id="imageEs" name="imageEs" accept="image/jpeg,image/png,image/gif,image/webp,application/pdf,.pdf" class="file-input" style="display: none;" aria-label="Upload Spanish flyer">
                                     <div id="imageEsPreview" class="image-preview"></div>
                                 </div>
                             </div>
@@ -719,7 +719,7 @@
                             <div class="ap-category-picker-block form-group required-field">
                                 <label for="resourceCategory" class="required">Resource Category</label>
                                 <small class="input-help ap-category-picker-help">Choose where students find this in Find Help — same topics as the student app.</small>
-                                <select id="resourceCategory" name="resourceCategory" data-resource-required="true" required class="required ap-category-select-sr" tabindex="-1" aria-hidden="true">
+                                <select id="resourceCategory" name="resourceCategory" class="required ap-category-select-sr" tabindex="-1" aria-hidden="true">
                                     <option value="">Select a category</option>
                                 </select>
                                 <div class="advisor-category-picker" id="resourceCategoryPicker" role="group" aria-label="Resource category"></div>
