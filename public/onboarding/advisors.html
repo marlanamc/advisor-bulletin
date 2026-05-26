@@ -8,25 +8,32 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet" />
 <style>
-  :root{--navy:#0f172a;--navy-2:#1e293b;--cyan:#0ea5e9;--cyan-2:#0284c7;--gold:#ffc857;--bg:#f4f6fb;--card:#fff;--muted:#64748b;--line:#e2e8f0}
+  :root{--navy:#0a1f44;--navy-2:#12306b;--cyan:#1e4db7;--cyan-2:#12306b;--gold:#f59e0b;--gold-soft:#fffbea;--bg:#f5f7fb;--card:#fff;--muted:#7a95b5;--line:#e2e8f2}
   *{box-sizing:border-box}
   html,body{margin:0;padding:0;height:100%;background:var(--bg);color:var(--navy);font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
   .deck{min-height:100dvh;display:flex;flex-direction:column;padding:max(env(safe-area-inset-top),16px) 16px max(env(safe-area-inset-bottom),16px)}
   .topbar{display:flex;align-items:center;justify-content:space-between;padding:4px 4px 12px;font-size:13px;color:var(--muted)}
   .topbar strong{color:var(--navy-2);font-family:'Outfit',sans-serif;font-weight:700;letter-spacing:.2px}
+  .topbar-brand{display:flex;align-items:center;gap:8px;min-width:0}
+  .topbar-brand img{height:22px;width:auto;display:block;flex-shrink:0}
+  .topbar-brand .titles{display:flex;flex-direction:column;line-height:1.1;min-width:0}
+  .topbar-brand .titles small{font-size:10px;color:var(--muted);font-weight:500;letter-spacing:.3px;text-transform:uppercase;margin-top:2px}
+  .heroLogo{display:flex;justify-content:center;margin:-6px 0 14px}
+  .heroLogo img{height:96px;width:auto;display:block;max-width:100%}
+  @media (max-width:420px){.topbar-brand .titles small{display:none}}
   .stage{flex:1;display:flex;align-items:center;justify-content:center}
   .slide{display:none;width:100%;max-width:680px;background:var(--card);border-radius:18px;padding:28px 26px;box-shadow:0 10px 30px rgba(15,23,42,.08);border:1px solid var(--line)}
   .slide.active{display:block;animation:in .25s ease}
   @keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-  .eyebrow{display:inline-block;background:var(--gold);color:var(--navy);font-weight:700;font-size:12px;letter-spacing:.4px;text-transform:uppercase;padding:4px 10px;border-radius:999px;margin-bottom:14px}
+  .eyebrow{display:inline-block;background:var(--gold);color:#fff;font-weight:700;font-size:12px;letter-spacing:.4px;text-transform:uppercase;padding:4px 10px;border-radius:999px;margin-bottom:14px}
   h1{font-family:'Outfit',sans-serif;font-size:28px;line-height:1.2;margin:0 0 12px;color:var(--navy)}
   h2{font-family:'Outfit',sans-serif;font-size:18px;margin:14px 0 6px;color:var(--navy)}
   p{font-size:16px;line-height:1.55;margin:0 0 12px;color:var(--navy-2)}
   ul{padding-left:20px;margin:0 0 12px}
   li{font-size:16px;line-height:1.5;margin-bottom:6px;color:var(--navy-2)}
   .shot{margin:14px 0;border:2px dashed #cbd5e1;border-radius:12px;background:#f8fafc;color:var(--muted);font-size:13px;padding:22px 16px;text-align:center;min-height:140px;display:flex;align-items:center;justify-content:center}
-  .tip{background:#fff7e0;border:1px solid #ffd97a;border-radius:12px;padding:12px 14px;font-size:15px;color:#7a5b00;margin-top:8px}
-  .note{background:#e0f2fe;border:1px solid #7dd3fc;border-radius:12px;padding:12px 14px;font-size:15px;color:#075985;margin-top:8px}
+  .tip{background:var(--gold-soft);border:1px solid #fde68a;border-radius:12px;padding:12px 14px;font-size:15px;color:#92400e;margin-top:8px}
+  .note{background:#e8f0fe;border:1px solid #c7d9fd;border-radius:12px;padding:12px 14px;font-size:15px;color:#12306b;margin-top:8px}
   .steps{counter-reset:step;padding:0;list-style:none;margin:0 0 12px}
   .steps li{counter-increment:step;position:relative;padding-left:36px;font-size:16px;margin-bottom:10px}
   .steps li::before{content:counter(step);position:absolute;left:0;top:0;width:26px;height:26px;border-radius:50%;background:var(--cyan);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:14px}
@@ -61,7 +68,13 @@
 <body>
 <div class="deck">
   <div class="topbar">
-    <strong>Bulletin Board · Advisor Guide</strong>
+    <div class="topbar-brand">
+      <img src="/images/ebhcs-topbar-logo.png" alt="EBHCS" />
+      <div class="titles">
+        <strong>Bulletin Board · Advisor Guide</strong>
+        <small>East Boston Harborside Community School</small>
+      </div>
+    </div>
     <button class="tocBtn" id="tocBtn" aria-label="Open table of contents">☰ Contents <span id="counter">1 / 10</span></button>
   </div>
 
@@ -78,9 +91,10 @@
   <div class="stage" id="stage">
 
     <section class="slide active">
+      <div class="heroLogo"><img src="/images/ebhcs-topbar-logo.png" alt="East Boston Harborside Community School" /></div>
       <span class="eyebrow">Welcome</span>
       <h1>Welcome to the EBHCS Advisor Bulletin Board.</h1>
-      <p>This is where you post opportunities, events, and resources for students — and where they go to find them.</p>
+      <p>This is where you post opportunities, events, and resources for students — and where they go to find them. Students see your bulletins in English or Spanish on the home feed.</p>
       <p>This guide takes about 5 minutes. Use <strong>Next</strong> or the arrow keys.</p>
     </section>
 
@@ -90,11 +104,11 @@
       <div class="twoCol">
         <div class="box">
           <h2>📣 Bulletins</h2>
-          <p>Your <strong>live feed</strong>. Timely things: a job opening this month, a workshop next week, a deadline. They show up newest-first.</p>
+          <p>Your <strong>live feed</strong>. Timely things: a CUNY application deadline, an ESOL placement test next week, a career fair on the 14th. Newest-first.</p>
         </div>
         <div class="box">
           <h2>🧭 Resources</h2>
-          <p><strong>Always there</strong>. Permanent help links by topic — housing, immigration, food, health, jobs.</p>
+          <p><strong>Always there</strong>. Permanent help links by topic — Immigration, Housing, Health, Food, ESOL, College &amp; GED, Money Help.</p>
         </div>
       </div>
       <div class="tip">💡 Rule of thumb: if it has a deadline, it's a bulletin. If it'll still be useful next year, it's a resource.</div>
@@ -105,10 +119,10 @@
       <h1>Logging in</h1>
       <ol class="steps">
         <li>Scroll to the bottom of any page (or open the <strong>About</strong> page) and tap <strong>Advisor Portal</strong>.</li>
-        <li>Sign in with your <strong>@ebhcs.org</strong> email.</li>
+        <li>Sign in with your <strong>@ebhcs.org</strong> email — or your short username (e.g. <code>leah</code>, <code>jerome</code>, <code>carmen</code>).</li>
         <li>First time? The default password is <code>ebhcs2025</code>. You'll be asked to change it right away.</li>
       </ol>
-      <div class="shot">[ Screenshot: Advisor login page ]</div>
+      <div class="shot">[ Capture as: shots/login.png — Advisor Portal sign-in screen ]</div>
     </section>
 
     <section class="slide">
@@ -119,7 +133,7 @@
         <li><strong>Analytics</strong> — views and clicks over 7, 30, or 90 days.</li>
         <li><strong>Create</strong> — start a new bulletin, calendar event, or resource.</li>
       </ul>
-      <div class="shot">[ Screenshot: Advisor dashboard overview ]</div>
+      <div class="shot">[ Capture as: shots/dashboard.png — Advisor dashboard with My posts, Analytics, Create ]</div>
     </section>
 
     <section class="slide">
@@ -127,12 +141,12 @@
       <h1>Post a bulletin</h1>
       <ol class="steps">
         <li>Click <strong>Create → Bulletin</strong>.</li>
-        <li>Add a clear title and a short description.</li>
-        <li>Optional: attach a PDF (max 10MB) or a link.</li>
-        <li>Hit <strong>Publish</strong>. It shows up in the student feed instantly.</li>
+        <li>Pick a category (Job, ESOL, Immigration, College &amp; GED, etc.) and write a clear title and short description.</li>
+        <li>Optional: attach a flyer PDF (max 10MB) or a link.</li>
+        <li>Hit <strong>Publish</strong>. It shows up in the student feed instantly — in both English and Spanish.</li>
       </ol>
-      <div class="shot">[ Screenshot: New bulletin form ]</div>
-      <div class="tip">💡 Short titles win. "Summer internship — apply by June 1" beats "Important opportunity for students."</div>
+      <div class="shot">[ Capture as: shots/new-bulletin.png — Create Bulletin form with category dropdown open ]</div>
+      <div class="tip">💡 Short titles win. <em>"ESOL Level 2 — placement test Friday 4pm"</em> beats <em>"Important info about English class."</em></div>
     </section>
 
     <section class="slide">
@@ -146,26 +160,26 @@
         </div>
         <div class="box">
           <h2>🗓️ Calendar event</h2>
-          <p>For <strong>date-only</strong> items that aren't a bulletin — Memorial Day, First Day of School, February Break, early dismissal. No long description needed.</p>
+          <p>For <strong>date-only</strong> items — Memorial Day, First Day of School, February Break, half-day dismissal, parent–advisor night. No long description needed.</p>
         </div>
       </div>
       <div class="tip">💡 If you'd write a paragraph about it, post a bulletin. If it's just a date students should know, make it a calendar event.</div>
-      <div class="shot">[ Screenshot: Calendar view showing both a bulletin event and a date-only event ]</div>
+      <div class="shot">[ Capture as: shots/calendar.png — Calendar view with one bulletin-event and one date-only event ]</div>
     </section>
 
     <section class="slide">
       <span class="eyebrow">Posting</span>
       <h1>Add a resource</h1>
-      <p>Use this for evergreen help — things that stay useful all year. Pick a category (Immigration, Housing, Health, etc.), give it a title, and paste the link.</p>
-      <div class="note">ℹ️ All advisors can see and reorder resources — try to avoid duplicates. Search the category first.</div>
-      <div class="shot">[ Screenshot: New resource form with category dropdown ]</div>
+      <p>Use this for evergreen help — things that stay useful all year. Pick a category (Immigration, Housing, Health, Food, ESOL, College &amp; GED, Money Help, Jobs), give it a title, and paste the link. Example: <em>"HRA SNAP application"</em> under Food, or <em>"CUNY Start at LaGuardia"</em> under College &amp; GED.</p>
+      <div class="note">ℹ️ All advisors can see and reorder resources — check the category first so we don't end up with two of the same link.</div>
+      <div class="shot">[ Capture as: shots/new-resource.png — New Resource form with category dropdown ]</div>
     </section>
 
     <section class="slide">
       <span class="eyebrow">Know what's working</span>
       <h1>Analytics</h1>
       <p>Each of your posts shows views and link clicks. Switch the date range (7 / 30 / 90 days) to see trends.</p>
-      <div class="shot">[ Screenshot: Analytics dashboard with date toggle ]</div>
+      <div class="shot">[ Capture as: shots/analytics.png — Analytics panel with 7 / 30 / 90-day toggle ]</div>
       <div class="tip">💡 If a post has lots of views but no clicks, the title is great but the content needs work.</div>
     </section>
 
@@ -174,9 +188,9 @@
       <h1>Edit or delete your posts</h1>
       <ul>
         <li>You can edit or delete <strong>your own</strong> posts any time.</li>
-        <li>Admins can override and edit anyone's — ping Marlie if something needs to come down fast.</li>
+        <li>Admins (Leah or the shared admin account) can override and edit anyone's — ping Leah if something needs to come down fast, or email <code>mcreed@ebhcs.org</code> for site-level issues.</li>
       </ul>
-      <div class="shot">[ Screenshot: Post card with Edit / Delete buttons ]</div>
+      <div class="shot">[ Capture as: shots/post-card.png — Bulletin card showing Edit / Delete on a post you own ]</div>
     </section>
 
     <section class="slide">
@@ -200,7 +214,7 @@
           <p>Opens faster, lives next to your other apps, and works offline for cached posts.</p>
         </div>
       </div>
-      <div class="shot">[ Screenshot: Install prompt on desktop Chrome ]</div>
+      <div class="shot">[ Capture as: shots/install-desktop.png — Chrome address bar showing the Install icon ]</div>
     </section>
 
   </div>

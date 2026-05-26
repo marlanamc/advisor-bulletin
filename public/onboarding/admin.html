@@ -8,17 +8,24 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet" />
 <style>
-  :root{--navy:#0f172a;--navy-2:#1e293b;--cyan:#0ea5e9;--cyan-2:#0284c7;--gold:#ffc857;--bg:#f4f6fb;--card:#fff;--muted:#64748b;--line:#e2e8f0;--admin:#a855f7}
+  :root{--navy:#0a1f44;--navy-2:#12306b;--cyan:#1e4db7;--cyan-2:#12306b;--gold:#f59e0b;--gold-soft:#fffbea;--bg:#f5f7fb;--card:#fff;--muted:#7a95b5;--line:#e2e8f2;--admin:#7c3aed}
   *{box-sizing:border-box}
   html,body{margin:0;padding:0;height:100%;background:var(--bg);color:var(--navy);font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
   .deck{min-height:100dvh;display:flex;flex-direction:column;padding:max(env(safe-area-inset-top),16px) 16px max(env(safe-area-inset-bottom),16px)}
   .topbar{display:flex;align-items:center;justify-content:space-between;padding:4px 4px 12px;font-size:13px;color:var(--muted)}
   .topbar strong{color:var(--navy-2);font-family:'Outfit',sans-serif;font-weight:700;letter-spacing:.2px}
+  .topbar-brand{display:flex;align-items:center;gap:8px;min-width:0}
+  .topbar-brand img{height:22px;width:auto;display:block;flex-shrink:0}
+  .topbar-brand .titles{display:flex;flex-direction:column;line-height:1.1;min-width:0}
+  .topbar-brand .titles small{font-size:10px;color:var(--muted);font-weight:500;letter-spacing:.3px;text-transform:uppercase;margin-top:2px}
+  .heroLogo{display:flex;justify-content:center;margin:-6px 0 14px}
+  .heroLogo img{height:96px;width:auto;display:block;max-width:100%}
+  @media (max-width:420px){.topbar-brand .titles small{display:none}}
   .stage{flex:1;display:flex;align-items:center;justify-content:center}
   .slide{display:none;width:100%;max-width:680px;background:var(--card);border-radius:18px;padding:28px 26px;box-shadow:0 10px 30px rgba(15,23,42,.08);border:1px solid var(--line)}
   .slide.active{display:block;animation:in .25s ease}
   @keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-  .eyebrow{display:inline-block;background:var(--gold);color:var(--navy);font-weight:700;font-size:12px;letter-spacing:.4px;text-transform:uppercase;padding:4px 10px;border-radius:999px;margin-bottom:14px}
+  .eyebrow{display:inline-block;background:var(--gold);color:#fff;font-weight:700;font-size:12px;letter-spacing:.4px;text-transform:uppercase;padding:4px 10px;border-radius:999px;margin-bottom:14px}
   .eyebrow.admin{background:var(--admin);color:#fff}
   h1{font-family:'Outfit',sans-serif;font-size:28px;line-height:1.2;margin:0 0 12px;color:var(--navy)}
   h2{font-family:'Outfit',sans-serif;font-size:18px;margin:14px 0 6px;color:var(--navy)}
@@ -26,8 +33,8 @@
   ul{padding-left:20px;margin:0 0 12px}
   li{font-size:16px;line-height:1.5;margin-bottom:6px;color:var(--navy-2)}
   .shot{margin:14px 0;border:2px dashed #cbd5e1;border-radius:12px;background:#f8fafc;color:var(--muted);font-size:13px;padding:22px 16px;text-align:center;min-height:140px;display:flex;align-items:center;justify-content:center}
-  .tip{background:#fff7e0;border:1px solid #ffd97a;border-radius:12px;padding:12px 14px;font-size:15px;color:#7a5b00;margin-top:8px}
-  .note{background:#e0f2fe;border:1px solid #7dd3fc;border-radius:12px;padding:12px 14px;font-size:15px;color:#075985;margin-top:8px}
+  .tip{background:var(--gold-soft);border:1px solid #fde68a;border-radius:12px;padding:12px 14px;font-size:15px;color:#92400e;margin-top:8px}
+  .note{background:#e8f0fe;border:1px solid #c7d9fd;border-radius:12px;padding:12px 14px;font-size:15px;color:#12306b;margin-top:8px}
   .warn{background:#fef2f2;border:1px solid #fca5a5;border-radius:12px;padding:12px 14px;font-size:15px;color:#991b1b;margin-top:8px}
   .steps{counter-reset:step;padding:0;list-style:none;margin:0 0 12px}
   .steps li{counter-increment:step;position:relative;padding-left:36px;font-size:16px;margin-bottom:10px}
@@ -71,7 +78,13 @@
 <body>
 <div class="deck">
   <div class="topbar">
-    <strong>Bulletin Board · Admin Guide</strong>
+    <div class="topbar-brand">
+      <img src="/images/ebhcs-topbar-logo.png" alt="EBHCS" />
+      <div class="titles">
+        <strong>Bulletin Board · Admin Guide</strong>
+        <small>East Boston Harborside Community School</small>
+      </div>
+    </div>
     <button class="tocBtn" id="tocBtn" aria-label="Open table of contents">☰ Contents <span id="counter">1 / 18</span></button>
   </div>
 
@@ -87,95 +100,14 @@
 
   <div class="stage" id="stage">
 
-    <!-- ============ ADMIN-ONLY OVERVIEW ============ -->
-
-    <section class="slide" data-kind="admin">
-      <span class="eyebrow admin">Admin</span>
-      <h1>Welcome, admin.</h1>
-      <p>You can do everything an advisor can do — plus override posts, manage advisor accounts, and configure the site.</p>
-      <p>This guide covers admin-only powers first, then walks through the full advisor workflow so you have it all in one place.</p>
-    </section>
-
-    <section class="slide" data-kind="admin">
-      <span class="eyebrow admin">Admin</span>
-      <h1>What admins can do that advisors can't</h1>
-      <ul>
-        <li><strong>Edit or delete anyone's posts</strong> — useful for cleanup, corrections, or take-downs.</li>
-        <li><strong>Manage advisor accounts</strong> — add, edit, remove advisors and reset passwords from the <strong>Manage Advisors</strong> page.</li>
-        <li><strong>Edit office hours & advisor directory</strong> on the About page.</li>
-      </ul>
-      <div class="note">ℹ️ Admin accounts today: admin@ebhcs.org and leah@ebhcs.org.</div>
-    </section>
-
-    <section class="slide" data-kind="admin">
-      <span class="eyebrow admin">Admin</span>
-      <h1>The Manage Advisors page</h1>
-      <p>In the Advisor Portal you'll see a <strong>Manage Advisors</strong> page (admins only). Everything you need to add, edit, reset, or remove an advisor lives here — no Firebase console required.</p>
-      <div class="shot">[ Screenshot: Manage Advisors page with the "Add New Advisor" form and advisor cards ]</div>
-    </section>
-
-    <section class="slide" data-kind="admin">
-      <span class="eyebrow admin">Admin</span>
-      <h1>Adding a new advisor</h1>
-      <ol class="steps">
-        <li>Open <strong>Manage Advisors</strong> in the Advisor Portal.</li>
-        <li>Fill in the <strong>Add New Advisor</strong> form:
-          <ul>
-            <li><strong>Username</strong> — their email prefix (e.g. <code>jsmith</code>).</li>
-            <li><strong>Display name</strong> — what students see on bulletins.</li>
-            <li><strong>Email</strong> — their <code>@ebhcs.org</code> address.</li>
-            <li>Toggle <strong>Admin</strong> on only if they should manage all posts and advisors.</li>
-          </ul>
-        </li>
-        <li>Click <strong>+ Add Advisor</strong>.</li>
-        <li>Share their starting password: <code>ebhcs2025</code>. They'll be asked to change it on first sign-in.</li>
-      </ol>
-      <div class="warn">⚠️ Only @ebhcs.org emails work. Anything else will be rejected at login.</div>
-    </section>
-
-    <section class="slide" data-kind="admin">
-      <span class="eyebrow admin">Admin</span>
-      <h1>Editing or removing an advisor</h1>
-      <p>Each advisor card on the Manage Advisors page has three buttons:</p>
-      <ul>
-        <li><strong>Edit</strong> — update their display name, email, or admin status.</li>
-        <li><strong>Reset password</strong> — sends them a reset link (or sets it back to the default).</li>
-        <li><strong>Remove</strong> — deletes their account. Their existing posts stay; new ones can't be made.</li>
-      </ul>
-      <div class="shot">[ Screenshot: Advisor card with Edit / Remove / Reset password buttons ]</div>
-      <div class="tip">💡 The Admin account card has no Remove button — you can't delete the root admin from the UI.</div>
-    </section>
-
-    <section class="slide" data-kind="admin">
-      <span class="eyebrow admin">Admin</span>
-      <h1>Removing or overriding a post</h1>
-      <p>When you're logged in as an admin, every post card shows <strong>Edit</strong> and <strong>Delete</strong> — even posts you didn't create.</p>
-      <div class="shot">[ Screenshot: Post card with admin override buttons visible ]</div>
-      <div class="tip">💡 Before deleting, consider editing instead — fewer broken links and less confusion for students who already saw it.</div>
-    </section>
-
-    <section class="slide" data-kind="admin">
-      <span class="eyebrow admin">Admin</span>
-      <h1>Office hours & advisor directory</h1>
-      <p>The About page shows office hours and the full advisor directory. These were recently added — they're editable from the admin dashboard.</p>
-      <div class="shot">[ Screenshot: About page on mobile with office hours and directory accordion ]</div>
-    </section>
-
-    <section class="slide" data-kind="admin">
-      <span class="eyebrow admin">Admin</span>
-      <h1>Who to escalate to</h1>
-      <p>For anything you can't fix from the Manage Advisors page — site issues, bugs, weird errors, deeper account problems — contact <strong>Marlie (mcreed@ebhcs.org)</strong>.</p>
-      <div class="note">ℹ️ Marlie is the only one with Firebase / backend access. If something seems off behind the scenes, that's the right escalation path.</div>
-      <p>Next up: the full advisor workflow, in case you ever need to walk a new advisor through it (or do it yourself).</p>
-    </section>
-
     <!-- ============ ADVISOR WORKFLOW (same as advisors.html) ============ -->
 
-    <section class="slide">
-      <div class="sectionDivider">Advisor workflow starts here</div>
+    <section class="slide active" data-kind="intro">
+      <div class="heroLogo"><img src="/images/ebhcs-topbar-logo.png" alt="East Boston Harborside Community School" /></div>
       <span class="eyebrow">Welcome</span>
-      <h1>The advisor workflow, start to finish.</h1>
-      <p>Everything below is what your advisors see. Helpful to know if you're training someone or filling in.</p>
+      <h1>Welcome, admin.</h1>
+      <p>This is the EBHCS Advisor Bulletin Board admin guide. You can do everything an advisor can do — post bulletins, calendar events, and resources — plus override anyone's post, manage advisor accounts, and edit the office hours and advisor directory.</p>
+      <p>The first half walks the full advisor workflow. The admin-only powers start after that.</p>
     </section>
 
     <section class="slide">
@@ -184,11 +116,11 @@
       <div class="twoCol">
         <div class="box">
           <h2>📣 Bulletins</h2>
-          <p>The <strong>live feed</strong>. Timely things: a job opening this month, a workshop next week, a deadline. Newest-first.</p>
+          <p>The <strong>live feed</strong>. Timely things: a CUNY application deadline, an ESOL placement test next week, a career fair on the 14th. Newest-first.</p>
         </div>
         <div class="box">
           <h2>🧭 Resources</h2>
-          <p><strong>Always there</strong>. Permanent help links by topic — housing, immigration, food, health, jobs.</p>
+          <p><strong>Always there</strong>. Permanent help links by topic — Immigration, Housing, Health, Food, ESOL, College &amp; GED, Money Help.</p>
         </div>
       </div>
       <div class="tip">💡 Rule of thumb: if it has a deadline, it's a bulletin. If it'll still be useful next year, it's a resource.</div>
@@ -199,10 +131,10 @@
       <h1>Logging in</h1>
       <ol class="steps">
         <li>Scroll to the bottom of any page (or open the <strong>About</strong> page) and tap <strong>Advisor Portal</strong>.</li>
-        <li>Sign in with an <strong>@ebhcs.org</strong> email.</li>
+        <li>Sign in with your <strong>@ebhcs.org</strong> email (or your short username, e.g. <code>leah</code>, <code>jerome</code>, <code>mcreed</code>).</li>
         <li>First time? Default password is <code>ebhcs2025</code>. You'll be asked to change it right away.</li>
       </ol>
-      <div class="shot">[ Screenshot: Advisor login page ]</div>
+      <div class="shot">[ Capture as: shots/login.png — Advisor Portal sign-in screen ]</div>
     </section>
 
     <section class="slide">
@@ -213,7 +145,7 @@
         <li><strong>Analytics</strong> — views and clicks over 7, 30, or 90 days.</li>
         <li><strong>Create</strong> — new bulletin, calendar event, or resource.</li>
       </ul>
-      <div class="shot">[ Screenshot: Advisor dashboard overview ]</div>
+      <div class="shot">[ Capture as: shots/dashboard.png — Advisor dashboard with My posts, Analytics, Create ]</div>
     </section>
 
     <section class="slide">
@@ -221,12 +153,12 @@
       <h1>Post a bulletin</h1>
       <ol class="steps">
         <li>Click <strong>Create → Bulletin</strong>.</li>
-        <li>Add a clear title and a short description.</li>
-        <li>Optional: attach a PDF (max 10MB) or a link.</li>
-        <li>Hit <strong>Publish</strong>. It shows up in the student feed instantly.</li>
+        <li>Pick a category (Job, ESOL, Immigration, College &amp; GED, etc.) and write a clear title and short description.</li>
+        <li>Optional: attach a flyer PDF (max 10MB) or a link.</li>
+        <li>Hit <strong>Publish</strong>. It shows up in the student feed instantly — in both English and Spanish.</li>
       </ol>
-      <div class="shot">[ Screenshot: New bulletin form ]</div>
-      <div class="tip">💡 Short titles win. "Summer internship — apply by June 1" beats "Important opportunity for students."</div>
+      <div class="shot">[ Capture as: shots/new-bulletin.png — Create Bulletin form with category dropdown open ]</div>
+      <div class="tip">💡 Short titles win. <em>"ESOL Level 2 — placement test Friday 4pm"</em> beats <em>"Important info about English class."</em></div>
     </section>
 
     <section class="slide">
@@ -240,26 +172,26 @@
         </div>
         <div class="box">
           <h2>🗓️ Calendar event</h2>
-          <p>For <strong>date-only</strong> items that aren't a bulletin — Memorial Day, First Day of School, February Break, early dismissal. No long description needed.</p>
+          <p>For <strong>date-only</strong> items — Memorial Day, First Day of School, February Break, half-day dismissal, parent–advisor night. No long description needed.</p>
         </div>
       </div>
       <div class="tip">💡 If you'd write a paragraph about it, post a bulletin. If it's just a date students should know, make it a calendar event.</div>
-      <div class="shot">[ Screenshot: Calendar view showing both a bulletin event and a date-only event ]</div>
+      <div class="shot">[ Capture as: shots/calendar.png — Calendar view with one bulletin-event and one date-only event ]</div>
     </section>
 
     <section class="slide">
       <span class="eyebrow">Posting</span>
       <h1>Add a resource</h1>
-      <p>Use this for evergreen help — things that stay useful all year. Pick a category (Immigration, Housing, Health, etc.), give it a title, and paste the link.</p>
-      <div class="note">ℹ️ All advisors can see and reorder resources — try to avoid duplicates. Search the category first.</div>
-      <div class="shot">[ Screenshot: New resource form with category dropdown ]</div>
+      <p>Use this for evergreen help — things that stay useful all year. Pick a category (Immigration, Housing, Health, Food, ESOL, College &amp; GED, Money Help, Jobs), give it a title, and paste the link. Example: <em>"HRA SNAP application"</em> under Food, or <em>"CUNY Start at LaGuardia"</em> under College &amp; GED.</p>
+      <div class="note">ℹ️ All advisors can see and reorder resources — check the category first so we don't end up with two of the same link.</div>
+      <div class="shot">[ Capture as: shots/new-resource.png — New Resource form with category dropdown ]</div>
     </section>
 
     <section class="slide">
       <span class="eyebrow">Know what's working</span>
       <h1>Analytics</h1>
       <p>Each post shows views and link clicks. Switch the date range (7 / 30 / 90 days) to see trends.</p>
-      <div class="shot">[ Screenshot: Analytics dashboard with date toggle ]</div>
+      <div class="shot">[ Capture as: shots/analytics.png — Analytics panel with 7 / 30 / 90-day toggle ]</div>
       <div class="tip">💡 Lots of views but no clicks? The title is great but the content needs work.</div>
     </section>
 
@@ -268,9 +200,9 @@
       <h1>Edit or delete posts</h1>
       <ul>
         <li>Advisors can edit or delete <strong>their own</strong> posts any time.</li>
-        <li>As admin, you can edit or delete <strong>anyone's</strong> — use it sparingly and let the original author know.</li>
+        <li>As admin, you can edit or delete <strong>anyone's</strong> — use it sparingly and let the original author know (a quick Slack or email to the advisor is plenty).</li>
       </ul>
-      <div class="shot">[ Screenshot: Post card with Edit / Delete buttons ]</div>
+      <div class="shot">[ Capture as: shots/post-card-admin.png — Post card showing admin Edit / Delete ]</div>
     </section>
 
     <section class="slide">
@@ -294,11 +226,92 @@
           <p>Opens faster, lives next to your other apps, and works offline for cached posts.</p>
         </div>
       </div>
-      <div class="shot">[ Screenshot: Install prompt on desktop Chrome ]</div>
+      <div class="shot">[ Capture as: shots/install-desktop.png — Chrome address bar showing the Install icon ]</div>
     </section>
 
     <section class="slide">
-      <span class="eyebrow">Done</span>
+      <span class="eyebrow">Advisor workflow complete</span>
+      <h1>That covers the advisor side.</h1>
+      <p>Up next: the admin-only powers that don't show up in an advisor's account.</p>
+    </section>
+
+    <!-- ============ ADMIN-ONLY OVERVIEW ============ -->
+
+    <section class="slide" data-kind="admin">
+      <div class="sectionDivider">Admin-only powers</div>
+      <span class="eyebrow admin">Admin</span>
+      <h1>What admins can do that advisors can't</h1>
+      <ul>
+        <li><strong>Edit or delete anyone's posts</strong> — useful for cleanup, corrections, or take-downs.</li>
+        <li><strong>Manage advisor accounts</strong> — add, edit, remove advisors and reset passwords from the <strong>Manage Advisors</strong> page.</li>
+        <li><strong>Edit office hours & advisor directory</strong> on the About page.</li>
+      </ul>
+      <div class="note">ℹ️ Admin accounts today: <code>admin@ebhcs.org</code> and <code>leah@ebhcs.org</code> (Leah Gregory).</div>
+    </section>
+
+    <section class="slide" data-kind="admin">
+      <span class="eyebrow admin">Admin</span>
+      <h1>The Manage Advisors page</h1>
+      <p>In the Advisor Portal you'll see a <strong>Manage Advisors</strong> page (admins only). Everything you need to add, edit, reset, or remove an advisor lives here — no Firebase console required.</p>
+      <div class="shot">[ Capture as: shots/manage-advisors.png — Manage Advisors page with Add form and existing advisor cards ]</div>
+    </section>
+
+    <section class="slide" data-kind="admin">
+      <span class="eyebrow admin">Admin</span>
+      <h1>Adding a new advisor</h1>
+      <ol class="steps">
+        <li>Open <strong>Manage Advisors</strong> in the Advisor Portal.</li>
+        <li>Fill in the <strong>Add New Advisor</strong> form:
+          <ul>
+            <li><strong>Username</strong> — short login name (e.g. <code>jerome</code>, <code>carmen</code>, <code>fabiola</code>).</li>
+            <li><strong>Display name</strong> — what students see on bulletins (e.g. <em>Jerome</em>, <em>Mike K.</em>).</li>
+            <li><strong>Email</strong> — their <code>@ebhcs.org</code> address.</li>
+            <li>Toggle <strong>Admin</strong> on only if they should manage all posts and advisors.</li>
+          </ul>
+        </li>
+        <li>Click <strong>+ Add Advisor</strong>.</li>
+        <li>Share their starting password: <code>ebhcs2025</code>. They'll be asked to change it on first sign-in.</li>
+      </ol>
+      <div class="warn">⚠️ Only @ebhcs.org emails work. Anything else will be rejected at login.</div>
+    </section>
+
+    <section class="slide" data-kind="admin">
+      <span class="eyebrow admin">Admin</span>
+      <h1>Editing or removing an advisor</h1>
+      <p>Each advisor card on the Manage Advisors page has three buttons:</p>
+      <ul>
+        <li><strong>Edit</strong> — update their display name, email, or admin status.</li>
+        <li><strong>Reset password</strong> — sends them a reset link (or sets it back to the default).</li>
+        <li><strong>Remove</strong> — deletes their account. Their existing posts stay; new ones can't be made.</li>
+      </ul>
+      <div class="shot">[ Capture as: shots/advisor-card.png — Advisor card with Edit / Reset password / Remove ]</div>
+      <div class="tip">💡 The Admin account card has no Remove button — you can't delete the root admin from the UI.</div>
+    </section>
+
+    <section class="slide" data-kind="admin">
+      <span class="eyebrow admin">Admin</span>
+      <h1>Removing or overriding a post</h1>
+      <p>When you're logged in as an admin, every post card shows <strong>Edit</strong> and <strong>Delete</strong> — even posts you didn't create.</p>
+      <div class="shot">[ Capture as: shots/post-override.png — Bulletin card showing admin override Edit / Delete ]</div>
+      <div class="tip">💡 Before deleting, consider editing instead — fewer broken links and less confusion for students who already saw it.</div>
+    </section>
+
+    <section class="slide" data-kind="admin">
+      <span class="eyebrow admin">Admin</span>
+      <h1>Advisor directory on About</h1>
+      <p>The About page lists all advisors (Leah, Carmen, Fabiola, Felipe, Jerome, Jorge, Leidy, Mike K., Simonetta) with their emails, plus office hours. The directory and hours are baked into the site for now — to change them, ping Marlie at <code>mcreed@ebhcs.org</code>.</p>
+      <div class="shot">[ Capture as: shots/about-mobile.png — About page on mobile with office hours and advisor directory ]</div>
+    </section>
+
+    <section class="slide" data-kind="admin">
+      <span class="eyebrow admin">Admin</span>
+      <h1>Who to escalate to</h1>
+      <p>For anything you can't fix from the Manage Advisors page — site issues, bugs, weird errors, deeper account problems — contact <strong>Marlie (mcreed@ebhcs.org)</strong>.</p>
+      <div class="note">ℹ️ Marlie is the only one with Firebase / backend access. If something seems off behind the scenes, that's the right escalation path.</div>
+    </section>
+
+    <section class="slide" data-kind="admin">
+      <span class="eyebrow admin">Done</span>
       <h1>That's the whole tour.</h1>
       <p>Bookmark this page — re-run it any time, or share the link with a new advisor.</p>
       <div class="tip">💡 The student version lives at <code>/onboarding/students.html</code>. Send it to a class when you onboard them.</div>
@@ -331,11 +344,11 @@
     d.className = 'dot' + (idx === 0 ? ' on' : '') + (isAdmin ? ' adminMark' : '');
     dots.appendChild(d);
 
-    const kind = isAdmin ? 'admin' : 'advisor';
+    const kind = s.dataset.kind || 'advisor';
     if (kind !== lastKind) {
       const g = document.createElement('div');
       g.className = 'tocGroup';
-      g.textContent = isAdmin ? 'Admin only' : 'Advisor workflow';
+      g.textContent = kind === 'admin' ? 'Admin only' : kind === 'intro' ? 'Overview' : 'Advisor workflow';
       tocList.appendChild(g);
       lastKind = kind;
     }

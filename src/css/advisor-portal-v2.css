@@ -3917,26 +3917,53 @@ details.ap-accordion > summary.ap-accordion-trigger {
   }
 
   .ap-sidebar {
-    position: static;
+    position: sticky;
+    top: 0;
+    left: auto;
+    bottom: auto;
+    z-index: 90;
     width: 100%;
     max-height: none;
     padding: 0;
     overflow: visible;
     transform: none;
+    box-shadow: 0 1px 0 var(--ap-border), 0 4px 12px rgba(15, 23, 42, 0.06);
   }
 
+  /* Compact brand: hide the multi-line school name on mobile,
+     keep just the badge + "Advisor Portal" tag. */
   .ap-sidebar-brand {
-    padding: max(14px, env(safe-area-inset-top)) 16px 12px;
+    padding: max(10px, env(safe-area-inset-top)) 14px 8px;
+  }
+  .ap-sidebar-brand .topbar-brand-lockup {
+    gap: 10px;
+    align-items: center;
+  }
+  .ap-sidebar-brand .topbar-brand-text {
+    display: none;
+  }
+  .ap-sidebar-brand .topbar-badge svg {
+    width: 28px;
+    height: 34px;
+  }
+  .ap-sidebar-brand .ap-brand-portal-tag {
+    margin: 0;
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
   }
 
+  /* Horizontal scrolling nav with a right-edge fade so users know
+     more tabs are off-screen. */
   .ap-nav {
     display: flex;
     flex-direction: row;
-    gap: 8px;
-    padding: 10px 12px 12px;
+    gap: 6px;
+    padding: 6px 12px 8px;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
+    mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent);
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent);
   }
 
   .ap-nav::-webkit-scrollbar {
@@ -3951,11 +3978,12 @@ details.ap-accordion > summary.ap-accordion-trigger {
   .ap-nav-item {
     flex: 0 0 auto;
     width: auto;
-    min-height: 44px;
-    padding: 8px 12px;
+    min-height: 40px;
+    padding: 6px 12px;
     border-radius: 10px;
     font-size: 0.8rem;
     white-space: nowrap;
+    gap: 6px;
   }
 
   .ap-nav-item.active::before {
@@ -3969,8 +3997,8 @@ details.ap-accordion > summary.ap-accordion-trigger {
   }
 
   .ap-nav-icon {
-    width: 28px;
-    height: 28px;
+    width: 22px;
+    height: 22px;
   }
 
   .ap-sidebar-footer {
@@ -3982,54 +4010,32 @@ details.ap-accordion > summary.ap-accordion-trigger {
     min-height: auto;
   }
 
+  /* On mobile the topbar is just a page title — drop the chrome and
+     let it sit inline with the page content. */
   .ap-topbar {
+    position: static;
     height: auto;
-    min-height: 58px;
-    padding: 10px 14px;
-    gap: 10px;
+    min-height: 0;
+    padding: 14px 16px 0;
+    gap: 0;
     align-items: flex-start;
+    flex-direction: column;
+    background: transparent;
+    border-bottom: 0;
+    box-shadow: none;
   }
 
   .ap-topbar-title {
-    font-size: 1rem;
-    padding-top: 7px;
+    font-size: 1.35rem;
+    padding: 0;
+    flex: none;
   }
 
+  /* The Engagement / 7d-30d-90d-1y control isn't useful on mobile —
+     it bloats the top of every page. Hide it and let the Stats page
+     show data with the default 30d range. */
   .ap-topbar-actions {
-    justify-content: flex-end;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  .ap-analytics-control {
-    order: 3;
-    width: 100%;
-    flex-wrap: wrap;
-    gap: 8px;
-    padding: 8px 10px;
-    border-radius: var(--ap-r-lg);
-  }
-
-  .ap-analytics-control-head {
-    border-right: none;
-    margin-right: 0;
-    padding-right: 0;
-  }
-
-  .ap-analytics-segments {
-    flex: 1 1 auto;
-    justify-content: space-between;
-    min-width: 0;
-  }
-
-  .ap-analytics-segment {
-    flex: 1 1 0;
-    padding: 8px 6px;
-    text-align: center;
-  }
-
-  .ap-analytics-live {
-    margin-left: auto;
+    display: none;
   }
 
   .ap-analytics-range {
@@ -4209,7 +4215,10 @@ details.ap-accordion > summary.ap-accordion-trigger {
     grid-template-columns: 1fr 1fr;
   }
   .ap-topbar {
-    padding: 0 16px;
+    padding: 10px 14px 4px;
+  }
+  .ap-page {
+    padding: 12px 14px 24px;
   }
 }
 

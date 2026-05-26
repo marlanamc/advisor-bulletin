@@ -9,28 +9,35 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet" />
 <style>
   :root{
-    --navy:#0f172a; --navy-2:#1e293b;
-    --cyan:#0ea5e9; --cyan-2:#0284c7;
-    --gold:#ffc857;
-    --bg:#f4f6fb; --card:#ffffff;
-    --muted:#64748b; --line:#e2e8f0;
+    --navy:#0a1f44; --navy-2:#12306b;
+    --cyan:#1e4db7; --cyan-2:#12306b;
+    --gold:#f59e0b; --gold-soft:#fffbea;
+    --bg:#f5f7fb; --card:#ffffff;
+    --muted:#7a95b5; --line:#e2e8f2;
   }
   *{box-sizing:border-box}
   html,body{margin:0;padding:0;height:100%;background:var(--bg);color:var(--navy);font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
   .deck{min-height:100dvh;display:flex;flex-direction:column;padding:max(env(safe-area-inset-top),16px) 16px max(env(safe-area-inset-bottom),16px)}
   .topbar{display:flex;align-items:center;justify-content:space-between;padding:4px 4px 12px;font-size:13px;color:var(--muted)}
   .topbar strong{color:var(--navy-2);font-family:'Outfit',sans-serif;font-weight:700;letter-spacing:.2px}
+  .topbar-brand{display:flex;align-items:center;gap:8px;min-width:0}
+  .topbar-brand img{height:22px;width:auto;display:block;flex-shrink:0}
+  .topbar-brand .titles{display:flex;flex-direction:column;line-height:1.1;min-width:0}
+  .topbar-brand .titles small{font-size:10px;color:var(--muted);font-weight:500;letter-spacing:.3px;text-transform:uppercase;margin-top:2px}
+  .heroLogo{display:flex;justify-content:center;margin:-6px 0 14px}
+  .heroLogo img{height:96px;width:auto;display:block;max-width:100%}
+  @media (max-width:420px){.topbar-brand .titles small{display:none}}
   .stage{flex:1;display:flex;align-items:center;justify-content:center}
   .slide{display:none;width:100%;max-width:640px;background:var(--card);border-radius:18px;padding:28px 24px;box-shadow:0 10px 30px rgba(15,23,42,.08);border:1px solid var(--line)}
   .slide.active{display:block;animation:in .25s ease}
   @keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-  .eyebrow{display:inline-block;background:var(--gold);color:var(--navy);font-weight:700;font-size:12px;letter-spacing:.4px;text-transform:uppercase;padding:4px 10px;border-radius:999px;margin-bottom:14px}
+  .eyebrow{display:inline-block;background:var(--gold);color:#fff;font-weight:700;font-size:12px;letter-spacing:.4px;text-transform:uppercase;padding:4px 10px;border-radius:999px;margin-bottom:14px}
   h1{font-family:'Outfit',sans-serif;font-size:28px;line-height:1.15;margin:0 0 12px;color:var(--navy)}
   p{font-size:17px;line-height:1.5;margin:0 0 12px;color:var(--navy-2)}
   ul{padding-left:20px;margin:0 0 12px}
   li{font-size:17px;line-height:1.5;margin-bottom:6px;color:var(--navy-2)}
   .shot{margin:16px 0;border:2px dashed #cbd5e1;border-radius:12px;background:#f8fafc;color:var(--muted);font-size:13px;padding:24px 16px;text-align:center;min-height:160px;display:flex;align-items:center;justify-content:center}
-  .tip{background:#fff7e0;border:1px solid #ffd97a;border-radius:12px;padding:12px 14px;font-size:15px;color:#7a5b00;margin-top:8px}
+  .tip{background:var(--gold-soft);border:1px solid #fde68a;border-radius:12px;padding:12px 14px;font-size:15px;color:#92400e;margin-top:8px}
   .steps{counter-reset:step;padding:0;list-style:none;margin:0 0 12px}
   .steps li{counter-increment:step;position:relative;padding-left:36px;font-size:16px;margin-bottom:10px}
   .steps li::before{content:counter(step);position:absolute;left:0;top:0;width:26px;height:26px;border-radius:50%;background:var(--cyan);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:14px}
@@ -61,8 +68,14 @@
 <body>
 <div class="deck">
   <div class="topbar">
-    <strong>Bulletin Board · Student Guide</strong>
-    <button class="tocBtn" id="tocBtn" aria-label="Open table of contents">☰ Contents <span id="counter">1 / 9</span></button>
+    <div class="topbar-brand">
+      <img src="/images/ebhcs-topbar-logo.png" alt="EBHCS" />
+      <div class="titles">
+        <strong>Bulletin Board · Student Guide</strong>
+        <small>East Boston Harborside Community School</small>
+      </div>
+    </div>
+    <button class="tocBtn" id="tocBtn" aria-label="Open table of contents">☰ Contents <span id="counter">1 / 10</span></button>
   </div>
 
   <div class="toc" id="toc" role="dialog" aria-modal="true" aria-label="Table of contents">
@@ -78,41 +91,54 @@
   <div class="stage" id="stage">
 
     <section class="slide active">
+      <div class="heroLogo"><img src="/images/ebhcs-topbar-logo.png" alt="East Boston Harborside Community School" /></div>
       <span class="eyebrow">Welcome</span>
-      <h1>Hi! 👋 This is your school's bulletin board.</h1>
-      <p>Your advisors post things here for you — jobs, programs, events, and help.</p>
+      <h1>Hi! 👋 This is the EBHCS Bulletin Board.</h1>
+      <p>Your advisors at East Boston Harborside post things here for you — jobs, ESOL classes, college info, immigration help, food and housing, events, and more.</p>
       <p>This guide takes 2 minutes. Tap <strong>Next</strong> to start.</p>
     </section>
 
     <section class="slide">
       <span class="eyebrow">The two big ideas</span>
       <h1>Bulletins = the live feed</h1>
-      <p>When an advisor posts something new, it shows up on the home screen. The newest stuff is at the top.</p>
-      <div class="shot">[ Screenshot: Home feed showing a few bulletin cards ]</div>
+      <p>When an advisor — Leah, Jerome, Carmen, Mike, anyone — posts something new, it shows up on the home screen. The newest stuff is at the top.</p>
+      <div class="shot">[ Capture as: shots/feed.png — Home feed with 2–3 bulletin cards ]</div>
     </section>
 
     <section class="slide">
       <span class="eyebrow">The two big ideas</span>
       <h1>Resources = always there</h1>
-      <p>Need help with housing, food, immigration, jobs, or health? Tap <strong>Find Help</strong>. These links stay there all the time.</p>
-      <div class="shot">[ Screenshot: Find Help / Resources page with category cards ]</div>
+      <p>Need help with housing, food, immigration, ESOL, college &amp; GED, money, or health? Tap <strong>Find Help</strong>. These links stay there all the time — you can come back any day.</p>
+      <div class="shot">[ Capture as: shots/find-help.png — Find Help page with category cards ]</div>
     </section>
 
     <section class="slide">
       <span class="eyebrow">Other useful tabs</span>
-      <h1>Calendar and Advisors</h1>
+      <h1>Calendar and About</h1>
       <ul>
-        <li><strong>Calendar</strong> — see what's coming up.</li>
-        <li><strong>Advisors</strong> — see who your advisors are and how to reach them.</li>
+        <li><strong>Calendar</strong> — see what's coming up at EBHCS (events, deadlines, school breaks).</li>
+        <li><strong>About</strong> — office hours, the school address, and your advisors' names and emails.</li>
       </ul>
-      <div class="shot">[ Screenshot: Bottom nav bar with Feed, Calendar, Find Help, Advisors ]</div>
+      <div class="shot">[ Capture as: shots/bottom-nav.png — Bottom nav bar with Feed, Calendar, Find Help, About ]</div>
+    </section>
+
+    <section class="slide">
+      <span class="eyebrow">Need to talk to an advisor?</span>
+      <h1>Here's how to reach them.</h1>
+      <ol class="steps">
+        <li>Open the <strong>About</strong> page.</li>
+        <li>Tap <strong>See your advisor</strong> to open the list.</li>
+        <li>Find your advisor, then tap the <strong>✉️ email icon</strong> next to their name to send a message.</li>
+      </ol>
+      <div class="shot">[ Capture as: shots/advisor-list.png — About page with the advisor list expanded ]</div>
+      <div class="tip">💡 You can also stop by during <strong>office hours</strong> — they're on the same About page, right above the advisor list.</div>
     </section>
 
     <section class="slide">
       <span class="eyebrow">In your language</span>
       <h1>You can switch to Spanish anytime.</h1>
-      <p>Tap the <strong>EN / ES</strong> button at the top to change the language.</p>
-      <div class="shot">[ Screenshot: Language toggle in header ]</div>
+      <p>Tap the <strong>EN / ES</strong> button at the top to change the language. Puedes cambiar al español cuando quieras.</p>
+      <div class="shot">[ Capture as: shots/lang-toggle.png — EN / ES toggle in the header ]</div>
     </section>
 
     <section class="slide">
@@ -124,7 +150,7 @@
         <li>Scroll and tap <strong>Add to Home Screen</strong>.</li>
         <li>Tap <strong>Add</strong>.</li>
       </ol>
-      <div class="shot">[ Screenshot: iPhone Safari Share menu with "Add to Home Screen" highlighted ]</div>
+      <div class="shot">[ Capture as: shots/iphone-install.png — iPhone Safari Share menu with "Add to Home Screen" highlighted ]</div>
     </section>
 
     <section class="slide">
@@ -136,7 +162,7 @@
         <li>Tap <strong>Add to Home screen</strong> or <strong>Install app</strong>.</li>
         <li>Tap <strong>Install</strong>.</li>
       </ol>
-      <div class="shot">[ Screenshot: Android Chrome menu with "Install app" highlighted ]</div>
+      <div class="shot">[ Capture as: shots/android-install.png — Android Chrome menu with "Install app" highlighted ]</div>
     </section>
 
     <section class="slide">
