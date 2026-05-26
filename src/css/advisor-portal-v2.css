@@ -346,6 +346,27 @@ body.ap-portal-active .main-content {
   margin-top: 10px;
 }
 
+.ap-source-pdf-attach {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin-top: 12px;
+  padding: 10px 11px;
+  border: 1px solid rgba(47, 111, 237, 0.18);
+  border-radius: var(--ap-r-sm);
+  background: rgba(47, 111, 237, 0.07);
+  color: var(--ap-text-2);
+  font-size: 0.76rem;
+  font-weight: 650;
+  line-height: 1.35;
+  cursor: pointer;
+}
+
+.ap-source-pdf-attach input {
+  margin-top: 2px;
+  accent-color: var(--ap-blue);
+}
+
 .ap-flyer-es-toggle {
   display: flex;
   align-items: center;

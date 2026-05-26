@@ -654,21 +654,25 @@
                                     <div class="ap-upload-icon" aria-hidden="true">
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
                                     </div>
-                                    <div class="ap-upload-title">Drop flyer here</div>
-                                    <div class="ap-upload-sub">PNG, JPG, or PDF · max 10MB</div>
+                                    <div class="ap-upload-title">Drop flyer preview here</div>
+                                    <div class="ap-upload-sub">PNG/JPG, or PDF page 1 · max 10MB</div>
                                 </div>
-                                <input type="file" id="image" name="image" accept="image/jpeg,image/png,image/gif,image/webp,application/pdf,.pdf" class="file-input recommended" style="display: none;" aria-label="Upload flyer">
+                                <input type="file" id="image" name="image" accept="image/jpeg,image/png,image/gif,image/webp,application/pdf,.pdf" class="file-input recommended" style="display: none;" aria-label="Upload flyer preview">
                                 <div id="imagePreview" class="image-preview ap-visual-flyer-preview"></div>
 
                                 <div id="apFlyerPdfAddon" class="ap-flyer-pdf-addon" hidden>
                                     <div class="ap-flyer-pdf-addon-row">
                                         <div class="ap-flyer-pdf-addon-icon" aria-hidden="true">📄</div>
                                         <div class="ap-flyer-pdf-addon-copy">
-                                            <label for="pdf">Also attach the original PDF</label>
-                                            <small class="input-help">Optional — students can open the full document from your post.</small>
+                                            <label for="pdf">Student PDF attachment</label>
+                                            <small class="input-help">Optional — add the full document students can open from your post.</small>
                                         </div>
                                         <button type="button" class="ap-flyer-pdf-choose" onclick="document.getElementById('pdf').click()">Choose PDF</button>
                                     </div>
+                                    <label class="ap-source-pdf-attach" for="attachSourcePdf">
+                                        <input type="checkbox" id="attachSourcePdf" name="attachSourcePdf" checked>
+                                        <span>Attach the preview PDF so students can open the full document.</span>
+                                    </label>
                                     <input type="file" id="pdf" name="pdf" accept=".pdf,application/pdf" class="file-input ap-flyer-pdf-input" style="display: none;" aria-label="Attach PDF">
                                     <div id="pdfPreview" class="pdf-preview"></div>
                                 </div>
@@ -682,8 +686,8 @@
                                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
                                         </div>
                                         <div>
-                                            <div class="ap-upload-dropzone-title">Upload Spanish flyer</div>
-                                            <div class="ap-upload-dropzone-sub">PNG, JPG, or PDF · max 10MB</div>
+                                            <div class="ap-upload-dropzone-title">Upload Spanish flyer preview</div>
+                                            <div class="ap-upload-dropzone-sub">PNG/JPG, or PDF page 1 · max 10MB</div>
                                         </div>
                                         <span class="ap-upload-lang-badge" aria-hidden="true">ES</span>
                                     </div>

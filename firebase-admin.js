@@ -402,23 +402,24 @@ class FirebaseAdminPanel {
         const imageInput = document.getElementById('image');
         const imagePreview = document.getElementById('imagePreview');
         const pdfAddon = document.getElementById('apFlyerPdfAddon');
+        const choosePdfButton = pdfAddon?.querySelector('.ap-flyer-pdf-choose');
+        const sourcePdfAttach = pdfAddon?.querySelector('.ap-source-pdf-attach');
         const hasImagePreview = Boolean(imagePreview?.querySelector('.preview-image'));
 
         if (!pdfAddon) return;
 
-        if (!hasImagePreview) {
-            pdfAddon.setAttribute('hidden', '');
-            return;
-        }
+        pdfAddon.removeAttribute('hidden');
 
         const file = imageInput?.files?.[0];
-        const fromPdf = Boolean(this.pendingImageData?.convertedFromPdf || (file && isPdfFile(file)));
+        const fromPdf = hasImagePreview && Boolean(this.pendingImageData?.convertedFromPdf || (file && isPdfFile(file)));
 
         if (fromPdf) {
-            pdfAddon.setAttribute('hidden', '');
             this.removePdfPreview();
+            if (choosePdfButton) choosePdfButton.setAttribute('hidden', '');
+            if (sourcePdfAttach) sourcePdfAttach.removeAttribute('hidden');
         } else {
-            pdfAddon.removeAttribute('hidden');
+            if (choosePdfButton) choosePdfButton.removeAttribute('hidden');
+            if (sourcePdfAttach) sourcePdfAttach.setAttribute('hidden', '');
         }
     }
 
@@ -1719,7 +1720,7 @@ class FirebaseAdminPanel {
         }
     }
 
-    async handleImageUpload(file, bulletin, pdfFile = null, editingId = null, fieldName = 'image') {
+    async handleImageUpload(file, bulletin, pdfFile = null, editingId = null, fieldName = 'image', options = {}) {
         try {
             const signature = this.getFileSignature(file);
             let processedImage = null;
@@ -1760,7 +1761,7 @@ class FirebaseAdminPanel {
             // Attach the original PDF when a PDF flyer was uploaded, or when a separate PDF was added.
             if (fieldName === 'image') {
                 const pdfToUpload = isPdfFile(file)
-                    ? file
+                    ? (options.attachSourcePdf === false ? null : file)
                     : (pdfFile && pdfFile.size > 0 ? pdfFile : null);
                 if (pdfToUpload) {
                     await this.handlePdfUpload(pdfToUpload, bulletin, editingId);
@@ -3493,9 +3494,10 @@ class FirebaseAdminPanel {
         const imageFile = formData.get('image');
         const imageEsFile = formData.get('imageEs');
         const pdfFile = formData.get('pdf');
+        const attachSourcePdf = formData.get('attachSourcePdf') === 'on';
 
         if (imageFile && imageFile.size > 0) {
-            await this.handleImageUpload(imageFile, bulletin, pdfFile, bulletinId, 'image');
+            await this.handleImageUpload(imageFile, bulletin, pdfFile, bulletinId, 'image', { attachSourcePdf });
         } else if (pdfFile && pdfFile.size > 0) {
             await this.handlePdfUpload(pdfFile, bulletin, bulletinId);
         }
@@ -3551,9 +3553,10 @@ class FirebaseAdminPanel {
         const imageFile = formData.get('image');
         const imageEsFile = formData.get('imageEs');
         const pdfFile = formData.get('pdf');
+        const attachSourcePdf = formData.get('attachSourcePdf') === 'on';
 
         if (imageFile && imageFile.size > 0) {
-            await this.handleImageUpload(imageFile, bulletin, pdfFile, bulletinId, 'image');
+            await this.handleImageUpload(imageFile, bulletin, pdfFile, bulletinId, 'image', { attachSourcePdf });
         } else if (pdfFile && pdfFile.size > 0) {
             await this.handlePdfUpload(pdfFile, bulletin, bulletinId);
         }
