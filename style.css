@@ -15341,6 +15341,16 @@ body:has(#loginRequired) {
         line-height: 1.45;
     }
 
+    #aboutView .about-advisor-accordion-trigger {
+        min-height: 128px;
+        padding: 24px;
+    }
+
+    #aboutView .about-advisor-accordion-chevron,
+    #aboutView .about-advisor-accordion-body {
+        display: none;
+    }
+
     #aboutView .about-action-cta {
         padding: 10px 16px;
         font-size: 13px;

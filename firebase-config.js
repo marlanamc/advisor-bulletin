@@ -822,6 +822,24 @@ class FirebaseBulletinBoard {
             });
         });
 
+        const aboutAdvisorTrigger = document.querySelector('.about-advisor-accordion-trigger');
+        const isDesktopAboutAdvisorNav = () => window.matchMedia('(min-width: 769px)').matches;
+        if (aboutAdvisorTrigger) {
+            aboutAdvisorTrigger.addEventListener('click', (event) => {
+                if (!isDesktopAboutAdvisorNav()) return;
+                event.preventDefault();
+                this.switchView('advisors');
+                scrollWindowTo(0);
+            });
+
+            aboutAdvisorTrigger.addEventListener('keydown', (event) => {
+                if (!isDesktopAboutAdvisorNav() || !['Enter', ' '].includes(event.key)) return;
+                event.preventDefault();
+                this.switchView('advisors');
+                scrollWindowTo(0);
+            });
+        }
+
         const searchInput = document.getElementById('searchInput');
         const searchBtn = document.getElementById('searchBtn');
         const clearFilters = document.getElementById('clearFilters');
