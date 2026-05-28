@@ -1,17 +1,155 @@
 import './css/admin-shell.css'
 import { initAppUpdateCheck } from './app-update.js'
-import '../enhanced-auth.js'
-import '../firebase-admin.js'
-
-initAppUpdateCheck();
 import { mountEbhcsBrandLockups } from './ebhcs-brand-lockup.js'
+import { db, auth } from './firebase-auth.js'
+import { doc, getDoc } from 'firebase/firestore'
+import { onAuthStateChanged } from 'firebase/auth'
+import '../enhanced-auth.js'
+
+let portalMountPromise = null
+let shellBooted = false
+
+function setAuthView(view, message = 'Checking your session...') {
+    const loadingEl = document.getElementById('authLoadingScreen')
+    const loadingMsg = document.getElementById('authLoadingMessage')
+    const loginRequired = document.getElementById('loginRequired')
+    const adminPanel = document.getElementById('adminPanel')
+    const logoutBtn = document.getElementById('logoutBtn')
+
+    if (loadingMsg) {
+        loadingMsg.textContent = message
+    }
+
+    if (view === 'loading') {
+        if (loadingEl) {
+            loadingEl.style.display = 'flex'
+            loadingEl.setAttribute('aria-busy', 'true')
+        }
+        if (loginRequired) loginRequired.style.display = 'none'
+        if (adminPanel) adminPanel.style.display = 'none'
+        if (logoutBtn) logoutBtn.style.display = 'none'
+        document.body.classList.remove('ap-portal-active')
+        return
+    }
+
+    if (loadingEl) {
+        loadingEl.style.display = 'none'
+        loadingEl.setAttribute('aria-busy', 'false')
+    }
+
+    if (view === 'login') {
+        if (loginRequired) loginRequired.style.display = 'grid'
+        if (adminPanel) adminPanel.style.display = 'none'
+        if (logoutBtn) logoutBtn.style.display = 'none'
+        document.body.classList.remove('ap-portal-active')
+        return
+    }
+
+    if (view === 'portal') {
+        if (loginRequired) loginRequired.style.display = 'none'
+    }
+}
+
+window.adminShell = {
+    setAuthView,
+}
 
 function initAdminBrandLockups() {
     mountEbhcsBrandLockups()
 }
 
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initAdminBrandLockups)
-} else {
+function getUserDetails(user) {
+    const username = user.email.split('@')[0]
+    return {
+        username,
+        email: user.email,
+        name: username,
+    }
+}
+
+async function shouldRequirePasswordChange(username) {
+    try {
+        const userDoc = await getDoc(doc(db, 'users', username))
+        return userDoc.exists() && userDoc.data().requirePasswordChange === true
+    } catch (error) {
+        console.error('Error checking user password status:', error)
+        return false
+    }
+}
+
+async function mountAdvisorPortal(userDetails) {
+    if (!portalMountPromise) {
+        setAuthView('loading', 'Opening advisor workspace...')
+        portalMountPromise = Promise.all([
+            import('./css/admin.css'),
+            import('./css/advisor-portal-v2.css'),
+            import('../firebase-admin.js'),
+        ]).then(([, , portal]) => portal.mountAdvisorPortal(userDetails))
+    } else {
+        const portal = await portalMountPromise
+        if (userDetails && portal?.applyAuthenticatedUser) {
+            await portal.applyAuthenticatedUser(userDetails)
+        }
+        return portal
+    }
+
+    return portalMountPromise
+}
+
+async function handleAuthenticatedUser(userDetails) {
+    setAuthView('loading', 'Opening advisor workspace...')
+    await mountAdvisorPortal(userDetails)
+}
+
+function handleSignedOut() {
+    if (typeof window.adminPanel?.handleSignedOut === 'function') {
+        window.adminPanel.handleSignedOut()
+    } else {
+        setAuthView('login')
+    }
+}
+
+function bootShell() {
+    if (shellBooted) return
+    shellBooted = true
+
+    initAppUpdateCheck()
     initAdminBrandLockups()
+    setAuthView('loading')
+
+    document.addEventListener('userAuthenticated', (event) => {
+        handleAuthenticatedUser(event.detail).catch((error) => {
+            console.error('Error opening advisor workspace:', error)
+            setAuthView('login')
+        })
+    })
+
+    auth.authStateReady().catch((error) => {
+        console.error('Auth readiness error:', error)
+        setAuthView('login')
+    })
+
+    onAuthStateChanged(auth, async (user) => {
+        if (!user) {
+            handleSignedOut()
+            return
+        }
+
+        const userDetails = getUserDetails(user)
+        if (await shouldRequirePasswordChange(userDetails.username)) {
+            setAuthView('login')
+            if (window.enhancedAuth) {
+                window.enhancedAuth.showPasswordChangeModal(userDetails.username)
+            }
+            return
+        }
+
+        await handleAuthenticatedUser(userDetails)
+    })
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bootShell, { once: true })
+} else {
+    bootShell()
 }

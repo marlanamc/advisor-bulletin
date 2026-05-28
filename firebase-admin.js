@@ -4070,11 +4070,24 @@ function toggleDateFields() {
 
 // Initialize the admin panel
 let adminPanel;
-document.addEventListener('DOMContentLoaded', () => {
+export async function mountAdvisorPortal(userDetails) {
+    if (typeof window.adminPanel?.applyAuthenticatedUser === 'function') {
+        if (userDetails) {
+            await window.adminPanel.applyAuthenticatedUser(userDetails);
+        }
+        return window.adminPanel;
+    }
+
     adminPanel = new FirebaseAdminPanel();
     // Expose for global access after initialization
     window.adminPanel = adminPanel;
     window.showTab = showTab;
     window.handleTabKeydown = handleTabKeydown;
     window.toggleDateFields = toggleDateFields;
-});
+
+    if (userDetails) {
+        await adminPanel.applyAuthenticatedUser(userDetails);
+    }
+
+    return adminPanel;
+}
