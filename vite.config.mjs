@@ -14,6 +14,9 @@ function emitDeployVersionFile() {
 
 export default defineConfig({
   build: {
+    modulePreload: {
+      polyfill: false,
+    },
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'index.html'),
@@ -24,11 +27,11 @@ export default defineConfig({
         // chunk per-entry. Prevents the advisor-portal CSS from being preloaded
         // on the student page just because both pages import rich-text.js.
         manualChunks(id) {
+          if (id.includes('vite/preload-helper')) {
+            return 'vite-preload'
+          }
           if (id.includes('node_modules/firebase')) {
             return 'firebase-vendor'
-          }
-          if (id.includes('node_modules/pdfjs-dist')) {
-            return 'pdfjs-vendor'
           }
         },
       },

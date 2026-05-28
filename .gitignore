@@ -18,6 +18,7 @@ firebase-debug.*.log
 .playwright-mcp/
 playwright-report/
 test-results/
+tmp/
 .cursor/debug-*.log
 
 # IDE

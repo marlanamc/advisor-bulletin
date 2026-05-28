@@ -481,13 +481,15 @@ class FirebaseBulletinBoard {
     }
 
     // --- bulletin cache helpers ---
-    // Cache key includes the origin so localhost and prod never share state.
+    // Persist across browser sessions so returning students see the last feed
+    // immediately while Firestore refreshes in the background.
     static CACHE_KEY = 'ebhcs_bulletins_v1';
-    static CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+    static CACHE_TTL = 12 * 60 * 60 * 1000; // 12 hours
 
     _readCache() {
         try {
-            const raw = sessionStorage.getItem(FirebaseBulletinBoard.CACHE_KEY);
+            const raw = localStorage.getItem(FirebaseBulletinBoard.CACHE_KEY)
+                || sessionStorage.getItem(FirebaseBulletinBoard.CACHE_KEY);
             if (!raw) return null;
             const { ts, bulletins } = JSON.parse(raw);
             if (Date.now() - ts > FirebaseBulletinBoard.CACHE_TTL) return null;
@@ -499,12 +501,11 @@ class FirebaseBulletinBoard {
 
     _writeCache(bulletins) {
         try {
-            sessionStorage.setItem(
-                FirebaseBulletinBoard.CACHE_KEY,
-                JSON.stringify({ ts: Date.now(), bulletins })
-            );
+            const payload = JSON.stringify({ ts: Date.now(), bulletins });
+            localStorage.setItem(FirebaseBulletinBoard.CACHE_KEY, payload);
+            sessionStorage.setItem(FirebaseBulletinBoard.CACHE_KEY, payload);
         } catch {
-            // sessionStorage full or unavailable — skip silently
+            // Storage full or unavailable — skip silently.
         }
     }
 
@@ -5500,7 +5501,17 @@ window.closeShareModal = closeShareModal;
 
 // Initialize the bulletin board when page loads
 let bulletinBoard;
-document.addEventListener('DOMContentLoaded', () => {
+
+function initBulletinBoard() {
+    if (window.bulletinBoard) {
+        return;
+    }
     bulletinBoard = new FirebaseBulletinBoard();
     window.bulletinBoard = bulletinBoard;
-});
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initBulletinBoard, { once: true });
+} else {
+    initBulletinBoard();
+}
