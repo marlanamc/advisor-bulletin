@@ -3688,8 +3688,9 @@ details.ap-accordion > summary.ap-accordion-trigger {
   width: 16px; height: 16px;
 }
 
-.ap-search-input {
+.ap-search-wrap .ap-search-input {
   width: 100%;
+  min-height: 0;
   padding: 10px 14px 10px 38px;
   border-radius: var(--ap-r-md);
   border: 1.5px solid var(--ap-border);
@@ -3702,9 +3703,10 @@ details.ap-accordion > summary.ap-accordion-trigger {
   box-sizing: border-box;
 }
 
-.ap-search-input:focus {
+.ap-search-wrap .ap-search-input:focus {
   border-color: var(--ap-blue);
   box-shadow: 0 0 0 3px rgba(26,86,219,.1);
+  outline: none;
 }
 
 .ap-filter-pills {
