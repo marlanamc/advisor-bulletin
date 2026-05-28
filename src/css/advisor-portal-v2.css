@@ -4881,3 +4881,63 @@ details.ap-accordion > summary.ap-accordion-trigger {
 .reorder-card-advisor {
     font-weight: 500;
 }
+
+/* Manage-card analytics tiles (restored after b50fa10 dropped them) */
+.manage-analytics-strip {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 6px;
+    margin: 12px 0;
+}
+
+.manage-analytics-strip span {
+    padding: 8px 6px;
+    border-radius: 10px;
+    background: #eef3f9;
+    color: #526173;
+    text-align: center;
+    font-size: 0.72rem;
+    font-weight: 800;
+}
+
+.manage-analytics-strip strong {
+    display: block;
+    color: #102d56;
+    font-size: 0.95rem;
+}
+
+.advisor-redesign .manage-analytics-strip span {
+    background: var(--adv-surface-2, #eef3f9);
+    color: var(--adv-text-2, #526173);
+}
+
+.advisor-redesign .manage-analytics-strip strong {
+    color: var(--adv-text, #102d56);
+    font-family: var(--adv-font-mono, inherit);
+    font-size: 1rem;
+}
+
+@media (max-width: 720px) {
+    .manage-analytics-strip {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* Manage-card edit/delete pill buttons (restored after b50fa10) */
+.advisor-redesign .edit-btn {
+    background: var(--adv-cyan-dim);
+    color: var(--adv-cyan);
+    border: 1px solid rgba(26, 86, 219, 0.2);
+    border-radius: 8px;
+    font-family: var(--adv-font-body, inherit);
+    font-weight: 600;
+}
+
+.advisor-redesign .delete-btn {
+    background: rgba(220, 38, 38, 0.06);
+    color: var(--adv-red);
+    border: 1px solid rgba(220, 38, 38, 0.15);
+    border-radius: 8px;
+    font-family: var(--adv-font-body, inherit);
+    font-weight: 600;
+}
