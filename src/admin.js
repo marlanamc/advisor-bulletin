@@ -1,4 +1,4 @@
-import '../style.css'
+import './css/admin-shell.css'
 import { initAppUpdateCheck } from './app-update.js'
 import '../enhanced-auth.js'
 import '../firebase-admin.js'
