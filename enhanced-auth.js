@@ -1,4 +1,4 @@
-import { db, auth } from './src/firebase.js'
+import { db, auth } from './src/firebase-auth.js'
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore'
 import { signInWithEmailAndPassword, EmailAuthProvider, reauthenticateWithCredential, updatePassword, sendPasswordResetEmail } from 'firebase/auth'
 
@@ -68,8 +68,9 @@ class EnhancedAuth {
         submitBtn.disabled = true;
         submitBtn.classList.add('loading');
         submitBtn.textContent = '';
-        if (window.adminPanel) {
-            window.adminPanel.setAuthView('loading', 'Signing you in...');
+        const authView = window.adminPanel?.setAuthView ? window.adminPanel : window.adminShell;
+        if (authView) {
+            authView.setAuthView('loading', 'Signing you in...');
         }
 
         let loginSucceeded = false;
@@ -103,8 +104,9 @@ class EnhancedAuth {
             }
 
         } catch (error) {
-            if (window.adminPanel) {
-                window.adminPanel.setAuthView('login');
+            const authView = window.adminPanel?.setAuthView ? window.adminPanel : window.adminShell;
+            if (authView) {
+                authView.setAuthView('login');
             }
             this.handleLoginError(error, username);
         } finally {
@@ -533,16 +535,27 @@ function togglePassword(fieldId) {
 
 function closeForgotPassword() {
     document.getElementById('forgotPasswordModal').style.display = 'none';
-    if (window.adminPanel) {
-        window.adminPanel.setAuthView('login');
+    const authView = window.adminPanel?.setAuthView ? window.adminPanel : window.adminShell;
+    if (authView) {
+        authView.setAuthView('login');
     }
 }
 
 // Initialize enhanced authentication
 let enhancedAuth;
-document.addEventListener('DOMContentLoaded', () => {
+function initEnhancedAuth() {
+    if (window.enhancedAuth) {
+        return;
+    }
     enhancedAuth = new EnhancedAuth();
-});
+    window.enhancedAuth = enhancedAuth;
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initEnhancedAuth, { once: true });
+} else {
+    initEnhancedAuth();
+}
 
 // Expose for global access
 window.enhancedAuth = enhancedAuth;
