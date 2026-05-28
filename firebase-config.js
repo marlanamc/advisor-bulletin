@@ -1777,7 +1777,7 @@ class FirebaseBulletinBoard {
         }
 
         emptyState.style.display = 'none';
-        grid.innerHTML = bulletins.map((bulletin) => this.createBulletinCard(bulletin)).join('');
+        grid.innerHTML = bulletins.map((bulletin, idx) => this.createBulletinCard(bulletin, idx)).join('');
         this.trackRenderedCardViews(bulletins);
     }
 
@@ -3730,7 +3730,7 @@ class FirebaseBulletinBoard {
         </svg>`;
     }
 
-    createBulletinCard(bulletin) {
+    createBulletinCard(bulletin, index = 0) {
         const meta = this.getCatMeta(bulletin.category);
         const isDeadlineClose = this.isApplicationDeadline(bulletin);
         const isExpired = this.isBulletinExpired(bulletin);
@@ -3761,12 +3761,18 @@ class FirebaseBulletinBoard {
         </div>
       </div>`;
 
+        // If the card is in the top 3 cards (above-the-fold), load it with high priority
+        // Otherwise, lazy-load it to prevent bandwidth starvation
+        const imageAttributes = index < 3
+            ? 'decoding="async" fetchpriority="high"'
+            : 'decoding="async" loading="lazy"';
+
         return `
     <article class="pc ${isExpired ? 'pc--expired' : ''}" id="bulletin-${bulletin.id}" data-bulletin-id="${bulletin.id}" onclick="${openHandler}" role="button" tabindex="0" style="cursor:pointer">
       ${chipsBar}
       <div class="pc__top ${hasImage ? 'pc__top--image' : ''}" style="background:${hasImage ? '#f8fafc' : meta.grad}">
         ${hasImage
-          ? `<div class="pc__image-stage"><img class="pc__poster-image" src="${this.escapeAttribute(displayImage)}" alt=""></div>`
+          ? `<div class="pc__image-stage"><img class="pc__poster-image" src="${this.escapeAttribute(displayImage)}" alt="" ${imageAttributes}></div>`
           : `<div class="pc__icon-wrap"><div class="pc__icon-box" style="background:${meta.accent}">${this.getCardIconSvg(bulletin.category)}</div></div>
         <div class="pc__title-overlay">${this.escapeHtml(titleShort)} —</div>`}
       </div>
