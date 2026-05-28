@@ -156,7 +156,10 @@ service cloud.firestore {
         && data.titleEn is string && data.titleEn.size() > 0 && data.titleEn.size() <= 200
         && (!('titleEs' in data) || data.titleEs.size() <= 200)
         && data.category == 'resource'
-        && data.resourceCategory in ['immigration', 'jobs', 'housing', 'health', 'legal-aid', 'food', 'family', 'esol', 'college', 'money', 'announcement']
+        // resourceCategory whitelist — mirrors AUTHORABLE_RESOURCE_CATEGORIES
+        // in src/resource-categories.js. scripts/check-resource-categories-sync.mjs
+        // (run in prebuild) fails the build if the two lists drift apart.
+        && data.resourceCategory in ['immigration', 'jobs', 'housing', 'health', 'food', 'family', 'hse', 'college', 'legal-aid', 'money', 'esol']
         && data.url is string && data.url.size() > 0;
 
       return hasCommonRequired && validOptionalFields && (validPost || validResource);

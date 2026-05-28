@@ -2,6 +2,7 @@ import { db } from './src/firebase-student.js'
 import { STUDENT_ADVISOR_DIRECTORY } from './src/advisor-directory.js'
 import { installClientErrorLogger } from './src/error-logger.js'
 import { normalizePostCategory, getPostCategoryDisplay } from './src/feed-categories.js'
+import { RESOURCE_TILE_CATEGORIES } from './src/resource-categories.js'
 import {
     normalizeEventSessions,
     parseSessionEntry,
@@ -183,7 +184,9 @@ const RESOURCE_CATEGORY_CONFIG = {
 };
 
 const STORY_BUBBLE_PREVIEW_CATEGORIES = ['immigration', 'jobs', 'housing', 'health', 'food'];
-const RESOURCE_TILE_CATEGORIES = ['immigration', 'jobs', 'housing', 'health', 'food', 'family', 'hse', 'college', 'legal-aid', 'money'];
+// RESOURCE_TILE_CATEGORIES is imported from src/resource-categories.js — single
+// source of truth, mirrored by firestore.rules and verified by
+// scripts/check-resource-categories-sync.mjs.
 
 // Spanish translations for the canonical service-chip vocabulary used on
 // resource cards. Lookup is case-insensitive and falls back to the English
@@ -2082,7 +2085,7 @@ class FirebaseBulletinBoard {
         document.body.classList.add('resource-category-detail-open');
 
         const allResources = this.getPublishedResources()
-            .filter((resource) => this.resourceMatchesCategory(resource, category));
+            .filter((resource) => this.getResourceCategoryKey(resource) === category);
         const iconSvg = RESOURCE_ICON_SVGS[config.icon] || RESOURCE_ICON_SVGS.globe;
 
         header.hidden = false;
@@ -2165,10 +2168,13 @@ class FirebaseBulletinBoard {
             sortBar.hidden = false;
         }
 
-        // Filter by category
+        // Filter by category — use the primary resourceCategory only, so the
+        // mobile drill-in count matches the desktop sidebar count. Tag/category
+        // array entries are intentionally ignored here to prevent resources
+        // from leaking into unrelated topic views.
         let visibleResources = this.currentResourceCategory === 'all'
             ? resources
-            : resources.filter((resource) => this.resourceMatchesCategory(resource, this.currentResourceCategory));
+            : resources.filter((resource) => this.getResourceCategoryKey(resource) === this.currentResourceCategory);
 
         // Apply search filter
         visibleResources = this.filterResourcesBySearch(visibleResources, this.resourceSearchQuery);

@@ -2,6 +2,7 @@ import { db, auth, storage } from './src/firebase.js'
 import { getPublicAdvisorEmail, STUDENT_ADVISOR_DIRECTORY } from './src/advisor-directory.js'
 import { installClientErrorLogger } from './src/error-logger.js'
 import { getPostCategoryDisplay } from './src/feed-categories.js'
+import { AUTHORABLE_RESOURCE_CATEGORIES, AUTHORABLE_RESOURCE_CATEGORY_SET } from './src/resource-categories.js'
 import {
     MAX_EVENT_SESSIONS,
     normalizeEventSessions,
@@ -19,20 +20,43 @@ installClientErrorLogger('admin')
 import { onAuthStateChanged, signOut, sendPasswordResetEmail } from 'firebase/auth'
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage'
 
-// Matches student Help tiles (RESOURCE_TILE_CATEGORIES) plus ESOL resources.
-const ADMIN_RESOURCE_CATEGORIES = [
-    ['immigration', 'Immigration / Inmigración', '🌎', 'shield'],
-    ['jobs', 'Jobs / Empleos', '💼', 'briefcase'],
-    ['food', 'Food / Comida', '🍽️', 'food'],
-    ['family', 'Child Care / Cuidado de niños', '👨‍👩‍👧', 'family'],
-    ['health', 'Health / Salud', '❤️', 'heart'],
-    ['housing', 'Housing / Vivienda', '🏠', 'home'],
-    ['legal-aid', 'Legal Help / Ayuda legal', '⚖️', 'scale'],
-    ['money', 'Financial Help / Ayuda financiera', '💵', 'money'],
-    ['esol', 'English Class / Inglés', '🗣️', 'abc'],
-    ['hse', 'GED / HSE / Equivalencia escolar', '📚', 'abc'],
-    ['college', 'College & Careers / Universidad y carreras', '🎓', 'graduation'],
-];
+// Admin-specific display data (label, emoji, icon) keyed by the canonical
+// resource categories from src/resource-categories.js. The dropdown order
+// below is the order advisors see in the form. The key set is asserted at
+// module load against AUTHORABLE_RESOURCE_CATEGORIES so a category added to
+// the canonical list cannot silently be missing from the admin form.
+const ADMIN_RESOURCE_CATEGORY_DATA = {
+    immigration: ['Immigration / Inmigración', '🌎', 'shield'],
+    jobs:        ['Jobs / Empleos', '💼', 'briefcase'],
+    food:        ['Food / Comida', '🍽️', 'food'],
+    family:      ['Child Care / Cuidado de niños', '👨‍👩‍👧', 'family'],
+    health:      ['Health / Salud', '❤️', 'heart'],
+    housing:     ['Housing / Vivienda', '🏠', 'home'],
+    'legal-aid': ['Legal Help / Ayuda legal', '⚖️', 'scale'],
+    money:       ['Financial Help / Ayuda financiera', '💵', 'money'],
+    esol:        ['English Class / Inglés', '🗣️', 'abc'],
+    hse:         ['GED / HSE / Equivalencia escolar', '📚', 'abc'],
+    college:     ['College & Careers / Universidad y carreras', '🎓', 'graduation'],
+};
+
+// Sync assertion — fails fast at module load if the canonical list and the
+// admin display data drift apart.
+{
+    const displayKeys = new Set(Object.keys(ADMIN_RESOURCE_CATEGORY_DATA));
+    const missingFromAdmin = AUTHORABLE_RESOURCE_CATEGORIES.filter((k) => !displayKeys.has(k));
+    const extraInAdmin = [...displayKeys].filter((k) => !AUTHORABLE_RESOURCE_CATEGORY_SET.has(k));
+    if (missingFromAdmin.length || extraInAdmin.length) {
+        throw new Error(
+            `ADMIN_RESOURCE_CATEGORY_DATA out of sync with AUTHORABLE_RESOURCE_CATEGORIES — ` +
+            `missing: [${missingFromAdmin.join(', ')}], extra: [${extraInAdmin.join(', ')}]`
+        );
+    }
+}
+
+// Preserves the existing [key, label, emoji, icon] tuple shape used by the
+// rest of firebase-admin.js (dropdown rendering, preset lookups, etc.).
+const ADMIN_RESOURCE_CATEGORIES = Object.entries(ADMIN_RESOURCE_CATEGORY_DATA)
+    .map(([key, [label, emoji, icon]]) => [key, label, emoji, icon]);
 
 const ADMIN_RESOURCE_CATEGORY_LABELS = Object.fromEntries(
     ADMIN_RESOURCE_CATEGORIES.map(([key, label]) => [key, label])
