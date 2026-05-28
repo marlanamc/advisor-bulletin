@@ -82,9 +82,10 @@ async function mountAdvisorPortal(userDetails) {
         setAuthView('loading', 'Opening advisor workspace...')
         portalMountPromise = Promise.all([
             import('./css/admin.css'),
+            import('./css/admin-auth.css'),
             import('./css/advisor-portal-v2.css'),
             import('../firebase-admin.js'),
-        ]).then(([, , portal]) => portal.mountAdvisorPortal(userDetails))
+        ]).then(([, , , portal]) => portal.mountAdvisorPortal(userDetails))
     } else {
         const portal = await portalMountPromise
         if (userDetails && portal?.applyAuthenticatedUser) {
