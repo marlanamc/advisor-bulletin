@@ -114,6 +114,7 @@ class FirebaseAdminPanel {
         this.analyticsEvents = [];
         this.analyticsByPost = {};
         this.analyticsUnsubscribe = null;
+        this.bulletinsUnsubscribe = null;
         this.analyticsRangeDays = 30;
         this.advisors = STUDENT_ADVISOR_DIRECTORY.map(a => ({
             username: a.loginUsername,
@@ -128,15 +129,17 @@ class FirebaseAdminPanel {
 
     init() {
         this.bindEvents();
-        this.checkAutoLogin();
-        this.setupRealtimeListener();
         this.setupOfflineHandling();
         this.setupRedesignEnhancements();
     }
 
     setupRealtimeListener() {
+        if (this.bulletinsUnsubscribe) {
+            return;
+        }
+
         const q = query(collection(db, 'bulletins'), where('isActive', '==', true), orderBy('datePosted', 'desc'))
-        onSnapshot(q, (snapshot) => {
+        this.bulletinsUnsubscribe = onSnapshot(q, (snapshot) => {
             this.bulletins = [];
             snapshot.forEach((doc) => {
                 this.bulletins.push({
@@ -597,6 +600,7 @@ class FirebaseAdminPanel {
             this.setAuthView('loading', `Welcome back, ${this.currentUser.name}!`);
             this.showAdminPanel();
             this.clearLoginForm();
+            this.setupRealtimeListener();
             this.setupAnalyticsListener();
             this.loadManageBulletins();
 
@@ -632,6 +636,10 @@ class FirebaseAdminPanel {
         if (this.analyticsUnsubscribe) {
             this.analyticsUnsubscribe();
             this.analyticsUnsubscribe = null;
+        }
+        if (this.bulletinsUnsubscribe) {
+            this.bulletinsUnsubscribe();
+            this.bulletinsUnsubscribe = null;
         }
         this.analyticsEvents = [];
         this.analyticsByPost = {};

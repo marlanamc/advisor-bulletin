@@ -2,7 +2,13 @@ const { test, expect } = require('@playwright/test');
 
 async function showSeededAdvisorDashboard(page) {
   await page.goto('/admin.html');
-  await page.waitForFunction(() => window.adminPanel);
+  await page.waitForSelector('#loginForm');
+  await page.evaluate(() => {
+    document.dispatchEvent(new CustomEvent('userAuthenticated', {
+      detail: { username: 'jorge', email: 'jorge@ebhcs.org', name: 'Jorge' },
+    }));
+  });
+  await page.waitForFunction(() => typeof window.adminPanel?.aggregateAnalytics === 'function');
   await page.evaluate(() => {
     const loading = document.getElementById('authLoadingScreen');
     const login = document.getElementById('loginRequired');

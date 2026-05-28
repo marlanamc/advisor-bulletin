@@ -56,7 +56,7 @@ test.describe('Quick mobile checks', () => {
     await page.locator('.mobile-tab[data-app-view="resources"]').click();
     await expect(page.locator('.resource-category-tile')).toHaveCount(10);
     await page.evaluate(() => window.bulletinBoard.switchResourceCategory('legal-aid'));
-    await expect(page.locator('.resource-card').first()).toBeVisible();
+    await expect(page.locator('.resource-card, .mobile-resource-card').first()).toBeVisible();
     await expect(page.locator('#resourcesList')).toContainText('Legal Help');
   });
 
