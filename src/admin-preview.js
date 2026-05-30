@@ -1,3 +1,5 @@
+import { getActionResourceChipLabel, translateResourceChipEs } from './resource-chip-labels.js';
+
 (function() {
     const header = document.querySelector('header');
     if (header) {
@@ -336,33 +338,6 @@ document.addEventListener('DOMContentLoaded', function() {
         money: '#1fa77e'
     };
 
-    var PREVIEW_CHIP_ES = {
-        'baby supplies': 'Artículos para bebés',
-        'basic needs': 'Necesidades básicas',
-        'cash assistance': 'Ayuda en efectivo',
-        'childcare': 'Cuidado infantil',
-        'citizenship help': 'Ayuda con ciudadanía',
-        'clothing': 'Ropa',
-        'community help': 'Ayuda comunitaria',
-        'emergency food pantry': 'Despensa de emergencia',
-        'english classes': 'Clases de inglés',
-        'family help': 'Ayuda familiar',
-        'family support': 'Apoyo familiar',
-        'food help': 'Ayuda alimentaria',
-        'food pantry': 'Despensa de alimentos',
-        'free diapers': 'Pañales gratis',
-        'free food': 'Comida gratis',
-        'health care': 'Atención médica',
-        'housing help': 'Ayuda con vivienda',
-        'immigration help': 'Ayuda con inmigración',
-        'job training': 'Capacitación laboral',
-        'legal help': 'Ayuda legal',
-        'rent help': 'Ayuda con renta',
-        'snap help': 'Ayuda con SNAP',
-        'tax help': 'Ayuda con impuestos',
-        'wic help': 'Ayuda con WIC'
-    };
-
     function previewResourceIcon(category) {
         var key = category === 'jobs' ? 'job' : (category === 'family' ? 'childcare' : category);
         return getPreviewCardIconSvg(key);
@@ -371,12 +346,6 @@ document.addEventListener('DOMContentLoaded', function() {
     function plainPreviewSummary(raw) {
         if (!raw) return '';
         return String(raw).replace(/\s+/g, ' ').trim();
-    }
-
-    function translatePreviewChipEs(label) {
-        var text = String(label || '').trim();
-        if (!text) return '';
-        return PREVIEW_CHIP_ES[text.toLowerCase()] || text;
     }
 
     function buildResourcePreviewCard(data) {
@@ -412,13 +381,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 '<span class="en-text">Card summary appears here</span>' +
               '</p>';
 
-        var chipsHtml = (data.highlights || []).length
-            ? '<div class="resource-service-chips">' + data.highlights.map(function(service) {
+        var displayHighlights = [];
+        var seenHighlightLabels = new Set();
+        (data.highlights || []).forEach(function(service) {
+            if (displayHighlights.length >= 5) return;
+            var actionLabel = getActionResourceChipLabel(service);
+            var key = actionLabel.toLowerCase();
+            if (!actionLabel || seenHighlightLabels.has(key)) return;
+            seenHighlightLabels.add(key);
+            displayHighlights.push({ label: actionLabel, source: service });
+        });
+
+        var chipsHtml = displayHighlights.length
+            ? '<div class="resource-service-section">' +
+                '<div class="resource-service-chips">' + displayHighlights.map(function(service) {
                 return '<span class="resource-service-chip">' +
-                    '<span class="en-text">' + escPreview(service) + '</span>' +
-                    '<span class="es-text">' + escPreview(translatePreviewChipEs(service)) + '</span>' +
+                    '<span class="en-text">' + escPreview(service.label) + '</span>' +
+                    '<span class="es-text">' + escPreview(translateResourceChipEs(service.source)) + '</span>' +
                 '</span>';
-            }).join('') + '</div>'
+            }).join('') + '</div></div>'
             : '';
 
         var hoursHtml = data.hours
@@ -479,9 +460,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     headingHtml +
                     summaryHtml +
                     chipsHtml +
+                    addressHtml +
                     hoursHtml +
                     langsHtml +
-                    addressHtml +
                     actionsHtml +
                 '</div>' +
             '</article>';

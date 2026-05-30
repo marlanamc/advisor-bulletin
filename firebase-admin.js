@@ -3,6 +3,7 @@ import { getPublicAdvisorEmail, STUDENT_ADVISOR_DIRECTORY } from './src/advisor-
 import { installClientErrorLogger } from './src/error-logger.js'
 import { getPostCategoryDisplay } from './src/feed-categories.js'
 import { AUTHORABLE_RESOURCE_CATEGORIES, AUTHORABLE_RESOURCE_CATEGORY_SET } from './src/resource-categories.js'
+import { getSuggestedResourceChips } from './src/resource-chip-labels.js'
 import {
     MAX_EVENT_SESSIONS,
     normalizeEventSessions,
@@ -1353,19 +1354,7 @@ class FirebaseAdminPanel {
         const input = document.getElementById('resourceHighlights');
         if (!container || !input) return;
 
-        const presets = {
-            food: ['Food Pantry', 'SNAP Assistance', 'Hot Meals', 'Grocery Bags'],
-            immigration: ['Immigration Help', 'Citizenship Help', 'Legal Consultation'],
-            jobs: ['Job Search', 'Resume Help', 'Interview Prep', 'Training Programs'],
-            housing: ['Housing Search', 'Rental Assistance', 'Tenant Rights'],
-            health: ['Primary Care', 'Mental Health', 'Insurance Help', 'Vaccines'],
-            family: ['Child Care', 'Family Support', 'Parent Resources', 'Free Diapers'],
-            esol: ['English Classes', 'ESOL', 'Conversation Groups'],
-            hse: ['GED Classes', 'HSE Prep', 'Adult Education'],
-            college: ['College Advising', 'FAFSA Help', 'Scholarships'],
-            'legal-aid': ['Legal Consultation', 'Know Your Rights', 'Court Help'],
-            money: ['Tax Help', 'Financial Coaching', 'Benefits Screening', 'SNAP Help']
-        }[category] || [];
+        const presets = getSuggestedResourceChips(category);
 
         container.innerHTML = presets.map((label) => (
             `<button type="button" class="resource-service-preset-btn" data-service-preset="${this.escapeAttribute(label)}">${this.escapeHtml(label)}</button>`
@@ -1375,7 +1364,8 @@ class FirebaseAdminPanel {
             button.addEventListener('click', () => {
                 const value = button.getAttribute('data-service-preset') || '';
                 const current = input.value.split(',').map((part) => part.trim()).filter(Boolean);
-                if (!value || current.includes(value) || current.length >= 5) return;
+                const currentKeys = new Set(current.map((part) => part.toLowerCase()));
+                if (!value || currentKeys.has(value.toLowerCase()) || current.length >= 5) return;
                 input.value = [...current, value].join(', ');
                 input.dispatchEvent(new Event('input', { bubbles: true }));
             });
@@ -2498,8 +2488,11 @@ class FirebaseAdminPanel {
             if (resourceSummaryEsField) {
                 resourceSummaryEsField.value = bulletin.summaryEs || '';
             }
-            const serviceLabels = Array.isArray(bulletin.services) && bulletin.services.length
-                ? bulletin.services.join(', ')
+            const serviceValues = Array.isArray(bulletin.serviceChips) && bulletin.serviceChips.length
+                ? bulletin.serviceChips
+                : bulletin.services;
+            const serviceLabels = Array.isArray(serviceValues) && serviceValues.length
+                ? serviceValues.join(', ')
                 : (bulletin.highlights || '');
             document.getElementById('resourceHighlights').value = serviceLabels;
             this.renderResourceServicePresets(bulletin.resourceCategory || '');
@@ -3880,6 +3873,7 @@ class FirebaseAdminPanel {
                 summaryEs: resourceSummaryEs,
                 highlights: services.join(', '),
                 services,
+                serviceChips: services,
                 advisorName: advisorName,
                 address: (formData.get('resourceAddress') || '').trim(),
                 phone: (formData.get('resourcePhone') || '').trim(),

@@ -3010,14 +3010,21 @@ details.ap-accordion > summary.ap-accordion-trigger {
   gap: 5px;
 }
 
+.ap-preview-card .resource-service-section {
+  padding: 8px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--cat-accent, #0a1d3a) 5%, #ffffff);
+  border: 1px solid color-mix(in srgb, var(--cat-accent, #0a1d3a) 16%, #e2e8f0);
+}
+
 .ap-preview-card .resource-service-chip {
   font-size: 9px;
   font-weight: 700;
   padding: 4px 8px;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--cat-accent, #0a1d3a) 10%, #f1f5f9);
-  color: color-mix(in srgb, var(--cat-accent, #0a1d3a) 82%, #0a1d3a);
-  border: 1px solid color-mix(in srgb, var(--cat-accent, #0a1d3a) 18%, #e2e8f0);
+  background: color-mix(in srgb, var(--cat-accent, #0a1d3a) 9%, #ffffff);
+  color: color-mix(in srgb, var(--cat-accent, #0a1d3a) 78%, #0a1d3a);
+  border: 1px solid color-mix(in srgb, var(--cat-accent, #0a1d3a) 22%, #e2e8f0);
 }
 
 .ap-preview-card .mobile-resource-card__hours,
@@ -3112,6 +3119,16 @@ details.ap-accordion > summary.ap-accordion-trigger {
     margin-top: 8px;
 }
 
+.resource-service-presets::before {
+    content: "Suggested chips";
+    flex: 0 0 100%;
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: var(--ap-text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
 .resource-service-preset-btn {
     border: 1px solid var(--ap-border-mid);
     background: var(--ap-surface-2);
@@ -3127,6 +3144,46 @@ details.ap-accordion > summary.ap-accordion-trigger {
     border-color: var(--ap-accent);
     color: var(--ap-accent);
     background: #fff;
+}
+
+.resource-chip-guidance {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.resource-chip-guidance > div {
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    gap: 5px;
+    padding: 10px;
+    border-radius: 12px;
+    border: 1px solid var(--ap-border);
+    background: var(--ap-surface-2);
+}
+
+.resource-chip-guidance strong {
+    flex: 0 0 100%;
+    font-size: 0.74rem;
+    color: var(--ap-text-2);
+}
+
+.resource-chip-guidance span {
+    border-radius: 999px;
+    padding: 4px 8px;
+    background: #fff;
+    border: 1px solid var(--ap-border-mid);
+    color: var(--ap-text-2);
+    font-size: 0.73rem;
+    font-weight: 700;
+}
+
+@media (max-width: 640px) {
+    .resource-chip-guidance {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* Bulletin preview — matches real .pc card */

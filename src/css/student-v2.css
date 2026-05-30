@@ -3430,16 +3430,24 @@ a.about-action-card {
     gap: 6px;
 }
 
+.resource-service-section {
+    padding: 11px 12px 12px;
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--cat-accent, #0a1d3a) 5%, #ffffff);
+    border: 1px solid color-mix(in srgb, var(--cat-accent, #0a1d3a) 16%, #e2e8f0);
+}
+
 .resource-service-chip {
     font-family: 'Plus Jakarta Sans', sans-serif;
     font-size: 12px;
     font-weight: 700;
-    letter-spacing: 0.02em;
+    letter-spacing: 0;
     padding: 5px 11px;
     border-radius: 999px;
-    background: color-mix(in srgb, var(--cat-accent, #0a1d3a) 10%, #f1f5f9);
-    color: color-mix(in srgb, var(--cat-accent, #0a1d3a) 82%, #0a1d3a);
-    border: 1px solid color-mix(in srgb, var(--cat-accent, #0a1d3a) 18%, #e2e8f0);
+    background: color-mix(in srgb, var(--cat-accent, #0a1d3a) 9%, #ffffff);
+    color: color-mix(in srgb, var(--cat-accent, #0a1d3a) 78%, #0a1d3a);
+    border: 1px solid color-mix(in srgb, var(--cat-accent, #0a1d3a) 22%, #e2e8f0);
+    box-shadow: none;
 }
 
 .help-sheet-row__copy .resource-service-chips {

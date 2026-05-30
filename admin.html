@@ -756,9 +756,26 @@
                             </div>
 
                             <div class="form-group required-field">
-                                <label for="resourceHighlights" class="required">Services offered</label>
-                                <input type="text" id="resourceHighlights" name="resourceHighlights" maxlength="200" placeholder="e.g., SNAP Assistance, Food Pantry, Tax Help" data-resource-required="true">
-                                <small class="input-help">Comma-separated short labels students scan first (max 5). Example: <strong>Immigration Help, Free Consultation</strong></small>
+                                <label for="resourceHighlights" class="required">Student help chips</label>
+                                <input type="text" id="resourceHighlights" name="resourceHighlights" maxlength="200" placeholder="e.g., Get housing help, Apply for SNAP, Find a clinic" data-resource-required="true">
+                                <small class="input-help">Use short action phrases students will understand. Good chips start with words like Get, Find, Apply, Call, Talk, Learn, Report, or Take.</small>
+                                <div class="resource-chip-guidance" aria-label="Student help chip examples">
+                                    <div>
+                                        <strong>Good</strong>
+                                        <span>Get housing help</span>
+                                        <span>Apply for SNAP</span>
+                                        <span>Find a clinic</span>
+                                        <span>Talk to a lawyer</span>
+                                        <span>Get job training</span>
+                                    </div>
+                                    <div>
+                                        <strong>Avoid</strong>
+                                        <span>Tenant Rights</span>
+                                        <span>Consumer Protection</span>
+                                        <span>Public Benefits</span>
+                                        <span>Legal Services</span>
+                                    </div>
+                                </div>
                                 <div class="resource-service-presets" id="resourceServicePresets" aria-label="Suggested services"></div>
                             </div>
 
@@ -1492,5 +1509,4 @@
     <script type="module" src="/src/admin-preview.js"></script>
 </body>
 </html>
-
 

@@ -293,6 +293,7 @@ function buildFirestoreDoc(resource) {
     summaryEs: resource.summaryEs || '',
     highlights: services.join(', '),
     services,
+    serviceChips: services,
     advisorName: resource.advisorName,
     postedBy: 'admin',
     address: resource.address || '',

@@ -142,6 +142,8 @@ service cloud.firestore {
         && (!('hours' in data) || data.hours is string)
         && (!('languages' in data) || data.languages is list)
         && (!('highlights' in data) || data.highlights is string)
+        && (!('services' in data) || data.services is list)
+        && (!('serviceChips' in data) || data.serviceChips is list)
         && (!('datePosted' in data) || data.datePosted is timestamp)
         && (!('resourceOrder' in data) || data.resourceOrder == null || data.resourceOrder is int || data.resourceOrder is float);
 

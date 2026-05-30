@@ -3,6 +3,7 @@ import { STUDENT_ADVISOR_DIRECTORY } from './src/advisor-directory.js'
 import { installClientErrorLogger } from './src/error-logger.js'
 import { normalizePostCategory, getPostCategoryDisplay } from './src/feed-categories.js'
 import { RESOURCE_TILE_CATEGORIES } from './src/resource-categories.js'
+import { getActionResourceChipLabel, translateResourceChipEs } from './src/resource-chip-labels.js'
 import {
     normalizeEventSessions,
     parseSessionEntry,
@@ -207,73 +208,6 @@ const STORY_BUBBLE_PREVIEW_CATEGORIES = ['immigration', 'jobs', 'housing', 'heal
 // RESOURCE_TILE_CATEGORIES is imported from src/resource-categories.js — single
 // source of truth, mirrored by firestore.rules and verified by
 // scripts/check-resource-categories-sync.mjs.
-
-// Spanish translations for the canonical service-chip vocabulary used on
-// resource cards. Lookup is case-insensitive and falls back to the English
-// label when no entry exists, so unmapped chips still render (untranslated).
-const RESOURCE_CHIP_ES = {
-    'baby supplies': 'Artículos para bebés',
-    'basic needs': 'Necesidades básicas',
-    'cash assistance': 'Ayuda en efectivo',
-    'childcare': 'Cuidado infantil',
-    'citizenship help': 'Ayuda con ciudadanía',
-    'clothing': 'Ropa',
-    'college': 'Universidad',
-    'community help': 'Ayuda comunitaria',
-    'credential evaluation': 'Evaluación de credenciales',
-    'crisis hotline': 'Línea de crisis',
-    'crisis support': 'Apoyo en crisis',
-    'dental care': 'Atención dental',
-    'document translation': 'Traducción de documentos',
-    'emergency food pantry': 'Despensa de emergencia',
-    'english classes': 'Clases de inglés',
-    'essentials': 'Artículos esenciales',
-    'family help': 'Ayuda familiar',
-    'family programs': 'Programas familiares',
-    'family resource center': 'Centro de recursos familiares',
-    'family shelter': 'Refugio familiar',
-    'family support': 'Apoyo familiar',
-    'find legal help': 'Encuentre ayuda legal',
-    'find a clinic': 'Encuentre una clínica',
-    'food benefits': 'Beneficios de alimentos',
-    'food help': 'Ayuda alimentaria',
-    'food hotline': 'Línea de alimentos',
-    'food pantry': 'Despensa de alimentos',
-    'free diapers': 'Pañales gratis',
-    'free food': 'Comida gratis',
-    'fuel help': 'Ayuda con calefacción',
-    'grocery bags': 'Bolsas de comestibles',
-    'health care': 'Atención médica',
-    'health insurance help': 'Ayuda con seguro médico',
-    'hot meals': 'Comidas calientes',
-    'housing help': 'Ayuda con vivienda',
-    'immigrant support': 'Apoyo a inmigrantes',
-    'immigration help': 'Ayuda con inmigración',
-    'job training': 'Capacitación laboral',
-    'legal help': 'Ayuda legal',
-    'legal information': 'Información legal',
-    'low cost produce': 'Productos a bajo costo',
-    'mobile food pantry': 'Despensa móvil',
-    'parent support': 'Apoyo a padres',
-    'preschool': 'Preescolar',
-    'public housing': 'Vivienda pública',
-    'refugee support': 'Apoyo a refugiados',
-    'rent help': 'Ayuda con renta',
-    'snap help': 'Ayuda con SNAP',
-    'tax help': 'Ayuda con impuestos',
-    'tenant rights': 'Derechos del inquilino',
-    'trauma support': 'Apoyo en trauma',
-    'unemployment help': 'Ayuda con desempleo',
-    'utility help': 'Ayuda con servicios',
-    'wic help': 'Ayuda con WIC',
-    'worker rights': 'Derechos del trabajador',
-};
-
-function translateResourceChipEs(label) {
-    const text = String(label || '').trim();
-    if (!text) return '';
-    return RESOURCE_CHIP_ES[text.toLowerCase()] || text;
-}
 
 const FEED_CATEGORY_CONTENT = {
     all: {
@@ -3173,7 +3107,7 @@ class FirebaseBulletinBoard {
             : `<span class="mobile-resource-card__icon-fallback" style="background:${accent}" aria-hidden="true">${this.getResourceIconSvg(resource)}</span>`;
 
         const postDescription = this.getPostDescription(resource);
-        const servicesHtml = this.getResourceServiceChipsHtml(resource);
+        const servicesHtml = this.getResourceServiceChipsHtml(resource, { section: true });
         const hours = (resource.hours || '').trim();
         const hoursHtml = hours
             ? `<p class="mobile-resource-card__hours">${this.escapeHtml(hours)}</p>`
@@ -3280,10 +3214,10 @@ class FirebaseBulletinBoard {
                     </div>
                     ${this.getResourceCardSummaryHtml(resource)}
                     ${servicesHtml}
+                    ${addressHtml}
                     ${hoursHtml}
                     ${languagesHtml}
                     ${phoneHtml}
-                    ${addressHtml}
                     ${actionsHtml}
                 </div>
             </article>
@@ -3292,8 +3226,11 @@ class FirebaseBulletinBoard {
 
     getResourceServices(resource, max = 5) {
         if (!resource) return [];
-        if (Array.isArray(resource.services) && resource.services.length) {
-            return resource.services
+        const serviceChips = Array.isArray(resource.serviceChips) && resource.serviceChips.length
+            ? resource.serviceChips
+            : resource.services;
+        if (Array.isArray(serviceChips) && serviceChips.length) {
+            return serviceChips
                 .map((item) => String(item || '').trim())
                 .filter(Boolean)
                 .slice(0, max);
@@ -3303,13 +3240,28 @@ class FirebaseBulletinBoard {
 
     getResourceServiceChipsHtml(resource, options = {}) {
         const max = options.max ?? 5;
-        const services = this.getResourceServices(resource, max);
+        const services = this.getResourceServices(resource, Number.POSITIVE_INFINITY);
         if (!services.length) return '';
-        return `<div class="resource-service-chips">${services.map((service) => {
-            const en = this.escapeHtml(service);
-            const es = this.escapeHtml(translateResourceChipEs(service));
+        const displayServices = [];
+        const seenLabels = new Set();
+        services.forEach((service) => {
+            if (displayServices.length >= max) return;
+            const label = getActionResourceChipLabel(service);
+            const key = label.toLowerCase();
+            if (!label || seenLabels.has(key)) return;
+            seenLabels.add(key);
+            displayServices.push({ label, source: service });
+        });
+        if (!displayServices.length) return '';
+        const chipsHtml = `<div class="resource-service-chips">${displayServices.map(({ label, source }) => {
+            const en = this.escapeHtml(label);
+            const es = this.escapeHtml(translateResourceChipEs(source));
             return `<span class="resource-service-chip"><span class="en-text">${en}</span><span class="es-text">${es}</span></span>`;
         }).join('')}</div>`;
+        if (!options.section) {
+            return chipsHtml;
+        }
+        return `<div class="resource-service-section">${chipsHtml}</div>`;
     }
 
     parseResourceHighlights(highlights, max = 5) {
