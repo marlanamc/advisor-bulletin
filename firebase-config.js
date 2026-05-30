@@ -2008,7 +2008,7 @@ class FirebaseBulletinBoard {
 
         if (activeWrap) activeWrap.hidden = true;
         topRow.hidden = false;
-        const top = entries.slice(0, 8);
+        const top = entries.slice(0, 7);
         topRow.innerHTML = top.map(({ label, source, category }) => {
             const tint = this.getResourceCategoryTint(category);
             const en = this.escapeHtml(label);

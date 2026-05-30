@@ -45,7 +45,7 @@ test.describe('Desktop resource shortcuts', () => {
     await page.evaluate(() => window.bulletinBoard.openResourceShortcut('food'));
 
     await expect(page.locator('#resourcesView')).toHaveClass(/active/);
-    await expect(page.locator('#resourcesView .back-home-btn')).toBeVisible();
+    await expect(page.locator('.desktop-topnav-btn[data-app-view="feed"]')).toBeVisible();
     await expect(page.locator('#desktop-section-food')).toBeVisible();
     await expect(page.locator('#desktop-section-food')).toContainText('Food');
     await expect(page.locator('#desktop-section-food .mobile-resource-card')).toHaveCount(4);

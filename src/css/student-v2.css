@@ -1280,11 +1280,9 @@ a.about-action-card {
     transform: translateX(-2px);
 }
 
-/* Unified back-to-home bar at the top-left of every secondary page view */
+/* Back-to-home bar removed — Home lives in the top nav (and logo lockup). */
 .page-back-bar {
-    max-width: 1180px;
-    margin: 0 auto;
-    padding: 14px 24px 14px;
+    display: none;
 }
 
 /* Unified hero card across Calendar / Find Help / Advisors / About */
@@ -1430,12 +1428,6 @@ a.about-action-card {
 .page-back-btn:focus-visible {
     outline: 3px solid rgba(126, 177, 255, 0.55);
     outline-offset: 2px;
-}
-
-@media (max-width: 767px) {
-    .page-back-bar {
-        display: none;
-    }
 }
 
 /* Mobile: hide the "Find Help by Topic" title, keep only the HELP · AYUDA kicker */
@@ -2150,11 +2142,6 @@ a.about-action-card {
         display: flex;
         align-items: center;
         gap: 6px;
-    }
-
-    /* Hide Home in top nav on wide desktop (feed is default from brand); keep Resources like mobile bottom nav. */
-    .desktop-topnav-btn:first-child {
-        display: none;
     }
 
     .desktop-topnav-btn {
