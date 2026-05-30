@@ -553,7 +553,7 @@
                             
                             <div class="form-group required-field title-field-group">
                                 <label for="title" class="required"><span id="titleLabelText">Title</span></label>
-                                <input type="text" id="title" name="title" required placeholder="e.g., Job Opening: Community Health Worker" maxlength="200" class="required">
+                                <input type="text" id="title" name="title" required maxlength="200" class="required">
                                 <div class="field-feedback" id="titleFeedback"></div>
                                 <small class="input-help required">Keep it short and clear. This is what students will see first.</small>
                             </div>
@@ -587,7 +587,7 @@
                                         </svg>
                                     </button>
                                 </div>
-                                <textarea id="description" name="description" rows="4" placeholder="Share the details about this opportunity..." maxlength="2000" class="required"></textarea>
+                                <textarea id="description" name="description" rows="4" maxlength="2000" class="required"></textarea>
                                 <div class="field-feedback" id="descriptionFeedback"></div>
                                 <small class="input-help required">What you type is what students see in English. Use the toolbar for bold, italic, underline, or bullets.</small>
                             </div>
@@ -648,7 +648,7 @@
                                     <div style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--ap-text-3);">
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
                                     </div>
-                                    <input type="url" id="eventLink" name="eventLink" placeholder="https://example.com" class="recommended" style="padding-left: 38px;">
+                                    <input type="url" id="eventLink" name="eventLink" class="recommended" style="padding-left: 38px;">
                                 </div>
                                 <small class="input-help">Add a website or registration link for more information.</small>
                             </div>
@@ -722,13 +722,13 @@
                             <div class="field-group double">
                                 <div class="form-group required-field">
                                     <label for="resourceTitleEn" class="required">English Title</label>
-                                    <input type="text" id="resourceTitleEn" name="resourceTitleEn" maxlength="120" placeholder="e.g., Free Immigration Help" data-resource-required="true">
+                                    <input type="text" id="resourceTitleEn" name="resourceTitleEn" maxlength="120" data-resource-required="true">
                                     <small class="input-help required">Use short, familiar words students will recognize quickly.</small>
                                 </div>
 
                                 <div class="form-group">
                                     <label for="resourceTitleEs" class="recommended">Spanish Title</label>
-                                    <input type="text" id="resourceTitleEs" name="resourceTitleEs" maxlength="120" placeholder="Spanish translation of the English title">
+                                    <input type="text" id="resourceTitleEs" name="resourceTitleEs" maxlength="120">
                                     <small class="input-help">Recommended for bilingual display. If left blank, English is reused.</small>
                                 </div>
                             </div>
@@ -742,13 +742,49 @@
                                 <div class="advisor-category-picker" id="resourceCategoryPicker" role="group" aria-label="Resource category"></div>
                             </div>
 
-                            <div class="form-group required-field">
-                                <label for="resourceUrl" class="required">Link / URL</label>
-                                <input type="url" id="resourceUrl" name="resourceUrl" placeholder="https://example.org/help" data-resource-required="true">
-                                <small class="input-help required">Paste the website students should open when they tap the resource.</small>
+                            <div class="form-group resource-kind-field">
+                                <label class="required">Resource type</label>
+                                <div class="resource-kind-toggle" role="radiogroup" aria-label="Resource type">
+                                    <label class="resource-kind-option">
+                                        <input type="radio" name="resourceKind" value="organization" checked>
+                                        <span class="resource-kind-option-copy">
+                                            <strong>Organization</strong>
+                                            <small>A place students can call, visit, or browse online.</small>
+                                        </span>
+                                    </label>
+                                    <label class="resource-kind-option">
+                                        <input type="radio" name="resourceKind" value="document">
+                                        <span class="resource-kind-option-copy">
+                                            <strong>Document / Form</strong>
+                                            <small>A PDF or form students can open, print, or fill out.</small>
+                                        </span>
+                                    </label>
+                                </div>
                             </div>
 
-                            <div class="form-group">
+                            <div class="form-group required-field" id="resourceUrlField">
+                                <label for="resourceUrl" class="required" id="resourceUrlLabel">Link / URL</label>
+                                <input type="url" id="resourceUrl" name="resourceUrl" data-resource-required="true">
+                                <small class="input-help required" id="resourceUrlHelp">Paste the website students should open when they tap the resource.</small>
+                            </div>
+
+                            <div class="form-group resource-document-only" id="resourcePdfField" hidden>
+                                <label for="resourcePdf" class="required">Form PDF</label>
+                                <small class="input-help">Upload the form students should open. You can also add an official source link below instead.</small>
+                                <div class="resource-pdf-upload">
+                                    <button type="button" class="ap-flyer-pdf-choose" onclick="document.getElementById('resourcePdf').click()">Choose PDF</button>
+                                    <input type="file" id="resourcePdf" name="resourcePdf" accept=".pdf,application/pdf" class="file-input" style="display: none;" aria-label="Upload form PDF">
+                                    <div id="resourcePdfPreview" class="pdf-preview"></div>
+                                </div>
+                            </div>
+
+                            <details class="resource-action-links-field">
+                                <summary class="resource-action-links-summary">Extra action links &amp; PDFs (optional)</summary>
+                                <p class="input-help resource-action-links-intro">Add up to 5 extra buttons on the card — website links or uploaded PDFs. Good for family prep hubs and deep pages.</p>
+                                <div id="resourceActionLinkSlots"></div>
+                            </details>
+
+                            <div class="form-group resource-org-only">
                                 <label for="resourceLogo" class="optional">Organization Logo</label>
                                 <div style="display: flex; gap: 12px; align-items: center; padding: 16px; border: 1.5px dashed var(--ap-border-mid); border-radius: var(--ap-r-md); background: var(--ap-surface-2); cursor: pointer;" onclick="document.getElementById('resourceLogo').click()">
                                     <div style="width: 44px; height: 44px; border-radius: 10px; background: #fff; display: grid; place-items: center; color: var(--ap-blue);">
@@ -766,7 +802,7 @@
                             <div class="form-group required-field resource-chips-field">
                                 <label for="resourceHighlights" class="required">Student help chips</label>
                                 <p class="resource-chips-intro">Up to 6 short actions on the card — what students can do at this place (e.g. <em>Get housing help</em>, <em>Apply for SNAP</em>).</p>
-                                <input type="text" id="resourceHighlights" name="resourceHighlights" maxlength="200" placeholder="Type chips here, or tap suggestions below" data-resource-required="true" aria-describedby="resourceChipSuggestionsHint resourceChipTips">
+                                <input type="text" id="resourceHighlights" name="resourceHighlights" maxlength="200" data-resource-required="true" aria-describedby="resourceChipSuggestionsHint resourceChipTips">
                                 <div class="resource-chips-suggestions" id="resourceChipSuggestions">
                                     <p class="resource-chips-suggestions-label" id="resourceChipSuggestionsHint">Tap to add</p>
                                     <div class="resource-service-presets" id="resourceServicePresets" role="group" aria-label="Suggested chips"></div>
@@ -784,24 +820,24 @@
                             <div class="field-group double">
                                 <div class="form-group">
                                     <label for="resourceDescription" class="optional">Card summary (English)</label>
-                                    <textarea id="resourceDescription" name="resourceDescription" rows="2" maxlength="160" placeholder="One short sentence — what makes this resource different?"></textarea>
+                                    <textarea id="resourceDescription" name="resourceDescription" rows="2" maxlength="160"></textarea>
                                     <small class="input-help">Shown right under the title on every card. Be specific (e.g. <em>"Hospitality jobs and training"</em> instead of <em>"Job training services"</em>).</small>
                                 </div>
                                 <div class="form-group">
                                     <label for="resourceSummaryEs" class="optional">Card summary (Spanish)</label>
-                                    <textarea id="resourceSummaryEs" name="resourceSummaryEs" rows="2" maxlength="160" placeholder="Spanish translation — one short sentence"></textarea>
+                                    <textarea id="resourceSummaryEs" name="resourceSummaryEs" rows="2" maxlength="160"></textarea>
                                     <small class="input-help">Same one-line summary in Spanish. If left blank, students in Spanish see the English summary.</small>
                                 </div>
                             </div>
 
-                            <div class="field-group double">
+                            <div class="field-group double resource-org-only">
                                 <div class="form-group">
                                     <label for="resourceAddress" class="optional">Physical Address</label>
-                                    <input type="text" id="resourceAddress" name="resourceAddress" placeholder="e.g., 10 Gove St, East Boston, MA">
+                                    <input type="text" id="resourceAddress" name="resourceAddress">
                                 </div>
                                 <div class="form-group">
                                     <label for="resourcePhone" class="optional">Phone Number</label>
-                                    <input type="tel" id="resourcePhone" name="resourcePhone" placeholder="e.g., 617-568-4000">
+                                    <input type="tel" id="resourcePhone" name="resourcePhone">
                                     <div class="phone-mode-selector">
                                         <label>
                                             <input type="radio" name="resourcePhoneMode" value="call" checked> Call
@@ -816,9 +852,9 @@
                                 </div>
                             </div>
 
-                            <div class="form-group">
+                            <div class="form-group resource-org-only">
                                 <label for="resourceHours" class="optional">Hours of Operation</label>
-                                <input type="text" id="resourceHours" name="resourceHours" placeholder="e.g., Mon-Fri 9am-5pm">
+                                <input type="text" id="resourceHours" name="resourceHours">
                                 <small class="input-help">Mention languages spoken in the card summary or description if that matters for students.</small>
                             </div>
 
@@ -842,7 +878,7 @@
                             <div class="field-group double">
                                 <div class="form-group">
                                     <label for="resourceOrder" class="optional">Display Order (advanced)</label>
-                                    <input type="number" id="resourceOrder" name="resourceOrder" min="0" max="999" step="1" placeholder="Lower number shows first">
+                                    <input type="number" id="resourceOrder" name="resourceOrder" min="0" max="999" step="1">
                                     <small class="input-help">Most advisors don't need to set this. Use the <strong>Reorder</strong> button on the My Posts tab to drag resources into order instead.</small>
                                 </div>
 
@@ -966,7 +1002,7 @@
                                 <p class="input-help ap-spanish-translation-intro">Optional Spanish for students who use ES on the app. You can paste translations from a colleague — you do not need to write Spanish yourself.</p>
                                 <div class="form-group">
                                     <label for="titleEs" class="optional">Spanish Title</label>
-                                    <input type="text" id="titleEs" name="titleEs" maxlength="200" placeholder="Spanish translation of the English title">
+                                    <input type="text" id="titleEs" name="titleEs" maxlength="200">
                                     <small class="input-help">If blank, students in Spanish see the English title.</small>
                                 </div>
                                 <div class="form-group ap-rich-field">
@@ -998,7 +1034,7 @@
                                             </svg>
                                         </button>
                                     </div>
-                                    <textarea id="summaryEs" name="summaryEs" rows="3" maxlength="600" placeholder="Spanish translation of the post description"></textarea>
+                                    <textarea id="summaryEs" name="summaryEs" rows="3" maxlength="600"></textarea>
                                     <small class="input-help">Shown when students switch to Spanish. If filled in, this replaces the English description for Spanish readers — update it when you change the English text. Paste a translation if needed.</small>
                                 </div>
                             </div>
@@ -1016,16 +1052,16 @@
                             <div class="ap-accordion-content">
                                 <div class="form-group">
                                     <label for="company" class="optional">Organization/Company</label>
-                                    <input type="text" id="company" name="company" placeholder="e.g., East Boston Neighborhood Health Center">
+                                    <input type="text" id="company" name="company">
                                 </div>
                                 <div class="field-group double">
                                     <div class="form-group">
                                         <label for="location" class="optional">Physical Address</label>
-                                        <input type="text" id="location" name="eventLocation" placeholder="e.g., 10 Gove St, East Boston">
+                                        <input type="text" id="location" name="eventLocation">
                                     </div>
                                     <div class="form-group">
                                         <label for="contactPhone" class="optional">Phone Number</label>
-                                        <input type="tel" id="contactPhone" name="contactPhone" placeholder="e.g., 617-555-0123">
+                                        <input type="tel" id="contactPhone" name="contactPhone">
                                         <div class="phone-mode-selector">
                                             <label>
                                                 <input type="radio" name="contactPhoneMode" value="call" checked> Call
@@ -1041,12 +1077,12 @@
                                 </div>
                                 <div class="form-group">
                                     <label for="contactHours" class="optional">Hours Available</label>
-                                    <input type="text" id="contactHours" name="contactHours" placeholder="e.g., Weekdays 9:00 - 4:00">
+                                    <input type="text" id="contactHours" name="contactHours">
                                     <small class="input-help">Mention languages in the post description if students need to know.</small>
                                 </div>
                                 <div class="form-group">
                                     <label for="contact" class="optional">Additional Contact Notes</label>
-                                    <textarea id="contact" name="contact" rows="2" placeholder="Email, website, or other contact info"></textarea>
+                                    <textarea id="contact" name="contact" rows="2"></textarea>
                                 </div>
                             </div>
                         </div>

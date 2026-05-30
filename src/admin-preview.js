@@ -5,6 +5,18 @@ import {
     translateResourceChipEs,
 } from './resource-chip-labels.js';
 import { formatResourceHoursHtml } from './resource-hours.js';
+import {
+    MAX_RESOURCE_ACTION_LINKS,
+    normalizeResourceActionLinks,
+    RESOURCE_ACTION_LINK_ICON_SVG,
+    RESOURCE_ACTION_LINK_PDF_ICON_SVG,
+} from './resource-action-links.js';
+import {
+    DOCUMENT_TILE_ICON_SVG,
+    isDocumentResource,
+    normalizeResourceKind,
+    OPEN_FORM_ICON_SVG,
+} from './resource-kinds.js';
 import { initResourceLogoTiles } from './resource-logo-tile.js';
 
 (function() {
@@ -364,10 +376,13 @@ document.addEventListener('DOMContentLoaded', function() {
         var descEs = plainPreviewSummary(data.summaryEs || data.desc);
         var logoSrc = data.logoSrc || '';
         var iconSvg = previewResourceIcon(category);
+        var isDocument = normalizeResourceKind(data.resourceKind) === 'document';
 
-        var logoTile = logoSrc
-            ? '<img src="' + escPreview(logoSrc) + '" alt="" onload="window.applyResourceLogoTileLayout&&window.applyResourceLogoTileLayout(this)">'
-            : '<span class="mobile-resource-card__icon-fallback" style="background:' + accent + '" aria-hidden="true">' + iconSvg + '</span>';
+        var logoTile = isDocument
+            ? '<span class="mobile-resource-card__icon-fallback mobile-resource-card__icon-fallback--document" style="background:' + accent + '" aria-hidden="true">' + DOCUMENT_TILE_ICON_SVG + '</span>'
+            : (logoSrc
+                ? '<img src="' + escPreview(logoSrc) + '" alt="" onload="window.applyResourceLogoTileLayout&&window.applyResourceLogoTileLayout(this)">'
+                : '<span class="mobile-resource-card__icon-fallback" style="background:' + accent + '" aria-hidden="true">' + iconSvg + '</span>');
 
         var headingHtml =
             '<div class="mobile-resource-card__heading">' +
@@ -415,35 +430,51 @@ document.addEventListener('DOMContentLoaded', function() {
 
         var isDesktopPreview = window.matchMedia('(min-width: 768px)').matches;
         var hasDirections = Boolean((data.address || '').trim());
-        var addressHtml = data.address && !(isDesktopPreview && hasDirections)
+        var addressHtml = !isDocument && data.address && !(isDesktopPreview && hasDirections)
             ? '<p class="mobile-resource-card__address">' +
                 '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s6.25-5.9 6.25-11.1a6.25 6.25 0 1 0-12.5 0C5.75 15.1 12 21 12 21Z"/><circle cx="12" cy="9.75" r="2.5"/></svg>' +
                 escPreview(data.address) +
               '</p>'
             : '';
 
-        var callBtn = data.phone
+        var callBtn = !isDocument && data.phone
             ? '<span class="mobile-resource-card__btn mobile-resource-card__btn--primary" aria-hidden="true">' +
                 '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.25 7.75c0 5.1 5.9 11 11 11h1.75a1 1 0 0 0 1-1v-3.2a1 1 0 0 0-.78-.98l-3.14-.7a1 1 0 0 0-.96.29l-.92.98a13.84 13.84 0 0 1-4.34-4.34l.98-.92a1 1 0 0 0 .29-.96l-.7-3.14A1 1 0 0 0 8.45 4H5.25a1 1 0 0 0-1 1v2.75Z"/></svg>' +
                 '<span class="en-text">Call</span><span class="es-text">Llamar</span>' +
               '</span>'
             : '';
 
-        var websiteBtn = data.url
+        var websiteBtn = !isDocument && data.url
             ? '<span class="mobile-resource-card__btn mobile-resource-card__btn--secondary" aria-hidden="true">' +
                 '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>' +
                 '<span class="en-text">Website</span><span class="es-text">Sitio</span>' +
               '</span>'
             : '';
 
-        var directionsBtn = data.address
+        var directionsBtn = !isDocument && data.address
             ? '<span class="mobile-resource-card__btn mobile-resource-card__btn--secondary mobile-resource-card__btn--directions" aria-hidden="true">' +
                 '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s6.25-5.9 6.25-11.1a6.25 6.25 0 1 0-12.5 0C5.75 15.1 12 21 12 21Z"/><circle cx="12" cy="9.75" r="2.5"/></svg>' +
                 '<span class="en-text">Directions</span><span class="es-text">Cómo llegar</span>' +
               '</span>'
             : '';
 
-        var actionButtons = [callBtn, websiteBtn, directionsBtn].filter(Boolean);
+        var openFormBtn = isDocument && (data.pdfUrl || data.url)
+            ? '<span class="mobile-resource-card__btn mobile-resource-card__btn--primary" aria-hidden="true">' +
+                OPEN_FORM_ICON_SVG +
+                '<span class="en-text">Open form</span><span class="es-text">Abrir formulario</span>' +
+              '</span>'
+            : '';
+
+        var officialSourceBtn = isDocument && data.pdfUrl && data.url
+            ? '<span class="mobile-resource-card__btn mobile-resource-card__btn--secondary" aria-hidden="true">' +
+                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>' +
+                '<span class="en-text">Official source</span><span class="es-text">Fuente oficial</span>' +
+              '</span>'
+            : '';
+
+        var actionButtons = isDocument
+            ? [openFormBtn, officialSourceBtn].filter(Boolean)
+            : [callBtn, websiteBtn, directionsBtn].filter(Boolean);
         var actionsModifier = actionButtons.length === 1
             ? ' mobile-resource-card__actions--single'
             : actionButtons.length >= 3
@@ -453,12 +484,23 @@ document.addEventListener('DOMContentLoaded', function() {
             ? '<div class="mobile-resource-card__actions' + actionsModifier + '">' + actionButtons.join('') + '</div>'
             : '';
 
+        var actionLinksHtml = (data.actionLinks || []).length
+            ? '<div class="mobile-resource-card__action-links">' + normalizeResourceActionLinks(data.actionLinks).map(function(link) {
+                var icon = link.pdfUrl ? RESOURCE_ACTION_LINK_PDF_ICON_SVG : RESOURCE_ACTION_LINK_ICON_SVG;
+                return '<span class="mobile-resource-card__btn mobile-resource-card__btn--secondary mobile-resource-card__btn--action-link" aria-hidden="true">' +
+                    icon +
+                    '<span class="en-text">' + escPreview(link.labelEn) + '</span>' +
+                    '<span class="es-text">' + escPreview(link.labelEs) + '</span>' +
+                '</span>';
+            }).join('') + '</div>'
+            : '';
+
         return '' +
-            '<article class="mobile-resource-card mobile-resource-card--' + escPreview(category || 'resource') + ' ap-preview-resource-mock" style="--cat-accent:' + accent + '">' +
+            '<article class="mobile-resource-card mobile-resource-card--' + escPreview(category || 'resource') + (isDocument ? ' mobile-resource-card--document' : '') + ' ap-preview-resource-mock" style="--cat-accent:' + accent + '">' +
                 '<button type="button" class="mobile-resource-card__share" tabindex="-1" aria-hidden="true">' +
                     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4"/><path d="m15.4 6.5-6.8 4"/></svg>' +
                 '</button>' +
-                '<div class="mobile-resource-card__logo-tile">' + logoTile + '</div>' +
+                '<div class="mobile-resource-card__logo-tile' + (isDocument ? ' mobile-resource-card__logo-tile--document' : '') + '">' + logoTile + '</div>' +
                 '<div class="mobile-resource-card__body">' +
                     headingHtml +
                     summaryHtml +
@@ -466,6 +508,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     addressHtml +
                     hoursHtml +
                     actionsHtml +
+                    actionLinksHtml +
                 '</div>' +
             '</article>';
     }
@@ -489,6 +532,34 @@ document.addEventListener('DOMContentLoaded', function() {
             var phone = (document.getElementById('resourcePhone')?.value || '').trim();
             var address = (document.getElementById('resourceAddress')?.value || '').trim();
             var hours = (document.getElementById('resourceHours')?.value || '').trim();
+            var actionLinks = [];
+            for (var linkIndex = 1; linkIndex <= MAX_RESOURCE_ACTION_LINKS; linkIndex += 1) {
+                var labelEn = (document.getElementById('resourceActionLink' + linkIndex + 'LabelEn')?.value || '').trim();
+                var labelEs = (document.getElementById('resourceActionLink' + linkIndex + 'LabelEs')?.value || '').trim();
+                var linkType = document.querySelector('input[name="resourceActionLink' + linkIndex + 'Type"]:checked')?.value || 'url';
+                var linkUrl = (document.getElementById('resourceActionLink' + linkIndex + 'Url')?.value || '').trim();
+                var existingPdfUrl = (document.getElementById('resourceActionLink' + linkIndex + 'ExistingPdfUrl')?.value || '').trim();
+                var hasSelectedPdf = Boolean(document.getElementById('resourceActionLink' + linkIndex + 'Pdf')?.files?.length);
+                if (!labelEn) continue;
+                if (linkType === 'pdf' && (hasSelectedPdf || existingPdfUrl)) {
+                    actionLinks.push({
+                        labelEn: labelEn,
+                        labelEs: labelEs || labelEn,
+                        pdfUrl: hasSelectedPdf ? 'preview://selected-pdf' : existingPdfUrl
+                    });
+                } else if (linkType === 'url' && linkUrl) {
+                    actionLinks.push({
+                        labelEn: labelEn,
+                        labelEs: labelEs || labelEn,
+                        url: linkUrl
+                    });
+                }
+            }
+
+            var resourceKind = normalizeResourceKind(document.querySelector('input[name="resourceKind"]:checked')?.value);
+            var pdfPreviewLink = document.querySelector('#resourcePdfPreview .pdf-preview-info a');
+            var pdfUrl = pdfPreviewLink && pdfPreviewLink.getAttribute('href') ? pdfPreviewLink.getAttribute('href') : '';
+            var hasSelectedPdf = Boolean(document.getElementById('resourcePdf')?.files?.length);
 
             cardWrap.innerHTML = buildResourcePreviewCard({
                 title: title,
@@ -501,7 +572,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 url: url,
                 phone: phone,
                 address: address,
-                hours: hours
+                hours: hours,
+                actionLinks: actionLinks,
+                resourceKind: resourceKind,
+                pdfUrl: hasSelectedPdf ? 'preview://selected-pdf' : pdfUrl
             });
             initResourceLogoTiles(cardWrap);
             setPreviewNav('resources');
@@ -698,7 +772,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ── Bind live preview to title/desc ──────────────────────────
     function bindPreviewListeners() {
-        ['title','category','resourceTitleEn','resourceTitleEs','description','summaryEs','resourceDescription','resourceSummaryEs','advisorName','resourceAdvisorName','resourceCategory','resourceUrl','resourceHighlights','resourcePhone','resourceAddress','resourceHours','resourcePublished','dateType','eventDate','startDate','endDate','startTime','endTime','location','eventLink','eventLocation'].forEach(function(id) {
+        ['title','category','resourceTitleEn','resourceTitleEs','description','summaryEs','resourceDescription','resourceSummaryEs','advisorName','resourceAdvisorName','resourceCategory','resourceUrl','resourceHighlights','resourcePhone','resourceAddress','resourceHours','resourcePublished','resourceKind','dateType','eventDate','startDate','endDate','startTime','endTime','location','eventLink','eventLocation'].forEach(function(id) {
             var el = document.getElementById(id);
             if (!el) return;
             el.addEventListener('input', syncPreview);
@@ -716,6 +790,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 attributeFilter: ['src']
             });
         }
+
+        var resourcePdfInput = document.getElementById('resourcePdf');
+        if (resourcePdfInput) resourcePdfInput.addEventListener('change', syncPreview);
+
+        var actionLinkSlots = document.getElementById('resourceActionLinkSlots');
+        if (actionLinkSlots) {
+            actionLinkSlots.addEventListener('input', syncPreview);
+            actionLinkSlots.addEventListener('change', syncPreview);
+        }
+
+        document.querySelectorAll('input[name="resourceKind"]').forEach(function(input) {
+            input.addEventListener('change', syncPreview);
+        });
 
         var eventDatesList = document.getElementById('eventDatesList');
         if (eventDatesList) {

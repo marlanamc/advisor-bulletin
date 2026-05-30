@@ -10,6 +10,19 @@ import {
     parseResourceServiceChips,
 } from './src/resource-chip-labels.js'
 import {
+    getResourceActionLinkFieldValues,
+    MAX_RESOURCE_ACTION_LINKS,
+    normalizeResourceActionLinks,
+    parseResourceActionLinkSlotsFromForm,
+    stripActionLinkUploadMeta,
+} from './src/resource-action-links.js'
+import { initAdminFieldHelp } from './src/admin-field-help.js'
+import {
+    isDocumentResource,
+    normalizeResourceKind,
+    RESOURCE_KIND_DOCUMENT,
+} from './src/resource-kinds.js'
+import {
     MAX_EVENT_SESSIONS,
     normalizeEventSessions,
     parseSessionEntry,
@@ -115,6 +128,8 @@ class FirebaseAdminPanel {
         this.pendingImageEsData = null;
         this.pendingResourceLogoData = null;
         this.removeResourceLogo = false;
+        this.removeResourcePdf = false;
+        this.removedActionLinkPdfSlots = new Set();
         this.isSubmitting = false;
         this.contentType = 'post';
         this.contentMode = 'post';
@@ -270,6 +285,18 @@ class FirebaseAdminPanel {
             pdfInput.addEventListener('change', (e) => this.handlePdfPreview(e));
         }
 
+        const resourcePdfInput = document.getElementById('resourcePdf');
+        if (resourcePdfInput) {
+            resourcePdfInput.addEventListener('change', (e) => this.handleResourcePdfPreview(e));
+        }
+
+        document.querySelectorAll('input[name="resourceKind"]').forEach((input) => {
+            input.addEventListener('change', () => this.syncResourceKindUI());
+        });
+
+        this.initResourceActionLinkSlots();
+        initAdminFieldHelp(document.getElementById('bulletinForm'));
+
         const flyerEsToggle = document.getElementById('apFlyerEsToggle');
         if (flyerEsToggle) {
             flyerEsToggle.addEventListener('click', () => this.toggleSpanishFlyerPanel());
@@ -341,13 +368,6 @@ class FirebaseAdminPanel {
                 const eventDateLabel = document.querySelector('label[for="eventDate"]');
                 if (eventDateLabel) eventDateLabel.textContent = 'Date';
             }
-        }
-
-        const titleField = document.getElementById('title');
-        if (titleField && !titleField.value.trim()) {
-            titleField.placeholder = mode === 'calendar-only'
-                ? 'e.g., Memorial Day — No School'
-                : 'e.g., School assembly / Family info night';
         }
 
         document.getElementById('eventDetailsSection')?.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
@@ -1248,6 +1268,7 @@ class FirebaseAdminPanel {
         if (nextType === 'resource') {
             const category = document.getElementById('resourceCategory')?.value || '';
             this.renderResourceServicePresets(category);
+            this.syncResourceKindUI();
         }
 
         this.renumberVisibleFormSteps();
@@ -1825,6 +1846,7 @@ class FirebaseAdminPanel {
             if (!this.validateRequiredCategorySelection(formData)) {
                 return;
             }
+            this.validateDocumentResourceInput(formData);
             if (this.contentMode === 'event') {
                 const hasEndDate = Boolean((formData.get('endDate') || '').trim());
                 formData.set('contentType', 'post');
@@ -2061,6 +2083,319 @@ class FirebaseAdminPanel {
         if (!group) return;
         const hasLogo = Boolean(document.querySelector('#resourceLogoPreview .preview-image'));
         group.classList.toggle('is-logo-active', hasLogo);
+    }
+
+    populateResourceActionLinkFields(actionLinks) {
+        this.removedActionLinkPdfSlots = new Set();
+        const values = getResourceActionLinkFieldValues(actionLinks);
+        Object.entries(values).forEach(([fieldId, value]) => {
+            if (fieldId.endsWith('Type')) {
+                const slot = fieldId.match(/resourceActionLink(\d+)Type/)?.[1];
+                const radio = document.querySelector(`input[name="${fieldId}"][value="${value}"]`);
+                if (radio) radio.checked = true;
+                if (slot) this.syncResourceActionLinkSlotType(Number(slot));
+                return;
+            }
+            const field = document.getElementById(fieldId);
+            if (field) field.value = value;
+        });
+
+        for (let slot = 1; slot <= MAX_RESOURCE_ACTION_LINKS; slot += 1) {
+            const existingPdfUrl = values[`resourceActionLink${slot}ExistingPdfUrl`] || '';
+            if (existingPdfUrl) {
+                this.renderExistingActionLinkPdfPreview(slot, existingPdfUrl);
+            } else {
+                const preview = document.getElementById(`resourceActionLink${slot}PdfPreview`);
+                if (preview) preview.innerHTML = '';
+            }
+        }
+
+        const details = document.querySelector('.resource-action-links-field');
+        if (details) {
+            details.open = normalizeResourceActionLinks(actionLinks).length > 0;
+        }
+    }
+
+    initResourceActionLinkSlots() {
+        const container = document.getElementById('resourceActionLinkSlots');
+        if (!container || container.dataset.initialized === 'true') return;
+
+        container.innerHTML = Array.from({ length: MAX_RESOURCE_ACTION_LINKS }, (_, index) => {
+            const slot = index + 1;
+            return `
+                <div class="resource-action-link-slot" data-action-link-slot="${slot}">
+                    <p class="resource-action-link-slot-label">Button ${slot}</p>
+                    <div class="field-group double">
+                        <div class="form-group">
+                            <label for="resourceActionLink${slot}LabelEn" class="optional">Button label (English)</label>
+                            <input type="text" id="resourceActionLink${slot}LabelEn" name="resourceActionLink${slot}LabelEn" maxlength="60">
+                        </div>
+                        <div class="form-group">
+                            <label for="resourceActionLink${slot}LabelEs" class="optional">Button label (Spanish)</label>
+                            <input type="text" id="resourceActionLink${slot}LabelEs" name="resourceActionLink${slot}LabelEs" maxlength="60">
+                        </div>
+                    </div>
+                    <div class="resource-action-link-type" role="radiogroup" aria-label="Action link ${slot} type">
+                        <label class="resource-action-link-type-option">
+                            <input type="radio" name="resourceActionLink${slot}Type" value="url" checked>
+                            <span>Website link</span>
+                        </label>
+                        <label class="resource-action-link-type-option">
+                            <input type="radio" name="resourceActionLink${slot}Type" value="pdf">
+                            <span>PDF upload</span>
+                        </label>
+                    </div>
+                    <div class="form-group resource-action-link-url-field" id="resourceActionLink${slot}UrlField">
+                        <label for="resourceActionLink${slot}Url" class="optional">URL</label>
+                        <input type="url" id="resourceActionLink${slot}Url" name="resourceActionLink${slot}Url">
+                    </div>
+                    <div class="form-group resource-action-link-pdf-field" id="resourceActionLink${slot}PdfField" hidden>
+                        <label for="resourceActionLink${slot}Pdf" class="optional">PDF file</label>
+                        <button type="button" class="ap-flyer-pdf-choose" onclick="document.getElementById('resourceActionLink${slot}Pdf').click()">Choose PDF</button>
+                        <input type="file" id="resourceActionLink${slot}Pdf" name="resourceActionLink${slot}Pdf" accept=".pdf,application/pdf" class="file-input" style="display: none;" aria-label="Upload action link PDF ${slot}">
+                        <div id="resourceActionLink${slot}PdfPreview" class="pdf-preview"></div>
+                    </div>
+                    <input type="hidden" id="resourceActionLink${slot}ExistingPdfUrl" name="resourceActionLink${slot}ExistingPdfUrl" value="">
+                </div>
+            `;
+        }).join('');
+
+        container.dataset.initialized = 'true';
+
+        for (let slot = 1; slot <= MAX_RESOURCE_ACTION_LINKS; slot += 1) {
+            document.querySelectorAll(`input[name="resourceActionLink${slot}Type"]`).forEach((input) => {
+                input.addEventListener('change', () => this.syncResourceActionLinkSlotType(slot));
+            });
+            const pdfInput = document.getElementById(`resourceActionLink${slot}Pdf`);
+            if (pdfInput) {
+                pdfInput.addEventListener('change', (event) => this.handleActionLinkPdfPreview(slot, event));
+            }
+            ['LabelEn', 'LabelEs', 'Url'].forEach((suffix) => {
+                const field = document.getElementById(`resourceActionLink${slot}${suffix}`);
+                if (field) {
+                    field.addEventListener('input', () => {
+                        if (typeof window.syncAdminStudentPreview === 'function') {
+                            window.syncAdminStudentPreview();
+                        }
+                    });
+                }
+            });
+        }
+    }
+
+    syncResourceActionLinkSlotType(slot) {
+        const type = document.querySelector(`input[name="resourceActionLink${slot}Type"]:checked`)?.value || 'url';
+        const urlField = document.getElementById(`resourceActionLink${slot}UrlField`);
+        const pdfField = document.getElementById(`resourceActionLink${slot}PdfField`);
+        if (urlField) urlField.hidden = type === 'pdf';
+        if (pdfField) pdfField.hidden = type !== 'pdf';
+    }
+
+    handleActionLinkPdfPreview(slot, event) {
+        const file = event.target.files[0];
+        const preview = document.getElementById(`resourceActionLink${slot}PdfPreview`);
+        if (!preview) return;
+
+        if (!file) {
+            preview.innerHTML = '';
+            return;
+        }
+
+        if (file.size > 10 * 1024 * 1024) {
+            this.showTemporaryMessage('PDF file too large. Please select a PDF under 10MB.', 'error');
+            event.target.value = '';
+            preview.innerHTML = '';
+            return;
+        }
+
+        if (file.type !== 'application/pdf') {
+            this.showTemporaryMessage('Please select a valid PDF file.', 'error');
+            event.target.value = '';
+            preview.innerHTML = '';
+            return;
+        }
+
+        preview.innerHTML = `
+            <div class="pdf-preview-container">
+                <div class="pdf-preview-icon">📄</div>
+                <div class="pdf-preview-info">
+                    <strong>${this.escapeHtml(file.name)}</strong>
+                    <small>${this.formatFileSize(file.size)}</small>
+                </div>
+                <button type="button" class="remove-pdf" onclick="adminPanel.removeActionLinkPdfPreview(${slot})" aria-label="Remove PDF">&times;</button>
+            </div>
+        `;
+        this.removedActionLinkPdfSlots.delete(slot);
+        const existingField = document.getElementById(`resourceActionLink${slot}ExistingPdfUrl`);
+        if (existingField) existingField.value = '';
+        if (typeof window.syncAdminStudentPreview === 'function') {
+            window.syncAdminStudentPreview();
+        }
+    }
+
+    renderExistingActionLinkPdfPreview(slot, pdfUrl) {
+        const preview = document.getElementById(`resourceActionLink${slot}PdfPreview`);
+        if (!preview) return;
+
+        if (!pdfUrl) {
+            preview.innerHTML = '';
+            return;
+        }
+
+        preview.innerHTML = `
+            <div class="pdf-preview-container">
+                <div class="pdf-preview-icon">📄</div>
+                <div class="pdf-preview-info">
+                    <strong>Current PDF</strong>
+                    <small><a href="${this.escapeAttribute(pdfUrl)}" target="_blank" rel="noopener">Open uploaded PDF</a></small>
+                </div>
+                <button type="button" class="remove-pdf" onclick="adminPanel.removeActionLinkPdfPreview(${slot})" aria-label="Remove PDF">&times;</button>
+            </div>
+        `;
+    }
+
+    removeActionLinkPdfPreview(slot) {
+        const input = document.getElementById(`resourceActionLink${slot}Pdf`);
+        const preview = document.getElementById(`resourceActionLink${slot}PdfPreview`);
+        const existingField = document.getElementById(`resourceActionLink${slot}ExistingPdfUrl`);
+        if (input) input.value = '';
+        if (preview) preview.innerHTML = '';
+        if (existingField) existingField.value = '';
+        this.removedActionLinkPdfSlots.add(slot);
+        if (typeof window.syncAdminStudentPreview === 'function') {
+            window.syncAdminStudentPreview();
+        }
+    }
+
+    async uploadActionLinkPdf(file, bulletinId, slot) {
+        if (file.size > 10 * 1024 * 1024) {
+            throw new Error('PDF file too large. Please select a PDF under 10MB.');
+        }
+        if (file.type !== 'application/pdf') {
+            throw new Error('Please select a valid PDF file.');
+        }
+
+        const currentUser = auth.currentUser;
+        if (!currentUser) {
+            throw new Error('Session expired. Please log in again.');
+        }
+        await currentUser.getIdToken(true);
+
+        const timestamp = Date.now();
+        const filename = `pdfs/${bulletinId}_action_${slot}_${timestamp}.pdf`;
+        const fileRef = storageRef(storage, filename);
+        const snapshot = await uploadBytes(fileRef, file, { contentType: 'application/pdf' });
+        return getDownloadURL(snapshot.ref);
+    }
+
+    async finalizeResourceActionLinks(formData, bulletinId, existingLinks = []) {
+        const parsedLinks = parseResourceActionLinkSlotsFromForm(formData, {
+            removedPdfSlots: this.removedActionLinkPdfSlots,
+            existingLinks,
+        });
+
+        const finalizedLinks = [];
+        for (const link of parsedLinks) {
+            const slot = link._slot;
+            const pendingUpload = link._pendingPdfUpload;
+            const nextLink = {
+                labelEn: link.labelEn,
+                labelEs: link.labelEs,
+                url: link.url || '',
+                pdfUrl: link.pdfUrl || '',
+            };
+
+            if (pendingUpload && slot) {
+                const file = formData.get(`resourceActionLink${slot}Pdf`);
+                nextLink.pdfUrl = await this.uploadActionLinkPdf(file, bulletinId, slot);
+                nextLink.url = '';
+            }
+
+            finalizedLinks.push(nextLink);
+        }
+
+        return stripActionLinkUploadMeta(finalizedLinks);
+    }
+
+    syncResourceKindUI() {
+        const selected = document.querySelector('input[name="resourceKind"]:checked');
+        const kind = normalizeResourceKind(selected?.value);
+        const isDocument = kind === RESOURCE_KIND_DOCUMENT;
+
+        document.querySelectorAll('.resource-org-only').forEach((element) => {
+            element.hidden = isDocument;
+        });
+
+        const pdfField = document.getElementById('resourcePdfField');
+        if (pdfField) pdfField.hidden = !isDocument;
+
+        const urlInput = document.getElementById('resourceUrl');
+        const urlLabel = document.getElementById('resourceUrlLabel');
+        const urlHelp = document.getElementById('resourceUrlHelp');
+        const urlField = document.getElementById('resourceUrlField');
+
+        if (urlInput) {
+            urlInput.required = !isDocument;
+            urlInput.dataset.resourceRequired = isDocument ? 'false' : 'true';
+        }
+
+        if (urlLabel) {
+            urlLabel.textContent = isDocument ? 'Official source link' : 'Link / URL';
+            this.setLabelPriority(urlLabel, isDocument ? 'optional' : 'required');
+        }
+
+        if (urlHelp) {
+            urlHelp.textContent = isDocument
+                ? 'Optional — link to the official page where this form lives.'
+                : 'Paste the website students should open when they tap the resource.';
+            urlHelp.classList.toggle('required', !isDocument);
+        }
+
+        if (urlField) {
+            urlField.classList.toggle('required-field', !isDocument);
+        }
+
+        const resourceSubtitle = document.getElementById('resourceSectionSubtitle');
+        if (resourceSubtitle) {
+            resourceSubtitle.textContent = isDocument
+                ? 'Required to publish a document resource'
+                : 'Required to publish a resource';
+        }
+
+        if (typeof window.syncAdminStudentPreview === 'function') {
+            window.syncAdminStudentPreview();
+        }
+    }
+
+    validateDocumentResourceInput(formData) {
+        const kind = normalizeResourceKind(formData.get('resourceKind'));
+        if (kind !== RESOURCE_KIND_DOCUMENT) return;
+
+        const hasPdfFile = Boolean(formData.get('resourcePdf')?.size);
+        const hasUrl = Boolean((formData.get('resourceUrl') || '').trim());
+        const existing = this.isEditMode && this.editingBulletinId
+            ? this.bulletins.find((bulletin) => bulletin.id === this.editingBulletinId)
+            : null;
+        let hasActionLink = false;
+        try {
+            hasActionLink = parseResourceActionLinkSlotsFromForm(formData, {
+                removedPdfSlots: this.removedActionLinkPdfSlots,
+                existingLinks: existing?.actionLinks || [],
+            }).length > 0;
+        } catch {
+            hasActionLink = false;
+        }
+
+        if (this.isEditMode && this.editingBulletinId) {
+            const existing = this.bulletins.find((bulletin) => bulletin.id === this.editingBulletinId);
+            if (existing?.pdfUrl || hasPdfFile || hasUrl || hasActionLink) {
+                return;
+            }
+        } else if (hasPdfFile || hasUrl || hasActionLink) {
+            return;
+        }
+
+        throw new Error('Document resources need a PDF upload, official source link, or action link.');
     }
 
     async handleImagePreview(e, fieldName = 'image') {
@@ -2490,6 +2825,79 @@ class FirebaseAdminPanel {
         document.getElementById('pdfPreview').innerHTML = '';
     }
 
+    handleResourcePdfPreview(e) {
+        const file = e.target.files[0];
+        const preview = document.getElementById('resourcePdfPreview');
+        if (!preview) return;
+
+        if (!file) {
+            preview.innerHTML = '';
+            return;
+        }
+
+        if (file.size > 10 * 1024 * 1024) {
+            this.showTemporaryMessage('PDF file too large. Please select a PDF under 10MB.', 'error');
+            e.target.value = '';
+            preview.innerHTML = '';
+            return;
+        }
+
+        if (file.type !== 'application/pdf') {
+            this.showTemporaryMessage('Please select a valid PDF file.', 'error');
+            e.target.value = '';
+            preview.innerHTML = '';
+            return;
+        }
+
+        preview.innerHTML = `
+            <div class="pdf-preview-container">
+                <div class="pdf-preview-icon">📄</div>
+                <div class="pdf-preview-info">
+                    <strong>${this.escapeHtml(file.name)}</strong>
+                    <small>${this.formatFileSize(file.size)}</small>
+                </div>
+                <button type="button" class="remove-pdf" onclick="adminPanel.removeResourcePdfPreview()" aria-label="Remove PDF">&times;</button>
+            </div>
+        `;
+        this.removeResourcePdf = false;
+        if (typeof window.syncAdminStudentPreview === 'function') {
+            window.syncAdminStudentPreview();
+        }
+    }
+
+    removeResourcePdfPreview() {
+        const input = document.getElementById('resourcePdf');
+        const preview = document.getElementById('resourcePdfPreview');
+        if (input) input.value = '';
+        if (preview) preview.innerHTML = '';
+        this.removeResourcePdf = true;
+        if (typeof window.syncAdminStudentPreview === 'function') {
+            window.syncAdminStudentPreview();
+        }
+    }
+
+    renderExistingResourcePdfPreview(pdfUrl) {
+        const preview = document.getElementById('resourcePdfPreview');
+        if (!preview) return;
+
+        if (!pdfUrl) {
+            preview.innerHTML = '';
+            return;
+        }
+
+        preview.innerHTML = `
+            <div class="pdf-preview-container">
+                <div class="pdf-preview-icon">📄</div>
+                <div class="pdf-preview-info">
+                    <strong>Current form PDF</strong>
+                    <small><a href="${this.escapeAttribute(pdfUrl)}" target="_blank" rel="noopener">Open uploaded PDF</a></small>
+                </div>
+                <button type="button" class="remove-pdf" onclick="adminPanel.removeResourcePdfPreview()" aria-label="Remove PDF">&times;</button>
+            </div>
+        `;
+        this.removeResourcePdf = false;
+    }
+
 
     deleteBulletin(bulletinId) {
         this.showConfirmDialog(
@@ -2604,6 +3012,13 @@ class FirebaseAdminPanel {
                 if (radio) radio.checked = true;
             }
             document.getElementById('resourceHours').value = bulletin.hours || '';
+            this.populateResourceActionLinkFields(bulletin.actionLinks);
+
+            const resourceKind = normalizeResourceKind(bulletin.resourceKind);
+            const kindRadio = document.querySelector(`input[name="resourceKind"][value="${resourceKind}"]`);
+            if (kindRadio) kindRadio.checked = true;
+            this.syncResourceKindUI();
+            this.renderExistingResourcePdfPreview(bulletin.pdfUrl || '');
 
             const resourceLogoPreview = document.getElementById('resourceLogoPreview');
             if (resourceLogoPreview) {
@@ -3004,7 +3419,9 @@ class FirebaseAdminPanel {
         container.innerHTML = userBulletins.map(bulletin => {
             const isResource = this.isResourceBulletin(bulletin);
             const kind = this.getManageContentKind(bulletin);
-            const typeLabel = kind === 'resource' ? 'Resource' : kind === 'event' ? 'Calendar event' : 'Bulletin';
+            const typeLabel = kind === 'resource'
+                ? (isDocumentResource(bulletin) ? 'Document resource' : 'Organization resource')
+                : kind === 'event' ? 'Calendar event' : 'Bulletin';
             const isDraft = isResource && bulletin.isPublished === false;
             const isExpired = !isResource && this.isBulletinExpiredAdmin(bulletin);
             const statusLabel = isDraft ? 'Draft / Hidden from students' : isExpired ? 'Expired' : 'Live';
@@ -3025,6 +3442,7 @@ class FirebaseAdminPanel {
                     <p><strong>Spanish Title:</strong> ${this.escapeHtml(bulletin.titleEs || bulletin.titleEn || bulletin.title || '')}</p>
                     <p><strong>Published:</strong> ${bulletin.isPublished !== false ? 'Yes' : 'No — hidden from students'}</p>
                     ${bulletin.url || bulletin.eventLink ? `<p><strong>Link:</strong> <a href="${this.escapeAttribute(bulletin.url || bulletin.eventLink)}" target="_blank" rel="noopener">Open resource</a></p>` : ''}
+                    ${bulletin.pdfUrl ? `<p><strong>Form PDF:</strong> <a href="${this.escapeAttribute(bulletin.pdfUrl)}" target="_blank" rel="noopener">Open PDF</a></p>` : ''}
                     ${bulletin.description ? `<p><strong>Description:</strong> ${this.escapeHtml(bulletin.description)}</p>` : ''}
                     ${bulletin.highlights ? `<p><strong>Services:</strong> ${this.escapeHtml(bulletin.highlights)}</p>` : ''}
                     ${bulletin.address ? `<p><strong>Address:</strong> ${this.escapeHtml(bulletin.address)}</p>` : ''}
@@ -3812,8 +4230,18 @@ class FirebaseAdminPanel {
 
         if (this.isResourceBulletin(bulletin)) {
             const resourceLogoFile = formData.get('resourceLogo');
+            const resourcePdfFile = formData.get('resourcePdf');
+            const actionLinks = await this.finalizeResourceActionLinks(
+                formData,
+                bulletinId,
+                bulletin.actionLinks || [],
+            );
+            await updateDoc(doc(db, 'bulletins', bulletinId), { actionLinks });
             if (resourceLogoFile && resourceLogoFile.size > 0) {
                 await this.handleImageUpload(resourceLogoFile, bulletin, null, bulletinId, 'resourceLogo');
+            }
+            if (isDocumentResource(bulletin) && resourcePdfFile && resourcePdfFile.size > 0) {
+                await this.handlePdfUpload(resourcePdfFile, bulletin, bulletinId);
             }
             this.loadManageBulletins();
             return bulletinId;
@@ -3851,7 +4279,13 @@ class FirebaseAdminPanel {
             bulletin.createdAt = existingBulletin.createdAt || existingBulletin.datePosted;
             bulletin.image = this.isResourceBulletin(bulletin) ? null : (existingBulletin.image || null);
             bulletin.imageEs = this.isResourceBulletin(bulletin) ? null : (existingBulletin.imageEs || null);
-            bulletin.pdfUrl = this.isResourceBulletin(bulletin) ? null : (existingBulletin.pdfUrl || null);
+            if (this.isResourceBulletin(bulletin)) {
+                bulletin.pdfUrl = isDocumentResource(bulletin)
+                    ? (this.removeResourcePdf ? null : (existingBulletin.pdfUrl || null))
+                    : null;
+            } else {
+                bulletin.pdfUrl = existingBulletin.pdfUrl || null;
+            }
             if (this.isResourceBulletin(bulletin)) {
                 bulletin.resourceLogo = existingBulletin.resourceLogo || null;
             }
@@ -3859,11 +4293,19 @@ class FirebaseAdminPanel {
 
         if (this.isResourceBulletin(bulletin)) {
             const resourceLogoFile = formData.get('resourceLogo');
+            const resourcePdfFile = formData.get('resourcePdf');
             const hasNewLogo = resourceLogoFile && resourceLogoFile.size > 0;
 
             if (!hasNewLogo && this.removeResourceLogo) {
                 bulletin.resourceLogo = null;
             }
+
+            const actionLinks = await this.finalizeResourceActionLinks(
+                formData,
+                bulletinId,
+                existingBulletin?.actionLinks || [],
+            );
+            bulletin.actionLinks = actionLinks;
 
             if (hasNewLogo) {
                 await this.saveBulletin(bulletin, bulletinId);
@@ -3872,7 +4314,13 @@ class FirebaseAdminPanel {
                 await this.saveBulletin(bulletin, bulletinId);
             }
 
+            if (isDocumentResource(bulletin) && resourcePdfFile && resourcePdfFile.size > 0) {
+                await this.handlePdfUpload(resourcePdfFile, bulletin, bulletinId);
+            }
+
             this.removeResourceLogo = false;
+            this.removeResourcePdf = false;
+            this.removedActionLinkPdfSlots = new Set();
             return;
         }
 
@@ -3901,6 +4349,8 @@ class FirebaseAdminPanel {
             const titleEn = (formData.get('resourceTitleEn') || '').trim();
             const titleEs = (formData.get('resourceTitleEs') || '').trim();
             const resourceCategory = (formData.get('resourceCategory') || '').trim();
+            const resourceKind = normalizeResourceKind(formData.get('resourceKind'));
+            const isDocument = resourceKind === RESOURCE_KIND_DOCUMENT;
             let url = (formData.get('resourceUrl') || '').trim();
             const rawOrder = (formData.get('resourceOrder') || '').trim();
 
@@ -3912,18 +4362,20 @@ class FirebaseAdminPanel {
                 throw new Error('Resource category is required.');
             }
 
-            if (!url) {
+            if (!isDocument && !url) {
                 throw new Error('Resource link is required.');
             }
 
-            if (!/^https?:\/\//i.test(url)) {
-                url = `https://${url}`;
-            }
+            if (url) {
+                if (!/^https?:\/\//i.test(url)) {
+                    url = `https://${url}`;
+                }
 
-            try {
-                new URL(url);
-            } catch (error) {
-                throw new Error('Please enter a valid resource URL.');
+                try {
+                    new URL(url);
+                } catch (error) {
+                    throw new Error('Please enter a valid resource URL.');
+                }
             }
 
             const resourceOrder = rawOrder === '' ? null : Number(rawOrder);
@@ -3946,27 +4398,34 @@ class FirebaseAdminPanel {
                 throw new Error('Add at least one service chip, or a card summary so students can tell this resource apart.');
             }
 
+            const actionLinks = parseResourceActionLinkSlotsFromForm(formData, {
+                removedPdfSlots: this.removedActionLinkPdfSlots,
+                existingLinks: [],
+            });
+
             return {
                 type: 'resource',
                 title: titleEn,
                 titleEn,
                 titleEs: titleEs || titleEn,
                 category: 'resource',
+                resourceKind,
                 resourceCategory,
                 resourceIcon: suggestedIcon,
-                resourceLogo: null,
-                url,
-                eventLink: url,
+                resourceLogo: isDocument ? null : null,
+                url: url || '',
+                eventLink: url || '',
                 description: resourceSummaryEn,
                 summaryEs: resourceSummaryEs,
                 highlights: services.join(', '),
                 services,
                 serviceChips: services,
                 advisorName: advisorName,
-                address: (formData.get('resourceAddress') || '').trim(),
-                phone: (formData.get('resourcePhone') || '').trim(),
-                phoneMode: (formData.get('resourcePhoneMode') || 'call').trim(),
-                hours: (formData.get('resourceHours') || '').trim(),
+                address: isDocument ? '' : (formData.get('resourceAddress') || '').trim(),
+                phone: isDocument ? '' : (formData.get('resourcePhone') || '').trim(),
+                phoneMode: isDocument ? 'call' : (formData.get('resourcePhoneMode') || 'call').trim(),
+                hours: isDocument ? '' : (formData.get('resourceHours') || '').trim(),
+                actionLinks: stripActionLinkUploadMeta(actionLinks),
                 isActive: true,
                 isPublished: formData.get('resourcePublished') === 'on',
                 isPinned: false,
@@ -4107,11 +4566,19 @@ class FirebaseAdminPanel {
         if (resourceLogoPreview) resourceLogoPreview.innerHTML = '';
         const pdfPreview = document.getElementById('pdfPreview');
         if (pdfPreview) pdfPreview.innerHTML = '';
+        const resourcePdfPreview = document.getElementById('resourcePdfPreview');
+        if (resourcePdfPreview) resourcePdfPreview.innerHTML = '';
+        const resourcePdfInput = document.getElementById('resourcePdf');
+        if (resourcePdfInput) resourcePdfInput.value = '';
+        const orgKindRadio = document.querySelector('input[name="resourceKind"][value="organization"]');
+        if (orgKindRadio) orgKindRadio.checked = true;
         this.pendingImageData = null;
         this.pendingImageEsData = null;
         this.pendingResourceLogoData = null;
         this.removeResourceLogo = false;
+        this.removeResourcePdf = false;
         this.updateResourceIconGroupState();
+        this.syncResourceKindUI();
         this.toggleSpanishFlyerPanel(false);
         this.syncFlyerUploadUI();
 
@@ -4123,6 +4590,10 @@ class FirebaseAdminPanel {
         // Reset phone mode radios
         document.querySelectorAll('input[name="resourcePhoneMode"][value="call"]').forEach(r => r.checked = true);
         document.querySelectorAll('input[name="contactPhoneMode"][value="call"]').forEach(r => r.checked = true);
+        this.populateResourceActionLinkFields([]);
+        this.removedActionLinkPdfSlots = new Set();
+        const actionLinksDetails = document.querySelector('.resource-action-links-field');
+        if (actionLinksDetails) actionLinksDetails.open = false;
 
         // Reset date fields
         document.getElementById('dateType').value = '';

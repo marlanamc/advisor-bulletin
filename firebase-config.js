@@ -28,6 +28,18 @@ import {
     truncateRichText,
 } from './src/rich-text.js'
 import { formatResourceHoursHtml } from './src/resource-hours.js'
+import {
+    normalizeResourceActionLinks,
+    RESOURCE_ACTION_LINK_ICON_SVG,
+    RESOURCE_ACTION_LINK_PDF_ICON_SVG,
+} from './src/resource-action-links.js'
+import {
+    DOCUMENT_TILE_ICON_SVG,
+    isDocumentResource,
+    normalizeResourceKind,
+    OPEN_FORM_ICON_SVG,
+    RESOURCE_KIND_DOCUMENT,
+} from './src/resource-kinds.js'
 import { initResourceLogoTiles } from './src/resource-logo-tile.js'
 import { collection, addDoc, query, where, orderBy, onSnapshot, serverTimestamp } from 'firebase/firestore'
 
@@ -3354,6 +3366,10 @@ class FirebaseBulletinBoard {
     }
 
     createHelpResourceCard(resource, categoryConfig) {
+        if (isDocumentResource(resource)) {
+            return this.createDocumentResourceCard(resource, categoryConfig);
+        }
+
         const { titleEn, titleEs } = this.getResourceTitles(resource);
         const categoryKey = this.getResourceCategoryKey(resource);
         const config = categoryConfig || this.getResourceCategoryConfig(resource);
@@ -3443,6 +3459,7 @@ class FirebaseBulletinBoard {
         const actionsHtml = actionButtons.length
             ? `<div class="mobile-resource-card__actions${actionsModifier}">${actionButtons.join('')}</div>`
             : '';
+        const actionLinksHtml = this.getResourceActionLinksHtml(resource, categoryKey, titleEn);
 
         const showAddressLine = address && !(isDesktopCard && mapUrl);
         const addressHtml = showAddressLine
@@ -3479,9 +3496,152 @@ class FirebaseBulletinBoard {
                     ${hoursHtml}
                     ${phoneHtml}
                     ${actionsHtml}
+                    ${actionLinksHtml}
                 </div>
             </article>
         `;
+    }
+
+    createDocumentResourceCard(resource, categoryConfig) {
+        const { titleEn, titleEs } = this.getResourceTitles(resource);
+        const categoryKey = this.getResourceCategoryKey(resource);
+        const config = categoryConfig || this.getResourceCategoryConfig(resource);
+        const accent = config?.color || '#0a1d3a';
+
+        const pdfUrl = (resource.pdfUrl || '').trim();
+        const url = this.getResourceUrl(resource);
+        const hasUrl = url && url !== '#';
+        const formUrl = pdfUrl || (hasUrl ? url : '');
+
+        const servicesHtml = this.getResourceServiceChipsHtml(resource, { section: true });
+        const badgesHtml = this.getResourceBadgesHtml(resource);
+        const actionLinksHtml = this.getResourceActionLinksHtml(resource, categoryKey, titleEn);
+
+        const openFormBtn = formUrl
+            ? (pdfUrl
+                ? `<button type="button"
+                        class="mobile-resource-card__btn mobile-resource-card__btn--primary"
+                        data-analytics-action="pdf_open"
+                        data-analytics-post-id="${this.escapeAttribute(resource.id || '')}"
+                        data-analytics-category="${this.escapeAttribute(categoryKey)}"
+                        data-analytics-content-type="resource"
+                        aria-label="Open ${this.escapeAttribute(titleEn)} form"
+                        onclick="window.bulletinBoard.openPdfFromBulletin('${this.escapeAttribute(resource.id || '')}')">
+                    ${OPEN_FORM_ICON_SVG}
+                    <span class="en-text">Open form</span>
+                    <span class="es-text">Abrir formulario</span>
+                </button>`
+                : `<a class="mobile-resource-card__btn mobile-resource-card__btn--primary"
+                      href="${this.escapeAttribute(formUrl)}"
+                      target="_blank"
+                      rel="noopener"
+                      data-analytics-action="resource_open"
+                      data-analytics-post-id="${this.escapeAttribute(resource.id || '')}"
+                      data-analytics-category="${this.escapeAttribute(categoryKey)}"
+                      data-analytics-content-type="resource"
+                      aria-label="Open ${this.escapeAttribute(titleEn)} form">
+                    ${OPEN_FORM_ICON_SVG}
+                    <span class="en-text">Open form</span>
+                    <span class="es-text">Abrir formulario</span>
+                </a>`)
+            : '';
+
+        const websiteBtn = pdfUrl && hasUrl
+            ? `<a class="mobile-resource-card__btn mobile-resource-card__btn--secondary"
+                  href="${this.escapeAttribute(url)}"
+                  target="_blank"
+                  rel="noopener"
+                  data-analytics-action="resource_open"
+                  data-analytics-post-id="${this.escapeAttribute(resource.id || '')}"
+                  data-analytics-category="${this.escapeAttribute(categoryKey)}"
+                  data-analytics-content-type="resource"
+                  aria-label="Open official source for ${this.escapeAttribute(titleEn)}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>
+                    <span class="en-text">Official source</span>
+                    <span class="es-text">Fuente oficial</span>
+                </a>`
+            : '';
+
+        const actionButtons = [openFormBtn, websiteBtn].filter(Boolean);
+        const actionsModifier = actionButtons.length === 1 ? ' mobile-resource-card__actions--single' : '';
+        const actionsHtml = actionButtons.length
+            ? `<div class="mobile-resource-card__actions${actionsModifier}">${actionButtons.join('')}</div>`
+            : '';
+
+        const shareTitle = this.escapeHtml(titleEn).replace(/'/g, '&#39;');
+        const logoTile = `<span class="mobile-resource-card__icon-fallback mobile-resource-card__icon-fallback--document" style="background:${accent}" aria-hidden="true">${DOCUMENT_TILE_ICON_SVG}</span>`;
+
+        return `
+            <article class="mobile-resource-card mobile-resource-card--document mobile-resource-card--${categoryKey}"
+                     style="--cat-accent:${accent}"
+                     data-resource-id="${this.escapeAttribute(resource.id || '')}">
+                <button type="button"
+                        class="mobile-resource-card__share"
+                        onclick="shareBulletin('${resource.id || ''}','${shareTitle}')"
+                        aria-label="Share ${this.escapeAttribute(titleEn)}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4"/><path d="m15.4 6.5-6.8 4"/></svg>
+                </button>
+                <div class="mobile-resource-card__logo-tile mobile-resource-card__logo-tile--document">${logoTile}</div>
+                <div class="mobile-resource-card__body">
+                    <div class="mobile-resource-card__heading">
+                        <div class="mobile-resource-card__title-row">
+                            <h3 class="mobile-resource-card__title">${this.escapeHtml(titleEn)}</h3>
+                            ${badgesHtml}
+                        </div>
+                        ${titleEs && titleEs !== titleEn ? `<p class="mobile-resource-card__subtitle">${this.escapeHtml(titleEs)}</p>` : ''}
+                    </div>
+                    ${this.getResourceCardSummaryHtml(resource)}
+                    ${servicesHtml}
+                    ${actionsHtml}
+                    ${actionLinksHtml}
+                </div>
+            </article>
+        `;
+    }
+
+    getResourceActionLinksHtml(resource, categoryKey, titleEn) {
+        const links = normalizeResourceActionLinks(resource?.actionLinks);
+        if (!links.length) return '';
+
+        const buttons = links.map((link) => {
+            const labelEn = this.escapeHtml(link.labelEn);
+            const labelEs = this.escapeHtml(link.labelEs);
+            const ariaLabel = this.escapeAttribute(`${link.labelEn} for ${titleEn}`);
+
+            if (link.pdfUrl) {
+                const pdfUrl = this.escapeAttribute(link.pdfUrl);
+                return `
+            <button type="button"
+                    class="mobile-resource-card__btn mobile-resource-card__btn--secondary mobile-resource-card__btn--action-link"
+                    data-analytics-action="pdf_open"
+                    data-analytics-post-id="${this.escapeAttribute(resource.id || '')}"
+                    data-analytics-category="${this.escapeAttribute(categoryKey)}"
+                    data-analytics-content-type="resource"
+                    aria-label="${ariaLabel}"
+                    onclick="window.bulletinBoard.openResourcePdf('${pdfUrl}', { postId: '${this.escapeAttribute(resource.id || '')}', category: '${this.escapeAttribute(categoryKey)}' })">
+                ${RESOURCE_ACTION_LINK_PDF_ICON_SVG}
+                <span class="en-text">${labelEn}</span>
+                <span class="es-text">${labelEs}</span>
+            </button>`;
+            }
+
+            return `
+            <a class="mobile-resource-card__btn mobile-resource-card__btn--secondary mobile-resource-card__btn--action-link"
+               href="${this.escapeAttribute(link.url)}"
+               target="_blank"
+               rel="noopener"
+               data-analytics-action="resource_action_link"
+               data-analytics-post-id="${this.escapeAttribute(resource.id || '')}"
+               data-analytics-category="${this.escapeAttribute(categoryKey)}"
+               data-analytics-content-type="resource"
+               aria-label="${ariaLabel}">
+                ${RESOURCE_ACTION_LINK_ICON_SVG}
+                <span class="en-text">${labelEn}</span>
+                <span class="es-text">${labelEs}</span>
+            </a>`;
+        }).join('');
+
+        return `<div class="mobile-resource-card__action-links">${buttons}</div>`;
     }
 
     getResourceServices(resource, max = MAX_RESOURCE_SERVICE_CHIPS) {
@@ -3749,6 +3909,10 @@ class FirebaseBulletinBoard {
     }
 
     getResourceIconSvg(resource) {
+        if (isDocumentResource(resource)) {
+            return DOCUMENT_TILE_ICON_SVG;
+        }
+
         const categoryConfig = this.getResourceCategoryConfig(resource);
         const iconKey = resource.resourceIcon && resource.resourceIcon !== 'auto'
             ? resource.resourceIcon
@@ -4734,36 +4898,49 @@ class FirebaseBulletinBoard {
                 throw new Error('PDF not found for this bulletin.');
             }
 
-            trackStudentEvent('pdf_open', {
+            await this.openResourcePdf(bulletin.pdfUrl, {
                 postId: bulletin.id,
                 category: bulletin.category,
-                contentType: bulletin.type || 'post'
+                contentType: bulletin.type || 'post',
             });
-
-            if (bulletin.pdfUrl.startsWith('data:')) {
-                if (!window.fetch || !window.URL || !window.URL.createObjectURL) {
-                    throw new Error('Your browser does not support PDF viewing. Please try a modern browser.');
-                }
-
-                const response = await fetch(bulletin.pdfUrl);
-                const blob = await response.blob();
-                const blobUrl = URL.createObjectURL(blob);
-                const newWindow = window.open(blobUrl, '_blank');
-
-                setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
-
-                if (!newWindow) {
-                    throw new Error('Popup blocked. Please allow popups for this site.');
-                }
-            } else {
-                const newWindow = window.open(bulletin.pdfUrl, '_blank');
-                if (!newWindow) {
-                    throw new Error('Popup blocked. Please allow popups for this site.');
-                }
-            }
         } catch (error) {
             console.error('Error opening PDF:', error);
             alert('Failed to open PDF: ' + error.message);
+        }
+    }
+
+    async openResourcePdf(pdfUrl, analytics = {}) {
+        if (!pdfUrl) {
+            throw new Error('PDF not found.');
+        }
+
+        trackStudentEvent('pdf_open', {
+            postId: analytics.postId || '',
+            category: analytics.category || '',
+            contentType: analytics.contentType || 'resource',
+        });
+
+        if (pdfUrl.startsWith('data:')) {
+            if (!window.fetch || !window.URL || !window.URL.createObjectURL) {
+                throw new Error('Your browser does not support PDF viewing. Please try a modern browser.');
+            }
+
+            const response = await fetch(pdfUrl);
+            const blob = await response.blob();
+            const blobUrl = URL.createObjectURL(blob);
+            const newWindow = window.open(blobUrl, '_blank');
+
+            setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+
+            if (!newWindow) {
+                throw new Error('Popup blocked. Please allow popups for this site.');
+            }
+            return;
+        }
+
+        const newWindow = window.open(pdfUrl, '_blank');
+        if (!newWindow) {
+            throw new Error('Popup blocked. Please allow popups for this site.');
         }
     }
 

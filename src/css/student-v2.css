@@ -4058,6 +4058,32 @@ a.about-action-card {
     border: 1.5px solid var(--cat-accent, #0a1d3a);
 }
 
+.mobile-resource-card__action-links {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.mobile-resource-card__btn--action-link {
+    width: 100%;
+}
+
+.mobile-resource-card--document .mobile-resource-card__logo-tile--document,
+.mobile-resource-card__logo-tile--document {
+    display: grid;
+    place-items: center;
+}
+
+.mobile-resource-card__icon-fallback--document {
+    color: #fff;
+}
+
+.mobile-resource-card__icon-fallback--document svg {
+    width: 34px;
+    height: 34px;
+}
+
 @media (min-width: 768px) {
     .desktop-section-grid .mobile-resource-card:hover,
     .cat-detail-sheet.cat-detail-sheet--desktop #catOrgList .mobile-resource-card:hover {

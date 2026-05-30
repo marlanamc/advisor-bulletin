@@ -162,6 +162,7 @@ const RESOURCE_CHIP_ES = {
     'get training': 'Obtener capacitación',
     'join tenant support': 'Unirse a apoyo de inquilinos',
     'learn your rights': 'Conocer sus derechos',
+    'let someone get your info if detained': 'Dejar que alguien obtenga su información si lo detienen',
     'practice job skills': 'Practicar habilidades laborales',
     'report a problem': 'Reportar un problema',
     'take english classes': 'Clases de inglés',

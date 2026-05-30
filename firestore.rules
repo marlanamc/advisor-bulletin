@@ -98,6 +98,42 @@ service cloud.firestore {
       return email == 'admin@ebhcs.org' || email == 'leah@ebhcs.org';
     }
 
+    function validActionLinkItem(item) {
+      return item.keys().hasAll(['labelEn', 'labelEs'])
+        && item.labelEn is string && item.labelEn.size() > 0 && item.labelEn.size() <= 60
+        && item.labelEs is string && item.labelEs.size() > 0 && item.labelEs.size() <= 60
+        && (!('url' in item) || item.url is string)
+        && (!('pdfUrl' in item) || item.pdfUrl is string)
+        && (
+          (('url' in item) && item.url is string && item.url.size() > 0 && item.url.size() <= 500)
+          || (('pdfUrl' in item) && item.pdfUrl is string && item.pdfUrl.size() > 0 && item.pdfUrl.size() <= 500)
+        );
+    }
+
+    function validActionLinks(links) {
+      return links is list && links.size() <= 5
+        && (links.size() == 0
+          || (validActionLinkItem(links[0])
+            && (links.size() < 2 || validActionLinkItem(links[1]))
+            && (links.size() < 3 || validActionLinkItem(links[2]))
+            && (links.size() < 4 || validActionLinkItem(links[3]))
+            && (links.size() < 5 || validActionLinkItem(links[4]))));
+    }
+
+    function isDocumentResource(data) {
+      return ('resourceKind' in data) && data.resourceKind == 'document';
+    }
+
+    function validResourceContact(data) {
+      return isDocumentResource(data)
+        ? (
+          (('pdfUrl' in data) && data.pdfUrl is string && data.pdfUrl.size() > 0)
+          || (('url' in data) && data.url is string && data.url.size() > 0)
+          || (('actionLinks' in data) && validActionLinks(data.actionLinks) && data.actionLinks.size() > 0)
+        )
+        : (('url' in data) && data.url is string && data.url.size() > 0);
+    }
+
     function validateBulletinData(data) {
       let hasCommonRequired = data.keys().hasAll(['type', 'advisorName', 'postedBy', 'isActive'])
         && data.type is string && data.type in ['post', 'resource']
@@ -144,6 +180,8 @@ service cloud.firestore {
         && (!('highlights' in data) || data.highlights is string)
         && (!('services' in data) || data.services is list)
         && (!('serviceChips' in data) || data.serviceChips is list)
+        && (!('resourceKind' in data) || data.resourceKind in ['organization', 'document'])
+        && (!('actionLinks' in data) || validActionLinks(data.actionLinks))
         && (!('datePosted' in data) || data.datePosted is timestamp)
         && (!('resourceOrder' in data) || data.resourceOrder == null || data.resourceOrder is int || data.resourceOrder is float);
 
@@ -153,7 +191,7 @@ service cloud.firestore {
         && data.category is string && data.category in ['job', 'training', 'college', 'career-fair', 'announcement', 'resource', 'immigration', 'housing', 'health', 'food', 'esol', 'money', 'childcare'];
 
       let validResource = data.type == 'resource'
-        && data.keys().hasAll(['title', 'titleEn', 'category', 'resourceCategory', 'url', 'isPublished'])
+        && data.keys().hasAll(['title', 'titleEn', 'category', 'resourceCategory', 'isPublished'])
         && data.title is string && data.title.size() > 0 && data.title.size() <= 200
         && data.titleEn is string && data.titleEn.size() > 0 && data.titleEn.size() <= 200
         && (!('titleEs' in data) || data.titleEs.size() <= 200)
@@ -162,7 +200,8 @@ service cloud.firestore {
         // in src/resource-categories.js. scripts/check-resource-categories-sync.mjs
         // (run in prebuild) fails the build if the two lists drift apart.
         && data.resourceCategory in ['immigration', 'jobs', 'housing', 'health', 'food', 'family', 'hse', 'college', 'legal-aid', 'money', 'esol']
-        && data.url is string && data.url.size() > 0;
+        && (!('url' in data) || data.url is string)
+        && validResourceContact(data);
 
       return hasCommonRequired && validOptionalFields && (validPost || validResource);
     }
@@ -175,7 +214,8 @@ service cloud.firestore {
         'pdf_open',
         'share_click',
         'category_click',
-        'resource_open'
+        'resource_open',
+        'resource_action_link'
       ];
 
       let validCategories = [
@@ -205,7 +245,8 @@ service cloud.firestore {
         'link_click',
         'pdf_open',
         'share_click',
-        'resource_open'
+        'resource_open',
+        'resource_action_link'
       ];
 
       return data.keys().hasAll(['action', 'createdAt', 'dayKey', 'source', 'contentType'])
