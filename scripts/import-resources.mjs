@@ -251,6 +251,7 @@ function mergeResources(map, row) {
       summaryEs,
       advisorName,
       sourceRows: 1,
+      resourceOrder: row.resourceOrder || '',
     });
     return;
   }
@@ -302,9 +303,9 @@ function buildFirestoreDoc(resource) {
     hours: resource.hours || '',
     languages: resource.languages,
     isActive: true,
-    isPublished: false,
+    isPublished: true,
     isPinned: false,
-    resourceOrder: null,
+    resourceOrder: resource.resourceOrder !== undefined && String(resource.resourceOrder).trim() !== '' ? Number(resource.resourceOrder) : null,
     company: '',
     contact: '',
     dateType: '',

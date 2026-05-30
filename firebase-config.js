@@ -3,7 +3,11 @@ import { STUDENT_ADVISOR_DIRECTORY } from './src/advisor-directory.js'
 import { installClientErrorLogger } from './src/error-logger.js'
 import { normalizePostCategory, getPostCategoryDisplay } from './src/feed-categories.js'
 import { RESOURCE_TILE_CATEGORIES } from './src/resource-categories.js'
-import { getActionResourceChipLabel, translateResourceChipEs } from './src/resource-chip-labels.js'
+import {
+    getActionResourceChipLabel,
+    parseResourceServiceChips,
+    translateResourceChipEs,
+} from './src/resource-chip-labels.js'
 import {
     normalizeEventSessions,
     parseSessionEntry,
@@ -22,6 +26,7 @@ import {
     normalizeRichTextMarkers,
     truncateRichText,
 } from './src/rich-text.js'
+import { formatResourceHoursHtml } from './src/resource-hours.js'
 import { collection, addDoc, query, where, orderBy, onSnapshot, serverTimestamp } from 'firebase/firestore'
 
 installClientErrorLogger('student')
@@ -2192,15 +2197,6 @@ class FirebaseBulletinBoard {
 
     // ─── Quick-Filter helpers ────────────────────────────────────────
 
-    isResourceFree(resource) {
-        if (resource.isFree === true || resource.free === true) return true;
-        const text = [
-            resource.highlights, resource.description, resource.title,
-            resource.titleEn, resource.titleEs
-        ].join(' ').toLowerCase();
-        return /\bfree\b|\bgratis\b|\bgratuito\b/.test(text);
-    }
-
     isResourceWalkIn(resource) {
         if (resource.isWalkIn === true || resource.walkIn === true) return true;
         const text = [
@@ -2325,9 +2321,6 @@ class FirebaseBulletinBoard {
 
     getResourceBadgesHtml(resource) {
         const badges = [];
-        if (this.isResourceFree(resource)) {
-            badges.push('<span class="badge badge--free"><span class="en-text">Free</span><span class="es-text">Gratis</span></span>');
-        }
         if (this.isResourceWalkIn(resource)) {
             badges.push('<span class="badge badge--walkin"><span class="en-text">Walk-in</span><span class="es-text">Sin cita</span></span>');
         }
@@ -2864,7 +2857,7 @@ class FirebaseBulletinBoard {
                     </div>
                     ${escapedDescription ? `<p class="cat-org-description">${escapedDescription}</p>` : ''}
                 </div>
-                ${!isCompact && address ? `<p class="cat-org-address">
+                ${!isCompact && address && !mapUrl ? `<p class="cat-org-address">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#758299" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s6.25-5.9 6.25-11.1a6.25 6.25 0 1 0-12.5 0C5.75 15.1 12 21 12 21Z"/><circle cx="12" cy="9.75" r="2.5"/></svg>
                     ${this.escapeHtml(address)}
                 </p>` : ''}
@@ -3110,7 +3103,7 @@ class FirebaseBulletinBoard {
         const servicesHtml = this.getResourceServiceChipsHtml(resource, { section: true });
         const hours = (resource.hours || '').trim();
         const hoursHtml = hours
-            ? `<p class="mobile-resource-card__hours">${this.escapeHtml(hours)}</p>`
+            ? formatResourceHoursHtml(hours, (value) => this.escapeHtml(value))
             : '';
 
         const badgesHtml = this.getResourceBadgesHtml(resource);
@@ -3184,7 +3177,8 @@ class FirebaseBulletinBoard {
             ? `<div class="mobile-resource-card__actions${actionsModifier}">${actionButtons.join('')}</div>`
             : '';
 
-        const addressHtml = address
+        const showAddressLine = address && !(isDesktopCard && mapUrl);
+        const addressHtml = showAddressLine
             ? `<p class="mobile-resource-card__address">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s6.25-5.9 6.25-11.1a6.25 6.25 0 1 0-12.5 0C5.75 15.1 12 21 12 21Z"/><circle cx="12" cy="9.75" r="2.5"/></svg>
                     ${this.escapeHtml(address)}
@@ -3265,12 +3259,7 @@ class FirebaseBulletinBoard {
     }
 
     parseResourceHighlights(highlights, max = 5) {
-        if (!highlights) return [];
-        if (Array.isArray(highlights)) return highlights.slice(0, max);
-        if (typeof highlights === 'string') {
-            return highlights.split(',').map(h => h.trim()).filter(Boolean).slice(0, max);
-        }
-        return [];
+        return parseResourceServiceChips(highlights, max);
     }
 
     getPostBulletins(bulletins = this.bulletins) {
@@ -3891,7 +3880,7 @@ class FirebaseBulletinBoard {
                             ${bulletin.hours ? `
                                 <div style="display: flex; gap: 12px; align-items: flex-start;">
                                     <div style="color: ${meta.accent}; margin-top: 2px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
-                                    <div><strong style="display: block; font-size: 0.8rem; color: #64748b; text-transform: uppercase;">Hours</strong><span style="font-size: 0.95rem;">${this.escapeHtml(bulletin.hours)}</span></div>
+                                    <div><strong style="display: block; font-size: 0.8rem; color: #64748b; text-transform: uppercase; margin-bottom: 6px;">Hours</strong>${formatResourceHoursHtml(bulletin.hours, (value) => this.escapeHtml(value))}</div>
                                 </div>
                             ` : ''}
 

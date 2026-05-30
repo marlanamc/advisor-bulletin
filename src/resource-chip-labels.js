@@ -80,7 +80,33 @@ const RESOURCE_CHIP_ACTION_LABELS = {
     'benefits screening': 'Find your benefits',
     'financial coaching': 'Find your benefits',
     'wic help': 'Get food benefits',
-    'unemployment help': 'Get cash help'
+    'unemployment help': 'Get cash help',
+    'basic needs': 'Get basic needs',
+    'utility bill advocacy': 'Get utility help',
+    'citizenship & naturalization': 'Apply for citizenship',
+    'snap': 'Apply for SNAP',
+    'tax assistance': 'Get tax help',
+    'youth programs': 'Find youth programs',
+    'mbta reduced fare support': 'Get cheaper transit',
+    'essentials': 'Get basic needs',
+    'family programs': 'Get family support',
+    'parenting education': 'Take parenting classes',
+    'food help': 'Get food help',
+    'food hotline': 'Call for food help',
+    'family help': 'Get family support',
+    'housing law': 'Get housing legal help',
+    'immigration law': 'Get immigration legal help',
+    'employment law': 'Get work legal help',
+    'family law': 'Get family legal help',
+    'civil rights': 'Learn your rights',
+    'employment discrimination': 'Report work discrimination',
+    'benefits': 'Find your benefits',
+    'legal directory': 'Find legal help',
+    'referral': 'Get a referral',
+    'rapid rehousing': 'Get housing help',
+    'violence prevention': 'Get safety support',
+    'insurance enrollment': 'Get insurance help',
+    'mental health support': 'Get mental health support'
 };
 
 const RESOURCE_CHIP_ES = {
@@ -134,7 +160,22 @@ const RESOURCE_CHIP_ES = {
     'report a problem': 'Reportar un problema',
     'take english classes': 'Clases de inglés',
     'talk to a lawyer': 'Hablar con un abogado',
-    'translate documents': 'Traducir documentos'
+    'translate documents': 'Traducir documentos',
+    'get basic needs': 'Conseguir artículos básicos',
+    'find youth programs': 'Buscar programas juveniles',
+    'get cheaper transit': 'Obtener transporte más barato',
+    'take parenting classes': 'Clases de crianza',
+    'get food help': 'Ayuda con comida',
+    'call for food help': 'Llamar para ayuda con comida',
+    'get housing legal help': 'Ayuda legal de vivienda',
+    'get immigration legal help': 'Ayuda legal de inmigración',
+    'get work legal help': 'Ayuda legal de trabajo',
+    'get family legal help': 'Ayuda legal de familia',
+    'report work discrimination': 'Reportar discriminación laboral',
+    'get a referral': 'Obtener recomendación',
+    'get safety support': 'Obtener apoyo de seguridad',
+    'get mental health support': 'Apoyo de salud mental',
+    'get a hot meal': 'Conseguir comida caliente'
 };
 
 export const SUGGESTED_RESOURCE_CHIPS_BY_CATEGORY = {
@@ -239,4 +280,29 @@ export function translateResourceChipEs(label) {
 
 export function getSuggestedResourceChips(category) {
     return SUGGESTED_RESOURCE_CHIPS_BY_CATEGORY[category] || [];
+}
+
+/**
+ * @param {string | string[] | null | undefined} raw
+ * @param {number} [max=5]
+ * @returns {string[]}
+ */
+export function parseResourceServiceChips(raw, max = 5) {
+    if (!raw) return [];
+    if (Array.isArray(raw)) {
+        return raw.map((part) => String(part || '').trim()).filter(Boolean).slice(0, max);
+    }
+    return String(raw)
+        .split(/[,;]/)
+        .map((part) => part.trim())
+        .filter(Boolean)
+        .slice(0, max);
+}
+
+/**
+ * @param {string | string[] | null | undefined} raw
+ * @returns {string}
+ */
+export function formatResourceServiceChipsInput(raw) {
+    return parseResourceServiceChips(raw).join(', ');
 }

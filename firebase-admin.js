@@ -3,7 +3,11 @@ import { getPublicAdvisorEmail, STUDENT_ADVISOR_DIRECTORY } from './src/advisor-
 import { installClientErrorLogger } from './src/error-logger.js'
 import { getPostCategoryDisplay } from './src/feed-categories.js'
 import { AUTHORABLE_RESOURCE_CATEGORIES, AUTHORABLE_RESOURCE_CATEGORY_SET } from './src/resource-categories.js'
-import { getSuggestedResourceChips } from './src/resource-chip-labels.js'
+import {
+    formatResourceServiceChipsInput,
+    getSuggestedResourceChips,
+    parseResourceServiceChips,
+} from './src/resource-chip-labels.js'
 import {
     MAX_EVENT_SESSIONS,
     normalizeEventSessions,
@@ -1363,10 +1367,10 @@ class FirebaseAdminPanel {
         container.querySelectorAll('[data-service-preset]').forEach((button) => {
             button.addEventListener('click', () => {
                 const value = button.getAttribute('data-service-preset') || '';
-                const current = input.value.split(',').map((part) => part.trim()).filter(Boolean);
+                const current = parseResourceServiceChips(input.value);
                 const currentKeys = new Set(current.map((part) => part.toLowerCase()));
                 if (!value || currentKeys.has(value.toLowerCase()) || current.length >= 5) return;
-                input.value = [...current, value].join(', ');
+                input.value = formatResourceServiceChipsInput([...current, value]);
                 input.dispatchEvent(new Event('input', { bubbles: true }));
             });
         });
@@ -2492,8 +2496,8 @@ class FirebaseAdminPanel {
                 ? bulletin.serviceChips
                 : bulletin.services;
             const serviceLabels = Array.isArray(serviceValues) && serviceValues.length
-                ? serviceValues.join(', ')
-                : (bulletin.highlights || '');
+                ? formatResourceServiceChipsInput(serviceValues)
+                : formatResourceServiceChipsInput(bulletin.highlights || '');
             document.getElementById('resourceHighlights').value = serviceLabels;
             this.renderResourceServicePresets(bulletin.resourceCategory || '');
             document.getElementById('resourcePublished').checked = bulletin.isPublished !== false;
@@ -3851,7 +3855,7 @@ class FirebaseAdminPanel {
             }
 
             const servicesRaw = (formData.get('resourceHighlights') || '').trim();
-            const services = servicesRaw.split(',').map((part) => part.trim()).filter(Boolean).slice(0, 5);
+            const services = parseResourceServiceChips(servicesRaw);
             const resourceSummaryEn = (formData.get('resourceDescription') || '').trim();
             const resourceSummaryEs = (formData.get('resourceSummaryEs') || '').trim();
             if (!services.length && !resourceSummaryEn) {

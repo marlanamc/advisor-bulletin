@@ -3468,6 +3468,67 @@ a.about-action-card {
     color: #64748b;
 }
 
+.mobile-resource-card__hours-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.mobile-resource-card__hours-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    gap: 4px 12px;
+    align-items: baseline;
+}
+
+.mobile-resource-card__hours-row--plain {
+    display: block;
+    color: #64748b;
+}
+
+.mobile-resource-card__hours-row--header {
+    display: block;
+    margin-bottom: 2px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #94a3b8;
+}
+
+.mobile-resource-card__hours-days {
+    font-weight: 700;
+    color: #334155;
+}
+
+.mobile-resource-card__hours-times {
+    font-weight: 600;
+    color: #64748b;
+    text-align: right;
+}
+
+.post-detail-panel .mobile-resource-card__hours {
+    margin-top: 2px;
+}
+
+.post-detail-panel .mobile-resource-card__hours-times {
+    text-align: left;
+}
+
+@media (max-width: 420px) {
+    .mobile-resource-card__hours-row {
+        grid-template-columns: 1fr;
+        gap: 2px;
+    }
+
+    .mobile-resource-card__hours-times {
+        text-align: left;
+    }
+}
+
 .post-detail-panel .resource-service-chips {
     margin: 10px 0 4px;
 }
