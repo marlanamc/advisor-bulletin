@@ -84,6 +84,52 @@ body > header {
     min-height: calc(100vh - 110px);
 }
 
+.ap-toast {
+    position: fixed;
+    right: max(16px, env(safe-area-inset-right));
+    bottom: max(16px, env(safe-area-inset-bottom));
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: min(350px, calc(100vw - 32px));
+    padding: 12px 18px;
+    border-radius: 14px;
+    background: var(--adv-navy);
+    color: #fff;
+    box-shadow: 0 12px 32px rgba(7,29,59,0.24);
+    font: 700 0.9rem var(--adv-font-body);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(80px);
+    visibility: hidden;
+    transition: transform 0.3s ease, opacity 0.3s ease, visibility 0s linear 0.3s;
+}
+
+.ap-toast.show {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+    visibility: visible;
+    transition-delay: 0s;
+}
+
+.ap-toast-icon {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.12);
+}
+
+.ap-toast-icon svg {
+    width: 14px;
+    height: 14px;
+    color: #34d399;
+}
+
 .auth-loading-screen {
     min-height: calc(100vh - 110px);
     display: flex;

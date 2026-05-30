@@ -2965,18 +2965,21 @@ class FirebaseAdminPanel {
         container.innerHTML = orderedCats.map(cat => {
             const items = grouped[cat];
             const label = this.getResourceCategoryLabel(cat);
-            const cards = items.map(r => `
+            const cards = items.map((r) => {
+                const title = r.titleEn || r.title || 'Untitled resource';
+                return `
                 <div class="reorder-card" draggable="true" data-bulletin-id="${r.id}" data-category="${this.escapeAttribute(cat)}">
-                    <div class="reorder-handle" aria-hidden="true">${handleSvg}</div>
+                    <button type="button" class="reorder-handle" aria-label="Drag ${this.escapeAttribute(title)}">${handleSvg}</button>
                     <div class="reorder-card-body">
-                        <div class="reorder-card-title">${this.escapeHtml(r.titleEn || r.title || 'Untitled resource')}</div>
+                        <div class="reorder-card-title">${this.escapeHtml(title)}</div>
                         <div class="reorder-card-meta">
                             ${r.isPublished === false ? '<span class="reorder-pill reorder-pill-draft">Hidden</span>' : '<span class="reorder-pill reorder-pill-live">Live</span>'}
                             <span class="reorder-card-advisor">Posted by ${this.escapeHtml(r.advisorName || '—')}</span>
                         </div>
                     </div>
                 </div>
-            `).join('');
+            `;
+            }).join('');
             return `
                 <section class="reorder-section" data-category="${this.escapeAttribute(cat)}">
                     <header class="reorder-section-header">
@@ -3083,6 +3086,135 @@ class FirebaseAdminPanel {
                 draggedFromCategory = null;
             });
         });
+
+        this.attachReorderPointerHandlers(container);
+    }
+
+    attachReorderPointerHandlers(container) {
+        if (container._resourceReorderPointerBound) return;
+        container._resourceReorderPointerBound = true;
+
+        let drag = null;
+
+        const clearPointerDrag = () => {
+            if (!drag) return;
+            drag.card.setAttribute('draggable', 'true');
+            drag.card.classList.remove('is-pointer-dragging', 'is-dragging');
+            document.body.classList.remove('is-resource-reordering');
+            drag = null;
+        };
+
+        const getCardAtPoint = (x, y) => {
+            const el = document.elementFromPoint(x, y);
+            const card = el?.closest?.('.reorder-card');
+            if (!card || !drag || !drag.list.contains(card) || card === drag.card) return null;
+            return card;
+        };
+
+        const moveDragToPoint = (x, y) => {
+            const target = getCardAtPoint(x, y);
+            if (!target) return;
+
+            const rect = target.getBoundingClientRect();
+            const before = (y - rect.top) < rect.height / 2;
+            if (before) {
+                drag.list.insertBefore(drag.card, target);
+            } else {
+                drag.list.insertBefore(drag.card, target.nextSibling);
+            }
+            drag.moved = true;
+        };
+
+        const startDrag = (e, pointerId, pointerType = 'mouse') => {
+            const eventTarget = e.target?.closest ? e.target : document.elementFromPoint(e.clientX, e.clientY);
+            const handle = eventTarget?.closest?.('.reorder-handle') || document.elementFromPoint(e.clientX, e.clientY)?.closest?.('.reorder-handle');
+            if (drag || !handle || !container.contains(handle)) return false;
+            if (!window.matchMedia('(max-width: 768px)').matches) return false;
+
+            const card = handle.closest('.reorder-card');
+            const list = handle.closest('.reorder-list');
+            if (!card || !list) return false;
+
+            e.preventDefault();
+            e.stopPropagation();
+            card.setAttribute('draggable', 'false');
+            drag = {
+                card,
+                list,
+                pointerId,
+                pointerType,
+                startOrder: Array.from(list.querySelectorAll('.reorder-card')).map(c => c.dataset.bulletinId).join('|'),
+                moved: false
+            };
+            card.classList.add('is-pointer-dragging', 'is-dragging');
+            document.body.classList.add('is-resource-reordering');
+            return true;
+        };
+
+        container.addEventListener('pointerdown', (e) => {
+            if (startDrag(e, e.pointerId, e.pointerType)) {
+                e.target.closest('.reorder-handle')?.setPointerCapture?.(e.pointerId);
+            }
+        });
+
+        container.addEventListener('mousedown', (e) => {
+            if (e.button !== 0 || drag) return;
+            startDrag(e, 'mouse');
+        });
+
+        document.addEventListener('pointermove', (e) => {
+            if (!drag || drag.pointerId !== e.pointerId) return;
+            e.preventDefault();
+            moveDragToPoint(e.clientX, e.clientY);
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!drag || (drag.pointerId !== 'mouse' && drag.pointerType !== 'mouse')) return;
+            e.preventDefault();
+            moveDragToPoint(e.clientX, e.clientY);
+        });
+
+        const finishDrag = async (e) => {
+            if (!drag || drag.pointerId !== e.pointerId) return;
+            moveDragToPoint(e.clientX, e.clientY);
+
+            const list = drag.list;
+            const nextOrder = Array.from(list.querySelectorAll('.reorder-card')).map(c => c.dataset.bulletinId).join('|');
+            const changed = drag.moved && nextOrder !== drag.startOrder;
+            clearPointerDrag();
+            if (!changed) return;
+
+            await this.saveResourceListOrder(list);
+        };
+
+        document.addEventListener('pointerup', finishDrag);
+        document.addEventListener('pointercancel', clearPointerDrag);
+        document.addEventListener('mouseup', async (e) => {
+            if (!drag || (drag.pointerId !== 'mouse' && drag.pointerType !== 'mouse')) return;
+            moveDragToPoint(e.clientX, e.clientY);
+
+            const list = drag.list;
+            const nextOrder = Array.from(list.querySelectorAll('.reorder-card')).map(c => c.dataset.bulletinId).join('|');
+            const changed = drag.moved && nextOrder !== drag.startOrder;
+            clearPointerDrag();
+            if (!changed) return;
+
+            await this.saveResourceListOrder(list);
+        });
+    }
+
+    async saveResourceListOrder(list) {
+        const category = list.dataset.category;
+        const orderedIds = Array.from(list.querySelectorAll('.reorder-card')).map(c => c.dataset.bulletinId);
+
+        try {
+            await this.reorderResourcesInCategory(category, orderedIds);
+            this.showTemporaryMessage('Order saved.', 'success');
+        } catch (err) {
+            console.error('Reorder failed', err);
+            this.showTemporaryMessage('Could not save the new order. Please try again.', 'error');
+            this.loadManageBulletins();
+        }
     }
 
     // Utility Methods

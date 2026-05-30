@@ -1,5 +1,5 @@
 import { db, auth } from './src/firebase-auth.js'
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore'
+import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore'
 import { signInWithEmailAndPassword, EmailAuthProvider, reauthenticateWithCredential, updatePassword, sendPasswordResetEmail } from 'firebase/auth'
 
 // Enhanced Authentication System for EBHCS Bulletin Board
@@ -85,18 +85,22 @@ class EnhancedAuth {
             // Clear login attempts on successful login
             this.clearLoginAttempts(username);
 
-            // Check if this is first login (password is still default)
-            if ((password === 'ebhcs123' || password === 'ebhcs2025') && username !== 'admin') {
-                // Set requirePasswordChange flag in Firestore
+            // Check Firestore for a server-side requirePasswordChange flag
+            let mustChangePassword = false;
+            if (username !== 'admin') {
                 try {
+                    const userSnap = await getDoc(doc(db, 'users', username));
+                    mustChangePassword = userSnap.exists() && userSnap.data().requirePasswordChange === true;
                     await setDoc(doc(db, 'users', username), {
-                        requirePasswordChange: true,
                         email: email,
                         lastLogin: serverTimestamp()
                     }, { merge: true });
                 } catch (error) {
-                    console.error('Error setting password change flag:', error);
+                    console.error('Error checking password change flag:', error);
                 }
+            }
+
+            if (mustChangePassword) {
                 this.showPasswordChangeModal(username, password);
             } else {
                 loginSucceeded = true;
@@ -157,7 +161,7 @@ class EnhancedAuth {
         if (loadingEl) loadingEl.style.display = 'none';
         if (loginRequired) loginRequired.style.display = 'none';
         document.getElementById('passwordChangeModal').style.display = 'block';
-        document.getElementById('currentPassword').value = password || 'ebhcs123';
+        document.getElementById('currentPassword').value = password || '';
     }
 
     async handlePasswordChange(e) {

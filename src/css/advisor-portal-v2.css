@@ -591,10 +591,29 @@ body.ap-portal-active .main-content {
 .ap-portal {
   display: flex;
   min-height: 100vh;
+  min-height: 100svh;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  border-radius: 0;
   background: var(--ap-bg);
+  box-shadow: none;
   font-family: var(--ap-font-body);
   color: var(--ap-text);
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+.admin-panel.ap-portal,
+.advisor-redesign.ap-portal {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  border-radius: 0;
+  background: var(--ap-bg);
+  box-shadow: none;
 }
 
 /* ============================================================
@@ -926,8 +945,10 @@ body.ap-portal-active .main-content {
   flex: 1;
   margin-left: 240px;
   min-height: 100vh;
+  min-height: 100svh;
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 /* ============================================================
@@ -3919,8 +3940,8 @@ details.ap-accordion > summary.ap-accordion-trigger {
 
 .ap-toast {
   position: fixed;
-  bottom: 24px;
-  right: 24px;
+  bottom: max(24px, env(safe-area-inset-bottom));
+  right: max(24px, env(safe-area-inset-right));
   background: var(--ap-navy);
   color: #fff;
   padding: 12px 18px;
@@ -3935,12 +3956,17 @@ details.ap-accordion > summary.ap-accordion-trigger {
   z-index: 999;
   transform: translateY(80px);
   opacity: 0;
-  transition: transform .3s ease, opacity .3s ease;
+  pointer-events: none;
+  visibility: hidden;
+  transition: transform .3s ease, opacity .3s ease, visibility 0s linear .3s;
 }
 
 .ap-toast.show {
   transform: translateY(0);
   opacity: 1;
+  pointer-events: auto;
+  visibility: visible;
+  transition-delay: 0s;
 }
 
 .ap-toast-icon {
@@ -3989,10 +4015,21 @@ details.ap-accordion > summary.ap-accordion-trigger {
 }
 
 @media (max-width: 768px) {
+  body.ap-portal-active {
+    overflow-x: hidden;
+  }
+
+  body.ap-portal-active .main-content {
+    width: 100%;
+    min-height: 100svh;
+    overflow-x: hidden;
+  }
+
   .ap-portal {
     display: block;
     width: 100%;
-    min-height: 100vh;
+    max-width: 100%;
+    min-height: 100svh;
     overflow-x: hidden;
   }
 
@@ -4003,6 +4040,7 @@ details.ap-accordion > summary.ap-accordion-trigger {
     bottom: auto;
     z-index: 90;
     width: 100%;
+    max-width: 100vw;
     max-height: none;
     padding: 0;
     overflow: visible;
@@ -4013,7 +4051,7 @@ details.ap-accordion > summary.ap-accordion-trigger {
   /* Compact brand: hide the multi-line school name on mobile,
      keep just the badge + "Advisor Portal" tag. */
   .ap-sidebar-brand {
-    padding: max(10px, env(safe-area-inset-top)) 14px 8px;
+    padding: max(10px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) 8px max(14px, env(safe-area-inset-left));
   }
   .ap-sidebar-brand .topbar-brand-lockup {
     gap: 10px;
@@ -4038,9 +4076,13 @@ details.ap-accordion > summary.ap-accordion-trigger {
     display: flex;
     flex-direction: row;
     gap: 6px;
-    padding: 6px 12px 8px;
+    width: 100%;
+    max-width: 100vw;
+    padding: 6px max(12px, env(safe-area-inset-right)) 8px max(12px, env(safe-area-inset-left));
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    scroll-padding-inline: 12px;
     scrollbar-width: none;
     mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent);
     -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent);
@@ -4087,6 +4129,8 @@ details.ap-accordion > summary.ap-accordion-trigger {
 
   .ap-main {
     margin-left: 0;
+    width: 100%;
+    max-width: 100%;
     min-height: auto;
   }
 
@@ -4156,6 +4200,7 @@ details.ap-accordion > summary.ap-accordion-trigger {
   .ap-stats-grid,
   .ap-stats-grid-big {
     grid-template-columns: 1fr 1fr;
+    gap: 12px;
   }
 
   .ap-stat-card {
@@ -4278,7 +4323,7 @@ details.ap-accordion > summary.ap-accordion-trigger {
 
   .ap-modal {
     width: calc(100vw - 24px);
-    max-height: calc(100vh - 24px);
+    max-height: calc(100svh - 24px);
   }
 
   .ap-type-selector {
@@ -4286,6 +4331,12 @@ details.ap-accordion > summary.ap-accordion-trigger {
   }
   .ap-page {
     padding: 16px;
+  }
+
+  .ap-toast {
+    right: max(12px, env(safe-area-inset-right));
+    bottom: max(12px, env(safe-area-inset-bottom));
+    max-width: calc(100vw - 24px);
   }
 }
 
@@ -4299,6 +4350,11 @@ details.ap-accordion > summary.ap-accordion-trigger {
   }
   .ap-page {
     padding: 12px 14px 24px;
+  }
+
+  .ap-stat-card {
+    min-width: 0;
+    padding: 14px;
   }
 }
 
@@ -4814,6 +4870,12 @@ details.ap-accordion > summary.ap-accordion-trigger {
     transform: scale(0.99);
 }
 
+.reorder-card.is-pointer-dragging {
+    pointer-events: none;
+    border-color: #93c5fd;
+    box-shadow: 0 6px 18px rgba(37, 99, 235, 0.16);
+}
+
 .reorder-card.drop-before {
     box-shadow: 0 -3px 0 0 #2563eb;
 }
@@ -4829,6 +4891,12 @@ details.ap-accordion > summary.ap-accordion-trigger {
     place-items: center;
     width: 24px;
     height: 24px;
+    padding: 0;
+    border: 0;
+    appearance: none;
+    background: transparent;
+    cursor: grab;
+    touch-action: none;
 }
 
 .reorder-handle svg {
@@ -4882,6 +4950,65 @@ details.ap-accordion > summary.ap-accordion-trigger {
 
 .reorder-card-advisor {
     font-weight: 500;
+}
+
+@media (max-width: 768px) {
+    .reorder-section {
+        border-radius: 12px;
+    }
+
+    .reorder-section-header {
+        gap: 12px;
+        padding: 12px 14px;
+    }
+
+    .reorder-count {
+        flex-shrink: 0;
+    }
+
+    .reorder-list {
+        padding: 10px;
+    }
+
+    .reorder-card {
+        cursor: grab;
+        align-items: center;
+        gap: 10px;
+        padding: 12px;
+    }
+
+    .reorder-card:active {
+        cursor: grabbing;
+    }
+
+    .reorder-handle {
+        width: 42px;
+        min-height: 54px;
+        margin: -4px 0;
+        border-radius: 10px;
+    }
+
+    .reorder-handle:active,
+    .reorder-card.is-pointer-dragging .reorder-handle {
+        background: #eff6ff;
+        color: #1d4ed8;
+    }
+
+    .reorder-card-title {
+        white-space: normal;
+        overflow: visible;
+        text-overflow: clip;
+        overflow-wrap: anywhere;
+    }
+
+    .reorder-card-meta {
+        flex-wrap: wrap;
+    }
+
+    body.is-resource-reordering {
+        overflow: hidden;
+        touch-action: none;
+    }
 }
 
 /* Manage-card analytics tiles (restored after b50fa10 dropped them) */

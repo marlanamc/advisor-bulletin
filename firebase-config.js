@@ -4535,21 +4535,13 @@ class FirebaseBulletinBoard {
     // Open PDF from bulletin ID by looking up the bulletin data
     async openPdfFromBulletin(bulletinId) {
         try {
-            console.log('=== PDF OPENING DEBUG START ===');
-            console.log('Opening PDF for bulletin ID:', bulletinId);
-            console.log('Total bulletins loaded:', this.bulletins.length);
-
-            // Find the bulletin in our current data
             const bulletin = this.bulletins.find(b => b.id === bulletinId);
-            console.log('Found bulletin:', bulletin ? 'YES' : 'NO');
-            
+
             if (!bulletin) {
-                console.error('Bulletin not found in this.bulletins array');
                 throw new Error('Bulletin not found.');
             }
-            
+
             if (!bulletin.pdfUrl) {
-                console.error('No PDF URL in bulletin object');
                 throw new Error('PDF not found for this bulletin.');
             }
 
@@ -4558,62 +4550,30 @@ class FirebaseBulletinBoard {
                 category: bulletin.category,
                 contentType: bulletin.type || 'post'
             });
-            
-            console.log('Found bulletin with PDF URL:', bulletin.pdfUrl);
-            
-            // Check if it's a Firebase Storage URL or base64 data URL
-            if (bulletin.pdfUrl && bulletin.pdfUrl.startsWith('data:')) {
-                // Handle old base64 data URLs
-                console.log('Processing base64 data URL, length:', bulletin.pdfUrl.length);
-                
-                // Check for browser support
+
+            if (bulletin.pdfUrl.startsWith('data:')) {
                 if (!window.fetch || !window.URL || !window.URL.createObjectURL) {
                     throw new Error('Your browser does not support PDF viewing. Please try a modern browser.');
                 }
-                
-                console.log('Attempting to fetch data URL...');
+
                 const response = await fetch(bulletin.pdfUrl);
-                console.log('Fetch response status:', response.status);
-                console.log('Fetch response ok:', response.ok);
-                
                 const blob = await response.blob();
-                console.log('Blob created, size:', blob.size, 'type:', blob.type);
-                
-                // Create blob URL
                 const blobUrl = URL.createObjectURL(blob);
-                console.log('Created blob URL:', blobUrl);
-                
-                // Open in new tab
-                console.log('Attempting to open new window...');
                 const newWindow = window.open(blobUrl, '_blank');
-                
-                // Clean up blob URL after a delay
-                setTimeout(() => {
-                    URL.revokeObjectURL(blobUrl);
-                    console.log('Blob URL revoked');
-                }, 10000);
-                
+
+                setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+
                 if (!newWindow) {
                     throw new Error('Popup blocked. Please allow popups for this site.');
                 }
             } else {
-                // Handle Firebase Storage URLs (direct download)
-                console.log('Opening Firebase Storage URL directly');
                 const newWindow = window.open(bulletin.pdfUrl, '_blank');
-                
                 if (!newWindow) {
                     throw new Error('Popup blocked. Please allow popups for this site.');
                 }
-                
-                console.log('New window opened successfully');
             }
-            
-            console.log('=== PDF OPENING DEBUG END ===');
-            
         } catch (error) {
-            console.error('=== PDF OPENING ERROR ===');
             console.error('Error opening PDF:', error);
-            console.error('Error stack:', error.stack);
             alert('Failed to open PDF: ' + error.message);
         }
     }
