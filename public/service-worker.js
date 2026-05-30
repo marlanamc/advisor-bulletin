@@ -4,19 +4,19 @@
 //    critical hashed JS/CSS listed in /asset-manifest.json. Deferred Firebase
 //    chunks are cached at runtime after first use, not during install.
 //
-// 2. Navigations (HTML) use stale-while-revalidate: serve the cached shell
-//    instantly, fetch a fresh copy in the background, and put it back in the
-//    cache for next launch. /version.json (fetched separately by app-update.js,
-//    never cached here) is the source of truth for "is there a new deploy?" —
-//    when it changes, app-update.js asks this worker to cache the fresh shell
-//    before reloading.
+// 2. Student navigations use stale-while-revalidate. Admin navigations are
+//    always fetched fresh so the admin app never boots stale HTML with deleted
+//    hashed chunks after a deploy. /version.json (fetched separately by
+//    app-update.js, never cached here) is the source of truth for "is there a
+//    new deploy?" — when it changes, app-update.js asks this worker to cache
+//    the fresh student shell before reloading.
 //
 // 3. Hashed /assets/* are immutable, so we cache-first them and only hit the
 //    network on a miss.
 //
 // 4. Firestore / Google APIs and /version.json are always bypassed.
 
-const CACHE_NAME = 'ebhcs-bulletin-v6';
+const CACHE_NAME = 'ebhcs-bulletin-v7';
 
 const APP_SHELL = [
   '/',
@@ -109,8 +109,12 @@ function isShellAsset(requestUrl) {
   return APP_SHELL.includes(requestUrl.pathname);
 }
 
+function isAdminShellPath(pathname) {
+  return ADMIN_SHELL_ALIASES.includes(pathname);
+}
+
 function getShellInfo(pathname) {
-  if (ADMIN_SHELL_ALIASES.includes(pathname)) {
+  if (isAdminShellPath(pathname)) {
     return {
       cacheKey: '/admin.html',
       networkPath: '/admin.html',
@@ -191,9 +195,15 @@ async function fetchAndCacheShell(shellInfo) {
   return networkResponse;
 }
 
-// Stale-while-revalidate for navigations: serve cached shell instantly
+// Admin is an authenticated working surface, not the offline PWA. Fetch it
+// fresh every time so stale admin HTML cannot reference deleted hashed chunks.
+async function handleAdminNavigation() {
+  return fetchWithRetry(new Request('/admin.html', { cache: 'reload' }));
+}
+
+// Stale-while-revalidate for student navigations: serve cached shell instantly
 // (sub-50ms), refresh from network in the background. This is what makes
-// cold loads fast.
+// cold student loads fast.
 //
 // IMPORTANT TRANSITION NOTE: when a new deploy lands, the first navigation
 // returns the OLD cached HTML (whose asset hashes are also cached → works),
@@ -292,6 +302,10 @@ self.addEventListener('fetch', (event) => {
   if (shouldBypass(request, requestUrl)) return;
 
   if (isHTMLNavigation(request, requestUrl)) {
+    if (isAdminShellPath(requestUrl.pathname)) {
+      event.respondWith(handleAdminNavigation());
+      return;
+    }
     event.respondWith(handleNavigation(request));
     return;
   }

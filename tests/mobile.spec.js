@@ -167,11 +167,46 @@ test.describe('Mobile app shell', () => {
     await page.locator('#feedStoryCats [data-app-view-cat="immigration"]').click();
 
     await expect(page.locator('#resourcesView')).toHaveClass(/active/);
-    await expect(page.locator('#resourcesList .resource-service-chip').first()).toContainText('Immigration Help');
+    await expect(page.locator('#resourcesList .resource-service-chip').first()).toContainText(/Get immigration help/i);
     await expect(page.locator('#resourcesList .mobile-resource-card__description')).toHaveCount(0);
     await expect(page.locator('#resourcesList .mobile-resource-card__summary').first()).toContainText(
       'Community support for immigrants and families in Greater Boston, including food support, classes, jobs, health resources, citizenship help, and community advocacy.'
     );
+  });
+
+  test('health insurance chip translates when Spanish is active', async ({ page }) => {
+    await page.evaluate(() => {
+      const now = new Date().toISOString();
+      window.bulletinBoard.bulletins = [{
+        id: 'resource-health-insurance-1',
+        type: 'resource',
+        title: 'Agencia ALPHA',
+        titleEn: 'Agencia ALPHA',
+        titleEs: 'Agencia ALPHA',
+        category: 'resource',
+        resourceCategory: 'health',
+        resourceIcon: 'heart',
+        description: 'Help with immigration papers, citizenship classes, and health insurance.',
+        serviceChips: ['Get health insurance help'],
+        phone: '617-522-6382',
+        advisorName: 'Jorge',
+        postedBy: 'jorge',
+        datePosted: now,
+        isActive: true,
+        isPublished: true,
+        resourceOrder: 10,
+      }];
+      window.bulletinBoard.displayBulletins(window.bulletinBoard.bulletins);
+    });
+
+    await page.locator('[data-lang-switch="ES"]').click();
+    await page.locator('#feedStoryCats [data-app-view-cat="health"]').click();
+
+    await expect(page.locator('#resourcesView')).toHaveClass(/active/);
+    const chip = page.locator('#resourcesList .resource-service-chip').first();
+    await expect(chip.locator('.es-text')).toBeVisible();
+    await expect(chip.locator('.es-text')).toHaveText('Ayuda con seguro médico');
+    await expect(chip.locator('.en-text')).toBeHidden();
   });
 
   test('resource category view shows the full list for a topic', async ({ page }) => {

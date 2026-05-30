@@ -80,4 +80,24 @@ test.describe('PWA service worker', () => {
     await expect(page.locator('body')).toContainText(/Admin|Advisor|Sign In|Dashboard/i);
     await expect(page.locator('.mobile-tab[data-app-view="feed"]')).toHaveCount(0);
   });
+
+  test('admin navigation ignores stale cached admin html', async ({ page }) => {
+    await resetPwaState(page);
+    await registerReadyServiceWorker(page);
+
+    await page.evaluate(async () => {
+      const cacheNames = await caches.keys();
+      const cacheName = cacheNames.find((name) => name.startsWith('ebhcs-bulletin-'));
+      const cache = await caches.open(cacheName);
+      const stale = new Response('<!doctype html><title>Stale</title><h1>Stale Admin Shell</h1>', {
+        headers: { 'Content-Type': 'text/html; charset=utf-8' },
+      });
+      await cache.put('/admin.html', stale.clone());
+      await cache.put('/admin', stale.clone());
+    });
+
+    await page.goto('/admin.html', { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('body')).not.toContainText('Stale Admin Shell');
+    await expect(page.locator('body')).toContainText(/Admin|Advisor|Sign In|Dashboard/i);
+  });
 });
