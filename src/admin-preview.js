@@ -5,6 +5,7 @@ import {
     translateResourceChipEs,
 } from './resource-chip-labels.js';
 import { formatResourceHoursHtml } from './resource-hours.js';
+import { initResourceLogoTiles } from './resource-logo-tile.js';
 
 (function() {
     const header = document.querySelector('header');
@@ -365,7 +366,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var iconSvg = previewResourceIcon(category);
 
         var logoTile = logoSrc
-            ? '<img src="' + escPreview(logoSrc) + '" alt="">'
+            ? '<img src="' + escPreview(logoSrc) + '" alt="" onload="window.applyResourceLogoTileLayout&&window.applyResourceLogoTileLayout(this)">'
             : '<span class="mobile-resource-card__icon-fallback" style="background:' + accent + '" aria-hidden="true">' + iconSvg + '</span>';
 
         var headingHtml =
@@ -502,6 +503,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 address: address,
                 hours: hours
             });
+            initResourceLogoTiles(cardWrap);
             setPreviewNav('resources');
             return;
         }

@@ -28,6 +28,7 @@ import {
     truncateRichText,
 } from './src/rich-text.js'
 import { formatResourceHoursHtml } from './src/resource-hours.js'
+import { initResourceLogoTiles } from './src/resource-logo-tile.js'
 import { collection, addDoc, query, where, orderBy, onSnapshot, serverTimestamp } from 'firebase/firestore'
 
 installClientErrorLogger('student')
@@ -2175,6 +2176,7 @@ class FirebaseBulletinBoard {
                 ? this.createHelpResourceCard(resource, categoryConfig)
                 : this.createResourceCard(resource))
             .join('');
+        initResourceLogoTiles(container);
     }
 
     filterResourcesBySearch(resources, query) {
@@ -2496,6 +2498,7 @@ class FirebaseBulletinBoard {
                 </section>
             `;
         }).join('');
+        initResourceLogoTiles(sectionsContainer);
     }
 
     // ─── Speech Synthesis ────────────────────────────────────────────
@@ -2709,6 +2712,9 @@ class FirebaseBulletinBoard {
                     : this.createHelpResourceCard(resource, config)
             )).join('')
             : emptyHtml;
+        if (visibleResources.length > 0 && !isMobileSheet) {
+            initResourceLogoTiles(listEl);
+        }
 
         // Place the "See all" button in the sticky footer (outside the scroll area)
         const footerEl = document.getElementById('catSheetFooter');
@@ -3061,7 +3067,7 @@ class FirebaseBulletinBoard {
 
         const logo = resource.resourceLogo || '';
         const logoTile = logo
-            ? `<img src="${this.escapeAttribute(logo)}" alt="" loading="lazy">`
+            ? `<img src="${this.escapeAttribute(logo)}" alt="" loading="lazy" decoding="async" onload="window.applyResourceLogoTileLayout&&window.applyResourceLogoTileLayout(this)">`
             : `<span class="mobile-resource-card__icon-fallback" style="background:${accent}" aria-hidden="true">${this.getResourceIconSvg(resource)}</span>`;
 
         const postDescription = this.getPostDescription(resource);
