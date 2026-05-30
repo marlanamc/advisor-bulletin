@@ -1060,6 +1060,73 @@ class FirebaseAdminPanel {
         labelEl.textContent = label;
     }
 
+    setLabelPriority(label, priority) {
+        if (!label) return;
+        label.classList.remove('required', 'optional', 'recommended');
+        if (priority) {
+            label.classList.add(priority);
+        }
+    }
+
+    syncFormFieldIndicators(mode = this.contentMode || 'post') {
+        const isEvent = mode === 'event';
+        const isResource = mode === 'resource';
+        const eventFieldPriority = isEvent ? 'required' : 'recommended';
+
+        const titleLabelText = document.getElementById('titleLabelText');
+        if (titleLabelText) {
+            titleLabelText.textContent = isEvent ? 'Label' : 'Title';
+        }
+
+        const basicSubtitle = document.getElementById('basicInfoStepSubtitle');
+        if (basicSubtitle) {
+            basicSubtitle.textContent = isEvent
+                ? 'Required for the calendar — not shown on the home feed'
+                : 'Required to publish on the student feed';
+        }
+
+        const resourceSubtitle = document.getElementById('resourceSectionSubtitle');
+        if (resourceSubtitle) {
+            resourceSubtitle.textContent = 'Required to publish a resource';
+        }
+
+        const eventBadge = document.getElementById('eventDetailsSectionBadge');
+        if (eventBadge) {
+            eventBadge.classList.toggle('optional', !isEvent);
+            eventBadge.classList.toggle('required', isEvent);
+            eventBadge.textContent = isEvent ? 'Required' : 'Optional';
+        }
+
+        const categoryLabel = document.querySelector('label[for="category"]');
+        if (categoryLabel) {
+            this.setLabelPriority(categoryLabel, isEvent ? 'optional' : 'required');
+        }
+
+        const categoryBlock = document.querySelector('.category-field-group');
+        if (categoryBlock) {
+            categoryBlock.hidden = isEvent;
+        }
+
+        [
+            'dateType',
+            'eventDate',
+            'startDate',
+            'endDate',
+        ].forEach((fieldId) => {
+            this.setLabelPriority(document.querySelector(`label[for="${fieldId}"]`), eventFieldPriority);
+        });
+
+        const sessionsLabel = document.querySelector('#sessionsDateGroup > label');
+        if (sessionsLabel) {
+            this.setLabelPriority(sessionsLabel, eventFieldPriority);
+        }
+
+        const descriptionLabel = document.querySelector('label[for="description"]');
+        if (descriptionLabel && !isResource) {
+            this.setLabelPriority(descriptionLabel, 'required');
+        }
+    }
+
     setContentType(type, options = {}) {
         const isEvent = type === 'event';
         const nextType = type === 'resource' ? 'resource' : 'post';
@@ -1114,7 +1181,6 @@ class FirebaseAdminPanel {
 
         const requiredTitle = document.querySelector('.form-section.required .form-section-title');
         const requiredSubtitle = document.querySelector('.form-section.required .form-section-subtitle');
-        const titleLabel = document.querySelector('label[for="title"]');
         const titleHelp = document.querySelector('.title-field-group .input-help');
         if (requiredTitle) {
             requiredTitle.textContent = isEvent ? 'Event Label' : 'Required Information';
@@ -1124,9 +1190,6 @@ class FirebaseAdminPanel {
                 ? 'Add the label students will see on the calendar.'
                 : 'These fields are mandatory for all bulletins';
         }
-        if (titleLabel) {
-            titleLabel.textContent = isEvent ? 'Label' : 'Title';
-        }
         if (titleHelp) {
             titleHelp.textContent = isEvent
                 ? 'Use the exact wording students should see, like “No School” or “Registration Deadline”.'
@@ -1134,8 +1197,14 @@ class FirebaseAdminPanel {
         }
         if (!isEvent) {
             const eventDateLabel = document.querySelector('label[for="eventDate"]');
-            if (eventDateLabel) eventDateLabel.textContent = 'Event Date';
+            if (eventDateLabel && eventDateLabel.childNodes.length === 1 && eventDateLabel.firstChild.nodeType === Node.TEXT_NODE) {
+                eventDateLabel.firstChild.textContent = 'Event Date';
+            } else if (eventDateLabel && !eventDateLabel.querySelector('[id]')) {
+                eventDateLabel.textContent = 'Event Date';
+            }
         }
+
+        this.syncFormFieldIndicators(nextMode);
 
         const heading = document.querySelector('.post-form-container h4');
 

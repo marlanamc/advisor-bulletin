@@ -82,10 +82,38 @@ body.ap-portal-active .main-content {
   margin: 0;
 }
 
-.ap-create-form-col .form-section .field-group,
+.ap-create-form-col .form-section .field-group {
+  padding: 0 22px;
+  margin-bottom: 14px;
+}
+
 .ap-create-form-col .form-section .form-group {
   padding: 0 22px;
   margin-bottom: 14px;
+  display: flex;
+  flex-direction: column;
+}
+
+.ap-create-form-col #bulletinForm .form-group > label {
+  order: 1;
+}
+
+.ap-create-form-col #bulletinForm .form-group:not(:has(> small.input-help)) > label {
+  margin-bottom: 5px;
+}
+
+.ap-create-form-col #bulletinForm .form-group > small.input-help {
+  order: 2;
+  margin-top: 0;
+  margin-bottom: 8px;
+}
+
+.ap-create-form-col #bulletinForm .form-group > .field-feedback {
+  order: 10;
+}
+
+.ap-create-form-col #bulletinForm .form-group > *:not(label):not(small.input-help):not(.field-feedback) {
+  order: 3;
 }
 
 .ap-create-form-col .form-section .field-group:first-of-type,
@@ -93,13 +121,145 @@ body.ap-portal-active .main-content {
   margin-top: 18px;
 }
 
-.ap-create-form-col .form-section label {
+.ap-create-form-col #bulletinForm label[for],
+.ap-create-form-col #bulletinForm .ap-category-picker-block > label,
+.ap-create-form-col #bulletinForm .form-group > label.optional,
+.ap-create-form-col #bulletinForm .form-group > label.recommended,
+.ap-create-form-col #bulletinForm .form-group > label.required {
   font-family: var(--ap-font-head);
   font-size: 0.82rem;
   font-weight: 700;
   color: var(--ap-text);
-  display: block;
-  margin-bottom: 5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
+/* Field priority badges (required / optional / recommended) */
+.field-priority,
+.ap-create-form-col #bulletinForm label.required::after,
+.ap-create-form-col #bulletinForm label.optional::after,
+.ap-create-form-col #bulletinForm label.recommended::after {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--ap-font-head);
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 3px 7px;
+  border-radius: 999px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.ap-create-form-col #bulletinForm label.required::after {
+  content: "Required";
+  background: rgba(26, 86, 219, 0.1);
+  color: #1a56db;
+}
+
+.ap-create-form-col #bulletinForm label.optional::after {
+  content: "Optional";
+  background: rgba(100, 116, 139, 0.12);
+  color: #64748b;
+}
+
+.ap-create-form-col #bulletinForm label.recommended::after {
+  content: "Recommended";
+  background: rgba(5, 150, 105, 0.12);
+  color: #059669;
+}
+
+.field-priority.required,
+.field-priority.ap-section-badge.required {
+  background: rgba(26, 86, 219, 0.1);
+  color: #1a56db;
+}
+
+.field-priority.optional,
+.field-priority.ap-section-badge.optional {
+  background: rgba(100, 116, 139, 0.12);
+  color: #64748b;
+}
+
+.field-priority.recommended,
+.field-priority.ap-section-badge.recommended {
+  background: rgba(5, 150, 105, 0.12);
+  color: #059669;
+}
+
+.ap-field-legend-wrap {
+  margin: 0 0 18px;
+}
+
+.ap-field-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: var(--ap-r-md);
+  background: var(--ap-surface-2);
+  border: 1px solid var(--ap-border);
+  font-size: 0.78rem;
+  color: var(--ap-text-2);
+  line-height: 1.45;
+}
+
+.ap-field-legend-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ap-field-legend-text {
+  color: var(--ap-text-2);
+}
+
+.ap-step-header .ap-step-subtitle,
+.ap-form-section-subtitle {
+  margin: 4px 0 0;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--ap-text-3);
+  line-height: 1.4;
+}
+
+.ap-accordion-title {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ap-section-badge {
+  font-size: 0.62rem;
+}
+
+.ap-visual-upload-badge,
+.ap-visual-upload-badge.field-priority {
+  font-size: 0.62rem;
+  padding: 4px 8px;
+  border-radius: 999px;
+}
+
+.ap-create-form-col .form-group input.required,
+.ap-create-form-col .form-group select.required,
+.ap-create-form-col .form-group textarea.required {
+  border-color: var(--ap-border);
+  background: var(--ap-surface);
+}
+
+.ap-create-form-col .form-group input.required:focus,
+.ap-create-form-col .form-group select.required:focus,
+.ap-create-form-col .form-group textarea.required:focus {
+  border-color: var(--ap-blue);
+  box-shadow: 0 0 0 3px rgba(26,86,219,.1);
 }
 
 .ap-create-form-col .form-section input[type="text"],
@@ -150,7 +310,7 @@ body.ap-portal-active .main-content {
 }
 
 .ap-create-form-col .ap-category-picker-help {
-  margin: 4px 0 10px;
+  margin: 0 0 10px;
   display: block;
 }
 
@@ -486,12 +646,6 @@ body.ap-portal-active .main-content {
 /* Old form-actions hidden (replaced by ap-form-actions) */
 .ap-create-form-col .form-actions {
   display: none !important;
-}
-
-/* Resource quickstart hint card */
-.ap-create-form-col .form-section.resource-quickstart {
-  background: var(--ap-mint);
-  border-color: var(--ap-mint-mid);
 }
 
 /* ── Toggle switch preserved ── */
@@ -3756,6 +3910,10 @@ details.ap-accordion > summary.ap-accordion-trigger {
 
 .ap-filter-pills[hidden],
 #manageFilterSelect[hidden] {
+  display: none !important;
+}
+
+.ap-category-picker-block[hidden] {
   display: none !important;
 }
 

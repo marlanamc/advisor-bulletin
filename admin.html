@@ -507,22 +507,31 @@
                     
                     <form id="bulletinForm">
                         <input type="hidden" id="contentType" name="contentType" value="post">
-                        
-                        <div class="form-section resource-quickstart content-mode-section" data-content-mode="resource" style="display: none;">
-                            <div class="form-section-header">
-                                <div class="form-section-icon">💡</div>
-                                <div>
-                                    <h3 class="form-section-title">Quick Resource Posting</h3>
-                                    <p class="form-section-subtitle">Use Resources for important links students may need again later.</p>
+
+                        <div class="ap-field-legend-wrap" id="apFieldLegend">
+                            <div class="ap-field-legend" role="note" aria-label="Field priority guide">
+                                <div class="ap-field-legend-row">
+                                    <span class="field-priority required">Required</span>
+                                    <span class="ap-field-legend-text">Must be filled before publishing.</span>
+                                </div>
+                                <div class="ap-field-legend-row">
+                                    <span class="field-priority recommended">Recommended</span>
+                                    <span class="ap-field-legend-text">Helps students but can be skipped.</span>
+                                </div>
+                                <div class="ap-field-legend-row">
+                                    <span class="field-priority optional">Optional</span>
+                                    <span class="ap-field-legend-text">Sections can be left blank.</span>
                                 </div>
                             </div>
-                            <p class="resource-helper-copy">Examples: immigration help, jobs, housing, clinics, legal aid.</p>
                         </div>
                         
                         <!-- Step 2: Basic Information -->
                         <div class="ap-step-header content-mode-section" data-content-mode="post event" style="margin-top: 24px;">
                             <div class="ap-step-number"></div>
-                            <h3 class="ap-step-title">Basic Information</h3>
+                            <div>
+                                <h3 class="ap-step-title">Basic Information</h3>
+                                <p class="ap-step-subtitle" id="basicInfoStepSubtitle">Required to publish on the student feed</p>
+                            </div>
                         </div>
 
                         <div class="form-section required content-mode-section" data-content-mode="post event" style="border: none; background: transparent; box-shadow: none; margin-bottom: 0;">
@@ -535,7 +544,7 @@
                             </div>
                             
                             <div class="form-group required-field title-field-group">
-                                <label for="title" class="required">Title</label>
+                                <label for="title" class="required"><span id="titleLabelText">Title</span></label>
                                 <input type="text" id="title" name="title" required placeholder="e.g., Job Opening: Community Health Worker" maxlength="200" class="required">
                                 <div class="field-feedback" id="titleFeedback"></div>
                                 <small class="input-help required">Keep it short and clear. This is what students will see first.</small>
@@ -626,7 +635,7 @@
                             </div>
 
                             <div class="form-group optional-field">
-                                <label for="eventLink">Link (optional)</label>
+                                <label for="eventLink" class="recommended">Link</label>
                                 <div style="position: relative;">
                                     <div style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--ap-text-3);">
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
@@ -643,7 +652,7 @@
                                     <h3 class="ap-visual-upload-title">Make it visual</h3>
                                     <p class="ap-visual-upload-sub">A flyer is the first thing students notice on the board.</p>
                                 </div>
-                                <span class="ap-visual-upload-badge">Recommended</span>
+                                <span class="ap-visual-upload-badge field-priority recommended">Recommended</span>
                             </div>
                             <div class="ap-visual-upload-body">
                                 <div class="ap-upload-zone ap-visual-flyer-zone" role="button" tabindex="0">
@@ -660,7 +669,7 @@
                                     <div class="ap-flyer-pdf-addon-row">
                                         <div class="ap-flyer-pdf-addon-icon" aria-hidden="true">📄</div>
                                         <div class="ap-flyer-pdf-addon-copy">
-                                            <label for="pdf">Student PDF attachment</label>
+                                            <label for="pdf" class="optional">Student PDF attachment</label>
                                             <small class="input-help">Optional — add the full document students can open from your post.</small>
                                         </div>
                                         <button type="button" class="ap-flyer-pdf-choose" onclick="document.getElementById('pdf').click()">Choose PDF</button>
@@ -675,7 +684,7 @@
 
                                 <button type="button" id="apFlyerEsToggle" class="ap-flyer-es-toggle" aria-expanded="false" aria-controls="apFlyerEsPanel">+ Add Spanish flyer (ES)</button>
                                 <div id="apFlyerEsPanel" class="ap-flyer-es-panel" hidden>
-                                    <label for="imageEs">Spanish flyer</label>
+                                    <label for="imageEs" class="optional">Spanish flyer</label>
                                     <small class="input-help ap-image-es-help">Shown when students switch to Español (ES). English flyer is used if blank.</small>
                                     <div class="ap-upload-dropzone ap-upload-dropzone-es">
                                         <div class="ap-upload-dropzone-icon" aria-hidden="true">
@@ -698,7 +707,7 @@
                                 <div class="ap-step-number"></div>
                                 <div>
                                     <h3 class="form-section-title">Resource Details</h3>
-                                    <p class="form-section-subtitle">Keep this simple: paste the link, name it clearly, and publish.</p>
+                                    <p class="form-section-subtitle ap-form-section-subtitle" id="resourceSectionSubtitle">Required to publish a resource</p>
                                 </div>
                             </div>
 
@@ -710,7 +719,7 @@
                                 </div>
 
                                 <div class="form-group">
-                                    <label for="resourceTitleEs">Spanish Title</label>
+                                    <label for="resourceTitleEs" class="recommended">Spanish Title</label>
                                     <input type="text" id="resourceTitleEs" name="resourceTitleEs" maxlength="120" placeholder="e.g., Ayuda gratis con inmigración">
                                     <small class="input-help">Recommended for bilingual display. If left blank, English will be reused.</small>
                                 </div>
@@ -732,7 +741,7 @@
                             </div>
 
                             <div class="form-group">
-                                <label for="resourceLogo">Organization Logo (optional)</label>
+                                <label for="resourceLogo" class="optional">Organization Logo</label>
                                 <div style="display: flex; gap: 12px; align-items: center; padding: 16px; border: 1.5px dashed var(--ap-border-mid); border-radius: var(--ap-r-md); background: var(--ap-surface-2); cursor: pointer;" onclick="document.getElementById('resourceLogo').click()">
                                     <div style="width: 44px; height: 44px; border-radius: 10px; background: #fff; display: grid; place-items: center; color: var(--ap-blue);">
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 24px; height: 24px;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
@@ -755,12 +764,12 @@
 
                             <div class="field-group double">
                                 <div class="form-group">
-                                    <label for="resourceDescription">Card summary (English)</label>
+                                    <label for="resourceDescription" class="optional">Card summary (English)</label>
                                     <textarea id="resourceDescription" name="resourceDescription" rows="2" maxlength="160" placeholder="One short sentence — what makes this resource different?"></textarea>
                                     <small class="input-help">Shown right under the title on every card. Be specific (e.g. <em>"Hospitality jobs and training"</em> instead of <em>"Job training services"</em>).</small>
                                 </div>
                                 <div class="form-group">
-                                    <label for="resourceSummaryEs">Card summary (Español)</label>
+                                    <label for="resourceSummaryEs" class="optional">Card summary (Español)</label>
                                     <textarea id="resourceSummaryEs" name="resourceSummaryEs" rows="2" maxlength="160" placeholder="Una oración corta en español"></textarea>
                                     <small class="input-help">El mismo resumen en español. Si lo dejas vacío, los estudiantes en Español verán la versión en inglés.</small>
                                 </div>
@@ -768,11 +777,11 @@
 
                             <div class="field-group double">
                                 <div class="form-group">
-                                    <label for="resourceAddress">Physical Address</label>
+                                    <label for="resourceAddress" class="optional">Physical Address</label>
                                     <input type="text" id="resourceAddress" name="resourceAddress" placeholder="e.g., 10 Gove St, East Boston, MA">
                                 </div>
                                 <div class="form-group">
-                                    <label for="resourcePhone">Phone Number</label>
+                                    <label for="resourcePhone" class="optional">Phone Number</label>
                                     <input type="tel" id="resourcePhone" name="resourcePhone" placeholder="e.g., 617-568-4000">
                                     <div class="phone-mode-selector">
                                         <label>
@@ -790,11 +799,11 @@
 
                             <div class="field-group double">
                                 <div class="form-group">
-                                    <label for="resourceHours">Hours of Operation</label>
+                                    <label for="resourceHours" class="optional">Hours of Operation</label>
                                     <input type="text" id="resourceHours" name="resourceHours" placeholder="e.g., Mon-Fri 9am-5pm">
                                 </div>
                                 <div class="form-group">
-                                    <label>Languages Spoken</label>
+                                    <label class="optional">Languages Spoken</label>
                                     <div class="language-chip-picker" data-field="resourceLanguages">
                                         <label class="lang-chip-input"><input type="checkbox" name="resourceLanguages" value="ENG" checked><span>ENG</span></label>
                                         <label class="lang-chip-input"><input type="checkbox" name="resourceLanguages" value="ESP" checked><span>ESP</span></label>
@@ -827,7 +836,7 @@
 
                             <div class="field-group double">
                                 <div class="form-group">
-                                    <label for="resourceOrder">Display Order (advanced)</label>
+                                    <label for="resourceOrder" class="optional">Display Order (advanced)</label>
                                     <input type="number" id="resourceOrder" name="resourceOrder" min="0" max="999" step="1" placeholder="Lower number shows first">
                                     <small class="input-help">Most advisors don't need to set this. Use the <strong>Reorder</strong> button on the My Posts tab to drag resources into order instead.</small>
                                 </div>
@@ -849,7 +858,7 @@
                         <div class="ap-accordion-section content-mode-section" id="eventDetailsAccordion" data-content-mode="post event">
                             <div class="ap-accordion-header" onclick="adminPanel.toggleAccordion(this)">
                                 <div class="ap-step-number"></div>
-                                <h3 class="ap-accordion-title">Event Details <span style="font-weight: 400; color: var(--ap-text-3); font-size: 0.85rem; margin-left: 4px;">(optional)</span></h3>
+                                <h3 class="ap-accordion-title">Event Details <span class="field-priority optional ap-section-badge" id="eventDetailsSectionBadge">Optional</span></h3>
                                 <div class="ap-accordion-chevron">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
                                 </div>
@@ -857,7 +866,7 @@
                             <div class="ap-accordion-content">
                                 <div class="field-group double event-date-type-row">
                                     <div class="form-group event-field">
-                                        <label for="dateType">Date Type</label>
+                                        <label for="dateType" class="recommended">Date Type</label>
                                         <select id="dateType" name="dateType" onchange="toggleDateFields()" class="recommended">
                                             <option value="">No specific date</option>
                                             <option value="deadline">Application Deadline</option>
@@ -868,7 +877,7 @@
                                     </div>
 
                                     <div class="form-group event-field event-format-field">
-                                        <label for="eventLocation">Event Format</label>
+                                        <label for="eventLocation" class="optional">Event Format</label>
                                         <select id="eventLocation" name="eventLocation" class="recommended">
                                             <option value="">Select format</option>
                                             <option value="in-person">In-Person</option>
@@ -880,19 +889,19 @@
 
                                 <div class="field-group" id="dateFields" style="display: none;">
                                     <div class="form-group event-field" id="singleDateGroup">
-                                        <label for="eventDate">Date</label>
+                                        <label for="eventDate" class="recommended">Date</label>
                                         <input type="date" id="eventDate" name="eventDate" class="recommended">
                                     </div>
                                     <div class="form-group event-field" id="startDateGroup" style="display: none;">
-                                        <label for="startDate">Start Date</label>
+                                        <label for="startDate" class="recommended">Start Date</label>
                                         <input type="date" id="startDate" name="startDate" class="recommended">
                                     </div>
                                     <div class="form-group event-field" id="endDateGroup" style="display: none;">
-                                        <label for="endDate">End Date</label>
+                                        <label for="endDate" class="recommended">End Date</label>
                                         <input type="date" id="endDate" name="endDate" class="recommended">
                                     </div>
                                     <div class="form-group event-field" id="sessionsDateGroup" style="display: none;">
-                                        <label>Session dates &amp; times</label>
+                                        <label class="recommended">Session dates &amp; times</label>
                                         <small class="input-help">Add each session date. Use same time for all when every session shares one schedule.</small>
                                         <div class="session-same-time-row">
                                             <label class="session-same-time-toggle toggle-switch-label" for="sessionSameTimeToggle">
@@ -906,11 +915,11 @@
                                         <div id="sessionSharedTimeRow" class="session-shared-time-row" hidden>
                                             <div class="field-group double session-shared-time-fields">
                                                 <div class="form-group">
-                                                    <label for="sessionSharedStartTime">Start time</label>
+                                                    <label for="sessionSharedStartTime" class="optional">Start time</label>
                                                     <input type="time" id="sessionSharedStartTime" name="sessionSharedStartTime" class="recommended">
                                                 </div>
                                                 <div class="form-group">
-                                                    <label for="sessionSharedEndTime">End time</label>
+                                                    <label for="sessionSharedEndTime" class="optional">End time</label>
                                                     <input type="time" id="sessionSharedEndTime" name="sessionSharedEndTime" class="recommended">
                                                 </div>
                                             </div>
@@ -928,11 +937,11 @@
 
                                 <div class="field-group double event-time-row">
                                     <div class="form-group event-field">
-                                        <label for="startTime">Start Time</label>
+                                        <label for="startTime" class="optional">Start Time</label>
                                         <input type="time" id="startTime" name="startTime" class="recommended">
                                     </div>
                                     <div class="form-group event-field">
-                                        <label for="endTime">End Time</label>
+                                        <label for="endTime" class="optional">End Time</label>
                                         <input type="time" id="endTime" name="endTime" class="recommended">
                                     </div>
                                 </div>
@@ -943,18 +952,18 @@
                         <div class="ap-accordion-section content-mode-section" data-content-mode="post">
                             <div class="ap-accordion-header" onclick="adminPanel.toggleAccordion(this)">
                                 <div class="ap-step-number"></div>
-                                <h3 class="ap-accordion-title">Spanish Translation <span style="font-weight: 400; color: var(--ap-text-3); font-size: 0.85rem; margin-left: 4px;">(optional)</span></h3>
+                                <h3 class="ap-accordion-title">Spanish Translation <span class="field-priority optional ap-section-badge">Optional</span></h3>
                                 <div class="ap-accordion-chevron">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
                                 </div>
                             </div>
                             <div class="ap-accordion-content">
                                 <div class="form-group">
-                                    <label for="titleEs">Spanish Title</label>
+                                    <label for="titleEs" class="optional">Spanish Title</label>
                                     <input type="text" id="titleEs" name="titleEs" maxlength="200" placeholder="Título en español">
                                 </div>
                                 <div class="form-group ap-rich-field">
-                                    <label for="summaryEs">Spanish Summary</label>
+                                    <label for="summaryEs" class="optional">Spanish Summary</label>
                                     <div
                                         class="ap-toolbar"
                                         role="toolbar"
@@ -992,23 +1001,23 @@
                         <div class="ap-accordion-section content-mode-section" data-content-mode="post">
                             <div class="ap-accordion-header" onclick="adminPanel.toggleAccordion(this)">
                                 <div class="ap-step-number"></div>
-                                <h3 class="ap-accordion-title">Contact & Location <span style="font-weight: 400; color: var(--ap-text-3); font-size: 0.85rem; margin-left: 4px;">(optional)</span></h3>
+                                <h3 class="ap-accordion-title">Contact &amp; Location <span class="field-priority optional ap-section-badge">Optional</span></h3>
                                 <div class="ap-accordion-chevron">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
                                 </div>
                             </div>
                             <div class="ap-accordion-content">
                                 <div class="form-group">
-                                    <label for="company">Organization/Company</label>
+                                    <label for="company" class="optional">Organization/Company</label>
                                     <input type="text" id="company" name="company" placeholder="e.g., East Boston Neighborhood Health Center">
                                 </div>
                                 <div class="field-group double">
                                     <div class="form-group">
-                                        <label for="location">Physical Address</label>
+                                        <label for="location" class="optional">Physical Address</label>
                                         <input type="text" id="location" name="eventLocation" placeholder="e.g., 10 Gove St, East Boston">
                                     </div>
                                     <div class="form-group">
-                                        <label for="contactPhone">Phone Number</label>
+                                        <label for="contactPhone" class="optional">Phone Number</label>
                                         <input type="tel" id="contactPhone" name="contactPhone" placeholder="e.g., 617-555-0123">
                                         <div class="phone-mode-selector">
                                             <label>
@@ -1025,11 +1034,11 @@
                                 </div>
                                 <div class="field-group double">
                                     <div class="form-group">
-                                        <label for="contactHours">Hours Available</label>
+                                        <label for="contactHours" class="optional">Hours Available</label>
                                         <input type="text" id="contactHours" name="contactHours" placeholder="e.g., Weekdays 9:00 - 4:00">
                                     </div>
                                     <div class="form-group">
-                                        <label>Languages Available</label>
+                                        <label class="optional">Languages Available</label>
                                         <div class="language-chip-picker" data-field="contactLanguages">
                                             <label class="lang-chip-input"><input type="checkbox" name="contactLanguages" value="ENG"><span>ENG</span></label>
                                             <label class="lang-chip-input"><input type="checkbox" name="contactLanguages" value="ESP"><span>ESP</span></label>
@@ -1042,17 +1051,17 @@
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label for="contact">Additional Contact Notes</label>
+                                    <label for="contact" class="optional">Additional Contact Notes</label>
                                     <textarea id="contact" name="contact" rows="2" placeholder="Email, website, or other contact info"></textarea>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Step 6: Target Student Group -->
-                        <div class="ap-accordion-section">
+                        <div class="ap-accordion-section content-mode-section" data-content-mode="post">
                             <div class="ap-accordion-header" onclick="adminPanel.toggleAccordion(this)">
                                 <div class="ap-step-number"></div>
-                                <h3 class="ap-accordion-title">Target Student Group <span style="font-weight: 400; color: var(--ap-text-3); font-size: 0.85rem; margin-left: 4px;">(optional)</span></h3>
+                                <h3 class="ap-accordion-title">Target Student Group <span class="field-priority optional ap-section-badge">Optional</span></h3>
                                 <div class="ap-accordion-chevron">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
                                 </div>
