@@ -9,6 +9,26 @@ import '../enhanced-auth.js'
 let portalMountPromise = null
 let shellBooted = false
 
+async function removePwaControlFromAdmin() {
+    try {
+        if ('serviceWorker' in navigator) {
+            const registrations = await navigator.serviceWorker.getRegistrations()
+            await Promise.all(registrations.map((registration) => registration.unregister()))
+        }
+
+        if ('caches' in window) {
+            const cacheNames = await caches.keys()
+            await Promise.all(
+                cacheNames
+                    .filter((name) => name.startsWith('ebhcs-bulletin-'))
+                    .map((name) => caches.delete(name))
+            )
+        }
+    } catch (error) {
+        console.warn('[Admin] Could not clear PWA service worker state:', error)
+    }
+}
+
 function setAuthView(view, message = 'Checking your session...') {
     const loadingEl = document.getElementById('authLoadingScreen')
     const loadingMsg = document.getElementById('authLoadingMessage')
@@ -114,6 +134,7 @@ function bootShell() {
     if (shellBooted) return
     shellBooted = true
 
+    removePwaControlFromAdmin()
     initAppUpdateCheck()
     initAdminBrandLockups()
     setAuthView('loading')

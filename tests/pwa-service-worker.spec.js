@@ -1,7 +1,7 @@
 const { test, expect } = require('@playwright/test');
 
 async function resetPwaState(page) {
-  await page.goto('/');
+  await page.goto('/googlecb709123fbf8d92e.html');
   await page.evaluate(async () => {
     const registrations = await navigator.serviceWorker.getRegistrations();
     await Promise.all(registrations.map((registration) => registration.unregister()));
@@ -99,5 +99,17 @@ test.describe('PWA service worker', () => {
     await page.goto('/admin.html', { waitUntil: 'domcontentloaded' });
     await expect(page.locator('body')).not.toContainText('Stale Admin Shell');
     await expect(page.locator('body')).toContainText(/Admin|Advisor|Sign In|Dashboard/i);
+  });
+
+  test('admin load unregisters the PWA service worker for future visits', async ({ page }) => {
+    await resetPwaState(page);
+    await registerReadyServiceWorker(page);
+
+    await page.goto('/admin.html', { waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(async () => {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      const cacheNames = await caches.keys();
+      return registrations.length === 0 && !cacheNames.some((name) => name.startsWith('ebhcs-bulletin-'));
+    });
   });
 });
