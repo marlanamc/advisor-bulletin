@@ -421,6 +421,8 @@ class FirebaseBulletinBoard {
         this.expandedDesktopResourceSections = new Set();
         this.mobileResourceCategoryReturnView = 'categories';
         this.resourceSearchQuery = '';
+        this.currentResourceNeedChip = '';
+        this.resourceNeedExpanded = false;
         this.resourceSortMode = 'default';
         this.datesViewMode = 'list';
         this.isSearchLayerOpen = false;
@@ -949,7 +951,32 @@ class FirebaseBulletinBoard {
                     });
                 }
 
+                if (this.currentResourceNeedChip) {
+                    this.currentResourceNeedChip = '';
+                }
                 this.openResourceShortcut(category);
+            });
+        }
+
+        const resourceNeedSection = document.getElementById('resourceNeedSearch');
+        if (resourceNeedSection) {
+            resourceNeedSection.addEventListener('click', (event) => {
+                const chip = event.target.closest('[data-need-chip]');
+                if (chip) {
+                    const label = chip.getAttribute('data-need-chip') || '';
+                    if (label && label.toLowerCase() !== (this.currentResourceNeedChip || '').toLowerCase()) {
+                        trackStudentEvent('need_chip_click', { chip: label, contentType: 'resource' });
+                    }
+                    this.setResourceNeedChip(label);
+                    return;
+                }
+                if (event.target.closest('#resourceNeedChange')) {
+                    this.setResourceNeedChip('');
+                    return;
+                }
+                if (event.target.closest('#resourceNeedToggle')) {
+                    this.toggleResourceNeedDirectory();
+                }
             });
         }
 
@@ -1893,11 +1920,212 @@ class FirebaseBulletinBoard {
         this.renderResourceStoryRow('resourceStoryRowPage', null, storyBubbleResources);
         this.renderHeroResources(resources);
         this.renderResourceCategoryFilters();
+        this.renderResourceNeedChips(resources);
         this.renderResourceList(resources);
         // Also populate the desktop layout whenever resources update
         if (document.querySelector('.resources-desktop-layout')) {
             this.renderResourcesDesktop(resources);
         }
+    }
+
+    buildResourceNeedChipIndex(resources) {
+        const stats = new Map();
+        (resources || []).forEach((resource) => {
+            const cat = this.getResourceCategoryKey(resource);
+            const services = this.getResourceServices(resource, Number.POSITIVE_INFINITY);
+            const seen = new Set();
+            services.forEach((service) => {
+                const label = getActionResourceChipLabel(service);
+                if (!label) return;
+                const key = label.toLowerCase();
+                if (seen.has(key)) return;
+                seen.add(key);
+                if (!stats.has(label)) {
+                    stats.set(label, { count: 0, source: service, catCounts: {} });
+                }
+                const entry = stats.get(label);
+                entry.count += 1;
+                if (cat) entry.catCounts[cat] = (entry.catCounts[cat] || 0) + 1;
+            });
+        });
+        return Array.from(stats.entries())
+            .map(([label, e]) => {
+                const dominant = Object.entries(e.catCounts).sort((a, b) => b[1] - a[1])[0];
+                return {
+                    label,
+                    count: e.count,
+                    source: e.source,
+                    category: dominant ? dominant[0] : 'immigration'
+                };
+            })
+            .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
+    }
+
+    resourceMatchesNeedChip(resource, chipLabel) {
+        if (!chipLabel) return true;
+        const target = chipLabel.toLowerCase();
+        const services = this.getResourceServices(resource, Number.POSITIVE_INFINITY);
+        return services.some((service) => getActionResourceChipLabel(service).toLowerCase() === target);
+    }
+
+    getResourceCategoryTint(categoryKey) {
+        const config = RESOURCE_CATEGORY_CONFIG[categoryKey];
+        return config && config.color ? config.color : '#0d9488';
+    }
+
+    renderResourceNeedChips(resources) {
+        const section = document.getElementById('resourceNeedSearch');
+        if (!section) return;
+        const entries = this.buildResourceNeedChipIndex(resources);
+        if (!entries.length) {
+            section.hidden = true;
+            return;
+        }
+        section.hidden = false;
+
+        const activeKey = (this.currentResourceNeedChip || '').toLowerCase();
+        const activeEntry = activeKey
+            ? entries.find((entry) => entry.label.toLowerCase() === activeKey)
+            : null;
+
+        this.renderResourceNeedTopRow(entries, activeEntry);
+        this.renderResourceNeedActiveCard(activeEntry);
+        this.renderResourceNeedDirectory(entries, activeKey);
+        this.updateResourceNeedToggleState();
+    }
+
+    renderResourceNeedTopRow(entries, activeEntry) {
+        const topRow = document.getElementById('resourceNeedTop');
+        const activeWrap = document.getElementById('resourceNeedActive');
+        if (!topRow) return;
+
+        if (activeEntry) {
+            topRow.hidden = true;
+            topRow.innerHTML = '';
+            if (activeWrap) activeWrap.hidden = false;
+            return;
+        }
+
+        if (activeWrap) activeWrap.hidden = true;
+        topRow.hidden = false;
+        const top = entries.slice(0, 8);
+        topRow.innerHTML = top.map(({ label, source, category }) => {
+            const tint = this.getResourceCategoryTint(category);
+            const en = this.escapeHtml(label);
+            const es = this.escapeHtml(translateResourceChipEs(source));
+            return `
+                <button type="button" class="resource-need-hero-chip" data-need-chip="${this.escapeAttribute(label)}" style="--tint:${tint}" role="option" aria-selected="false">
+                    <span class="en-text">${en}</span>
+                    <span class="es-text">${es}</span>
+                </button>
+            `;
+        }).join('');
+    }
+
+    renderResourceNeedActiveCard(activeEntry) {
+        const wrap = document.getElementById('resourceNeedActive');
+        if (!wrap) return;
+        if (!activeEntry) {
+            wrap.innerHTML = '';
+            wrap.hidden = true;
+            return;
+        }
+        const tint = this.getResourceCategoryTint(activeEntry.category);
+        const en = this.escapeHtml(activeEntry.label);
+        const es = this.escapeHtml(translateResourceChipEs(activeEntry.source));
+        wrap.innerHTML = `
+            <span class="resource-need-hero-chip is-active" style="--tint:${tint}" aria-current="true">
+                <span class="en-text">${en}</span>
+                <span class="es-text">${es}</span>
+            </span>
+            <button type="button" class="resource-need__change" id="resourceNeedChange">
+                <span class="en-text">Clear</span>
+                <span class="es-text">Borrar</span>
+            </button>
+        `;
+        wrap.hidden = false;
+    }
+
+    renderResourceNeedDirectory(entries, activeKey) {
+        const container = document.getElementById('resourceNeedAll');
+        if (!container) return;
+
+        const groups = RESOURCE_TILE_CATEGORIES
+            .map((key) => {
+                const config = RESOURCE_CATEGORY_CONFIG[key];
+                if (!config) return null;
+                const items = entries.filter((entry) => entry.category === key);
+                if (!items.length) return null;
+                return { key, config, items };
+            })
+            .filter(Boolean);
+
+        if (!groups.length) {
+            container.innerHTML = '';
+            container.hidden = true;
+            return;
+        }
+
+        container.innerHTML = groups.map(({ key, config, items }) => {
+            const tint = config.color;
+            const chipsHtml = items.map(({ label, source, count }) => {
+                const isActive = activeKey && label.toLowerCase() === activeKey;
+                const en = this.escapeHtml(label);
+                const es = this.escapeHtml(translateResourceChipEs(source));
+                return `<button type="button" class="resource-need-chip${isActive ? ' is-active' : ''}" data-need-chip="${this.escapeAttribute(label)}" aria-pressed="${isActive ? 'true' : 'false'}"><span class="en-text">${en}</span><span class="es-text">${es}</span><span class="resource-need-chip__count" aria-hidden="true">${count}</span></button>`;
+            }).join('');
+            return `
+                <div class="resource-need-group" data-cat-key="${key}" style="--tint:${tint}">
+                    <h3 class="resource-need-group__eyebrow">
+                        <span class="en-text">${this.escapeHtml(config.labelEn)}</span>
+                        <span class="es-text">${this.escapeHtml(config.labelEs)}</span>
+                    </h3>
+                    <div class="resource-need-group__chips">${chipsHtml}</div>
+                </div>
+            `;
+        }).join('');
+
+        container.hidden = !this.resourceNeedExpanded;
+    }
+
+    updateResourceNeedToggleState() {
+        const toggle = document.getElementById('resourceNeedToggle');
+        const all = document.getElementById('resourceNeedAll');
+        const topRow = document.getElementById('resourceNeedTop');
+        const activeWrap = document.getElementById('resourceNeedActive');
+        if (!toggle || !all) return;
+        const expanded = !!this.resourceNeedExpanded;
+        toggle.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+        all.hidden = !expanded;
+        if (topRow && (!activeWrap || activeWrap.hidden)) {
+            topRow.hidden = expanded;
+        }
+        toggle.querySelectorAll('.resource-need__toggle-text').forEach((el) => {
+            const state = el.getAttribute('data-toggle-state');
+            el.hidden = expanded ? state !== 'expanded' : state !== 'collapsed';
+        });
+    }
+
+    toggleResourceNeedDirectory(force) {
+        const next = typeof force === 'boolean' ? force : !this.resourceNeedExpanded;
+        this.resourceNeedExpanded = next;
+        this.updateResourceNeedToggleState();
+    }
+
+    setResourceNeedChip(label) {
+        const next = label || '';
+        const current = this.currentResourceNeedChip || '';
+        if (next.toLowerCase() === current.toLowerCase()) {
+            this.currentResourceNeedChip = '';
+        } else {
+            this.currentResourceNeedChip = next;
+            if (next) {
+                this.currentResourceCategory = 'all';
+                this.currentDesktopResourceTopic = 'all';
+                this.resourceNeedExpanded = false;
+            }
+        }
+        this.renderResourcesSections(this.getPublishedResources());
     }
 
     renderHeroResources(resources) {
@@ -2111,7 +2339,8 @@ class FirebaseBulletinBoard {
         // searching or when a category shortcut lands here with an active filter.
         const exploring =
             (this.currentResourceCategory && this.currentResourceCategory !== 'all') ||
-            (this.resourceSearchQuery && this.resourceSearchQuery.trim() !== '');
+            (this.resourceSearchQuery && this.resourceSearchQuery.trim() !== '') ||
+            !!this.currentResourceNeedChip;
 
         // Drive the mobile in-page category view (header + back button, hides tiles).
         this.renderResourceCategoryDetailHeader(exploring);
@@ -2140,6 +2369,11 @@ class FirebaseBulletinBoard {
         let visibleResources = this.currentResourceCategory === 'all'
             ? resources
             : resources.filter((resource) => this.getResourceCategoryKey(resource) === this.currentResourceCategory);
+
+        // Apply need-chip filter
+        if (this.currentResourceNeedChip) {
+            visibleResources = visibleResources.filter((resource) => this.resourceMatchesNeedChip(resource, this.currentResourceNeedChip));
+        }
 
         // Apply search filter
         visibleResources = this.filterResourcesBySearch(visibleResources, this.resourceSearchQuery);
@@ -2371,7 +2605,12 @@ class FirebaseBulletinBoard {
         // Apply search query
         const searchQuery = document.getElementById('searchInput')?.value ||
                             document.getElementById('desktopTopbarSearchInput')?.value || '';
-        const filtered = this.filterResourcesBySearch(allResources, searchQuery);
+        let filtered = this.filterResourcesBySearch(allResources, searchQuery);
+
+        // Apply need-chip filter (search by need)
+        if (this.currentResourceNeedChip) {
+            filtered = filtered.filter((resource) => this.resourceMatchesNeedChip(resource, this.currentResourceNeedChip));
+        }
 
         // Build per-category map
         const catMap = {};
@@ -2437,6 +2676,10 @@ class FirebaseBulletinBoard {
                 const cat = btn.dataset.desktopCat;
                 if (!cat) return;
 
+                if (this.currentResourceNeedChip) {
+                    this.currentResourceNeedChip = '';
+                    this.renderResourcesSections(this.getPublishedResources());
+                }
                 setActiveDesktopTopic(cat);
 
                 const headerOffset = parseInt(

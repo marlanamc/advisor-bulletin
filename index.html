@@ -622,6 +622,41 @@
                     <span class="en-text">Find help today</span>
                     <span class="es-text">Encuentra ayuda hoy</span>
                 </h1>
+
+                <!-- What do you need today? — chip-driven search (inside hero) -->
+                <div class="view-hero__need resource-need" id="resourceNeedSearch" hidden>
+                    <div class="resource-need__header">
+                        <p class="view-hero__need-prompt">
+                            <span class="en-text">What do you need today?</span>
+                            <span class="es-text">¿Qué necesita hoy?</span>
+                        </p>
+                        <button type="button" class="resource-need__toggle" id="resourceNeedToggle" aria-expanded="false" aria-controls="resourceNeedAll">
+                            <span class="resource-need__toggle-text" data-toggle-state="collapsed">
+                                <span class="en-text">See all ways we can help</span>
+                                <span class="es-text">Ver todas las formas de ayuda</span>
+                            </span>
+                            <span class="resource-need__toggle-text" data-toggle-state="expanded" hidden>
+                                <span class="en-text">Show less</span>
+                                <span class="es-text">Mostrar menos</span>
+                            </span>
+                            <svg class="resource-need__toggle-icon" viewBox="0 0 12 12" aria-hidden="true">
+                                <path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div class="resource-need__top" id="resourceNeedTop" role="listbox" aria-label="Most-needed help">
+                        <!-- Top pills rendered by JS -->
+                    </div>
+
+                    <div class="resource-need__active" id="resourceNeedActive" hidden>
+                        <!-- Active selection rendered by JS -->
+                    </div>
+
+                    <div class="resource-need__all" id="resourceNeedAll" hidden>
+                        <!-- Category-grouped directory rendered by JS -->
+                    </div>
+                </div>
             </div>
 
             <!-- Mobile Find Help Layout -->

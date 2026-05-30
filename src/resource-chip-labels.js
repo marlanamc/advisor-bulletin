@@ -73,6 +73,9 @@ const RESOURCE_CHIP_ACTION_LABELS = {
     'crisis support': 'Get crisis support',
     'mental health': 'Get crisis support',
     'tax help': 'Get tax help',
+    'itin': 'Apply for an ITIN',
+    'apply for itin': 'Apply for an ITIN',
+    'itin application': 'Apply for an ITIN',
     'cash assistance': 'Get cash help',
     'clothing': 'Get clothes',
     'community help': 'Get community help',
@@ -112,6 +115,7 @@ const RESOURCE_CHIP_ACTION_LABELS = {
 
 const RESOURCE_CHIP_ES = {
     'apply for citizenship': 'Solicitar ciudadanía',
+    'apply for an itin': 'Solicitar un ITIN',
     'apply for public housing': 'Solicitar vivienda pública',
     'apply for snap': 'Solicitar SNAP',
     'buy low-cost produce': 'Comprar comida económica',
