@@ -1910,13 +1910,15 @@ class FirebaseAdminPanel {
             } else if ((fieldName === 'image' || fieldName === 'imageEs') && isPdfFile(file)) {
                 const flyerSource = await this.prepareFlyerSourceFile(file, fieldName);
                 processedImage = {
-                    ...(await this.prepareImageForUpload(flyerSource.uploadFile)),
+                    ...(await this.prepareImageForUpload(flyerSource.uploadFile, { mode: 'flyer' })),
                     signature,
                     convertedFromPdf: true,
                     pdfPageCount: flyerSource.pdfPageCount
                 };
             } else {
-                processedImage = await this.prepareImageForUpload(file);
+                processedImage = await this.prepareImageForUpload(file, {
+                    mode: fieldName === 'resourceLogo' ? 'logo' : 'flyer'
+                });
             }
 
             // Ensure final encoded image is within safety limits (~4MB)
@@ -2104,7 +2106,10 @@ class FirebaseAdminPanel {
                     };
                 }
 
-                const processed = await this.prepareImageForUpload(flyerSource.uploadFile);
+                const processed = await this.prepareImageForUpload(
+                    flyerSource.uploadFile,
+                    { mode: fieldName === 'resourceLogo' ? 'logo' : 'flyer' }
+                );
                 const signature = this.getFileSignature(file);
 
                 this[pendingKey] = {
@@ -2291,7 +2296,9 @@ class FirebaseAdminPanel {
         };
     }
 
-    prepareImageForUpload(file) {
+    prepareImageForUpload(file, options = {}) {
+        const isLogo = options.mode === 'logo';
+
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.onerror = () => reject('Unable to read image file.');
@@ -2315,9 +2322,9 @@ class FirebaseAdminPanel {
                         return;
                     }
 
-                    const TARGET_BYTES = 900 * 1024; // ~900KB
-                    const MIN_DIMENSION = 600;
-                    let currentMaxDimension = 1400;
+                    const TARGET_BYTES = isLogo ? 450 * 1024 : 900 * 1024;
+                    const MIN_DIMENSION = isLogo ? 0 : 600;
+                    let currentMaxDimension = isLogo ? 960 : 1400;
                     let processedDataUrl = originalDataUrl;
                     let processedWidth = img.width;
                     let processedHeight = img.height;
@@ -2330,34 +2337,53 @@ class FirebaseAdminPanel {
                     let attempts = 0;
                     while (attempts < 5) {
                         const scale = Math.min(currentMaxDimension / img.width, currentMaxDimension / img.height, 1);
-                        processedWidth = Math.max(Math.round(img.width * scale), MIN_DIMENSION);
-                        processedHeight = Math.max(Math.round(img.height * scale), MIN_DIMENSION);
+                        processedWidth = Math.max(Math.round(img.width * scale), MIN_DIMENSION || 1);
+                        processedHeight = Math.max(Math.round(img.height * scale), MIN_DIMENSION || 1);
 
                         canvas.width = processedWidth;
                         canvas.height = processedHeight;
-                        ctx.clearRect(0, 0, processedWidth, processedHeight);
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fillRect(0, 0, processedWidth, processedHeight);
                         ctx.drawImage(img, 0, 0, processedWidth, processedHeight);
 
-                        quality = 0.85;
-                        processedDataUrl = canvas.toDataURL('image/jpeg', quality);
-                        finalBytes = this.calculateBase64Size(processedDataUrl);
-
-                        while (finalBytes > TARGET_BYTES && quality >= 0.4) {
-                            quality -= 0.1;
+                        if (isLogo) {
+                            processedDataUrl = canvas.toDataURL('image/png');
+                            finalBytes = this.calculateBase64Size(processedDataUrl);
+                        } else {
+                            quality = 0.85;
                             processedDataUrl = canvas.toDataURL('image/jpeg', quality);
                             finalBytes = this.calculateBase64Size(processedDataUrl);
+
+                            while (finalBytes > TARGET_BYTES && quality >= 0.4) {
+                                quality -= 0.1;
+                                processedDataUrl = canvas.toDataURL('image/jpeg', quality);
+                                finalBytes = this.calculateBase64Size(processedDataUrl);
+                            }
                         }
 
-                        if (finalBytes <= TARGET_BYTES || (processedWidth <= MIN_DIMENSION && processedHeight <= MIN_DIMENSION)) {
+                        if (finalBytes <= TARGET_BYTES) {
                             break;
                         }
 
-                        currentMaxDimension = Math.max(Math.round(currentMaxDimension * 0.75), MIN_DIMENSION);
+                        if (isLogo) {
+                            if (scale >= 1 || currentMaxDimension <= 240) {
+                                break;
+                            }
+                            currentMaxDimension = Math.max(Math.round(currentMaxDimension * 0.85), 240);
+                        } else if (processedWidth <= MIN_DIMENSION && processedHeight <= MIN_DIMENSION) {
+                            break;
+                        } else {
+                            currentMaxDimension = Math.max(Math.round(currentMaxDimension * 0.75), MIN_DIMENSION);
+                        }
+
                         attempts += 1;
                     }
 
                     if (finalBytes > 4 * 1024 * 1024) {
-                        reject('This image is very large. Please resize it below 2000px on the longest edge and try again.');
+                        const message = isLogo
+                            ? 'This logo is very large. Please resize it below 1200px on the longest edge and try again.'
+                            : 'This image is very large. Please resize it below 2000px on the longest edge and try again.';
+                        reject(message);
                         return;
                     }
 

@@ -6,7 +6,18 @@ initAppUpdateCheck()
 
 initImageLightbox()
 
-import('../firebase-config.js')
+// Defer the 146KB firebase-config bundle until after first paint so the shell
+// HTML + CSS can render before we pay for parse/compile on low-end mobile.
+// The cached bulletin grid (localStorage) hydrates inside firebase-config init.
+function loadFirebaseConfig() {
+    import('../firebase-config.js')
+}
+
+if ('requestIdleCallback' in window) {
+    requestIdleCallback(loadFirebaseConfig, { timeout: 1500 })
+} else {
+    setTimeout(loadFirebaseConfig, 0)
+}
 
 // Register PWA Service Worker for offline support & client-side caching
 if ('serviceWorker' in navigator) {
