@@ -13,7 +13,7 @@ The launch CSV is intentionally selective. It should contain roughly **30-50 hig
 | `sheetTab` | No | Backward-compatible source tab name; used for category defaults if `resourceCategory` is blank |
 | `orgName` | Yes | Organization name -> `titleEn` / card title |
 | `resourceCategory` | No | Override tab default — see mapping below |
-| `serviceChips` | Yes* | Short labels, semicolon- or comma-separated (max 5 after merge) |
+| `serviceChips` | Yes* | Short labels, semicolon- or comma-separated (max 6 after merge) |
 | `url` | No* | Website — auto-prefixed with `https://` if missing |
 | `address` | No* | Street address for directions |
 | `phone` | No* | Phone number |
@@ -45,7 +45,7 @@ Valid categories match the student app: `immigration`, `jobs`, `housing`, `healt
 
 - **Student-relevant** — EBHS students can realistically use it
 - **Actionable** — has phone, address, or website (not dead links)
-- **Specific** — can be summarized in 1–5 chips (refine or skip vague rows)
+- **Specific** — can be summarized in 1–6 chips (refine or skip vague rows)
 - **Not duplicate** — same org + category merges into one card with combined chips
 - **Category fits** — one primary Help topic per resource
 - **Low-literacy card copy** — service chips are the student-facing summary; put schedules and conditions in `hours` or `description`
@@ -73,7 +73,7 @@ Schedule text trailing a chip label is stripped; put schedules in `hours` instea
 
 Rows with the same **normalized org name + `resourceCategory`** merge into one Firestore resource:
 
-- Service chips are unioned (deduped, max 5)
+- Service chips are unioned (deduped, max 6)
 - First non-empty `url`, `address`, `phone`, `hours` wins
 - `description` paragraphs are joined with blank lines
 

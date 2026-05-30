@@ -5,6 +5,7 @@ import { normalizePostCategory, getPostCategoryDisplay } from './src/feed-catego
 import { RESOURCE_TILE_CATEGORIES } from './src/resource-categories.js'
 import {
     getActionResourceChipLabel,
+    MAX_RESOURCE_SERVICE_CHIPS,
     parseResourceServiceChips,
     translateResourceChipEs,
 } from './src/resource-chip-labels.js'
@@ -1826,10 +1827,12 @@ class FirebaseBulletinBoard {
         const events = mergedBulletins
             .flatMap((bulletin) => {
                 if (bulletin.dateType === 'sessions') {
-                    return this.getBulletinEventDates(bulletin).map((rawDate) => ({
+                    return this.getBulletinEventSessions(bulletin).map((session) => ({
                         bulletin,
-                        rawDate,
-                        timestamp: this.getTimestampValue(rawDate)
+                        rawDate: session.date,
+                        timestamp: this.getTimestampValue(session.date),
+                        startTime: session.startTime,
+                        endTime: session.endTime
                     }));
                 }
 
@@ -1837,7 +1840,9 @@ class FirebaseBulletinBoard {
                 return [{
                     bulletin,
                     rawDate,
-                    timestamp: this.getTimestampValue(rawDate)
+                    timestamp: this.getTimestampValue(rawDate),
+                    startTime: bulletin.startTime,
+                    endTime: bulletin.endTime
                 }];
             })
             .filter((item) => item.timestamp && item.timestamp >= now.getTime())
@@ -1849,14 +1854,14 @@ class FirebaseBulletinBoard {
             return;
         }
 
-        container.innerHTML = events.map(({ bulletin, rawDate, timestamp }) => {
+        container.innerHTML = events.map(({ bulletin, rawDate, timestamp, startTime, endTime }) => {
             const date = new Date(timestamp);
             const locale = this.getLocale();
             const month = date.toLocaleDateString(locale, { month: 'short' }).toUpperCase();
             const day = date.toLocaleDateString(locale, { day: 'numeric' });
             const weekday = date.toLocaleDateString(locale, { weekday: 'long' });
-            const time = bulletin.startTime || '';
-            const meta = [weekday, time].filter(Boolean).join(' · ');
+            const timeLabel = this.formatTimeRange(startTime, endTime);
+            const meta = [weekday, timeLabel].filter(Boolean).join(' · ');
 
             return `
                 <button class="side-event" type="button" onclick="window.bulletinBoard && window.bulletinBoard.showBulletinDetail('${bulletin.id}')">
@@ -3172,7 +3177,7 @@ class FirebaseBulletinBoard {
         `;
     }
 
-    getResourceServices(resource, max = 5) {
+    getResourceServices(resource, max = MAX_RESOURCE_SERVICE_CHIPS) {
         if (!resource) return [];
         const serviceChips = Array.isArray(resource.serviceChips) && resource.serviceChips.length
             ? resource.serviceChips
@@ -3187,7 +3192,7 @@ class FirebaseBulletinBoard {
     }
 
     getResourceServiceChipsHtml(resource, options = {}) {
-        const max = options.max ?? 5;
+        const max = options.max ?? MAX_RESOURCE_SERVICE_CHIPS;
         const services = this.getResourceServices(resource, Number.POSITIVE_INFINITY);
         if (!services.length) return '';
         const displayServices = [];
@@ -3212,7 +3217,7 @@ class FirebaseBulletinBoard {
         return `<div class="resource-service-section">${chipsHtml}</div>`;
     }
 
-    parseResourceHighlights(highlights, max = 5) {
+    parseResourceHighlights(highlights, max = MAX_RESOURCE_SERVICE_CHIPS) {
         return parseResourceServiceChips(highlights, max);
     }
 

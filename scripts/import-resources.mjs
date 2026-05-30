@@ -18,7 +18,7 @@ import { stdin, stdout } from 'node:process';
 
 const PROJECT_ID = 'ebhcs-bulletin-board';
 const COLLECTION = 'bulletins';
-const MAX_CHIPS = 5;
+const MAX_CHIPS = 6;
 
 const TAB_CATEGORY_DEFAULTS = {
   'basic/misc. needs': 'food',

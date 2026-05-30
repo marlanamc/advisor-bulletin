@@ -282,12 +282,14 @@ export function getSuggestedResourceChips(category) {
     return SUGGESTED_RESOURCE_CHIPS_BY_CATEGORY[category] || [];
 }
 
+export const MAX_RESOURCE_SERVICE_CHIPS = 6;
+
 /**
  * @param {string | string[] | null | undefined} raw
- * @param {number} [max=5]
+ * @param {number} [max=MAX_RESOURCE_SERVICE_CHIPS]
  * @returns {string[]}
  */
-export function parseResourceServiceChips(raw, max = 5) {
+export function parseResourceServiceChips(raw, max = MAX_RESOURCE_SERVICE_CHIPS) {
     if (!raw) return [];
     if (Array.isArray(raw)) {
         return raw.map((part) => String(part || '').trim()).filter(Boolean).slice(0, max);

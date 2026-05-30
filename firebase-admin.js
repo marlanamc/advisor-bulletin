@@ -6,6 +6,7 @@ import { AUTHORABLE_RESOURCE_CATEGORIES, AUTHORABLE_RESOURCE_CATEGORY_SET } from
 import {
     formatResourceServiceChipsInput,
     getSuggestedResourceChips,
+    MAX_RESOURCE_SERVICE_CHIPS,
     parseResourceServiceChips,
 } from './src/resource-chip-labels.js'
 import {
@@ -1368,7 +1369,7 @@ class FirebaseAdminPanel {
                 const value = button.getAttribute('data-service-preset') || '';
                 const current = parseResourceServiceChips(input.value);
                 const currentKeys = new Set(current.map((part) => part.toLowerCase()));
-                if (!value || currentKeys.has(value.toLowerCase()) || current.length >= 5) return;
+                if (!value || currentKeys.has(value.toLowerCase()) || current.length >= MAX_RESOURCE_SERVICE_CHIPS) return;
                 input.value = formatResourceServiceChipsInput([...current, value]);
                 input.dispatchEvent(new Event('input', { bubbles: true }));
             });
@@ -1593,6 +1594,59 @@ class FirebaseAdminPanel {
         );
         this.renderAnalyticsList('analyticsTopCategories', this.analyticsByCategory || {}, (key) => this.getCategoryDisplay(key));
         this.renderTopPosts();
+        this.renderUpcomingDashboardEvents();
+    }
+
+    renderUpcomingDashboardEvents() {
+        const container = document.getElementById('dashUpcomingEvents');
+        if (!container) return;
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const upcoming = this.bulletins
+            .filter((bulletin) => !this.isResourceBulletin(bulletin) && bulletin.isActive !== false)
+            .filter((bulletin) => {
+                const dateStr = bulletin.eventDate || bulletin.startDate;
+                if (!dateStr) return false;
+                const normalized = String(dateStr).split('T')[0];
+                const eventDay = new Date(`${normalized}T00:00:00`);
+                return !Number.isNaN(eventDay.getTime()) && eventDay >= today;
+            })
+            .sort((a, b) => {
+                const aDay = new Date(`${String(a.eventDate || a.startDate).split('T')[0]}T00:00:00`);
+                const bDay = new Date(`${String(b.eventDate || b.startDate).split('T')[0]}T00:00:00`);
+                return aDay - bDay;
+            })
+            .slice(0, 4);
+
+        if (!upcoming.length) {
+            container.innerHTML = '<p style="color:var(--ap-text-3);font-size:.82rem;">No upcoming events. Create a calendar event to see it here.</p>';
+            return;
+        }
+
+        container.innerHTML = upcoming.map((bulletin) => {
+            const dateStr = bulletin.eventDate || bulletin.startDate;
+            const normalized = String(dateStr).split('T')[0];
+            const eventDay = new Date(`${normalized}T00:00:00`);
+            const month = eventDay.toLocaleString('default', { month: 'short' }).toUpperCase();
+            const day = eventDay.getDate();
+            const title = bulletin.title || 'Untitled event';
+            const time = this.formatTimeRangeAdmin(bulletin.startTime, bulletin.endTime);
+
+            return `
+                <div class="ap-event-row">
+                    <div class="ap-event-date-block">
+                        <div class="ap-event-month">${this.escapeHtml(month)}</div>
+                        <div class="ap-event-day">${day}</div>
+                    </div>
+                    <div class="ap-event-info">
+                        <div class="ap-event-name">${this.escapeHtml(title)}</div>
+                        <div class="ap-event-time">${time ? this.escapeHtml(time) : 'All day'}</div>
+                    </div>
+                </div>
+            `;
+        }).join('');
     }
 
     setText(id, value) {

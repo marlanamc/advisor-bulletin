@@ -1,5 +1,6 @@
 import {
     getActionResourceChipLabel,
+    MAX_RESOURCE_SERVICE_CHIPS,
     parseResourceServiceChips,
     translateResourceChipEs,
 } from './resource-chip-labels.js';
@@ -389,7 +390,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var displayHighlights = [];
         var seenHighlightLabels = new Set();
         (data.highlights || []).forEach(function(service) {
-            if (displayHighlights.length >= 5) return;
+            if (displayHighlights.length >= MAX_RESOURCE_SERVICE_CHIPS) return;
             var actionLabel = getActionResourceChipLabel(service);
             var key = actionLabel.toLowerCase();
             if (!actionLabel || seenHighlightLabels.has(key)) return;
@@ -1019,39 +1020,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }).join('');
         });
 
-        // Dashboard upcoming events
-        var eventsEl = document.getElementById('dashUpcomingEvents');
-        if (eventsEl) {
-            var upcoming = (ap.bulletins || []).filter(function(b) {
-                if (!b.eventDate && !b.startDate) return false;
-                var d = new Date(b.eventDate || b.startDate);
-                return d >= new Date();
-            }).sort(function(a, b) {
-                return new Date(a.eventDate || a.startDate) - new Date(b.eventDate || b.startDate);
-            }).slice(0, 4);
-
-            if (!upcoming.length) {
-                eventsEl.innerHTML = '<p style="color:var(--ap-text-3);font-size:.82rem;">No upcoming events.</p>';
-            } else {
-                eventsEl.innerHTML = upcoming.map(function(b) {
-                    var d = new Date(b.eventDate || b.startDate);
-                    var month = d.toLocaleString('default', { month: 'short' }).toUpperCase();
-                    var day = d.getDate();
-                    var title = b.title || 'Untitled event';
-                    var time = b.startTime ? b.startTime : '';
-                    return '<div class="ap-event-row">' +
-                        '<div class="ap-event-date-block">' +
-                            '<div class="ap-event-month">' + month + '</div>' +
-                            '<div class="ap-event-day">' + day + '</div>' +
-                        '</div>' +
-                        '<div class="ap-event-info">' +
-                            '<div class="ap-event-name">' + escHtml(title) + '</div>' +
-                            '<div class="ap-event-time">' + (time ? time : 'All day') + '</div>' +
-                        '</div>' +
-                    '</div>';
-                }).join('');
-            }
-        }
     }
 
     // ── Init ──────────────────────────────────────────────────────
