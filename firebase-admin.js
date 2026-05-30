@@ -78,6 +78,7 @@ const ADMIN_RESOURCE_ICON_LABELS = {
 
 const HIGH_INTENT_ANALYTICS_ACTIONS = new Set(['link_click', 'pdf_open', 'resource_open']);
 const ENGAGEMENT_ANALYTICS_ACTIONS = new Set(['detail_open', 'link_click', 'pdf_open', 'resource_open', 'share_click']);
+const ADVISOR_HIDDEN_ANALYTICS_ACTIONS = new Set(['card_view']);
 
 function isPdfFile(file) {
     if (!file) return false;
@@ -1498,7 +1499,12 @@ class FirebaseAdminPanel {
             }
         });
 
-        summary.engagedPosts = Object.values(byPost).filter((metrics) => (metrics.engagement || 0) > 0).length;
+        summary.engagedPosts = Object.entries(byPost)
+            .filter(([postId, metrics]) => {
+                const isKnownPost = this.bulletins.some((bulletin) => bulletin.id === postId);
+                return isKnownPost && (metrics.engagement || 0) > 0;
+            })
+            .length;
         this.analyticsByPost = byPost;
         this.analyticsByAction = byAction;
         this.analyticsByCategory = byCategory;
@@ -1517,7 +1523,12 @@ class FirebaseAdminPanel {
         this.setText('statStudentClicks', this.analyticsSummary?.highIntentClicks || 0);
         this.setText('statExpiringSoon', expiringSoon.length);
 
-        this.renderAnalyticsList('analyticsActionList', this.analyticsByAction || {}, (key) => this.formatAnalyticsAction(key));
+        this.renderAnalyticsList(
+            'analyticsActionList',
+            this.analyticsByAction || {},
+            (key) => this.formatAnalyticsAction(key),
+            { excludeActions: ADVISOR_HIDDEN_ANALYTICS_ACTIONS }
+        );
         this.renderAnalyticsList('analyticsTopCategories', this.analyticsByCategory || {}, (key) => this.getCategoryDisplay(key));
         this.renderTopPosts();
     }
@@ -1527,11 +1538,13 @@ class FirebaseAdminPanel {
         if (element) element.textContent = String(value);
     }
 
-    renderAnalyticsList(containerId, data, labelFormatter) {
+    renderAnalyticsList(containerId, data, labelFormatter, options = {}) {
         const container = document.getElementById(containerId);
         if (!container) return;
 
+        const excludeActions = options.excludeActions || null;
         const rows = Object.entries(data || {})
+            .filter(([key]) => !excludeActions || !excludeActions.has(key))
             .sort((a, b) => b[1] - a[1])
             .slice(0, 5);
 
@@ -1557,11 +1570,12 @@ class FirebaseAdminPanel {
                 const bulletin = this.bulletins.find((item) => item.id === postId);
                 return {
                     postId,
-                    title: bulletin ? this.getManageCardTitle(bulletin) : 'Unknown post',
+                    bulletin,
+                    title: bulletin ? this.getManageCardTitle(bulletin) : null,
                     total: metrics.engagement || 0
                 };
             })
-            .filter((row) => row.total > 0)
+            .filter((row) => row.bulletin && row.total > 0)
             .sort((a, b) => b.total - a.total)
             .slice(0, 5);
 

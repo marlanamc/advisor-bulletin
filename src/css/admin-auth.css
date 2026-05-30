@@ -256,11 +256,13 @@
     margin-bottom: 12px;
 }
 
-.manage-card-header h5 {
+.manage-card-header h5,
+.manage-card > h5 {
     color: #0f172a;
-    margin: 0;
-    font-size: 1.1rem;
-    line-height: 1.3;
+    margin: 0 0 12px;
+    font-size: 1.22rem;
+    font-weight: 700;
+    line-height: 1.35;
 }
 
 .manage-card-body {
@@ -371,94 +373,6 @@
     color: #64748b;
     padding: 40px 20px;
     font-size: 16px;
-}
-
-/* Footer */
-footer {
-    background: rgba(15, 23, 42, 0.95);
-    backdrop-filter: blur(10px);
-    padding: 32px 20px;
-    margin-top: 80px;
-    color: #cbd5e1;
-    border-top: 1px solid rgba(203, 213, 225, 0.2);
-    font-size: 14px;
-    font-weight: 400;
-}
-
-.footer-content {
-    max-width: 1200px;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 24px;
-    text-align: center;
-}
-
-.advisor-portal-section {
-    padding-top: 20px;
-    border-top: 1px solid rgba(203, 213, 225, 0.2);
-    width: 100%;
-    text-align: center;
-}
-
-.footer-admin-btn {
-    font-size: 13px;
-    padding: 10px 18px;
-    opacity: 0.8;
-    background: linear-gradient(135deg, #475569 0%, #334155 100%);
-}
-
-.footer-admin-btn:hover {
-    opacity: 1;
-    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
-}
-
-.footer-contact {
-    margin-top: 16px;
-    padding-top: 16px;
-    border-top: 1px solid rgba(203, 213, 225, 0.2);
-    width: 100%;
-    text-align: center;
-}
-
-.footer-contact p {
-    font-size: 13px;
-    color: #94a3b8;
-    margin: 0;
-}
-
-.contact-link {
-    color: #0ea5e9;
-    text-decoration: none;
-    font-weight: 500;
-    transition: color 0.3s ease;
-}
-
-.contact-link:hover {
-    color: #38bdf8;
-    text-decoration: underline;
-}
-
-@media (min-width: 640px) {
-    .footer-content {
-        flex-direction: row;
-        justify-content: space-between;
-        text-align: left;
-    }
-
-    .advisor-portal-section {
-        border-top: none;
-        width: auto;
-        padding-top: 0;
-    }
-
-    .footer-contact {
-        border-top: none;
-        margin-top: 0;
-        padding-top: 0;
-        width: auto;
-    }
 }
 
 /* Admin Page Specific Styles */

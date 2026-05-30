@@ -173,9 +173,33 @@ test.describe('Advisor redesign', () => {
     await expect(page.locator('#statLivePosts')).toBeVisible();
     await expect(page.locator('#statStudentClicks')).toContainText('2');
     await expect(page.locator('#analyticsActionList')).toContainText('Detail opens');
+    await expect(page.locator('#analyticsActionList')).not.toContainText('Card views');
     await expect(page.locator('#analyticsTopPosts')).toContainText('Free CNA class starts in June');
     await expect(page.locator('.manage-analytics-strip').first()).toContainText('3');
     await expect(page.locator('.manage-analytics-strip').first()).toContainText('engaged');
+  });
+
+  test('excludes deleted or unknown posts from top posts and engaged counts', async ({ page }) => {
+    await showSeededAdvisorDashboard(page);
+    await page.evaluate(() => {
+      window.adminPanel.analyticsEvents.push(
+        { postId: 'post-deleted', category: 'job', action: 'detail_open', source: 'student' },
+        { postId: 'post-deleted', category: 'job', action: 'link_click', source: 'student' },
+        { postId: 'post-deleted', category: 'job', action: 'link_click', source: 'student' },
+      );
+      window.adminPanel.aggregateAnalytics();
+      window.adminPanel.updateAdvisorDashboard();
+    });
+
+    await expect(page.locator('#analyticsTopPosts')).not.toContainText('Unknown post');
+    await expect(page.locator('#analyticsTopPosts')).toContainText('Free CNA class starts in June');
+
+    const engagedCount = await page.evaluate(() => window.adminPanel.analyticsSummary.engagedPosts);
+    expect(engagedCount).toBe(2);
+
+    await page.locator('#apNavStats').click();
+    await expect(page.locator('#statsReach')).toContainText('2');
+    await expect(page.locator('#apPageStats .ap-top-posts')).not.toContainText('Unknown post');
   });
 
   test('lets advisors change the analytics time period', async ({ page }) => {
@@ -248,6 +272,8 @@ test.describe('Advisor redesign', () => {
     await seedAdvisorResources(page);
 
     await page.locator('#apNavResources').click();
+    await expect(page.locator('#manageStatusPills')).toBeHidden();
+    await expect(page.locator('#manageFilterSelect')).toBeHidden();
     await page.locator('#manageReorderToggle').click();
     await isolateSeededReorderList(page);
 

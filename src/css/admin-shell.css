@@ -31,18 +31,19 @@ body > header {
 }
 
 .header-content {
-    min-height: 110px;
-    display: grid;
-    grid-template-columns: 220px 1fr 220px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 20px;
+    gap: 0;
     max-width: 1160px;
     margin: 0 auto;
-    padding: 16px 24px;
+    padding: 16px 24px 20px;
 }
 
 .header-center {
     text-align: center;
+    width: 100%;
 }
 
 .header-center h1,
@@ -62,6 +63,16 @@ body > header {
     font-size: 0.95rem;
     font-weight: 700;
     letter-spacing: 0.18em;
+}
+
+.header-center .back-btn {
+    margin-top: 14px;
+}
+
+.header-right {
+    position: absolute;
+    top: 16px;
+    right: 24px;
 }
 
 .back-btn,
@@ -131,19 +142,19 @@ body > header {
 }
 
 .auth-loading-screen {
-    min-height: calc(100vh - 110px);
+    min-height: calc(100vh - 150px);
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
-    padding: 48px 24px;
+    padding: 20px 16px 32px;
     background: linear-gradient(180deg, var(--adv-navy) 0 42%, var(--adv-bg) 42% 100%);
 }
 
 .auth-loading-card,
 .advisor-login-card {
-    width: min(500px, calc(100vw - 48px));
+    width: min(500px, calc(100vw - 32px));
     margin: 0 auto;
-    padding: 36px 32px;
+    padding: 24px 20px;
     border-radius: 20px;
     background: var(--adv-surface);
     border: 1px solid var(--adv-border);
@@ -158,7 +169,7 @@ body > header {
 .advisor-app-icon {
     width: 58px;
     height: 58px;
-    margin: 0 auto 18px;
+    margin: 0 auto 12px;
     display: grid;
     place-items: center;
     border-radius: 16px;
@@ -211,30 +222,21 @@ body > header {
 }
 
 .login-required {
-    min-height: calc(100vh - 110px);
+    min-height: calc(100vh - 150px);
     display: grid;
-    align-items: center;
-    padding: 84px 24px;
+    align-items: start;
+    padding: 20px 16px 32px;
     background: linear-gradient(180deg, var(--adv-navy) 0 40%, var(--adv-bg) 40% 100%);
 }
 
-.advisor-home-link {
-    display: inline-block;
-    margin-bottom: 24px;
-    color: #8aa0bf;
-    font-weight: 700;
-    text-decoration: none;
-    font-size: 0.82rem;
-}
-
 .advisor-login-card h3 {
-    margin: 0 0 22px;
+    margin: 0 0 10px;
     color: var(--adv-text);
     font: 800 1.8rem var(--adv-font-display);
 }
 
 .advisor-login-card p {
-    margin: 0 0 24px;
+    margin: 0 0 18px;
     color: var(--adv-text-2);
     font-size: 1rem;
     line-height: 1.5;
@@ -377,21 +379,85 @@ input[type="password"] {
     display: none;
 }
 
-@media (max-width: 720px) {
-    .header-content {
-        grid-template-columns: 1fr;
-        text-align: center;
-        padding: 18px 16px;
+/* Footer — shown on login & auth-loading (hidden once .ap-portal-active) */
+footer {
+    background: var(--adv-surface);
+    padding: 24px 20px;
+    color: var(--adv-text-2);
+    border-top: 1px solid var(--adv-border);
+    font-size: 14px;
+}
+
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    text-align: center;
+}
+
+.footer-content > p:first-child {
+    margin: 0;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--adv-text);
+    letter-spacing: 0.01em;
+}
+
+.footer-contact {
+    padding-top: 14px;
+    border-top: 1px solid var(--adv-border);
+    width: 100%;
+    text-align: center;
+}
+
+.footer-contact p {
+    font-size: 13px;
+    color: var(--adv-text-2);
+    margin: 0;
+}
+
+.contact-link {
+    color: #1a56db;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.contact-link:hover {
+    color: #2563eb;
+    text-decoration: underline;
+}
+
+@media (min-width: 640px) {
+    .footer-content {
+        flex-direction: row;
+        justify-content: space-between;
+        text-align: left;
     }
 
-    .header-left,
+    .footer-contact {
+        border-top: none;
+        padding-top: 0;
+        width: auto;
+    }
+}
+
+@media (max-width: 720px) {
+    .header-content {
+        padding: 18px 16px 20px;
+    }
+
     .header-right {
-        justify-self: center;
+        top: 18px;
+        right: 16px;
     }
 
     .auth-loading-card,
     .advisor-login-card {
-        width: min(100%, calc(100vw - 28px));
-        padding: 30px 24px;
+        width: min(100%, calc(100vw - 32px));
+        padding: 22px 18px;
     }
 }

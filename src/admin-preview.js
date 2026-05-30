@@ -59,6 +59,23 @@ document.addEventListener('DOMContentLoaded', function() {
         events:    { contentType: 'event',    sort: 'newest' },
     };
 
+    function syncManageStatusFilters(contentType) {
+        var showStatus = contentType !== 'resource';
+        var pills = document.getElementById('manageStatusPills');
+        var statusSelect = document.getElementById('manageFilterSelect');
+        if (pills) pills.hidden = !showStatus;
+        if (statusSelect) statusSelect.hidden = !showStatus;
+        if (!showStatus) {
+            document.querySelectorAll('#manageStatusPills .ap-filter-pill').forEach(function(pill, index) {
+                pill.classList.toggle('active', index === 0);
+            });
+            if (statusSelect && statusSelect.value !== 'all') {
+                statusSelect.value = 'all';
+                statusSelect.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        }
+    }
+
     window.apShowPage = function(page) {
         // Several nav entries (bulletins/resources/events) share the same
         // page element (apPagePosts), and posts/bulletins share the same
@@ -110,6 +127,7 @@ document.addEventListener('DOMContentLoaded', function() {
             setFilter('manageContentTypeSelect', preset.contentType);
             setFilter('manageFilterSelect', 'all');
             setFilter('manageSortSelect', preset.sort);
+            syncManageStatusFilters(preset.contentType);
 
             var heading = document.querySelector('#apPagePosts h1');
             if (heading) heading.textContent = PAGES[page].title;
@@ -877,9 +895,14 @@ document.addEventListener('DOMContentLoaded', function() {
         var live     = posts.filter(function(b) { return !ap.isBulletinExpiredAdmin(b); });
         var postOpens = summary.postOpens || (byAction['detail_open'] || 0);
         var highIntentClicks = summary.highIntentClicks || ((byAction['link_click'] || 0) + (byAction['pdf_open'] || 0) + (byAction['resource_open'] || 0));
-        var engagedPosts = summary.engagedPosts || Object.values(byPost).filter(function(metrics) {
-            return (metrics.engagement || 0) > 0;
-        }).length;
+        var knownPostIds = {};
+        bulletins.forEach(function(b) { knownPostIds[b.id] = true; });
+        var engagedPosts = summary.engagedPosts;
+        if (engagedPosts == null) {
+            engagedPosts = Object.entries(byPost).filter(function(entry) {
+                return knownPostIds[entry[0]] && (entry[1].engagement || 0) > 0;
+            }).length;
+        }
 
         setText('statsPublished', live.length);
         setText('statsViews',    postOpens);
@@ -906,16 +929,17 @@ document.addEventListener('DOMContentLoaded', function() {
             .map(function(entry) {
                 var id = entry[0], metrics = entry[1];
                 var b = bulletins.find(function(x){ return x.id === id; });
-                var cat = b ? (ap.isResourceBulletin(b) ? 'Resource' : ap.getCategoryDisplay(b.category)) : 'Unknown';
-                var datePosted = b && b.datePosted ? (b.datePosted.toDate ? b.datePosted.toDate() : new Date(b.datePosted)) : null;
+                if (!b) return null;
+                var cat = ap.isResourceBulletin(b) ? 'Resource' : ap.getCategoryDisplay(b.category);
+                var datePosted = b.datePosted ? (b.datePosted.toDate ? b.datePosted.toDate() : new Date(b.datePosted)) : null;
                 return {
-                    title: b ? (b.title || b.resourceTitleEn || 'Untitled') : 'Unknown post',
+                    title: b.title || b.resourceTitleEn || 'Untitled',
                     type: cat,
                     age: timeAgo(datePosted),
                     total: metrics.engagement || 0
                 };
             })
-            .filter(function(row) { return row.total > 0; })
+            .filter(function(row) { return row && row.total > 0; })
             .sort(function(a,b){ return b.total - a.total; })
             .slice(0, 8);
         renderTopPostsTable(topRows);

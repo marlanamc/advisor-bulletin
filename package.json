@@ -13,7 +13,9 @@
     "test:mobile": "playwright test --project=mobile",
     "test:ui": "playwright test --ui",
     "test:headed": "playwright test --headed",
-    "import:resources": "node scripts/import-resources.mjs"
+    "import:resources": "node scripts/import-resources.mjs",
+    "clear:analytics": "node scripts/clear-analytics-events.mjs --dry-run",
+    "clear:analytics:confirm": "node scripts/clear-analytics-events.mjs --confirm"
   },
   "dependencies": {
     "firebase": "^12.13.0",

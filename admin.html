@@ -20,12 +20,10 @@
 <body>
     <header>
         <div class="header-content">
-            <div class="header-left">
-                <a href="/" class="back-btn">← View Bulletins</a>
-            </div>
             <div class="header-center">
                 <h1>⚓ East Boston Harborside Community School</h1>
                 <h2>Advisor Dashboard</h2>
+                <a href="/" class="back-btn">← View Bulletins</a>
             </div>
             <div class="header-right">
                 <button id="logoutBtn" class="logout-btn" style="display: none;">Logout</button>
@@ -108,7 +106,6 @@
         <!-- Advisor sign-in -->
         <div id="loginRequired" class="login-required" style="display: none;">
             <div class="login-card advisor-login-card">
-                <a href="/" class="advisor-home-link">← Student bulletin board</a>
                 <div class="advisor-app-icon">⛵</div>
                 <h3>Advisor Portal</h3>
                 <p>Sign in to post bulletins for your students and review what they click.</p>
@@ -119,7 +116,7 @@
                 <form id="loginForm" class="advisor-login-form">
                     <div class="form-group">
                         <label for="username">Username or email</label>
-                        <input type="text" id="username" name="username" required autocomplete="username" placeholder="your.name or you@ebhcs.org">
+                        <input type="text" id="username" name="username" required autocomplete="username" placeholder="username or @ebhcs.org email">
                     </div>
                     <div class="form-group">
                         <label for="password">Password</label>
@@ -1201,13 +1198,13 @@
                      PAGE: MY POSTS
                      ══════════════════════════════════════ -->
                 <div id="apPagePosts" class="ap-page">
-                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
-                        <div>
+                    <div class="ap-page-header">
+                        <div class="ap-page-header-copy">
                             <h1 style="font-family:var(--ap-font-head);font-size:1.5rem;font-weight:800;color:var(--ap-text);margin:0 0 4px;letter-spacing:-.02em;">My Posts</h1>
                             <p style="font-size:.9rem;color:var(--ap-text-2);margin:0;">All content you've published.</p>
                         </div>
-                        <button class="ap-btn ap-btn-blue" onclick="apShowPage('create')">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        <button class="ap-btn ap-btn-blue ap-page-header-action" type="button" onclick="apShowPage('create')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                             New Post
                         </button>
                     </div>
@@ -1218,10 +1215,10 @@
                             <div class="ap-search-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
                             <input type="text" class="ap-search-input" id="manageSearchInput" placeholder="Search posts and resources…">
                         </div>
-                        <div class="ap-filter-pills">
-                            <button class="ap-filter-pill active">All</button>
-                            <button class="ap-filter-pill">Live</button>
-                            <button class="ap-filter-pill">Expired</button>
+                        <div class="ap-filter-pills" id="manageStatusPills">
+                            <button class="ap-filter-pill active" type="button">All</button>
+                            <button class="ap-filter-pill" type="button">Live</button>
+                            <button class="ap-filter-pill" type="button">Expired</button>
                         </div>
                         <select id="manageSortSelect" class="ap-select" style="width:auto;min-width:140px;padding:8px 34px 8px 12px;font-size:.82rem;">
                             <option value="newest">Newest First</option>

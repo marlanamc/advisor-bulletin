@@ -3682,6 +3682,24 @@ details.ap-accordion > summary.ap-accordion-trigger {
    MY POSTS PAGE
    ============================================================ */
 
+.ap-page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.ap-page-header-copy {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.ap-page-header-action {
+  flex: 0 0 auto;
+  align-self: center;
+}
+
 .ap-manage-toolbar {
   display: flex;
   align-items: center;
@@ -3734,6 +3752,11 @@ details.ap-accordion > summary.ap-accordion-trigger {
   display: flex;
   gap: 6px;
   flex-wrap: wrap;
+}
+
+.ap-filter-pills[hidden],
+#manageFilterSelect[hidden] {
+  display: none !important;
 }
 
 .ap-filter-pill {
@@ -4333,6 +4356,27 @@ details.ap-accordion > summary.ap-accordion-trigger {
     padding: 16px;
   }
 
+  .ap-page-header {
+    gap: 10px;
+  }
+
+  .ap-page-header-copy h1 {
+    font-size: clamp(1.15rem, 5.2vw, 1.5rem);
+    line-height: 1.2;
+  }
+
+  .ap-page-header-copy p {
+    font-size: 0.82rem;
+    line-height: 1.4;
+  }
+
+  .ap-page-header-action {
+    align-self: flex-start;
+    padding: 8px 12px;
+    font-size: 0.8125rem;
+    gap: 6px;
+  }
+
   .ap-toast {
     right: max(12px, env(safe-area-inset-right));
     bottom: max(12px, env(safe-area-inset-bottom));
@@ -4350,6 +4394,16 @@ details.ap-accordion > summary.ap-accordion-trigger {
   }
   .ap-page {
     padding: 12px 14px 24px;
+  }
+
+  .ap-page-header {
+    flex-wrap: wrap;
+  }
+
+  .ap-page-header-action {
+    width: 100%;
+    justify-content: center;
+    align-self: stretch;
   }
 
   .ap-stat-card {
@@ -5012,6 +5066,16 @@ details.ap-accordion > summary.ap-accordion-trigger {
 }
 
 /* Manage-card analytics tiles (restored after b50fa10 dropped them) */
+.manage-card > h5 {
+    margin: 0 0 10px;
+    color: var(--ap-text, #0e1e35);
+    font-family: var(--ap-font-display, inherit);
+    font-size: 1.22rem;
+    font-weight: 700;
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+}
+
 .manage-analytics-strip {
     display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));

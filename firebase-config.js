@@ -53,6 +53,26 @@ const STUDENT_ANALYTICS_ACTIONS = new Set([
     'resource_open'
 ]);
 
+const PRODUCTION_ANALYTICS_HOSTS = new Set([
+    'ebhcsjobboard.web.app',
+    'ebhcsjobboard.firebaseapp.com',
+    'ebhcs-bulletin-board.web.app',
+    'ebhcs-bulletin-board.firebaseapp.com',
+]);
+
+function shouldTrackStudentAnalytics() {
+    if (typeof window === 'undefined' || !window.location) {
+        return false;
+    }
+
+    const host = window.location.hostname;
+    if (!host || host === 'localhost' || host === '127.0.0.1' || host === '[::1]' || host.endsWith('.local')) {
+        return false;
+    }
+
+    return PRODUCTION_ANALYTICS_HOSTS.has(host);
+}
+
 function getAnalyticsDayKey(date = new Date()) {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -72,7 +92,7 @@ function getDeviceType() {
 }
 
 function trackStudentEvent(action, payload = {}) {
-    if (!STUDENT_ANALYTICS_ACTIONS.has(action) || typeof db === 'undefined') {
+    if (!STUDENT_ANALYTICS_ACTIONS.has(action) || typeof db === 'undefined' || !shouldTrackStudentAnalytics()) {
         return Promise.resolve();
     }
 

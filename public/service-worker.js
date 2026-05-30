@@ -1,26 +1,26 @@
-const CACHE_NAME = 'ebhcs-bulletin-cache-v1';
+const CACHE_NAME = 'ebhcs-bulletin-static-v2';
 
 const STATIC_ASSETS = [
-  '/',
-  '/index.html',
   '/manifest.json',
   '/favicon.ico',
+  '/images/app-icon-192.png',
+  '/images/app-icon-512.png',
   '/images/app-icon.svg',
+  '/images/apple-touch-icon.png',
+  '/images/favicon-48.png',
   '/images/favicon-32.png',
   '/images/favicon-16.png'
 ];
 
-// Perform install & cache static shell
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('[Service Worker] Pre-caching static app shell...');
+      console.log('[Service Worker] Pre-caching static PWA assets...');
       return cache.addAll(STATIC_ASSETS);
     }).then(() => self.skipWaiting())
   );
 });
 
-// Activate & clean old caches
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
@@ -36,20 +36,42 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Fetch & Caching Strategy
+function shouldBypass(request, requestUrl) {
+  if (request.method !== 'GET') return true;
+
+  // Let the browser handle page navigations, HTML, and update checks. Firebase
+  // Hosting marks these as no-store; caching them in the worker can slow or
+  // stale installed iOS PWA launches.
+  if (request.mode === 'navigate') return true;
+  if (request.destination === 'document') return true;
+  if (requestUrl.pathname === '/' || requestUrl.pathname.endsWith('.html')) return true;
+  if (requestUrl.pathname === '/version.json') return true;
+  if (requestUrl.search) return true;
+
+  // Bypass Firestore/Firebase dynamic requests entirely.
+  if (
+    requestUrl.hostname.includes('firebase') ||
+    requestUrl.hostname.includes('googleapis')
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
+function isCacheableStaticAsset(requestUrl) {
+  if (requestUrl.origin !== self.location.origin) return false;
+  if (requestUrl.pathname.startsWith('/assets/')) return true;
+  return STATIC_ASSETS.includes(requestUrl.pathname);
+}
+
 self.addEventListener('fetch', (event) => {
   const requestUrl = new URL(event.request.url);
 
-  // Bypass Firestore/Firebase dynamic requests entirely
-  if (
-    requestUrl.hostname.includes('firebase') || 
-    requestUrl.hostname.includes('googleapis') ||
-    event.request.method !== 'GET'
-  ) {
+  if (shouldBypass(event.request, requestUrl) || !isCacheableStaticAsset(requestUrl)) {
     return;
   }
 
-  // Strategy: Stale-While-Revalidate for local assets, stylesheets, scripts, and Google Fonts
   event.respondWith(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.match(event.request).then((cachedResponse) => {
@@ -60,7 +82,7 @@ self.addEventListener('fetch', (event) => {
           }
           return networkResponse;
         }).catch(() => {
-          // Silent catch for network failure
+          // Offline or flaky network: fall back to any cached immutable asset.
         });
 
         // Return cached response instantly if available, otherwise wait for network
