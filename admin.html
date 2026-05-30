@@ -769,8 +769,8 @@
                             </div>
 
                             <div class="form-group resource-document-only" id="resourcePdfField" hidden>
-                                <label for="resourcePdf" class="required">Form PDF</label>
-                                <small class="input-help">Upload the form students should open. You can also add an official source link below instead.</small>
+                                <label for="resourcePdf" class="optional" id="resourcePdfLabel">Form PDF</label>
+                                <small class="input-help" id="resourcePdfHelp">Optional — upload a PDF if students should open a file. A link above works instead.</small>
                                 <div class="resource-pdf-upload">
                                     <button type="button" class="ap-flyer-pdf-choose" onclick="document.getElementById('resourcePdf').click()">Choose PDF</button>
                                     <input type="file" id="resourcePdf" name="resourcePdf" accept=".pdf,application/pdf" class="file-input" style="display: none;" aria-label="Upload form PDF">

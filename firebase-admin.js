@@ -2329,6 +2329,17 @@ class FirebaseAdminPanel {
         const pdfField = document.getElementById('resourcePdfField');
         if (pdfField) pdfField.hidden = !isDocument;
 
+        const pdfLabel = document.getElementById('resourcePdfLabel');
+        const pdfHelp = document.getElementById('resourcePdfHelp');
+        if (pdfLabel) {
+            this.setLabelPriority(pdfLabel, 'optional');
+        }
+        if (pdfHelp) {
+            pdfHelp.textContent = isDocument
+                ? 'Optional — upload a PDF if students should open a file. A link above works instead.'
+                : '';
+        }
+
         const urlInput = document.getElementById('resourceUrl');
         const urlLabel = document.getElementById('resourceUrlLabel');
         const urlHelp = document.getElementById('resourceUrlHelp');
@@ -2346,7 +2357,7 @@ class FirebaseAdminPanel {
 
         if (urlHelp) {
             urlHelp.textContent = isDocument
-                ? 'Optional — link to the official page where this form lives.'
+                ? 'Optional — link to the form online. Works instead of uploading a PDF.'
                 : 'Paste the website students should open when they tap the resource.';
             urlHelp.classList.toggle('required', !isDocument);
         }
@@ -2358,7 +2369,7 @@ class FirebaseAdminPanel {
         const resourceSubtitle = document.getElementById('resourceSectionSubtitle');
         if (resourceSubtitle) {
             resourceSubtitle.textContent = isDocument
-                ? 'Required to publish a document resource'
+                ? 'Add a link or PDF (or both) so students can open the form'
                 : 'Required to publish a resource';
         }
 
@@ -2395,7 +2406,7 @@ class FirebaseAdminPanel {
             return;
         }
 
-        throw new Error('Document resources need a PDF upload, official source link, or action link.');
+        throw new Error('Document resources need a link, PDF upload, or extra action link so students can open something.');
     }
 
     async handleImagePreview(e, fieldName = 'image') {
