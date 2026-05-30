@@ -17,7 +17,7 @@
 //
 // 4. Firestore / Google APIs and /version.json are always bypassed.
 
-const CACHE_NAME = 'ebhcs-bulletin-v3';
+const CACHE_NAME = 'ebhcs-bulletin-v4';
 
 const APP_SHELL = [
   '/',
@@ -123,58 +123,98 @@ function shouldBypass(request, requestUrl) {
   return false;
 }
 
-// Stale-while-revalidate for the HTML shell. On every navigation we hand
-// back the cached index.html instantly (sub-50ms) and refresh it from the
-// network in the background. The next launch sees the fresh copy.
+// Fire-and-forget cache write that never throws (quota errors, opaque
+// responses, etc. should not surface as uncaught SW rejections).
+function safeCachePut(cache, request, response) {
+  try {
+    cache.put(request, response).catch(() => {});
+  } catch {}
+}
+
+// Fetch with one retry on transient network failure. Cellular drops a single
+// request constantly; without this, a new deploy's first asset request after
+// activation can hit a hiccup and surface as ERR_FAILED with no recovery UI.
+async function fetchWithRetry(request, { retries = 1, backoffMs = 250 } = {}) {
+  let lastErr;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const response = await fetch(request);
+      // 5xx is also worth a retry once.
+      if (response && response.status >= 500 && attempt < retries) {
+        await new Promise((r) => setTimeout(r, backoffMs));
+        continue;
+      }
+      return response;
+    } catch (err) {
+      lastErr = err;
+      if (attempt < retries) {
+        await new Promise((r) => setTimeout(r, backoffMs));
+        continue;
+      }
+    }
+  }
+  throw lastErr;
+}
+
+// Stale-while-revalidate for navigations: serve cached shell instantly
+// (sub-50ms), refresh from network in the background. This is what makes
+// cold loads fast.
+//
+// IMPORTANT TRANSITION NOTE: when a new deploy lands, the first navigation
+// returns the OLD cached HTML (whose asset hashes are also cached → works),
+// and the background revalidation caches the NEW HTML. On the *next*
+// navigation we hand back the new HTML; its new asset hashes are not yet
+// cached, so they're network-fetched on demand. fetchWithRetry below makes
+// sure a single flaky cellular packet doesn't turn that into an ERR_FAILED.
 async function handleNavigation(request) {
   const cache = await caches.open(CACHE_NAME);
-  // For the navigation, prefer the cached "/" or "/index.html" — both map to
-  // the same shell. Try the request itself first, then fall back to /index.html.
+
   const cached =
     (await cache.match(request)) ||
     (await cache.match('/index.html')) ||
     (await cache.match('/'));
 
-  const networkFetch = fetch(new Request('/index.html', { cache: 'no-store' }))
+  const networkFetch = fetchWithRetry(request)
     .then((networkResponse) => {
       if (networkResponse && networkResponse.status === 200) {
-        cache.put('/index.html', networkResponse.clone());
-        cache.put('/', networkResponse.clone());
+        safeCachePut(cache, '/index.html', networkResponse.clone());
+        safeCachePut(cache, '/', networkResponse.clone());
       }
       return networkResponse;
     })
     .catch(() => null);
 
   if (cached) {
-    // Don't block the response on revalidation.
     networkFetch.catch(() => {});
     return cached;
   }
 
   const fresh = await networkFetch;
   if (fresh) return fresh;
-  // Last-ditch: empty 503 so the browser doesn't show a confusing error page.
-  return new Response('Offline and no cached shell available.', {
-    status: 503,
-    headers: { 'Content-Type': 'text/plain' },
-  });
+
+  // Truly offline AND no cached shell (brand-new install, no network).
+  return new Response(
+    '<!doctype html><meta charset=utf-8><title>Offline</title>' +
+    '<style>body{font-family:system-ui;padding:2rem;color:#1e3a6e}</style>' +
+    '<h1>You are offline</h1>' +
+    '<p>Reconnect and refresh to load the bulletin board.</p>',
+    { status: 503, headers: { 'Content-Type': 'text/html; charset=utf-8' } }
+  );
 }
 
-// Hashed asset URLs are immutable (Vite content hashing). Cache-first, then
-// network on miss; cache the network result for next time.
+// Hashed asset URLs are immutable. Cache-first, then network-with-retry on
+// miss. We do NOT return Response.error() on failure — we re-throw so the
+// browser surfaces a normal network error (which the user's normal refresh
+// can recover from) rather than the dead-end ERR_FAILED page.
 async function handleHashedAsset(request) {
   const cache = await caches.open(CACHE_NAME);
   const cached = await cache.match(request);
   if (cached) return cached;
-  try {
-    const networkResponse = await fetch(request);
-    if (networkResponse && networkResponse.status === 200) {
-      cache.put(request, networkResponse.clone());
-    }
-    return networkResponse;
-  } catch (err) {
-    return cached || Response.error();
+  const networkResponse = await fetchWithRetry(request);
+  if (networkResponse && networkResponse.status === 200) {
+    safeCachePut(cache, request, networkResponse.clone());
   }
+  return networkResponse;
 }
 
 // Shell icons / manifest: stale-while-revalidate.
@@ -184,12 +224,18 @@ async function handleShellAsset(request) {
   const fetchPromise = fetch(request)
     .then((networkResponse) => {
       if (networkResponse && networkResponse.status === 200) {
-        cache.put(request, networkResponse.clone());
+        safeCachePut(cache, request, networkResponse.clone());
       }
       return networkResponse;
     })
-    .catch(() => cached);
-  return cached || fetchPromise;
+    .catch(() => null);
+  if (cached) {
+    fetchPromise.catch(() => {});
+    return cached;
+  }
+  const fresh = await fetchPromise;
+  if (fresh) return fresh;
+  return fetch(request);
 }
 
 self.addEventListener('fetch', (event) => {
