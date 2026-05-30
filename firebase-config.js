@@ -2008,7 +2008,8 @@ class FirebaseBulletinBoard {
 
         if (activeWrap) activeWrap.hidden = true;
         topRow.hidden = false;
-        const top = entries.slice(0, 7);
+        const topLimit = window.matchMedia('(max-width: 767px)').matches ? 5 : 7;
+        const top = entries.slice(0, topLimit);
         topRow.innerHTML = top.map(({ label, source, category }) => {
             const tint = this.getResourceCategoryTint(category);
             const en = this.escapeHtml(label);
