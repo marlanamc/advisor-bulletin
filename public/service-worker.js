@@ -1,28 +1,26 @@
-// Cold-load strategy for the EBHCS Bulletin PWA:
+// Stable-load strategy for the EBHCS Bulletin PWA:
 //
-// 1. On install, pre-cache the app shell (/, /index.html) and every hashed
-//    JS/CSS chunk listed in /asset-manifest.json. This means a brand-new
-//    install pays one network cost up front and every subsequent launch
-//    paints from cache in well under a second, even on flaky cellular.
+// 1. On install, pre-cache the student app shell essentials and only the
+//    critical hashed JS/CSS listed in /asset-manifest.json. Deferred Firebase
+//    chunks are cached at runtime after first use, not during install.
 //
 // 2. Navigations (HTML) use stale-while-revalidate: serve the cached shell
 //    instantly, fetch a fresh copy in the background, and put it back in the
 //    cache for next launch. /version.json (fetched separately by app-update.js,
 //    never cached here) is the source of truth for "is there a new deploy?" —
-//    when it changes, app-update.js reloads, which then picks up the now-fresh
-//    shell from the background revalidation.
+//    when it changes, app-update.js asks this worker to cache the fresh shell
+//    before reloading.
 //
 // 3. Hashed /assets/* are immutable, so we cache-first them and only hit the
 //    network on a miss.
 //
 // 4. Firestore / Google APIs and /version.json are always bypassed.
 
-const CACHE_NAME = 'ebhcs-bulletin-v5';
+const CACHE_NAME = 'ebhcs-bulletin-v6';
 
 const APP_SHELL = [
   '/',
   '/index.html',
-  '/admin.html',
   '/manifest.json',
   '/favicon.ico',
   '/images/app-icon-192.png',
@@ -33,6 +31,9 @@ const APP_SHELL = [
   '/images/favicon-32.png',
   '/images/favicon-16.png',
 ];
+
+const STUDENT_SHELL_ALIASES = ['/', '/index.html'];
+const ADMIN_SHELL_ALIASES = ['/admin', '/admin.html'];
 
 async function precacheAppShell(cache) {
   // Use cache:'reload' on the shell HTML so we never install a stale copy
@@ -93,6 +94,7 @@ function isHTMLNavigation(request, requestUrl) {
   if (request.method !== 'GET') return false;
   if (request.mode === 'navigate') return true;
   if (request.destination === 'document') return true;
+  if (requestUrl.pathname === '/admin') return true;
   if (requestUrl.pathname === '/' || requestUrl.pathname.endsWith('.html')) return true;
   return false;
 }
@@ -105,6 +107,22 @@ function isHashedAsset(requestUrl) {
 function isShellAsset(requestUrl) {
   if (requestUrl.origin !== self.location.origin) return false;
   return APP_SHELL.includes(requestUrl.pathname);
+}
+
+function getShellInfo(pathname) {
+  if (ADMIN_SHELL_ALIASES.includes(pathname)) {
+    return {
+      cacheKey: '/admin.html',
+      networkPath: '/admin.html',
+      aliases: ADMIN_SHELL_ALIASES,
+    };
+  }
+
+  return {
+    cacheKey: '/index.html',
+    networkPath: '/index.html',
+    aliases: STUDENT_SHELL_ALIASES,
+  };
 }
 
 function shouldBypass(request, requestUrl) {
@@ -157,6 +175,22 @@ async function fetchWithRetry(request, { retries = 1, backoffMs = 250 } = {}) {
   throw lastErr;
 }
 
+async function fetchAndCacheShell(shellInfo) {
+  const cache = await caches.open(CACHE_NAME);
+  const request = new Request(shellInfo.networkPath, { cache: 'reload' });
+  const networkResponse = await fetchWithRetry(request);
+
+  if (networkResponse && networkResponse.status === 200) {
+    await Promise.all(
+      [shellInfo.cacheKey, ...shellInfo.aliases].map((key) =>
+        cache.put(key, networkResponse.clone()).catch(() => {})
+      )
+    );
+  }
+
+  return networkResponse;
+}
+
 // Stale-while-revalidate for navigations: serve cached shell instantly
 // (sub-50ms), refresh from network in the background. This is what makes
 // cold loads fast.
@@ -170,34 +204,17 @@ async function fetchWithRetry(request, { retries = 1, backoffMs = 250 } = {}) {
 async function handleNavigation(request) {
   const cache = await caches.open(CACHE_NAME);
   const requestUrl = new URL(request.url);
-
-  // Pick the correct shell for this navigation. /admin.html has its own
-  // shell separate from the student / + /index.html shell. Never fall back
-  // across shells — that would serve the homepage when admin was requested.
-  const isAdminShell = requestUrl.pathname === '/admin.html';
-  const shellKey = isAdminShell ? '/admin.html' : '/index.html';
-  const shellAliases = isAdminShell ? ['/admin.html'] : ['/index.html', '/'];
+  const shellInfo = getShellInfo(requestUrl.pathname);
 
   let cached = await cache.match(request);
   if (!cached) {
-    for (const alias of shellAliases) {
+    for (const alias of shellInfo.aliases) {
       cached = await cache.match(alias);
       if (cached) break;
     }
   }
 
-  const networkFetch = fetchWithRetry(request)
-    .then((networkResponse) => {
-      if (networkResponse && networkResponse.status === 200) {
-        // Cache under the canonical shell key (and "/" alias for the student
-        // shell only). Never cross-contaminate admin and student shells.
-        safeCachePut(cache, shellKey, networkResponse.clone());
-        if (!isAdminShell) {
-          safeCachePut(cache, '/', networkResponse.clone());
-        }
-      }
-      return networkResponse;
-    })
+  const networkFetch = fetchAndCacheShell(shellInfo)
     .catch(() => null);
 
   if (cached) {
@@ -217,6 +234,20 @@ async function handleNavigation(request) {
     { status: 503, headers: { 'Content-Type': 'text/html; charset=utf-8' } }
   );
 }
+
+self.addEventListener('message', (event) => {
+  if (event.data?.type !== 'PREPARE_FRESH_SHELL') return;
+
+  event.waitUntil(
+    fetchAndCacheShell(getShellInfo('/index.html'))
+      .then((response) => {
+        event.ports?.[0]?.postMessage({ ok: Boolean(response && response.status === 200) });
+      })
+      .catch(() => {
+        event.ports?.[0]?.postMessage({ ok: false });
+      })
+  );
+});
 
 // Hashed asset URLs are immutable. Cache-first, then network-with-retry on
 // miss. We do NOT return Response.error() on failure — we re-throw so the

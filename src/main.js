@@ -6,15 +6,14 @@ initAppUpdateCheck()
 
 initImageLightbox()
 
-// Defer the 146KB firebase-config bundle until after first paint so the shell
-// HTML + CSS can render before we pay for parse/compile on low-end mobile.
-// The cached bulletin grid (localStorage) hydrates inside firebase-config init.
+// Defer firebase-config until just after first paint so the shell can render,
+// then hydrate cached/local Firestore data without waiting for idle time.
 function loadFirebaseConfig() {
     import('../firebase-config.js')
 }
 
-if ('requestIdleCallback' in window) {
-    requestIdleCallback(loadFirebaseConfig, { timeout: 1500 })
+if ('requestAnimationFrame' in window) {
+    requestAnimationFrame(() => setTimeout(loadFirebaseConfig, 0))
 } else {
     setTimeout(loadFirebaseConfig, 0)
 }
@@ -31,4 +30,3 @@ if ('serviceWorker' in navigator) {
             });
     });
 }
-

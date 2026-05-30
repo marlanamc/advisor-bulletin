@@ -1,6 +1,8 @@
 const VERSION_KEY = 'ebhcs_app_version';
+const VERSION_RELOAD_KEY = 'ebhcs_app_reload_for_version';
 const VERSION_CHECK_INTERVAL_MS = 60 * 1000;
 const VERSION_FETCH_TIMEOUT_MS = 4000;
+const SHELL_PREP_TIMEOUT_MS = 5000;
 
 let checking = false;
 let initialized = false;
@@ -28,6 +30,62 @@ async function fetchDeployedVersion() {
     }
 }
 
+function waitForServiceWorkerController() {
+    if (!('serviceWorker' in navigator)) return Promise.resolve(null);
+    if (navigator.serviceWorker.controller) {
+        return Promise.resolve(navigator.serviceWorker.controller);
+    }
+
+    return new Promise((resolve) => {
+        const timeoutId = setTimeout(() => resolve(null), 1000);
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+            clearTimeout(timeoutId);
+            resolve(navigator.serviceWorker.controller || null);
+        }, { once: true });
+    });
+}
+
+async function prepareFreshShell() {
+    const controller = await waitForServiceWorkerController();
+    if (!controller || !navigator.serviceWorker) return false;
+
+    return new Promise((resolve) => {
+        const channel = new MessageChannel();
+        const timeoutId = setTimeout(() => {
+            channel.port1.close();
+            resolve(false);
+        }, SHELL_PREP_TIMEOUT_MS);
+
+        channel.port1.onmessage = (event) => {
+            clearTimeout(timeoutId);
+            channel.port1.close();
+            resolve(event.data?.ok === true);
+        };
+
+        try {
+            controller.postMessage({ type: 'PREPARE_FRESH_SHELL' }, [channel.port2]);
+        } catch {
+            clearTimeout(timeoutId);
+            channel.port1.close();
+            resolve(false);
+        }
+    });
+}
+
+async function reloadForVersion(version) {
+    const lastReloadVersion = sessionStorage.getItem(VERSION_RELOAD_KEY);
+    if (lastReloadVersion === version) return;
+
+    const prepared = await prepareFreshShell();
+    sessionStorage.setItem(VERSION_RELOAD_KEY, version);
+
+    if (!prepared) {
+        console.warn('[App Update] Fresh shell preparation timed out; reloading normally.');
+    }
+
+    location.reload();
+}
+
 async function runVersionCheck({ allowReload = true } = {}) {
     if (checking) return;
     checking = true;
@@ -41,7 +99,7 @@ async function runVersionCheck({ allowReload = true } = {}) {
         if (prev && prev !== next) {
             sessionStorage.setItem(VERSION_KEY, next);
             if (allowReload) {
-                location.reload();
+                await reloadForVersion(next);
             }
             return;
         }
