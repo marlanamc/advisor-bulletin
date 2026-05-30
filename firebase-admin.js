@@ -19,7 +19,7 @@ import {
     getNextSessionStartMs,
 } from './src/event-sessions.js'
 import { initDescriptionFormatToolbars, refreshRichEditors, syncRichEditorsToForm, getRichTextFieldValue } from './src/description-format.js'
-import { collection, doc, query, where, orderBy, onSnapshot, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, serverTimestamp, Timestamp, writeBatch } from 'firebase/firestore'
+import { collection, doc, query, where, orderBy, onSnapshot, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, deleteField, serverTimestamp, Timestamp, writeBatch } from 'firebase/firestore'
 
 installClientErrorLogger('admin')
 import { onAuthStateChanged, signOut, sendPasswordResetEmail } from 'firebase/auth'
@@ -417,8 +417,7 @@ class FirebaseAdminPanel {
         const location = document.getElementById('location')?.value;
         const phone = document.getElementById('contactPhone')?.value;
         const hours = document.getElementById('contactHours')?.value;
-        const languages = document.getElementById('contactLanguages')?.value;
-        if (company || contact || location || phone || hours || languages) {
+        if (company || contact || location || phone || hours) {
             const step5 = [...document.querySelectorAll('.ap-accordion-section')].find(s => s.querySelector('.ap-step-number')?.textContent === '5');
             if (step5) step5.classList.add('open');
         }
@@ -2510,10 +2509,6 @@ class FirebaseAdminPanel {
                 if (radio) radio.checked = true;
             }
             document.getElementById('resourceHours').value = bulletin.hours || '';
-            const resLangs = Array.isArray(bulletin.languages) ? bulletin.languages : (bulletin.languages || '').split(',').map(s => s.trim()).filter(Boolean);
-            document.querySelectorAll('input[name="resourceLanguages"]').forEach(cb => {
-                cb.checked = resLangs.includes(cb.value);
-            });
 
             const resourceLogoPreview = document.getElementById('resourceLogoPreview');
             if (resourceLogoPreview) {
@@ -2543,10 +2538,6 @@ class FirebaseAdminPanel {
                 if (radio) radio.checked = true;
             }
             document.getElementById('contactHours').value = bulletin.hours || '';
-            const conLangs = Array.isArray(bulletin.languages) ? bulletin.languages : (bulletin.languages || '').split(',').map(s => s.trim()).filter(Boolean);
-            document.querySelectorAll('input[name="contactLanguages"]').forEach(cb => {
-                cb.checked = conLangs.includes(cb.value);
-            });
             if (bulletin.dateType) {
                 document.getElementById('dateType').value = bulletin.dateType;
                 toggleDateFields();
@@ -2872,8 +2863,7 @@ class FirebaseAdminPanel {
                     b.eventLink,
                     b.highlights,
                     b.phone,
-                    b.address,
-                    ...(Array.isArray(b.languages) ? b.languages : [])
+                    b.address
                 ].filter(Boolean).join(' ').toLowerCase();
                 return searchable.includes(searchQuery);
             });
@@ -2944,7 +2934,6 @@ class FirebaseAdminPanel {
                     ${bulletin.highlights ? `<p><strong>Services:</strong> ${this.escapeHtml(bulletin.highlights)}</p>` : ''}
                     ${bulletin.address ? `<p><strong>Address:</strong> ${this.escapeHtml(bulletin.address)}</p>` : ''}
                     ${bulletin.phone ? `<p><strong>Phone:</strong> ${this.escapeHtml(bulletin.phone)} (${this.escapeHtml(bulletin.phoneMode || 'call')})</p>` : ''}
-                    ${Array.isArray(bulletin.languages) && bulletin.languages.length ? `<p><strong>Languages:</strong> ${bulletin.languages.map(lang => this.escapeHtml(lang)).join(', ')}</p>` : ''}
                     ${bulletin.resourceOrder !== '' && bulletin.resourceOrder !== undefined && bulletin.resourceOrder !== null ? `<p><strong>Display Order:</strong> ${this.escapeHtml(String(bulletin.resourceOrder))}</p>` : ''}
                 ` : ''}
                 ${this.renderManageDateInfo(bulletin)}
@@ -3883,7 +3872,6 @@ class FirebaseAdminPanel {
                 phone: (formData.get('resourcePhone') || '').trim(),
                 phoneMode: (formData.get('resourcePhoneMode') || 'call').trim(),
                 hours: (formData.get('resourceHours') || '').trim(),
-                languages: formData.getAll('resourceLanguages'),
                 isActive: true,
                 isPublished: formData.get('resourcePublished') === 'on',
                 isPinned: false,
@@ -3939,7 +3927,6 @@ class FirebaseAdminPanel {
             phone: (formData.get('contactPhone') || '').trim(),
             phoneMode: (formData.get('contactPhoneMode') || 'call').trim(),
             hours: (formData.get('contactHours') || '').trim(),
-            languages: formData.getAll('contactLanguages'),
             isActive: true,
             isPublished: true,
             hideFromMainFeed: false,
@@ -3962,6 +3949,7 @@ class FirebaseAdminPanel {
         try {
             let payload = { ...bulletin };
             delete payload.id;
+            payload.languages = deleteField();
 
             if (editingId) {
                 // Text/metadata updates should not re-send embedded flyer assets.
@@ -4040,10 +4028,6 @@ class FirebaseAdminPanel {
         // Reset phone mode radios
         document.querySelectorAll('input[name="resourcePhoneMode"][value="call"]').forEach(r => r.checked = true);
         document.querySelectorAll('input[name="contactPhoneMode"][value="call"]').forEach(r => r.checked = true);
-
-        document.querySelectorAll('input[name="resourceLanguages"], input[name="contactLanguages"]').forEach(cb => {
-            cb.checked = cb.value === 'ENG' || cb.value === 'ESP';
-        });
 
         // Reset date fields
         document.getElementById('dateType').value = '';

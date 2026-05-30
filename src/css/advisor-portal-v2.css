@@ -309,6 +309,10 @@ body.ap-portal-active .main-content {
   margin-bottom: 14px;
 }
 
+.ap-create-form-col .ap-category-picker-block.category-field-group {
+  padding-top: 16px;
+}
+
 .ap-create-form-col .ap-category-picker-help {
   margin: 0 0 10px;
   display: block;

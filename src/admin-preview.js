@@ -411,12 +411,6 @@ document.addEventListener('DOMContentLoaded', function() {
             ? formatResourceHoursHtml(data.hours, escPreview)
             : '';
 
-        var langsHtml = (data.languages || []).length
-            ? '<div class="mobile-resource-card__langs">' + data.languages.map(function(lang) {
-                return '<span class="mobile-resource-card__lang">' + escPreview(lang) + '</span>';
-            }).join('') + '</div>'
-            : '';
-
         var isDesktopPreview = window.matchMedia('(min-width: 768px)').matches;
         var hasDirections = Boolean((data.address || '').trim());
         var addressHtml = data.address && !(isDesktopPreview && hasDirections)
@@ -469,7 +463,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     chipsHtml +
                     addressHtml +
                     hoursHtml +
-                    langsHtml +
                     actionsHtml +
                 '</div>' +
             '</article>';
@@ -494,9 +487,6 @@ document.addEventListener('DOMContentLoaded', function() {
             var phone = (document.getElementById('resourcePhone')?.value || '').trim();
             var address = (document.getElementById('resourceAddress')?.value || '').trim();
             var hours = (document.getElementById('resourceHours')?.value || '').trim();
-            var languages = Array.from(document.querySelectorAll('input[name="resourceLanguages"]:checked')).map(function(el) {
-                return el.value;
-            }).slice(0, 4);
 
             cardWrap.innerHTML = buildResourcePreviewCard({
                 title: title,
@@ -509,8 +499,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 url: url,
                 phone: phone,
                 address: address,
-                hours: hours,
-                languages: languages
+                hours: hours
             });
             setPreviewNav('resources');
             return;
@@ -710,9 +699,6 @@ document.addEventListener('DOMContentLoaded', function() {
             var el = document.getElementById(id);
             if (!el) return;
             el.addEventListener('input', syncPreview);
-            el.addEventListener('change', syncPreview);
-        });
-        document.querySelectorAll('input[name="resourceLanguages"]').forEach(function(el) {
             el.addEventListener('change', syncPreview);
         });
         var imgEl = document.getElementById('image');

@@ -2206,39 +2206,6 @@ class FirebaseBulletinBoard {
         return /walk[\s-]?in|sin cita|drop[\s-]?in/.test(text);
     }
 
-    isResourceSpanishSpoken(resource) {
-        if (Array.isArray(resource.languages)) {
-            const langs = resource.languages.join(' ').toLowerCase();
-            if (/spanish|español|espanol/.test(langs)) return true;
-        }
-        if (resource.bilingual === true) return true;
-        const text = [
-            resource.highlights, resource.description
-        ].join(' ').toLowerCase();
-        return /spanish|español|espanol|se habla/.test(text);
-    }
-
-    // ENG + ESP is the assumed baseline for East Boston resources, so we
-    // suppress it in card/detail rendering. Anything different (Spanish-only,
-    // additional languages) still surfaces.
-    isDefaultLanguageSet(languages) {
-        if (!Array.isArray(languages)) return false;
-        const normalized = languages
-            .map((l) => String(l || '').trim().toUpperCase())
-            .filter(Boolean);
-        if (normalized.length !== 2) return false;
-        return normalized.includes('ENG') && normalized.includes('ESP');
-    }
-
-    getDisplayableLanguages(source) {
-        if (!source) return [];
-        const raw = Array.isArray(source.languages)
-            ? source.languages
-            : String(source.languages || '').split(',').map((s) => s.trim()).filter(Boolean);
-        if (this.isDefaultLanguageSet(raw)) return [];
-        return raw;
-    }
-
     // Card summary shown on resource tiles. Renders both languages in en-text/es-text
     // spans so the lang toggle works without a re-render. Falls back across languages
     // when only one is set.
@@ -2814,12 +2781,6 @@ class FirebaseBulletinBoard {
         const tel = resource.tel || (phone ? `tel:${phone.replace(/[^0-9+]/g, '')}` : '');
         const address = resource.address || '';
         const mapUrl = resource.mapUrl || (address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}` : '');
-        const languages = Array.isArray(resource.languages)
-            ? this.getDisplayableLanguages(resource)
-            : this.parseResourceHighlights(resource.highlights);
-        const languageHtml = languages.length > 0
-            ? `<div class="cat-org-langs">${languages.slice(0, 5).map((lang) => `<span class="cat-org-lang-tag">${this.escapeHtml(lang)}</span>`).join('')}</div>`
-            : '';
         const callHtml = phone && tel
             ? `<a href="${this.escapeAttribute(tel)}" class="cat-org-btn cat-org-btn--call">
                     <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.25 7.75c0 5.1 5.9 11 11 11h1.75a1 1 0 0 0 1-1v-3.2a1 1 0 0 0-.78-.98l-3.14-.7a1 1 0 0 0-.96.29l-.92.98a13.84 13.84 0 0 1-4.34-4.34l.98-.92a1 1 0 0 0 .29-.96l-.7-3.14A1 1 0 0 0 8.45 4H5.25a1 1 0 0 0-1 1v2.75Z"/></svg>
@@ -2861,7 +2822,6 @@ class FirebaseBulletinBoard {
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#758299" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s6.25-5.9 6.25-11.1a6.25 6.25 0 1 0-12.5 0C5.75 15.1 12 21 12 21Z"/><circle cx="12" cy="9.75" r="2.5"/></svg>
                     ${this.escapeHtml(address)}
                 </p>` : ''}
-                ${languageHtml}
                 <div class="cat-org-actions ${actionCount === 1 || (websiteHtml && callHtml && !directionsHtml) ? 'cat-org-actions--stack' : ''}">
                     ${options.compact ? primaryActionHtml : `${callHtml}${websiteHtml || directionsHtml}`}
                 </div>
@@ -3108,11 +3068,6 @@ class FirebaseBulletinBoard {
 
         const badgesHtml = this.getResourceBadgesHtml(resource);
 
-        const languages = this.getDisplayableLanguages(resource);
-        const languagesHtml = languages.length
-            ? `<div class="mobile-resource-card__langs">${languages.slice(0, 4).map((lang) => `<span class="mobile-resource-card__lang">${this.escapeHtml(lang)}</span>`).join('')}</div>`
-            : '';
-
         const isDesktopCard = window.matchMedia('(min-width: 768px)').matches;
         const phoneHtml = phone && isDesktopCard
             ? `<p class="mobile-resource-card__phone">
@@ -3210,7 +3165,6 @@ class FirebaseBulletinBoard {
                     ${servicesHtml}
                     ${addressHtml}
                     ${hoursHtml}
-                    ${languagesHtml}
                     ${phoneHtml}
                     ${actionsHtml}
                 </div>
@@ -3883,18 +3837,6 @@ class FirebaseBulletinBoard {
                                     <div><strong style="display: block; font-size: 0.8rem; color: #64748b; text-transform: uppercase; margin-bottom: 6px;">Hours</strong>${formatResourceHoursHtml(bulletin.hours, (value) => this.escapeHtml(value))}</div>
                                 </div>
                             ` : ''}
-
-                            ${this.getDisplayableLanguages(bulletin).length ? `
-                                <div style="display: flex; gap: 12px; align-items: flex-start;">
-                                    <div style="color: ${meta.accent}; margin-top: 2px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg></div>
-                                    <div>
-                                        <strong style="display: block; font-size: 0.8rem; color: #64748b; text-transform: uppercase;">Languages</strong>
-                                        <div style="display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap;">
-                                            ${this.getLanguageTagsHtml(this.getDisplayableLanguages(bulletin))}
-                                        </div>
-                                    </div>
-                                </div>
-                            ` : ''}
                         </div>
                     ` : ''}
 
@@ -3995,36 +3937,10 @@ class FirebaseBulletinBoard {
         };
     }
 
-    getLanguageTagsHtml(languages) {
-        if (!languages) return '';
-        const langArray = Array.isArray(languages) ? languages : String(languages).split(',').map(s => s.trim()).filter(Boolean);
-        
-        const langNames = {
-            ENG: 'English',
-            ESP: 'Español',
-            POR: 'Português',
-            KRE: 'Kreyòl (Haitian Creole)',
-            ARA: 'Arabic',
-            VIE: 'Vietnamese',
-            CHI: 'Chinese'
-        };
-
-        return langArray.map(lang => {
-            const code = lang.toUpperCase();
-            const fullName = langNames[code] || code;
-            return `
-                <span title="${this.escapeAttribute(fullName)}" style="display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: #f1f5f9; color: #475569; font-size: 10px; font-weight: 800; font-family: inherit; cursor: help;">
-                    ${this.escapeHtml(code)}
-                </span>
-            `;
-        }).join('');
-    }
-
     hasDetailInfoGridContent(bulletin) {
         if (!bulletin) return false;
         if ((bulletin.address || '').trim()) return true;
-        if ((bulletin.hours || '').trim()) return true;
-        return this.getDisplayableLanguages(bulletin).length > 0;
+        return Boolean((bulletin.hours || '').trim());
     }
 
     getDetailLinkActionLabel(category) {
