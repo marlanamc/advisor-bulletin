@@ -1,5 +1,4 @@
 import './css/admin-shell.css'
-import { initAppUpdateCheck } from './app-update.js'
 import { mountEbhcsBrandLockups } from './ebhcs-brand-lockup.js'
 import { db, auth } from './firebase-auth.js'
 import { doc, getDoc } from 'firebase/firestore'
@@ -135,7 +134,6 @@ function bootShell() {
     shellBooted = true
 
     removePwaControlFromAdmin()
-    initAppUpdateCheck()
     initAdminBrandLockups()
     setAuthView('loading')
 

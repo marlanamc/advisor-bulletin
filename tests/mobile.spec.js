@@ -273,6 +273,90 @@ test.describe('Mobile app shell', () => {
     await expect(page.locator('#resourcesList')).toContainText('Clinica Gratis');
   });
 
+  test('need chip filter shows cross-category resources and hides category tiles', async ({ page }) => {
+    await page.evaluate(() => {
+      const now = new Date().toISOString();
+      window.bulletinBoard.bulletins = [
+        {
+          id: 'resource-jobs-1',
+          type: 'resource',
+          title: 'JVS Boston',
+          titleEn: 'JVS Boston',
+          titleEs: 'JVS Boston',
+          category: 'resource',
+          resourceCategory: 'jobs',
+          resourceIcon: 'briefcase',
+          url: 'https://example.org/jvs',
+          description: 'Job training and placement.',
+          serviceChips: ['Get job training'],
+          advisorName: 'Jorge',
+          postedBy: 'jorge',
+          datePosted: now,
+          isActive: true,
+          isPublished: true,
+          resourceOrder: 10,
+        },
+        {
+          id: 'resource-housing-1',
+          type: 'resource',
+          title: 'Maverick Landing',
+          titleEn: 'Maverick Landing',
+          titleEs: 'Maverick Landing',
+          category: 'resource',
+          resourceCategory: 'housing',
+          resourceIcon: 'home',
+          url: 'https://example.org/maverick',
+          description: 'Housing help and job training.',
+          serviceChips: ['Get job training', 'Get housing help'],
+          advisorName: 'Jorge',
+          postedBy: 'jorge',
+          datePosted: now,
+          isActive: true,
+          isPublished: true,
+          resourceOrder: 20,
+        },
+        {
+          id: 'resource-food-1',
+          type: 'resource',
+          title: 'Eastie Farm',
+          titleEn: 'Eastie Farm',
+          titleEs: 'Eastie Farm',
+          category: 'resource',
+          resourceCategory: 'food',
+          resourceIcon: 'food',
+          url: 'https://example.org/eastie',
+          description: 'Fresh produce.',
+          serviceChips: ['Get groceries'],
+          advisorName: 'Jorge',
+          postedBy: 'jorge',
+          datePosted: now,
+          isActive: true,
+          isPublished: true,
+          resourceOrder: 30,
+        },
+      ];
+      window.bulletinBoard.displayBulletins(window.bulletinBoard.bulletins);
+    });
+
+    await page.locator('.mobile-tab[data-app-view="resources"]').click();
+    await expect(page.locator('#resourceCategoryFilters')).toBeVisible();
+
+    await page.locator('#resourceNeedTop [data-need-chip="Get job training"]').click();
+
+    await expect(page.locator('#resourceCategoryFilters')).toBeHidden();
+    await expect(page.locator('#resourceCategoryDetail')).toBeVisible();
+    await expect(page.locator('#resourceCategoryDetail')).toContainText('Get job training');
+    await expect(page.locator('#resourcesList .mobile-resource-card')).toHaveCount(2);
+    await expect(page.locator('#resourcesList')).toContainText('JVS Boston');
+    await expect(page.locator('#resourcesList')).toContainText('Maverick Landing');
+    await expect(page.locator('#resourcesList')).not.toContainText('Eastie Farm');
+
+    await page.locator('[data-resource-need-back]').click();
+    await expect(page.locator('#resourceCategoryFilters')).toBeVisible();
+    await expect(page.locator('#resourceNeedActive')).toBeHidden();
+    await expect(page.locator('#resourcesList .mobile-resource-card')).toHaveCount(0);
+  });
+
   test('switches to calendar and about views cleanly', async ({ page }) => {
     await page.getByRole('button', { name: 'Dates' }).click();
     await expect(page.locator('#calendarView')).toHaveClass(/active/);

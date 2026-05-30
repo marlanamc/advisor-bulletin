@@ -2258,12 +2258,13 @@ class FirebaseBulletinBoard {
         const tiles = document.getElementById('resourceCategoryFilters');
         if (!header) return;
 
+        const isMobileResourcesLayout = window.matchMedia('(max-width: 767px)').matches;
         const category = this.currentResourceCategory;
         const config = category && category !== 'all' ? RESOURCE_CATEGORY_CONFIG[category] : null;
+        const needChip = (this.currentResourceNeedChip || '').trim();
+        const isNeedChipMode = !!needChip && isMobileResourcesLayout;
 
-        const isMobileResourcesLayout = window.matchMedia('(max-width: 767px)').matches;
-
-        if (!exploring || !config || !isMobileResourcesLayout) {
+        const resetHeader = () => {
             header.hidden = true;
             header.style.display = 'none';
             header.innerHTML = '';
@@ -2272,10 +2273,65 @@ class FirebaseBulletinBoard {
                 tiles.style.removeProperty('display');
             }
             document.body.classList.remove('resource-category-detail-open');
+        };
+
+        if (!exploring || !isMobileResourcesLayout || (!config && !isNeedChipMode)) {
+            resetHeader();
             return;
         }
 
         document.body.classList.add('resource-category-detail-open');
+
+        if (tiles) {
+            tiles.hidden = true;
+            tiles.style.display = 'none';
+        }
+
+        if (isNeedChipMode) {
+            const matchingResources = this.getPublishedResources()
+                .filter((resource) => this.resourceMatchesNeedChip(resource, needChip));
+            const entries = this.buildResourceNeedChipIndex(this.getPublishedResources());
+            const chipEntry = entries.find((entry) => entry.label.toLowerCase() === needChip.toLowerCase());
+            const accent = chipEntry ? this.getResourceCategoryTint(chipEntry.category) : '#0d9488';
+            const enLabel = chipEntry ? chipEntry.label : needChip;
+            const esLabel = chipEntry ? translateResourceChipEs(chipEntry.source) : needChip;
+            const chipCategoryConfig = chipEntry ? RESOURCE_CATEGORY_CONFIG[chipEntry.category] : null;
+            const iconSvg = chipCategoryConfig
+                ? (RESOURCE_ICON_SVGS[chipCategoryConfig.icon] || RESOURCE_ICON_SVGS.globe)
+                : RESOURCE_ICON_SVGS.globe;
+
+            header.hidden = false;
+            header.style.removeProperty('display');
+            header.style.setProperty('--cat-accent', accent);
+            header.innerHTML = `
+                <button type="button" class="resource-category-detail-back" data-resource-need-back aria-label="Clear need filter">
+                    <span aria-hidden="true">&larr;</span>
+                    <span class="en-text">Back</span>
+                    <span class="es-text">Atrás</span>
+                </button>
+                <div class="resource-category-detail-title">
+                    <span class="resource-category-detail-icon" style="background:${accent}" aria-hidden="true">${iconSvg}</span>
+                    <div class="resource-category-detail-text">
+                        <h2>
+                            <span class="en-text">${this.escapeHtml(enLabel)}</span>
+                            <span class="es-text">${this.escapeHtml(esLabel)}</span>
+                        </h2>
+                        <p>
+                            <span class="en-text">${this.getResourceCountText(matchingResources.length, 'en')}</span>
+                            <span class="es-text">${this.getResourceCountText(matchingResources.length, 'es')}</span>
+                        </p>
+                    </div>
+                </div>
+            `;
+
+            const backBtn = header.querySelector('[data-resource-need-back]');
+            if (backBtn) {
+                backBtn.addEventListener('click', () => {
+                    this.setResourceNeedChip('');
+                });
+            }
+            return;
+        }
 
         const allResources = this.getPublishedResources()
             .filter((resource) => this.getResourceCategoryKey(resource) === category);
@@ -2283,12 +2339,8 @@ class FirebaseBulletinBoard {
 
         header.hidden = false;
         header.style.removeProperty('display');
-        if (tiles) {
-            tiles.hidden = true;
-            tiles.style.display = 'none';
-        }
-
         header.style.setProperty('--cat-accent', config.color);
+
         const returnToFeed = this.mobileResourceCategoryReturnView === 'feed';
         header.innerHTML = `
             <button type="button" class="resource-category-detail-back" data-resource-detail-back aria-label="${returnToFeed ? 'Back to home' : 'Back to help categories'}">
@@ -2389,26 +2441,31 @@ class FirebaseBulletinBoard {
                 ? '<h3>No results found</h3><p>Try a different search term or clear filters.</p><p class="empty-state-bilingual">No se encontraron resultados. Pruebe un término diferente o borre los filtros.</p>'
                 : resources.length === 0
                     ? '<h3>No help links published yet</h3><p>Advisors can add quick links in the admin portal so they appear here for students.</p>'
-                    : '<h3>No help links in this category</h3><p>Try another category to see more support links.</p>';
+                    : this.currentResourceNeedChip
+                        ? '<h3>No help links for this need</h3><p>Try another need or browse by topic.</p><p class="empty-state-bilingual">No hay enlaces para esta necesidad. Pruebe otra necesidad o busque por tema.</p>'
+                        : '<h3>No help links in this category</h3><p>Try another category to see more support links.</p>';
             emptyState.style.display = 'block';
             return;
         }
 
         emptyState.style.display = 'none';
 
-        // Mobile category drill-in uses the shared help card; desktop search keeps legacy cards.
+        const isMobile = window.matchMedia('(max-width: 767px)').matches;
         const useHelpResourceCard =
-            window.matchMedia('(max-width: 767px)').matches &&
-            this.currentResourceCategory &&
-            this.currentResourceCategory !== 'all';
-        const categoryConfig = useHelpResourceCard
-            ? RESOURCE_CATEGORY_CONFIG[this.currentResourceCategory]
-            : null;
+            isMobile &&
+            (
+                (this.currentResourceCategory && this.currentResourceCategory !== 'all') ||
+                !!this.currentResourceNeedChip
+            );
 
         container.innerHTML = visibleResources
-            .map((resource) => useHelpResourceCard
-                ? this.createHelpResourceCard(resource, categoryConfig)
-                : this.createResourceCard(resource))
+            .map((resource) => {
+                if (!useHelpResourceCard) {
+                    return this.createResourceCard(resource);
+                }
+                const resourceCategoryConfig = RESOURCE_CATEGORY_CONFIG[this.getResourceCategoryKey(resource)];
+                return this.createHelpResourceCard(resource, resourceCategoryConfig);
+            })
             .join('');
         initResourceLogoTiles(container);
     }

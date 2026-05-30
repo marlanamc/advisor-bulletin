@@ -3670,19 +3670,20 @@ a.about-action-card {
 
 .resource-need-chip {
     display: inline-flex;
-    align-items: baseline;
-    gap: 7px;
+    align-items: center;
+    gap: 8px;
     background: rgba(255, 255, 255, 0.08);
     color: #e2e8f0;
     border: 1px solid rgba(255, 255, 255, 0.16);
-    padding: 6px 11px;
+    padding: 7px 12px;
     border-radius: 999px;
     font-family: 'Plus Jakarta Sans', sans-serif;
-    font-size: 12px;
+    font-size: 12.5px;
     font-weight: 600;
-    line-height: 1.2;
+    line-height: 1.25;
     cursor: pointer;
     transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+    text-align: left;
 }
 
 .resource-need-chip:hover {
@@ -3697,9 +3698,19 @@ a.about-action-card {
 }
 
 .resource-need-chip__count {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.12);
     font-size: 10px;
     font-weight: 700;
-    color: rgba(255, 255, 255, 0.5);
+    line-height: 1;
+    color: rgba(255, 255, 255, 0.82);
 }
 
 .resource-need-chip.is-active {
@@ -3709,7 +3720,8 @@ a.about-action-card {
 }
 
 .resource-need-chip.is-active .resource-need-chip__count {
-    color: rgba(255, 255, 255, 0.78);
+    background: rgba(255, 255, 255, 0.22);
+    color: #fff;
 }
 
 @media (min-width: 768px) {
@@ -3719,11 +3731,66 @@ a.about-action-card {
     }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 767px) {
+    .view-hero__need {
+        margin-top: 12px;
+        padding-top: 12px;
+    }
+
+    .resource-need__all {
+        gap: 18px;
+    }
+
+    .view-hero h3.resource-need-group__eyebrow {
+        margin-bottom: 10px;
+        font-size: 11px;
+    }
+
+    .resource-need-group__chips {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    .resource-need-chip {
+        width: 100%;
+        min-height: 44px;
+        padding: 10px 14px;
+        border-radius: 12px;
+        font-size: 13px;
+        justify-content: space-between;
+    }
+
+    .resource-need-chip .en-text,
+    .resource-need-chip .es-text {
+        flex: 1;
+        min-width: 0;
+        padding-right: 8px;
+    }
+
+    .resource-need-chip__count {
+        min-width: 24px;
+        height: 24px;
+        font-size: 11px;
+    }
+
+    .resource-need-hero-chip {
+        padding: 10px 16px;
+        font-size: 13px;
+        min-height: 40px;
+    }
+
+    .resource-need__top {
+        gap: 10px;
+        margin: 0;
+        padding-bottom: 4px;
+    }
+
     .resource-need__header {
         flex-direction: column;
         align-items: flex-start;
         gap: 6px;
+        margin-bottom: 12px;
     }
 }
 

@@ -4,19 +4,23 @@
 //    critical hashed JS/CSS listed in /asset-manifest.json. Deferred Firebase
 //    chunks are cached at runtime after first use, not during install.
 //
-// 2. Student navigations use stale-while-revalidate. Admin navigations are
-//    always fetched fresh so the admin app never boots stale HTML with deleted
-//    hashed chunks after a deploy. /version.json (fetched separately by
-//    app-update.js, never cached here) is the source of truth for "is there a
-//    new deploy?" — when it changes, app-update.js asks this worker to cache
-//    the fresh student shell before reloading.
+// 2. Student navigations use network-first with cache fallback for offline
+//    support. Admin navigations bypass this worker entirely so the browser
+//    fetches admin HTML directly (admin.html also unregisters the SW).
+//    /version.json (fetched separately by app-update.js, never cached here)
+//    is the source of truth for "is there a new deploy?" — when it changes,
+//    app-update.js shows an update banner and asks this worker to cache the
+//    fresh student shell before the user refreshes.
 //
 // 3. Hashed /assets/* are immutable, so we cache-first them and only hit the
 //    network on a miss.
 //
 // 4. Firestore / Google APIs and /version.json are always bypassed.
 
-const CACHE_NAME = 'ebhcs-bulletin-v7';
+const CACHE_NAME = 'ebhcs-bulletin-v8';
+
+const FETCH_RETRIES = 3;
+const FETCH_BACKOFF_MS = 500;
 
 const APP_SHELL = [
   '/',
@@ -114,14 +118,6 @@ function isAdminShellPath(pathname) {
 }
 
 function getShellInfo(pathname) {
-  if (isAdminShellPath(pathname)) {
-    return {
-      cacheKey: '/admin.html',
-      networkPath: '/admin.html',
-      aliases: ADMIN_SHELL_ALIASES,
-    };
-  }
-
   return {
     cacheKey: '/index.html',
     networkPath: '/index.html',
@@ -154,10 +150,10 @@ function safeCachePut(cache, request, response) {
   } catch {}
 }
 
-// Fetch with one retry on transient network failure. Cellular drops a single
+// Fetch with retries on transient network failure. Cellular drops a single
 // request constantly; without this, a new deploy's first asset request after
 // activation can hit a hiccup and surface as ERR_FAILED with no recovery UI.
-async function fetchWithRetry(request, { retries = 1, backoffMs = 250 } = {}) {
+async function fetchWithRetry(request, { retries = FETCH_RETRIES, backoffMs = FETCH_BACKOFF_MS } = {}) {
   let lastErr;
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
@@ -195,47 +191,7 @@ async function fetchAndCacheShell(shellInfo) {
   return networkResponse;
 }
 
-// Admin is an authenticated working surface, not the offline PWA. Fetch it
-// fresh every time so stale admin HTML cannot reference deleted hashed chunks.
-async function handleAdminNavigation() {
-  return fetchWithRetry(new Request('/admin.html', { cache: 'reload' }));
-}
-
-// Stale-while-revalidate for student navigations: serve cached shell instantly
-// (sub-50ms), refresh from network in the background. This is what makes
-// cold student loads fast.
-//
-// IMPORTANT TRANSITION NOTE: when a new deploy lands, the first navigation
-// returns the OLD cached HTML (whose asset hashes are also cached → works),
-// and the background revalidation caches the NEW HTML. On the *next*
-// navigation we hand back the new HTML; its new asset hashes are not yet
-// cached, so they're network-fetched on demand. fetchWithRetry below makes
-// sure a single flaky cellular packet doesn't turn that into an ERR_FAILED.
-async function handleNavigation(request) {
-  const cache = await caches.open(CACHE_NAME);
-  const requestUrl = new URL(request.url);
-  const shellInfo = getShellInfo(requestUrl.pathname);
-
-  let cached = await cache.match(request);
-  if (!cached) {
-    for (const alias of shellInfo.aliases) {
-      cached = await cache.match(alias);
-      if (cached) break;
-    }
-  }
-
-  const networkFetch = fetchAndCacheShell(shellInfo)
-    .catch(() => null);
-
-  if (cached) {
-    networkFetch.catch(() => {});
-    return cached;
-  }
-
-  const fresh = await networkFetch;
-  if (fresh) return fresh;
-
-  // Truly offline AND no cached shell (brand-new install, no network).
+function offlineShellResponse() {
   return new Response(
     '<!doctype html><meta charset=utf-8><title>Offline</title>' +
     '<style>body{font-family:system-ui;padding:2rem;color:#1e3a6e}</style>' +
@@ -243,6 +199,36 @@ async function handleNavigation(request) {
     '<p>Reconnect and refresh to load the bulletin board.</p>',
     { status: 503, headers: { 'Content-Type': 'text/html; charset=utf-8' } }
   );
+}
+
+async function matchCachedShell(cache, request, shellInfo) {
+  let cached = await cache.match(request);
+  if (cached) return cached;
+  for (const alias of shellInfo.aliases) {
+    cached = await cache.match(alias);
+    if (cached) return cached;
+  }
+  return null;
+}
+
+// Network-first for student navigations: always try the network so post-deploy
+// loads get fresh HTML immediately. Fall back to cached shell when offline.
+async function handleNavigation(request) {
+  const cache = await caches.open(CACHE_NAME);
+  const requestUrl = new URL(request.url);
+  const shellInfo = getShellInfo(requestUrl.pathname);
+
+  try {
+    const fresh = await fetchAndCacheShell(shellInfo);
+    if (fresh && fresh.status === 200) return fresh;
+  } catch {
+    // Network failed — fall through to cache fallback.
+  }
+
+  const cached = await matchCachedShell(cache, request, shellInfo);
+  if (cached) return cached;
+
+  return offlineShellResponse();
 }
 
 self.addEventListener('message', (event) => {
@@ -260,14 +246,28 @@ self.addEventListener('message', (event) => {
 });
 
 // Hashed asset URLs are immutable. Cache-first, then network-with-retry on
-// miss. We do NOT return Response.error() on failure — we re-throw so the
-// browser surfaces a normal network error (which the user's normal refresh
-// can recover from) rather than the dead-end ERR_FAILED page.
+// miss. On 404, evict any stale cache entry and retry once from network.
 async function handleHashedAsset(request) {
   const cache = await caches.open(CACHE_NAME);
   const cached = await cache.match(request);
   if (cached) return cached;
-  const networkResponse = await fetchWithRetry(request);
+
+  let networkResponse;
+  try {
+    networkResponse = await fetchWithRetry(request);
+  } catch (err) {
+    throw err;
+  }
+
+  if (networkResponse && networkResponse.status === 404) {
+    await cache.delete(request).catch(() => {});
+    try {
+      networkResponse = await fetchWithRetry(request, { retries: 1 });
+    } catch (err) {
+      throw err;
+    }
+  }
+
   if (networkResponse && networkResponse.status === 200) {
     safeCachePut(cache, request, networkResponse.clone());
   }
@@ -302,8 +302,9 @@ self.addEventListener('fetch', (event) => {
   if (shouldBypass(request, requestUrl)) return;
 
   if (isHTMLNavigation(request, requestUrl)) {
+    // Admin is not the offline PWA — let the browser fetch it directly so a
+    // SW network hiccup cannot surface as ERR_FAILED before admin.js runs.
     if (isAdminShellPath(requestUrl.pathname)) {
-      event.respondWith(handleAdminNavigation());
       return;
     }
     event.respondWith(handleNavigation(request));

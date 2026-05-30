@@ -81,7 +81,7 @@ test.describe('PWA service worker', () => {
     await expect(page.locator('.mobile-tab[data-app-view="feed"]')).toHaveCount(0);
   });
 
-  test('admin navigation ignores stale cached admin html', async ({ page }) => {
+  test('admin navigation bypasses stale cached admin html in the service worker', async ({ page }) => {
     await resetPwaState(page);
     await registerReadyServiceWorker(page);
 
@@ -99,6 +99,27 @@ test.describe('PWA service worker', () => {
     await page.goto('/admin.html', { waitUntil: 'domcontentloaded' });
     await expect(page.locator('body')).not.toContainText('Stale Admin Shell');
     await expect(page.locator('body')).toContainText(/Admin|Advisor|Sign In|Dashboard/i);
+  });
+
+  test('student navigation prefers network html over stale cached shell', async ({ page }) => {
+    await resetPwaState(page);
+    await registerReadyServiceWorker(page);
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+
+    await page.evaluate(async () => {
+      const cacheNames = await caches.keys();
+      const cacheName = cacheNames.find((name) => name.startsWith('ebhcs-bulletin-'));
+      const cache = await caches.open(cacheName);
+      const stale = new Response('<!doctype html><title>Stale Student</title><body><h1>Stale Student Shell</h1></body>', {
+        headers: { 'Content-Type': 'text/html; charset=utf-8' },
+      });
+      await cache.put('/index.html', stale.clone());
+      await cache.put('/', stale.clone());
+    });
+
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await expect(page.locator('body')).not.toContainText('Stale Student Shell');
+    await expect(page.locator('.app-topbar')).toBeVisible();
   });
 
   test('admin load unregisters the PWA service worker for future visits', async ({ page }) => {
