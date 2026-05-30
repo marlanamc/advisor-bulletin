@@ -685,7 +685,7 @@
                                 <button type="button" id="apFlyerEsToggle" class="ap-flyer-es-toggle" aria-expanded="false" aria-controls="apFlyerEsPanel">+ Add Spanish flyer (ES)</button>
                                 <div id="apFlyerEsPanel" class="ap-flyer-es-panel" hidden>
                                     <label for="imageEs" class="optional">Spanish flyer</label>
-                                    <small class="input-help ap-image-es-help">Shown when students switch to Español (ES). English flyer is used if blank.</small>
+                                    <small class="input-help ap-image-es-help">Shown when students switch to Spanish (ES). English flyer is used if blank.</small>
                                     <div class="ap-upload-dropzone ap-upload-dropzone-es">
                                         <div class="ap-upload-dropzone-icon" aria-hidden="true">
                                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
@@ -720,8 +720,8 @@
 
                                 <div class="form-group">
                                     <label for="resourceTitleEs" class="recommended">Spanish Title</label>
-                                    <input type="text" id="resourceTitleEs" name="resourceTitleEs" maxlength="120" placeholder="e.g., Ayuda gratis con inmigración">
-                                    <small class="input-help">Recommended for bilingual display. If left blank, English will be reused.</small>
+                                    <input type="text" id="resourceTitleEs" name="resourceTitleEs" maxlength="120" placeholder="Spanish translation of the English title">
+                                    <small class="input-help">Recommended for bilingual display. If left blank, English is reused.</small>
                                 </div>
                             </div>
 
@@ -755,29 +755,22 @@
                                 <div id="resourceLogoPreview" class="image-preview" style="margin-top: 10px;"></div>
                             </div>
 
-                            <div class="form-group required-field">
+                            <div class="form-group required-field resource-chips-field">
                                 <label for="resourceHighlights" class="required">Student help chips</label>
-                                <input type="text" id="resourceHighlights" name="resourceHighlights" maxlength="200" placeholder="e.g., Get housing help, Apply for SNAP; Find a clinic" data-resource-required="true">
-                                <small class="input-help">Separate each chip with a <strong>comma</strong> or <strong>semicolon</strong> (up to 6). Example: <em>Sign up for HiSET, Schedule HSE test</em> or <em>Get groceries; Apply for SNAP</em>.</small>
-                                <small class="input-help">Use short action phrases students will understand. Good chips start with words like Get, Find, Apply, Call, Talk, Learn, Report, or Take.</small>
-                                <div class="resource-chip-guidance" aria-label="Student help chip examples">
-                                    <div>
-                                        <strong>Good</strong>
-                                        <span>Get housing help</span>
-                                        <span>Apply for SNAP</span>
-                                        <span>Find a clinic</span>
-                                        <span>Talk to a lawyer</span>
-                                        <span>Get job training</span>
-                                    </div>
-                                    <div>
-                                        <strong>Avoid</strong>
-                                        <span>Tenant Rights</span>
-                                        <span>Consumer Protection</span>
-                                        <span>Public Benefits</span>
-                                        <span>Legal Services</span>
-                                    </div>
+                                <p class="resource-chips-intro">Up to 6 short actions on the card — what students can do at this place (e.g. <em>Get housing help</em>, <em>Apply for SNAP</em>).</p>
+                                <input type="text" id="resourceHighlights" name="resourceHighlights" maxlength="200" placeholder="Type chips here, or tap suggestions below" data-resource-required="true" aria-describedby="resourceChipSuggestionsHint resourceChipTips">
+                                <div class="resource-chips-suggestions" id="resourceChipSuggestions">
+                                    <p class="resource-chips-suggestions-label" id="resourceChipSuggestionsHint">Tap to add</p>
+                                    <div class="resource-service-presets" id="resourceServicePresets" role="group" aria-label="Suggested chips"></div>
                                 </div>
-                                <div class="resource-service-presets" id="resourceServicePresets" aria-label="Suggested services"></div>
+                                <details class="resource-chips-tips" id="resourceChipTips">
+                                    <summary>Tips for writing chips</summary>
+                                    <div class="resource-chips-tips-body">
+                                        <p>Separate each chip with a comma or semicolon. Start with an action word: Get, Find, Apply, Call, Talk, Learn, Report, or Take.</p>
+                                        <p class="resource-chips-tips-examples"><strong>Examples:</strong> Get housing help · Apply for SNAP · Sign up for HiSET</p>
+                                        <p>Skip formal program names (like “Tenant Rights”) — phrase what the student can <em>do</em>.</p>
+                                    </div>
+                                </details>
                             </div>
 
                             <div class="field-group double">
@@ -787,9 +780,9 @@
                                     <small class="input-help">Shown right under the title on every card. Be specific (e.g. <em>"Hospitality jobs and training"</em> instead of <em>"Job training services"</em>).</small>
                                 </div>
                                 <div class="form-group">
-                                    <label for="resourceSummaryEs" class="optional">Card summary (Español)</label>
-                                    <textarea id="resourceSummaryEs" name="resourceSummaryEs" rows="2" maxlength="160" placeholder="Una oración corta en español"></textarea>
-                                    <small class="input-help">El mismo resumen en español. Si lo dejas vacío, los estudiantes en Español verán la versión en inglés.</small>
+                                    <label for="resourceSummaryEs" class="optional">Card summary (Spanish)</label>
+                                    <textarea id="resourceSummaryEs" name="resourceSummaryEs" rows="2" maxlength="160" placeholder="Spanish translation — one short sentence"></textarea>
+                                    <small class="input-help">Same one-line summary in Spanish. If left blank, students in Spanish see the English summary.</small>
                                 </div>
                             </div>
 
@@ -962,9 +955,11 @@
                                 </div>
                             </div>
                             <div class="ap-accordion-content">
+                                <p class="input-help ap-spanish-translation-intro">Optional Spanish for students who use ES on the app. You can paste translations from a colleague — you do not need to write Spanish yourself.</p>
                                 <div class="form-group">
                                     <label for="titleEs" class="optional">Spanish Title</label>
-                                    <input type="text" id="titleEs" name="titleEs" maxlength="200" placeholder="Título en español">
+                                    <input type="text" id="titleEs" name="titleEs" maxlength="200" placeholder="Spanish translation of the English title">
+                                    <small class="input-help">If blank, students in Spanish see the English title.</small>
                                 </div>
                                 <div class="form-group ap-rich-field">
                                     <label for="summaryEs" class="optional">Spanish Summary</label>
@@ -995,8 +990,8 @@
                                             </svg>
                                         </button>
                                     </div>
-                                    <textarea id="summaryEs" name="summaryEs" rows="3" maxlength="600" placeholder="Resumen en español"></textarea>
-                                    <small class="input-help">Shown when students switch to Español. If this is filled in, it replaces Description for Spanish readers — update this too when you edit the English description.</small>
+                                    <textarea id="summaryEs" name="summaryEs" rows="3" maxlength="600" placeholder="Spanish translation of the post description"></textarea>
+                                    <small class="input-help">Shown when students switch to Spanish. If filled in, this replaces the English description for Spanish readers — update it when you change the English text. Paste a translation if needed.</small>
                                 </div>
                             </div>
                         </div>

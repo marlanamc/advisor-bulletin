@@ -1356,9 +1356,24 @@ class FirebaseAdminPanel {
     renderResourceServicePresets(category) {
         const container = document.getElementById('resourceServicePresets');
         const input = document.getElementById('resourceHighlights');
+        const hint = document.getElementById('resourceChipSuggestionsHint');
         if (!container || !input) return;
 
         const presets = getSuggestedResourceChips(category);
+
+        if (!presets.length) {
+            container.innerHTML = '';
+            if (hint) {
+                hint.textContent = category
+                    ? 'No suggestions for this category — type your own chips above'
+                    : 'Pick a category above to see suggestions, or type your own chips';
+            }
+            return;
+        }
+
+        if (hint) {
+            hint.textContent = 'Tap to add (up to 6)';
+        }
 
         container.innerHTML = presets.map((label) => (
             `<button type="button" class="resource-service-preset-btn" data-service-preset="${this.escapeAttribute(label)}">${this.escapeHtml(label)}</button>`
@@ -1847,7 +1862,7 @@ class FirebaseAdminPanel {
             if (submittedType === 'post') {
                 successMessage += ' It should appear on the student feed shortly.';
                 if (formData.get('summaryEs')) {
-                    successMessage += ' Students in Español see Spanish Summary instead of Description when a summary is filled in.';
+                    successMessage += ' Students in Spanish see Spanish Summary instead of Description when a summary is filled in.';
                 }
             }
             this.showTemporaryMessage(successMessage, 'success');
@@ -1935,7 +1950,7 @@ class FirebaseAdminPanel {
             } else if (fieldName === 'image' && isPdfFile(file) && !usedCachedImage) {
                 this.showTemporaryMessage('PDF flyer converted. Students will see page 1 on the board and can open the full PDF from the post.', 'success');
             } else if (fieldName === 'imageEs' && isPdfFile(file) && !usedCachedImage) {
-                this.showTemporaryMessage('Spanish PDF flyer converted. Students will see page 1 when they switch to Español.', 'success');
+                this.showTemporaryMessage('Spanish PDF flyer converted. Students will see page 1 when they switch to Spanish.', 'success');
             }
         } catch (error) {
             console.error('Image processing error:', error);
@@ -2132,7 +2147,7 @@ class FirebaseAdminPanel {
                 } else if (flyerSource.convertedFromPdf) {
                     const pdfReadyMessage = fieldName === 'image'
                         ? 'PDF preview ready. The full PDF will be attached when you post.'
-                        : 'Spanish PDF preview ready. Page 1 will show when students switch to Español.';
+                        : 'Spanish PDF preview ready. Page 1 will show when students switch to Spanish.';
                     this.showTemporaryMessage(pdfReadyMessage, 'info');
                 }
             } catch (error) {
