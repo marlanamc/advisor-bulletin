@@ -17,11 +17,12 @@
 //
 // 4. Firestore / Google APIs and /version.json are always bypassed.
 
-const CACHE_NAME = 'ebhcs-bulletin-v4';
+const CACHE_NAME = 'ebhcs-bulletin-v5';
 
 const APP_SHELL = [
   '/',
   '/index.html',
+  '/admin.html',
   '/manifest.json',
   '/favicon.ico',
   '/images/app-icon-192.png',
@@ -168,17 +169,32 @@ async function fetchWithRetry(request, { retries = 1, backoffMs = 250 } = {}) {
 // sure a single flaky cellular packet doesn't turn that into an ERR_FAILED.
 async function handleNavigation(request) {
   const cache = await caches.open(CACHE_NAME);
+  const requestUrl = new URL(request.url);
 
-  const cached =
-    (await cache.match(request)) ||
-    (await cache.match('/index.html')) ||
-    (await cache.match('/'));
+  // Pick the correct shell for this navigation. /admin.html has its own
+  // shell separate from the student / + /index.html shell. Never fall back
+  // across shells — that would serve the homepage when admin was requested.
+  const isAdminShell = requestUrl.pathname === '/admin.html';
+  const shellKey = isAdminShell ? '/admin.html' : '/index.html';
+  const shellAliases = isAdminShell ? ['/admin.html'] : ['/index.html', '/'];
+
+  let cached = await cache.match(request);
+  if (!cached) {
+    for (const alias of shellAliases) {
+      cached = await cache.match(alias);
+      if (cached) break;
+    }
+  }
 
   const networkFetch = fetchWithRetry(request)
     .then((networkResponse) => {
       if (networkResponse && networkResponse.status === 200) {
-        safeCachePut(cache, '/index.html', networkResponse.clone());
-        safeCachePut(cache, '/', networkResponse.clone());
+        // Cache under the canonical shell key (and "/" alias for the student
+        // shell only). Never cross-contaminate admin and student shells.
+        safeCachePut(cache, shellKey, networkResponse.clone());
+        if (!isAdminShell) {
+          safeCachePut(cache, '/', networkResponse.clone());
+        }
       }
       return networkResponse;
     })
