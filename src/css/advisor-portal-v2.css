@@ -481,174 +481,6 @@ body.ap-portal-active .main-content {
   gap: 10px;
 }
 
-.ap-analytics-control {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-  padding: 5px 6px 5px 12px;
-  border: 1px solid var(--ap-border);
-  border-radius: var(--ap-r-pill);
-  background: var(--ap-surface-2);
-  box-shadow: var(--ap-shadow-xs);
-}
-
-.ap-analytics-control-head {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding-right: 4px;
-  border-right: 1px solid var(--ap-border);
-  margin-right: -2px;
-  flex-shrink: 0;
-}
-
-.ap-analytics-control-icon {
-  width: 15px;
-  height: 15px;
-  color: var(--ap-blue);
-  flex-shrink: 0;
-}
-
-.ap-analytics-control-title {
-  font-family: var(--ap-font-head);
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--ap-text-2);
-  letter-spacing: -0.01em;
-  white-space: nowrap;
-}
-
-.ap-analytics-segments {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  padding: 3px;
-  border-radius: var(--ap-r-pill);
-  background: var(--ap-surface);
-  border: 1px solid var(--ap-border);
-}
-
-.ap-analytics-segment {
-  appearance: none;
-  border: none;
-  background: transparent;
-  color: var(--ap-text-3);
-  font-family: var(--ap-font-head);
-  font-size: 0.76rem;
-  font-weight: 600;
-  line-height: 1;
-  padding: 7px 11px;
-  border-radius: var(--ap-r-pill);
-  cursor: pointer;
-  transition: background .15s ease, color .15s ease, box-shadow .15s ease;
-  white-space: nowrap;
-}
-
-.ap-analytics-segment:hover {
-  color: var(--ap-text);
-  background: var(--ap-surface-2);
-}
-
-.ap-analytics-segment[aria-pressed="true"] {
-  background: var(--ap-navy);
-  color: #fff;
-  box-shadow: 0 1px 3px rgba(10, 31, 68, 0.18);
-}
-
-.ap-analytics-segment:focus-visible {
-  outline: 2px solid var(--ap-blue);
-  outline-offset: 2px;
-}
-
-.ap-analytics-live {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 0 10px 0 6px;
-  flex-shrink: 0;
-}
-
-.ap-analytics-live-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--ap-text-3);
-  flex-shrink: 0;
-}
-
-.ap-analytics-live-text {
-  font-family: var(--ap-font-body);
-  font-size: 0.74rem;
-  font-weight: 600;
-  color: var(--ap-text-3);
-  white-space: nowrap;
-}
-
-.ap-analytics-live.is-live .ap-analytics-live-dot {
-  background: var(--ap-green);
-  box-shadow: 0 0 0 3px var(--ap-green-dim);
-  animation: ap-analytics-pulse 2s ease-in-out infinite;
-}
-
-.ap-analytics-live.is-live .ap-analytics-live-text {
-  color: var(--ap-green);
-}
-
-.ap-analytics-live.is-error .ap-analytics-live-dot {
-  background: var(--ap-red);
-  box-shadow: none;
-  animation: none;
-}
-
-.ap-analytics-live.is-error .ap-analytics-live-text {
-  color: var(--ap-red);
-}
-
-@keyframes ap-analytics-pulse {
-  0%, 100% { box-shadow: 0 0 0 3px var(--ap-green-dim); }
-  50% { box-shadow: 0 0 0 5px rgba(5, 150, 105, 0.08); }
-}
-
-.ap-analytics-select-sr {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-
-.ap-analytics-range {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 5px 8px 5px 12px;
-  border: 1px solid var(--ap-border);
-  border-radius: var(--ap-r-md);
-  background: var(--ap-surface-2);
-  color: var(--ap-text-2);
-  font: 700 0.72rem var(--ap-font-head);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.ap-analytics-range .ap-select {
-  width: auto;
-  min-width: 104px;
-  padding: 7px 30px 7px 10px;
-  border-width: 1px;
-  border-radius: 8px;
-  background-color: var(--ap-surface);
-  font-size: 0.82rem;
-  font-weight: 700;
-  text-transform: none;
-  letter-spacing: 0;
-}
-
 .ap-btn {
   display: inline-flex;
   align-items: center;
@@ -870,6 +702,31 @@ body.ap-portal-active .main-content {
 
 .ap-section-body {
   padding: 16px 22px;
+}
+
+.status-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--ap-border);
+  border-radius: var(--ap-r-sm);
+  background: var(--ap-surface-2);
+  color: var(--ap-text-2);
+  font-size: 0.86rem;
+}
+
+.status-row strong {
+  color: var(--ap-text);
+  font-family: var(--ap-font-head);
+  font-size: 0.92rem;
 }
 
 .ap-view-all {
@@ -3199,21 +3056,8 @@ body.ap-portal-active .main-content {
     flex: none;
   }
 
-  /* The Engagement / 7d-30d-90d-1y control isn't useful on mobile —
-     it bloats the top of every page. Hide it and let the Stats page
-     show data with the default 30d range. */
   .ap-topbar-actions {
     display: none;
-  }
-
-  .ap-analytics-range {
-    order: 3;
-    width: 100%;
-    justify-content: space-between;
-  }
-
-  .ap-analytics-range .ap-select {
-    flex: 0 0 118px;
   }
 
   .ap-topbar-actions .advisor-status-pill {

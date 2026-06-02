@@ -8,7 +8,7 @@ async function showSeededAdvisorDashboard(page) {
       detail: { username: 'jorge', email: 'jorge@ebhcs.org', name: 'Jorge' },
     }));
   });
-  await page.waitForFunction(() => typeof window.adminPanel?.aggregateAnalytics === 'function');
+  await page.waitForFunction(() => typeof window.adminPanel?.updateAdvisorDashboard === 'function');
   await page.evaluate(() => {
     const loading = document.getElementById('authLoadingScreen');
     const login = document.getElementById('loginRequired');
@@ -16,6 +16,11 @@ async function showSeededAdvisorDashboard(page) {
     if (loading) loading.style.display = 'none';
     if (login) login.style.display = 'none';
     if (panel) panel.style.display = 'block';
+
+    if (typeof window.adminPanel.bulletinsUnsubscribe === 'function') {
+      window.adminPanel.bulletinsUnsubscribe();
+      window.adminPanel.bulletinsUnsubscribe = null;
+    }
 
     window.adminPanel.currentUser = {
       username: 'jorge',
@@ -33,7 +38,7 @@ async function showSeededAdvisorDashboard(page) {
         advisorName: 'Jorge',
         postedBy: 'jorge',
         datePosted: new Date().toISOString(),
-        deadline: '2026-05-30',
+        deadline: '2027-05-30',
         isActive: true,
       },
       {
@@ -49,15 +54,6 @@ async function showSeededAdvisorDashboard(page) {
       },
     ];
 
-    window.adminPanel.analyticsEvents = [
-      { postId: 'post-1', category: 'training', action: 'card_view', source: 'student' },
-      { postId: 'post-1', category: 'training', action: 'detail_open', source: 'student' },
-      { postId: 'post-1', category: 'training', action: 'link_click', source: 'student' },
-      { postId: 'post-1', category: 'training', action: 'pdf_open', source: 'student' },
-      { postId: 'post-2', category: 'job', action: 'share_click', source: 'student' },
-    ];
-
-    window.adminPanel.aggregateAnalytics();
     window.adminPanel.updateAdvisorDashboard();
     window.adminPanel.loadManageBulletins();
   });
@@ -284,52 +280,28 @@ test.describe('Advisor redesign', () => {
     expect(toastBox.y).toBeGreaterThan(700);
   });
 
-  test('shows dashboard stats, insights, and per-post analytics', async ({ page }) => {
+  test('shows dashboard content stats and status insights', async ({ page }) => {
     await showSeededAdvisorDashboard(page);
 
     await expect(page.locator('.ap-portal')).toBeVisible();
     await expect(page.locator('#statLivePosts')).toBeVisible();
-    await expect(page.locator('#statStudentClicks')).toContainText('2');
-    await expect(page.locator('#analyticsActionList')).toContainText('Detail opens');
-    await expect(page.locator('#analyticsActionList')).not.toContainText('Card views');
-    await expect(page.locator('#analyticsTopPosts')).toContainText('Free CNA class starts in June');
-    await expect(page.locator('.manage-analytics-strip').first()).toContainText('3');
-    await expect(page.locator('.manage-analytics-strip').first()).toContainText('engaged');
+    await expect(page.locator('#statLivePosts')).toContainText('2');
+    await expect(page.locator('#statResources')).toContainText('0');
+    await expect(page.locator('#statHiddenResources')).toContainText('0');
+    await expect(page.locator('#statusBreakdownList')).toContainText('Expiring soon');
+    await expect(page.locator('#contentHealthList')).toContainText('Live posts');
+    await expect(page.locator('.manage-analytics-strip')).toHaveCount(0);
   });
 
-  test('excludes deleted or unknown posts from top posts and engaged counts', async ({ page }) => {
+  test('shows content stats page without engagement analytics', async ({ page }) => {
     await showSeededAdvisorDashboard(page);
-    await page.evaluate(() => {
-      window.adminPanel.analyticsEvents.push(
-        { postId: 'post-deleted', category: 'job', action: 'detail_open', source: 'student' },
-        { postId: 'post-deleted', category: 'job', action: 'link_click', source: 'student' },
-        { postId: 'post-deleted', category: 'job', action: 'link_click', source: 'student' },
-      );
-      window.adminPanel.aggregateAnalytics();
-      window.adminPanel.updateAdvisorDashboard();
-    });
-
-    await expect(page.locator('#analyticsTopPosts')).not.toContainText('Unknown post');
-    await expect(page.locator('#analyticsTopPosts')).toContainText('Free CNA class starts in June');
-
-    const engagedCount = await page.evaluate(() => window.adminPanel.analyticsSummary.engagedPosts);
-    expect(engagedCount).toBe(2);
 
     await page.locator('#apNavStats').click();
-    await expect(page.locator('#statsReach')).toContainText('2');
-    await expect(page.locator('#apPageStats .ap-top-posts')).not.toContainText('Unknown post');
-  });
-
-  test('lets advisors change the analytics time period', async ({ page }) => {
-    await showSeededAdvisorDashboard(page);
-
-    await expect(page.locator('#analyticsRangeInlineLabel')).toContainText('last 30 days');
-    await page.locator('#analyticsRangeSelect').selectOption('90');
-
-    await expect(page.locator('#analyticsRangeInlineLabel')).toContainText('last 90 days');
-    await expect(page.locator('#analyticsRangeStatsLabel')).toContainText('last 90 days');
-    await expect(page.locator('#analyticsRangeTopPostsLabel')).toContainText('Last 90 days');
-    await expect(page.locator('#statStudentClicks')).toContainText('0');
+    await expect(page.locator('#statsPublished')).toContainText('2');
+    await expect(page.locator('#statsViews')).toContainText('0');
+    await expect(page.locator('#statsClicks')).toContainText('0');
+    await expect(page.locator('#apPageStats .ap-top-posts')).toContainText('Free CNA class starts in June');
+    await expect(page.locator('#analyticsRangeSelect')).toHaveCount(0);
   });
 
   test('category picker stays in sync with bulletin category field', async ({ page }) => {
@@ -618,6 +590,7 @@ test.describe('Advisor redesign', () => {
       url: 'https://example.org/family-center',
       phone: '617-555-0199',
       address: '10 Meridian St, East Boston',
+      isPublished: true,
     });
     expect(update.bulletin.serviceChips).toContain('Get childcare help');
     expect(update.bulletin.actionLinks).toEqual([

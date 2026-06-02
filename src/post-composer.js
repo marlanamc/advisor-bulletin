@@ -13,7 +13,7 @@ import {
  * "+Add detail" menu, block insertion/removal, help-chips widget,
  * upload previews, hydrateFromForm() for edit-prefill.
  *
- * Does NOT own: submission, Firestore writes, validation, analytics,
+ * Does NOT own: submission, Firestore writes, validation,
  * image-base64 encoding — all delegated to window.adminPanel
  * (firebase-admin.js / FirebaseAdminPanel).
  *
@@ -441,6 +441,37 @@ function syncPreview() {
 }
 
 // ── Category popover ──────────────────────────────────────────────────────
+function positionFixedPopover(pop, anchor, gap = 6) {
+    if (!pop || !anchor) return
+    const margin = 12
+    const r = anchor.getBoundingClientRect()
+    let left = r.left
+    let top = r.bottom + gap
+
+    const wasOpen = pop.classList.contains('open')
+    if (!wasOpen) {
+        pop.style.visibility = 'hidden'
+        pop.classList.add('open')
+    }
+    const pw = pop.offsetWidth || 320
+    const ph = pop.offsetHeight || 140
+    if (!wasOpen) {
+        pop.classList.remove('open')
+        pop.style.visibility = ''
+    }
+
+    if (left + pw > window.innerWidth - margin) {
+        left = Math.max(margin, window.innerWidth - pw - margin)
+    }
+    if (top + ph > window.innerHeight - margin) {
+        const above = r.top - ph - gap
+        if (above >= margin) top = above
+    }
+
+    pop.style.left = `${Math.max(margin, left)}px`
+    pop.style.top = `${Math.max(margin, top)}px`
+}
+
 function buildCatPopover() {
     const pop = document.getElementById('cxCatPop')
     const host = document.getElementById('cxCatPopCats')
@@ -481,18 +512,22 @@ function buildCatPopover() {
     render()
 
     const catBtn = document.getElementById('cxCatBtn')
-    if (catBtn) {
+    if (catBtn && catBtn.dataset.cxCatPopBound !== '1') {
+        catBtn.dataset.cxCatPopBound = '1'
         catBtn.addEventListener('click', e => {
             e.stopPropagation()
-            const r = catBtn.getBoundingClientRect()
-            pop.style.left = `${r.left + window.scrollX}px`
-            pop.style.top  = `${r.bottom + window.scrollY + 6}px`
+            if (!pop.classList.contains('open')) {
+                positionFixedPopover(pop, catBtn)
+            }
             pop.classList.toggle('open')
         })
     }
 
-    document.addEventListener('click', () => pop.classList.remove('open'))
-    pop.addEventListener('click', e => e.stopPropagation())
+    if (!document.documentElement.dataset.cxCatPopDismissBound) {
+        document.documentElement.dataset.cxCatPopDismissBound = '1'
+        document.addEventListener('click', () => pop.classList.remove('open'))
+        pop.addEventListener('click', e => e.stopPropagation())
+    }
 }
 
 function pickCategory(key) {

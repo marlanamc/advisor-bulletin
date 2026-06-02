@@ -1,6 +1,9 @@
 #!/usr/bin/env node
 /**
- * Delete all documents in the analyticsEvents collection.
+ * One-time cleanup: delete historical documents in the analyticsEvents collection.
+ *
+ * Engagement analytics are no longer collected by the app. Keep this script only
+ * for removing old event documents after confirming historical stats are not needed.
  *
  * Use this after dev/testing inflated stats (localhost events are written to prod
  * until production-only tracking was added). Run with --dry-run first.

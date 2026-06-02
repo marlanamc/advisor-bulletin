@@ -24,7 +24,7 @@ A modern, mobile-responsive, bilingual community bulletin board system for the *
 *   **PDF Document Attachments**: Advisors can upload PDF flyers (up to 10MB) alongside or instead of images. Students see a clean "📄 View PDF" download option.
 *   **Automated Expiration Ribbon**: Outdated opportunities display a grayscale diagonal "EXPIRED" banner once deadlines pass and are hidden from the public feed by default (with a "Show Expired" toggle).
 *   **Comprehensive Advisor Portal**:
-    *   **Live Analytics Dashboard**: View aggregate student engagement metrics (detail opens, link clicks, PDF views) across 7, 30, or 90 days.
+    *   **Content Status Dashboard**: Review live posts, resources, hidden resources, expiring posts, and content categories.
     *   **Unified Post Creator**: Simplified type selectors to create Bulletins, Resources, or Calendar events.
     *   **Interactive My Posts Section**: Real-time search, sorting, deleting, and editing of existing opportunities.
 
@@ -41,7 +41,7 @@ advisor_bulletin/
 │   ├── admin.js                 # Main entry point for the Advisor Dashboard
 │   ├── lightbox.js              # Full-screen image lightbox preview handler
 │   ├── error-logger.js          # Appends runtime client errors to Firestore for monitoring
-│   ├── feed-categories.js       # Student feed rendering, analytics events tracking, and translations
+│   ├── feed-categories.js       # Student feed category labels and translations
 │   ├── pdf-flyer.js             # Client-side PDF preview and download rendering logic
 │   └── css/
 │       └── advisor-portal-v2.css # Modern styling sheet for the advisor portal

@@ -41,7 +41,7 @@ import {
     RESOURCE_KIND_DOCUMENT,
 } from './src/resource-kinds.js'
 import { initResourceLogoTiles } from './src/resource-logo-tile.js'
-import { collection, addDoc, query, where, orderBy, onSnapshot, serverTimestamp } from 'firebase/firestore'
+import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore'
 
 installClientErrorLogger('student')
 
@@ -62,84 +62,6 @@ function scrollWindowTo(top, behavior) {
         behavior: getScrollBehavior(behavior)
     });
 }
-
-const STUDENT_ANALYTICS_ACTIONS = new Set([
-    'card_view',
-    'detail_open',
-    'link_click',
-    'pdf_open',
-    'share_click',
-    'category_click',
-    'resource_open'
-]);
-
-const PRODUCTION_ANALYTICS_HOSTS = new Set([
-    'ebhcsjobboard.web.app',
-    'ebhcsjobboard.firebaseapp.com',
-    'ebhcs-bulletin-board.web.app',
-    'ebhcs-bulletin-board.firebaseapp.com',
-]);
-
-function shouldTrackStudentAnalytics() {
-    if (typeof window === 'undefined' || !window.location) {
-        return false;
-    }
-
-    const host = window.location.hostname;
-    if (!host || host === 'localhost' || host === '127.0.0.1' || host === '[::1]' || host.endsWith('.local')) {
-        return false;
-    }
-
-    return PRODUCTION_ANALYTICS_HOSTS.has(host);
-}
-
-function getAnalyticsDayKey(date = new Date()) {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-}
-
-function getDeviceType() {
-    const ua = navigator.userAgent;
-    if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) {
-        return 'tablet';
-    }
-    if (/Mobile|iP(hone|od)|Android|BlackBerry|IEMobile|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/i.test(ua)) {
-        return 'mobile';
-    }
-    return 'desktop';
-}
-
-function trackStudentEvent(action, payload = {}) {
-    if (!STUDENT_ANALYTICS_ACTIONS.has(action) || typeof db === 'undefined' || !shouldTrackStudentAnalytics()) {
-        return Promise.resolve();
-    }
-
-    const event = {
-        action,
-        createdAt: serverTimestamp(),
-        dayKey: getAnalyticsDayKey(),
-        source: 'student',
-        device: getDeviceType(),
-        contentType: payload.contentType || (action === 'category_click' ? 'category' : 'post')
-    };
-
-    if (payload.postId) {
-        event.postId = String(payload.postId).slice(0, 160);
-    }
-
-    if (payload.category) {
-        event.category = String(payload.category).slice(0, 80);
-    }
-
-    // Advisor analytics are intentionally sourced from Firestore analyticsEvents.
-    return addDoc(collection(db, 'analyticsEvents'), event).catch((error) => {
-        console.debug('Student analytics skipped:', error && error.code ? error.code : error);
-    });
-}
-
-window.trackStudentEvent = trackStudentEvent;
 
 /** Optional synthetic items merged into student calendar / upcoming — not stored in Firestore. */
 const SCHOOL_CALENDAR_ANCHORS = [];
@@ -963,13 +885,6 @@ class FirebaseBulletinBoard {
                 }
 
                 const category = chip.getAttribute('data-resource-category') || 'all';
-                if (category !== 'all') {
-                    trackStudentEvent('category_click', {
-                        category,
-                        contentType: 'category'
-                    });
-                }
-
                 if (this.currentResourceNeedChip) {
                     this.currentResourceNeedChip = '';
                 }
@@ -983,9 +898,6 @@ class FirebaseBulletinBoard {
                 const chip = event.target.closest('[data-need-chip]');
                 if (chip) {
                     const label = chip.getAttribute('data-need-chip') || '';
-                    if (label && label.toLowerCase() !== (this.currentResourceNeedChip || '').toLowerCase()) {
-                        trackStudentEvent('need_chip_click', { chip: label, contentType: 'resource' });
-                    }
                     this.setResourceNeedChip(label);
                     return;
                 }
@@ -1007,10 +919,6 @@ class FirebaseBulletinBoard {
 
             const category = shortcut.getAttribute('data-resource-shortcut');
             if (category) {
-                trackStudentEvent('category_click', {
-                    category,
-                    contentType: 'category'
-                });
                 this.openResourceShortcut(category);
             }
         });
@@ -1021,17 +929,6 @@ class FirebaseBulletinBoard {
         }
 
         this.setupResourceDetailSheet();
-
-        document.addEventListener('click', (event) => {
-            const analyticsTarget = event.target.closest('[data-analytics-action]');
-            if (!analyticsTarget) return;
-
-            trackStudentEvent(analyticsTarget.getAttribute('data-analytics-action'), {
-                postId: analyticsTarget.getAttribute('data-analytics-post-id') || '',
-                category: analyticsTarget.getAttribute('data-analytics-category') || '',
-                contentType: analyticsTarget.getAttribute('data-analytics-content-type') || 'post'
-            });
-        });
 
         const closeDetailBtn = document.getElementById('closeBulletinDetail');
         if (closeDetailBtn) {
@@ -1785,22 +1682,6 @@ class FirebaseBulletinBoard {
 
         emptyState.style.display = 'none';
         grid.innerHTML = bulletins.map((bulletin, idx) => this.createBulletinCard(bulletin, idx)).join('');
-        this.trackRenderedCardViews(bulletins);
-    }
-
-    trackRenderedCardViews(bulletins) {
-        bulletins.forEach((bulletin) => {
-            if (!bulletin.id || this.trackedCardViews.has(bulletin.id)) {
-                return;
-            }
-
-            this.trackedCardViews.add(bulletin.id);
-            trackStudentEvent('card_view', {
-                postId: bulletin.id,
-                category: bulletin.category,
-                contentType: bulletin.type || 'post'
-            });
-        });
     }
 
     renderCalendar(bulletins) {
@@ -3283,10 +3164,6 @@ class FirebaseBulletinBoard {
                     href="${this.escapeAttribute(url)}"
                     target="_blank"
                     rel="noopener"
-                    data-analytics-action="resource_open"
-                    data-analytics-post-id="${this.escapeAttribute(resource.id || '')}"
-                    data-analytics-category="${this.escapeAttribute(categoryKey)}"
-                    data-analytics-content-type="resource"
                     aria-label="${this.escapeAttribute(`${titleEn} / ${titleEs}`)}"
                 >
                     <span class="${iconClass}" aria-hidden="true">
@@ -3414,10 +3291,6 @@ class FirebaseBulletinBoard {
         const callBtn = phone && tel && !isDesktopCard
             ? `<a class="mobile-resource-card__btn mobile-resource-card__btn--primary"
                   href="${this.escapeAttribute(tel)}"
-                  data-analytics-action="resource_call"
-                  data-analytics-post-id="${this.escapeAttribute(resource.id || '')}"
-                  data-analytics-category="${this.escapeAttribute(categoryKey)}"
-                  data-analytics-content-type="resource"
                   aria-label="Call ${this.escapeAttribute(titleEn)}">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.25 7.75c0 5.1 5.9 11 11 11h1.75a1 1 0 0 0 1-1v-3.2a1 1 0 0 0-.78-.98l-3.14-.7a1 1 0 0 0-.96.29l-.92.98a13.84 13.84 0 0 1-4.34-4.34l.98-.92a1 1 0 0 0 .29-.96l-.7-3.14A1 1 0 0 0 8.45 4H5.25a1 1 0 0 0-1 1v2.75Z"/></svg>
                     <span class="en-text">Call</span>
@@ -3430,10 +3303,6 @@ class FirebaseBulletinBoard {
                   href="${this.escapeAttribute(url)}"
                   target="_blank"
                   rel="noopener"
-                  data-analytics-action="resource_open"
-                  data-analytics-post-id="${this.escapeAttribute(resource.id || '')}"
-                  data-analytics-category="${this.escapeAttribute(categoryKey)}"
-                  data-analytics-content-type="resource"
                   aria-label="Open ${this.escapeAttribute(titleEn)} website">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>
                     <span class="en-text">Website</span>
@@ -3446,10 +3315,6 @@ class FirebaseBulletinBoard {
                   href="${this.escapeAttribute(mapUrl)}"
                   target="_blank"
                   rel="noopener"
-                  data-analytics-action="resource_open"
-                  data-analytics-post-id="${this.escapeAttribute(resource.id || '')}"
-                  data-analytics-category="${this.escapeAttribute(categoryKey)}"
-                  data-analytics-content-type="resource"
                   aria-label="Get directions to ${this.escapeAttribute(titleEn)}">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s6.25-5.9 6.25-11.1a6.25 6.25 0 1 0-12.5 0C5.75 15.1 12 21 12 21Z"/><circle cx="12" cy="9.75" r="2.5"/></svg>
                     <span class="en-text">Directions</span>
@@ -3528,10 +3393,6 @@ class FirebaseBulletinBoard {
             ? (pdfUrl
                 ? `<button type="button"
                         class="mobile-resource-card__btn mobile-resource-card__btn--primary"
-                        data-analytics-action="pdf_open"
-                        data-analytics-post-id="${this.escapeAttribute(resource.id || '')}"
-                        data-analytics-category="${this.escapeAttribute(categoryKey)}"
-                        data-analytics-content-type="resource"
                         aria-label="Open ${this.escapeAttribute(titleEn)} form"
                         onclick="window.bulletinBoard.openPdfFromBulletin('${this.escapeAttribute(resource.id || '')}')">
                     ${OPEN_FORM_ICON_SVG}
@@ -3542,10 +3403,6 @@ class FirebaseBulletinBoard {
                       href="${this.escapeAttribute(formUrl)}"
                       target="_blank"
                       rel="noopener"
-                      data-analytics-action="resource_open"
-                      data-analytics-post-id="${this.escapeAttribute(resource.id || '')}"
-                      data-analytics-category="${this.escapeAttribute(categoryKey)}"
-                      data-analytics-content-type="resource"
                       aria-label="Open ${this.escapeAttribute(titleEn)} form">
                     ${OPEN_FORM_ICON_SVG}
                     <span class="en-text">Open form</span>
@@ -3558,10 +3415,6 @@ class FirebaseBulletinBoard {
                   href="${this.escapeAttribute(url)}"
                   target="_blank"
                   rel="noopener"
-                  data-analytics-action="resource_open"
-                  data-analytics-post-id="${this.escapeAttribute(resource.id || '')}"
-                  data-analytics-category="${this.escapeAttribute(categoryKey)}"
-                  data-analytics-content-type="resource"
                   aria-label="Open official source for ${this.escapeAttribute(titleEn)}">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>
                     <span class="en-text">Official source</span>
@@ -3620,10 +3473,6 @@ class FirebaseBulletinBoard {
                 return `
             <button type="button"
                     class="mobile-resource-card__btn mobile-resource-card__btn--secondary mobile-resource-card__btn--action-link"
-                    data-analytics-action="pdf_open"
-                    data-analytics-post-id="${this.escapeAttribute(resource.id || '')}"
-                    data-analytics-category="${this.escapeAttribute(categoryKey)}"
-                    data-analytics-content-type="resource"
                     aria-label="${ariaLabel}"
                     onclick="window.bulletinBoard.openResourcePdf('${pdfUrl}', { postId: '${this.escapeAttribute(resource.id || '')}', category: '${this.escapeAttribute(categoryKey)}' })">
                 ${RESOURCE_ACTION_LINK_PDF_ICON_SVG}
@@ -3637,10 +3486,6 @@ class FirebaseBulletinBoard {
                href="${this.escapeAttribute(link.url)}"
                target="_blank"
                rel="noopener"
-               data-analytics-action="resource_action_link"
-               data-analytics-post-id="${this.escapeAttribute(resource.id || '')}"
-               data-analytics-category="${this.escapeAttribute(categoryKey)}"
-               data-analytics-content-type="resource"
                aria-label="${ariaLabel}">
                 ${RESOURCE_ACTION_LINK_ICON_SVG}
                 <span class="en-text">${labelEn}</span>
@@ -3979,13 +3824,6 @@ class FirebaseBulletinBoard {
         if (!bulletin) {
             body.innerHTML = `<div class="detail-card"><p>This bulletin is no longer available.</p></div>`;
         } else {
-            if (!bulletin.isSchoolCalendarAnchor) {
-                trackStudentEvent('detail_open', {
-                    postId: bulletin.id,
-                    category: bulletin.category,
-                    contentType: bulletin.type || 'post'
-                });
-            }
             body.innerHTML = this.renderBulletinDetail(bulletin);
         }
 
@@ -4341,7 +4179,7 @@ class FirebaseBulletinBoard {
                             </button>
                         ` : ''}
                         ${detailExternalLink ? `
-                            <a href="${this.escapeAttribute(detailExternalLink)}" target="_blank" rel="noopener" class="post-detail-action post-detail-action--outline" data-analytics-action="link_click" data-analytics-post-id="${this.escapeAttribute(bulletin.id)}" data-analytics-category="${this.escapeAttribute(bulletin.category)}" data-analytics-content-type="post">
+                            <a href="${this.escapeAttribute(detailExternalLink)}" target="_blank" rel="noopener" class="post-detail-action post-detail-action--outline">
                                 <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>
                                 <span><strong>${this.escapeHtml(this.getDetailLinkActionLabel(bulletin.category))}</strong><small>${this.escapeHtml(this.getDisplayHost(detailExternalLink))}</small></span>
                             </a>
@@ -4905,27 +4743,17 @@ class FirebaseBulletinBoard {
                 throw new Error('PDF not found for this bulletin.');
             }
 
-            await this.openResourcePdf(bulletin.pdfUrl, {
-                postId: bulletin.id,
-                category: bulletin.category,
-                contentType: bulletin.type || 'post',
-            });
+            await this.openResourcePdf(bulletin.pdfUrl);
         } catch (error) {
             console.error('Error opening PDF:', error);
             alert('Failed to open PDF: ' + error.message);
         }
     }
 
-    async openResourcePdf(pdfUrl, analytics = {}) {
+    async openResourcePdf(pdfUrl) {
         if (!pdfUrl) {
             throw new Error('PDF not found.');
         }
-
-        trackStudentEvent('pdf_open', {
-            postId: analytics.postId || '',
-            category: analytics.category || '',
-            contentType: analytics.contentType || 'resource',
-        });
 
         if (pdfUrl.startsWith('data:')) {
             if (!window.fetch || !window.URL || !window.URL.createObjectURL) {
@@ -5755,14 +5583,6 @@ class FirebaseBulletinBoard {
 
 // Share functionality
 function shareBulletin(bulletinId, bulletinTitle) {
-    if (window.bulletinBoard) {
-        const bulletin = window.bulletinBoard.bulletins.find((item) => item.id === bulletinId);
-        trackStudentEvent('share_click', {
-            postId: bulletinId,
-            category: bulletin ? bulletin.category : '',
-            contentType: bulletin ? (bulletin.type || 'post') : 'post'
-        });
-    }
     const shareUrl = `${window.location.origin}${window.location.pathname}#bulletin-${bulletinId}`;
     fallbackShare(bulletinTitle, shareUrl);
 }

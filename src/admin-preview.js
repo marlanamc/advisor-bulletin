@@ -1079,7 +1079,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var el = document.getElementById(containerId);
         if (!el) return;
         if (!rows.length) {
-            el.innerHTML = '<p style="font-size:.82rem;color:var(--ap-text-3);">No click data yet.</p>';
+            el.innerHTML = '<p style="font-size:.82rem;color:var(--ap-text-3);">No content data yet.</p>';
             return;
         }
         var max = maxVal || rows[0][1] || 1;
@@ -1103,7 +1103,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (header) container.appendChild(header);
 
         if (!rows.length) {
-            container.insertAdjacentHTML('beforeend', '<p style="padding:16px 22px;font-size:.82rem;color:var(--ap-text-3);">No click data yet.</p>');
+            container.insertAdjacentHTML('beforeend', '<p style="padding:16px 22px;font-size:.82rem;color:var(--ap-text-3);">No content yet.</p>');
             return;
         }
         rows.forEach(function(row, i) {
@@ -1115,7 +1115,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         '<div class="ap-top-post-name">' + escHtml(row.title) + '</div>' +
                         '<div class="ap-top-post-type">' + escHtml(row.type) + (row.age ? ' · ' + row.age : '') + '</div>' +
                     '</div>' +
-                    '<div class="ap-top-post-views">' + row.total + ' <small>actions</small></div>' +
+                    '<div class="ap-top-post-views">' + row.total + ' <small>' + escHtml(row.metricLabel || 'status') + '</small></div>' +
                 '</div>'
             );
         });
@@ -1142,86 +1142,83 @@ document.addEventListener('DOMContentLoaded', function() {
         var ap = window.adminPanel;
         if (!ap) return;
 
-        var events    = ap.analyticsEvents   || [];
-        var byPost    = ap.analyticsByPost    || {};
-        var byAction  = ap.analyticsByAction  || {};
-        var byCat     = ap.analyticsByEngagedCategory || ap.analyticsByCategory || {};
-        var summary   = ap.analyticsSummary || {};
         var bulletins = ap.bulletins          || [];
-
-        var studentEvents = events.filter(function(e) { return e.source === 'student'; });
 
         // ── Top-line stat cards ──────────────────────────────────
         var posts    = bulletins.filter(function(b) { return b.isActive && !ap.isResourceBulletin(b); });
         var live     = posts.filter(function(b) { return !ap.isBulletinExpiredAdmin(b); });
-        var postOpens = summary.postOpens || (byAction['detail_open'] || 0);
-        var highIntentClicks = summary.highIntentClicks || ((byAction['link_click'] || 0) + (byAction['pdf_open'] || 0) + (byAction['resource_open'] || 0));
-        var knownPostIds = {};
-        bulletins.forEach(function(b) { knownPostIds[b.id] = true; });
-        var engagedPosts = summary.engagedPosts;
-        if (engagedPosts == null) {
-            engagedPosts = Object.entries(byPost).filter(function(entry) {
-                return knownPostIds[entry[0]] && (entry[1].engagement || 0) > 0;
-            }).length;
-        }
+        var resources = bulletins.filter(function(b) { return b.isActive && ap.isResourceBulletin(b); });
+        var hiddenResources = resources.filter(function(b) { return b.isPublished === false; });
+        var expiringSoon = posts.filter(function(b) {
+            return b.deadline && ap.isDeadlineClose(b.deadline) && !ap.isBulletinExpiredAdmin(b);
+        });
 
         setText('statsPublished', live.length);
-        setText('statsViews',    postOpens);
-        setText('statsClicks',   highIntentClicks);
-        setText('statsReach',    engagedPosts);
+        setText('statsViews',    resources.length);
+        setText('statsClicks',   hiddenResources.length);
+        setText('statsReach',    expiringSoon.length);
 
-        // ── Views by Category ────────────────────────────────────
-        var catRows = Object.entries(byCat).sort(function(a,b){ return b[1]-a[1]; }).slice(0,6);
-        var catMax  = catRows.length ? catRows[0][1] : 1;
-        renderBarChart('statsCatChart', catRows, catMax);
-        renderBarChart('dashCatChart',  catRows, catMax);
-
-        // ── Top Categories (count of posts) ──────────────────────
+        // ── Content by Category ─────────────────────────────────
         var catPostCount = {};
         bulletins.forEach(function(b) {
             var key = ap.isResourceBulletin(b) ? 'resource' : (b.category || 'uncategorized');
             catPostCount[key] = (catPostCount[key] || 0) + 1;
         });
-        var catPostRows = Object.entries(catPostCount).sort(function(a,b){ return b[1]-a[1]; }).slice(0,5);
-        renderBarChart('statsPostCatChart', catPostRows, catPostRows.length ? catPostRows[0][1] : 1);
+        var catPostRows = Object.entries(catPostCount).sort(function(a,b){ return b[1]-a[1]; }).slice(0,6);
+        var catMax  = catPostRows.length ? catPostRows[0][1] : 1;
+        renderBarChart('statsCatChart', catPostRows, catMax);
+        renderBarChart('dashCatChart',  catPostRows, catMax);
+        renderBarChart('statsPostCatChart', catPostRows, catMax);
 
-        // ── Top Performing Posts ─────────────────────────────────
-        var topRows = Object.entries(byPost)
-            .map(function(entry) {
-                var id = entry[0], metrics = entry[1];
-                var b = bulletins.find(function(x){ return x.id === id; });
-                if (!b) return null;
+        // ── Recent content ──────────────────────────────────────
+        var recentRows = bulletins.slice()
+            .sort(function(a, b) {
+                var ad = a.datePosted ? (a.datePosted.toDate ? a.datePosted.toDate() : new Date(a.datePosted)) : new Date(0);
+                var bd = b.datePosted ? (b.datePosted.toDate ? b.datePosted.toDate() : new Date(b.datePosted)) : new Date(0);
+                return bd - ad;
+            })
+            .slice(0, 8)
+            .map(function(b) {
                 var cat = ap.isResourceBulletin(b) ? 'Resource' : ap.getCategoryDisplay(b.category);
                 var datePosted = b.datePosted ? (b.datePosted.toDate ? b.datePosted.toDate() : new Date(b.datePosted)) : null;
+                var status = !b.isActive ? 'Draft' : (ap.isResourceBulletin(b) && b.isPublished === false) ? 'Hidden' : ap.isBulletinExpiredAdmin(b) ? 'Expired' : 'Live';
                 return {
                     title: b.title || b.resourceTitleEn || 'Untitled',
                     type: cat,
                     age: timeAgo(datePosted),
-                    total: metrics.engagement || 0
+                    total: status,
+                    metricLabel: 'status'
                 };
-            })
-            .filter(function(row) { return row && row.total > 0; })
-            .sort(function(a,b){ return b.total - a.total; })
-            .slice(0, 8);
-        renderTopPostsTable(topRows);
+            });
+        renderTopPostsTable(recentRows);
+        renderDashboardContentLists(live, resources, hiddenResources, expiringSoon);
 
-        // ── Clicks by Device ─────────────────────────────────────
-        var deviceCounts = { mobile: 0, tablet: 0, desktop: 0 };
-        studentEvents.forEach(function(e) {
-            var d = (e.device || '').toLowerCase();
-            if (d === 'mobile') deviceCounts.mobile++;
-            else if (d === 'tablet') deviceCounts.tablet++;
-            else if (d === 'desktop') deviceCounts.desktop++;
-            else deviceCounts.mobile++; // default unknown to mobile
-        });
-        var devTotal = deviceCounts.mobile + deviceCounts.tablet + deviceCounts.desktop || 1;
-        var mobPct  = Math.round(deviceCounts.mobile  / devTotal * 100);
-        var tabPct  = Math.round(deviceCounts.tablet  / devTotal * 100);
+        // ── Content status donut ─────────────────────────────────
+        var devTotal = live.length + resources.length + hiddenResources.length || 1;
+        var mobPct  = Math.round(live.length  / devTotal * 100);
+        var tabPct  = Math.round(resources.length / devTotal * 100);
         var dskPct  = 100 - mobPct - tabPct;
         updateDonut(mobPct, tabPct, dskPct);
-        setText('statsDevMobile',  mobPct + '%');
-        setText('statsDevTablet',  tabPct + '%');
-        setText('statsDevDesktop', dskPct + '%');
+        setText('statsDevMobile',  live.length);
+        setText('statsDevTablet',  resources.length);
+        setText('statsDevDesktop', hiddenResources.length);
+    }
+
+    function renderDashboardContentLists(livePosts, resources, hiddenResources, expiringSoon) {
+        var top = document.getElementById('contentHealthList');
+        if (top) {
+            top.innerHTML =
+                '<div class="status-row"><span>Live posts</span><strong>' + livePosts.length + '</strong></div>' +
+                '<div class="status-row"><span>Resources</span><strong>' + resources.length + '</strong></div>' +
+                '<div class="status-row"><span>Hidden resources</span><strong>' + hiddenResources.length + '</strong></div>';
+        }
+
+        var status = document.getElementById('statusBreakdownList');
+        if (status) {
+            status.innerHTML =
+                '<div class="status-row"><span>Expiring soon</span><strong>' + expiringSoon.length + '</strong></div>' +
+                '<div class="status-row"><span>Needs review</span><strong>' + (hiddenResources.length + expiringSoon.length) + '</strong></div>';
+        }
     }
 
     function setText(id, val) {

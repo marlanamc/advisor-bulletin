@@ -33,7 +33,7 @@ import {
     getNextSessionStartMs,
 } from './src/event-sessions.js'
 import { initDescriptionFormatToolbars, refreshRichEditors, syncRichEditorsToForm, getRichTextFieldValue } from './src/description-format.js'
-import { collection, doc, query, where, orderBy, onSnapshot, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, deleteField, serverTimestamp, Timestamp, writeBatch } from 'firebase/firestore'
+import { collection, doc, query, where, orderBy, onSnapshot, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, deleteField, serverTimestamp, writeBatch } from 'firebase/firestore'
 
 installClientErrorLogger('admin')
 import { onAuthStateChanged, signOut, sendPasswordResetEmail } from 'firebase/auth'
@@ -95,10 +95,6 @@ const ADMIN_RESOURCE_ICON_LABELS = {
     globe: 'Globe'
 };
 
-const HIGH_INTENT_ANALYTICS_ACTIONS = new Set(['link_click', 'pdf_open', 'resource_open']);
-const ENGAGEMENT_ANALYTICS_ACTIONS = new Set(['detail_open', 'link_click', 'pdf_open', 'resource_open', 'share_click']);
-const ADVISOR_HIDDEN_ANALYTICS_ACTIONS = new Set(['card_view']);
-
 function isPdfFile(file) {
     if (!file) return false;
     return file.type === 'application/pdf' || /\.pdf$/i.test(file.name || '');
@@ -133,11 +129,7 @@ class FirebaseAdminPanel {
         this.isSubmitting = false;
         this.contentType = 'post';
         this.contentMode = 'post';
-        this.analyticsEvents = [];
-        this.analyticsByPost = {};
-        this.analyticsUnsubscribe = null;
         this.bulletinsUnsubscribe = null;
-        this.analyticsRangeDays = 30;
         this.advisors = STUDENT_ADVISOR_DIRECTORY.map(a => ({
             username: a.loginUsername,
             displayName: a.name,
@@ -331,20 +323,6 @@ class FirebaseAdminPanel {
             rerender();
         });
         this.updateReorderToggleUI();
-
-        const analyticsRangeSelect = document.getElementById('analyticsRangeSelect');
-        if (analyticsRangeSelect) {
-            analyticsRangeSelect.value = String(this.analyticsRangeDays);
-            analyticsRangeSelect.addEventListener('change', (event) => {
-                this.setAnalyticsRange(Number(event.target.value));
-            });
-        }
-        document.querySelectorAll('.ap-analytics-segment').forEach((button) => {
-            button.addEventListener('click', () => {
-                this.setAnalyticsRange(Number(button.getAttribute('data-days')));
-            });
-        });
-        this.syncAnalyticsRangeUI();
 
         document.querySelectorAll('[data-school-event-preset]').forEach((button) => {
             button.addEventListener('click', () => {
@@ -586,7 +564,6 @@ class FirebaseAdminPanel {
             this.showAdminPanel();
             this.clearLoginForm();
             this.setupRealtimeListener();
-            this.setupAnalyticsListener();
             this.loadManageBulletins();
 
             // Load full advisor metadata in the background and patch the live UI.
@@ -617,16 +594,10 @@ class FirebaseAdminPanel {
 
     handleSignedOut() {
         this.currentUser = null;
-        if (this.analyticsUnsubscribe) {
-            this.analyticsUnsubscribe();
-            this.analyticsUnsubscribe = null;
-        }
         if (this.bulletinsUnsubscribe) {
             this.bulletinsUnsubscribe();
             this.bulletinsUnsubscribe = null;
         }
-        this.analyticsEvents = [];
-        this.analyticsByPost = {};
         this.hideAdminPanel();
         this.clearLoginForm();
         this.setAuthView('login');
@@ -1415,180 +1386,18 @@ class FirebaseAdminPanel {
         });
     }
 
-    setupAnalyticsListener() {
-        if (!this.currentUser || typeof db === 'undefined') {
-            return;
-        }
-
-        if (this.analyticsUnsubscribe) {
-            this.analyticsUnsubscribe();
-            this.analyticsUnsubscribe = null;
-        }
-
-        const since = new Date();
-        since.setDate(since.getDate() - this.analyticsRangeDays);
-
-        const analyticsQuery = query(
-            // Advisor analytics read directly from Firestore analyticsEvents.
-            collection(db, 'analyticsEvents'),
-            where('createdAt', '>=', Timestamp.fromDate(since)),
-            orderBy('createdAt', 'desc')
-        )
-        this.analyticsUnsubscribe = onSnapshot(analyticsQuery, (snapshot) => {
-                this.analyticsEvents = snapshot.docs.map((doc) => ({
-                    id: doc.id,
-                    ...doc.data()
-                }));
-                this.aggregateAnalytics();
-                this.updateAdvisorDashboard();
-                this.updateAnalyticsRangeLabels();
-                this.setAdvisorAnalyticsStatus('live', 'Live');
-                if (this.currentUser) {
-                    this.loadManageBulletins();
-                }
-            }, (error) => {
-                console.error('Error loading analytics:', error);
-                this.setAdvisorAnalyticsStatus('error', 'Unavailable');
-            });
-    }
-
-    setAnalyticsRange(days) {
-        const allowedDays = [7, 30, 90, 365];
-        this.analyticsRangeDays = allowedDays.includes(days) ? days : 30;
-        this.syncAnalyticsRangeUI();
-        this.analyticsEvents = [];
-        this.aggregateAnalytics();
-        this.updateAdvisorDashboard();
-        this.updateAnalyticsRangeLabels();
-        if (this.currentUser) {
-            this.setupAnalyticsListener();
-        }
-    }
-
-    syncAnalyticsRangeUI() {
-        const select = document.getElementById('analyticsRangeSelect');
-        if (select) select.value = String(this.analyticsRangeDays);
-        document.querySelectorAll('.ap-analytics-segment').forEach((button) => {
-            const days = Number(button.getAttribute('data-days'));
-            button.setAttribute('aria-pressed', days === this.analyticsRangeDays ? 'true' : 'false');
-        });
-    }
-
-    setAdvisorAnalyticsStatus(state, text) {
-        const pill = document.getElementById('advisorStatusPill');
-        if (!pill) return;
-        pill.classList.remove('is-live', 'is-error');
-        if (state === 'live') pill.classList.add('is-live');
-        if (state === 'error') pill.classList.add('is-error');
-        const textEl = pill.querySelector('.ap-analytics-live-text');
-        if (textEl) textEl.textContent = text;
-    }
-
-    getAnalyticsRangeLabel() {
-        if (this.analyticsRangeDays === 365) return 'last year';
-        return `last ${this.analyticsRangeDays} days`;
-    }
-
-    updateAnalyticsRangeLabels() {
-        const label = this.getAnalyticsRangeLabel();
-        this.setText('analyticsRangeInlineLabel', label);
-        this.setText('analyticsRangeStatsLabel', label);
-        const titleLabel = label.charAt(0).toUpperCase() + label.slice(1);
-        this.setText('analyticsRangeTopPostsLabel', titleLabel);
-    }
-
-    aggregateAnalytics() {
-        const byPost = {};
-        const byAction = {};
-        const byCategory = {};
-        const byEngagedCategory = {};
-        const summary = {
-            impressions: 0,
-            postOpens: 0,
-            highIntentClicks: 0,
-            shares: 0,
-            engagedPosts: 0,
-            rawEvents: 0
-        };
-
-        // Only count genuine student interactions — exclude advisor preview sessions
-        const studentEvents = this.analyticsEvents.filter((e) => e.source === 'student');
-
-        studentEvents.forEach((event) => {
-            const action = event.action || 'unknown';
-            const postId = event.postId || '';
-            const category = event.category || 'uncategorized';
-
-            summary.rawEvents += 1;
-            if (action === 'card_view') summary.impressions += 1;
-            if (action === 'detail_open') summary.postOpens += 1;
-            if (action === 'share_click') summary.shares += 1;
-            if (HIGH_INTENT_ANALYTICS_ACTIONS.has(action)) summary.highIntentClicks += 1;
-
-            byAction[action] = (byAction[action] || 0) + 1;
-            if (ENGAGEMENT_ANALYTICS_ACTIONS.has(action)) {
-                byCategory[category] = (byCategory[category] || 0) + 1;
-                byEngagedCategory[category] = (byEngagedCategory[category] || 0) + 1;
-            }
-
-            if (postId) {
-                if (!byPost[postId]) {
-                    byPost[postId] = {
-                        total: 0,
-                        engagement: 0,
-                        highIntentClicks: 0,
-                        card_view: 0,
-                        detail_open: 0,
-                        link_click: 0,
-                        pdf_open: 0,
-                        share_click: 0,
-                        resource_open: 0,
-                        category_click: 0
-                    };
-                }
-                byPost[postId].total += 1;
-                if (ENGAGEMENT_ANALYTICS_ACTIONS.has(action)) {
-                    byPost[postId].engagement += 1;
-                }
-                if (HIGH_INTENT_ANALYTICS_ACTIONS.has(action)) {
-                    byPost[postId].highIntentClicks += 1;
-                }
-                byPost[postId][action] = (byPost[postId][action] || 0) + 1;
-            }
-        });
-
-        summary.engagedPosts = Object.entries(byPost)
-            .filter(([postId, metrics]) => {
-                const isKnownPost = this.bulletins.some((bulletin) => bulletin.id === postId);
-                return isKnownPost && (metrics.engagement || 0) > 0;
-            })
-            .length;
-        this.analyticsByPost = byPost;
-        this.analyticsByAction = byAction;
-        this.analyticsByCategory = byCategory;
-        this.analyticsByEngagedCategory = byEngagedCategory;
-        this.analyticsSummary = summary;
-    }
-
     updateAdvisorDashboard() {
         const posts = this.bulletins.filter((bulletin) => !this.isResourceBulletin(bulletin) && bulletin.isActive);
         const livePosts = posts.filter((bulletin) => !this.isBulletinExpiredAdmin(bulletin));
         const expiringSoon = posts.filter((bulletin) => bulletin.deadline && this.isDeadlineClose(bulletin.deadline) && !this.isBulletinExpiredAdmin(bulletin));
         const resources = this.bulletins.filter((bulletin) => this.isResourceBulletin(bulletin) && bulletin.isActive);
+        const hiddenResources = resources.filter((bulletin) => bulletin.isPublished === false);
 
         this.setText('statLivePosts', livePosts.length);
         this.setText('statResources', resources.length);
-        this.setText('statStudentClicks', this.analyticsSummary?.highIntentClicks || 0);
+        this.setText('statHiddenResources', hiddenResources.length);
         this.setText('statExpiringSoon', expiringSoon.length);
 
-        this.renderAnalyticsList(
-            'analyticsActionList',
-            this.analyticsByAction || {},
-            (key) => this.formatAnalyticsAction(key),
-            { excludeActions: ADVISOR_HIDDEN_ANALYTICS_ACTIONS }
-        );
-        this.renderAnalyticsList('analyticsTopCategories', this.analyticsByCategory || {}, (key) => this.getCategoryDisplay(key));
-        this.renderTopPosts();
         this.renderUpcomingDashboardEvents();
     }
 
@@ -1647,73 +1456,6 @@ class FirebaseAdminPanel {
     setText(id, value) {
         const element = document.getElementById(id);
         if (element) element.textContent = String(value);
-    }
-
-    renderAnalyticsList(containerId, data, labelFormatter, options = {}) {
-        const container = document.getElementById(containerId);
-        if (!container) return;
-
-        const excludeActions = options.excludeActions || null;
-        const rows = Object.entries(data || {})
-            .filter(([key]) => !excludeActions || !excludeActions.has(key))
-            .sort((a, b) => b[1] - a[1])
-            .slice(0, 5);
-
-        if (rows.length === 0) {
-            container.innerHTML = '<p class="analytics-empty">No click data yet.</p>';
-            return;
-        }
-
-        container.innerHTML = rows.map(([key, value]) => `
-            <div class="analytics-row">
-                <span>${this.escapeHtml(labelFormatter(key))}</span>
-                <strong>${value}</strong>
-            </div>
-        `).join('');
-    }
-
-    renderTopPosts() {
-        const container = document.getElementById('analyticsTopPosts');
-        if (!container) return;
-
-        const rows = Object.entries(this.analyticsByPost || {})
-            .map(([postId, metrics]) => {
-                const bulletin = this.bulletins.find((item) => item.id === postId);
-                return {
-                    postId,
-                    bulletin,
-                    title: bulletin ? this.getManageCardTitle(bulletin) : null,
-                    total: metrics.engagement || 0
-                };
-            })
-            .filter((row) => row.bulletin && row.total > 0)
-            .sort((a, b) => b.total - a.total)
-            .slice(0, 5);
-
-        if (rows.length === 0) {
-            container.innerHTML = '<p class="analytics-empty">Student engagement will appear here.</p>';
-            return;
-        }
-
-        container.innerHTML = rows.map((row) => `
-            <div class="analytics-row">
-                <span>${this.escapeHtml(row.title)}</span>
-                <strong>${row.total}</strong>
-            </div>
-        `).join('');
-    }
-
-    formatAnalyticsAction(action) {
-        const labels = {
-            card_view: 'Card views',
-            detail_open: 'Detail opens',
-            link_click: 'Link clicks',
-            pdf_open: 'PDF opens',
-            share_click: 'Shares',
-            category_click: 'Category taps',
-            resource_open: 'Resource opens'
-        };
-        return labels[action] || action;
     }
 
     syncCategoryPicker(category) {
@@ -3436,7 +3178,6 @@ class FirebaseAdminPanel {
                     ${bulletin.resourceOrder !== '' && bulletin.resourceOrder !== undefined && bulletin.resourceOrder !== null ? `<p><strong>Display Order:</strong> ${this.escapeHtml(String(bulletin.resourceOrder))}</p>` : ''}
                 ` : ''}
                 ${this.renderManageDateInfo(bulletin)}
-                ${this.renderManageAnalytics(bulletin.id)}
                 <div class="manage-actions">
                     <button class="edit-btn" onclick="adminPanel.editBulletin('${bulletin.id}')">
                         Edit
@@ -4283,6 +4024,12 @@ class FirebaseAdminPanel {
             }
             if (this.isResourceBulletin(bulletin)) {
                 bulletin.resourceLogo = existingBulletin.resourceLogo || null;
+                // If the form field is absent from the submission (hidden input missing or
+                // cleared), fall back to the existing published state rather than silently
+                // unpublishing the resource.
+                if (formData.get('resourcePublished') === null) {
+                    bulletin.isPublished = existingBulletin.isPublished !== false;
+                }
             }
         }
 
@@ -4674,20 +4421,6 @@ class FirebaseAdminPanel {
         }
 
         return '';
-    }
-
-    renderManageAnalytics(bulletinId) {
-        const metrics = this.analyticsByPost[bulletinId] || {};
-
-        return `
-            <div class="manage-analytics-strip" aria-label="Student engagement">
-                <span><strong>${metrics.engagement || 0}</strong> engaged</span>
-                <span><strong>${metrics.detail_open || 0}</strong> opens</span>
-                <span><strong>${metrics.link_click || 0}</strong> links</span>
-                <span><strong>${metrics.pdf_open || 0}</strong> PDFs</span>
-                <span><strong>${metrics.share_click || 0}</strong> shares</span>
-            </div>
-        `;
     }
 
     formatDateLocalAdmin(dateString) {

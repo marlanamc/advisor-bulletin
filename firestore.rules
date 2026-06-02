@@ -64,14 +64,8 @@ service cloud.firestore {
     }
 
     match /analyticsEvents/{eventId} {
-      // Anonymous students can write only sanitized aggregate events.
-      allow create: if validateAnalyticsEvent(request.resource.data);
-
-      // Advisors can read aggregate engagement data.
-      allow read: if isAdvisor(request.auth);
-
-      // Analytics events are append-only from the public client.
-      allow update, delete: if false;
+      // Engagement analytics have been removed to keep Firestore costs low.
+      allow read, write: if false;
     }
 
     match /errors/{errorId} {
@@ -204,66 +198,6 @@ service cloud.firestore {
         && validResourceContact(data);
 
       return hasCommonRequired && validOptionalFields && (validPost || validResource);
-    }
-
-    function validateAnalyticsEvent(data) {
-      let validActions = [
-        'card_view',
-        'detail_open',
-        'link_click',
-        'pdf_open',
-        'share_click',
-        'category_click',
-        'resource_open',
-        'resource_action_link'
-      ];
-
-      let validCategories = [
-        'job',
-        'training',
-        'college',
-        'career-fair',
-        'immigration',
-        'announcement',
-        'resource',
-        'housing',
-        'health',
-        'legal-aid',
-        'jobs',
-        'food',
-        'home',
-        'fair',
-        'esol',
-        'money',
-        'family',
-        'childcare'
-      ];
-
-      let postActions = [
-        'card_view',
-        'detail_open',
-        'link_click',
-        'pdf_open',
-        'share_click',
-        'resource_open',
-        'resource_action_link'
-      ];
-
-      return data.keys().hasAll(['action', 'createdAt', 'dayKey', 'source', 'contentType'])
-        && data.keys().hasOnly(['postId', 'category', 'action', 'createdAt', 'dayKey', 'source', 'contentType', 'device'])
-        && data.action is string
-        && data.action in validActions
-        && data.createdAt is timestamp
-        && data.dayKey is string
-        && data.dayKey.matches('^\\d{4}-\\d{2}-\\d{2}$')
-        && data.source is string
-        && data.source in ['student', 'advisor-preview']
-        && data.contentType is string
-        && data.contentType in ['post', 'resource', 'category']
-        && (!('category' in data) || (data.category is string && data.category in validCategories))
-        && (!('postId' in data) || (data.postId is string && data.postId.size() > 0 && data.postId.size() <= 160))
-        && (!('device' in data) || (data.device is string && data.device in ['mobile', 'tablet', 'desktop']))
-        && (data.action == 'category_click' || ('postId' in data && data.postId.size() > 0));
     }
 
     function validateClientError(data) {
