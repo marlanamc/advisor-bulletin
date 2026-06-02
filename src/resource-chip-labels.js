@@ -285,8 +285,60 @@ export function translateResourceChipEs(label) {
     return RESOURCE_CHIP_ES[normalizeChipKey(actionLabel)] || actionLabel;
 }
 
+/** Maps composer / legacy category ids to chip-suggestion buckets. */
+export const RESOURCE_CHIP_CATEGORY_ALIASES = {
+    job: 'jobs',
+    jobs: 'jobs',
+    training: 'jobs',
+    'career-fair': 'jobs',
+    childcare: 'family',
+    family: 'family',
+    'legal-aid': 'legal-aid',
+    'legal aid': 'legal-aid',
+    healthcare: 'health',
+    'health care': 'health',
+    english: 'esol',
+    'english class': 'esol',
+    famlit: 'esol',
+    hse: 'hse',
+};
+
+/**
+ * @param {string | null | undefined} category
+ * @returns {string}
+ */
+export function resolveResourceChipCategory(category) {
+    const raw = String(category || '').trim().toLowerCase();
+    if (!raw) return '';
+    if (SUGGESTED_RESOURCE_CHIPS_BY_CATEGORY[raw]) return raw;
+    return RESOURCE_CHIP_CATEGORY_ALIASES[raw] || raw;
+}
+
 export function getSuggestedResourceChips(category) {
-    return SUGGESTED_RESOURCE_CHIPS_BY_CATEGORY[category] || [];
+    const key = resolveResourceChipCategory(category);
+    return key ? (SUGGESTED_RESOURCE_CHIPS_BY_CATEGORY[key] || []) : [];
+}
+
+/**
+ * Sorted unique student-facing chip labels for browse/search UI.
+ * @returns {string[]}
+ */
+export function getCanonicalResourceChipCatalog() {
+    const seen = new Set();
+    const out = [];
+
+    const add = (label) => {
+        const canonical = getActionResourceChipLabel(label);
+        const key = normalizeChipKey(canonical);
+        if (!key || seen.has(key)) return;
+        seen.add(key);
+        out.push(canonical);
+    };
+
+    Object.values(SUGGESTED_RESOURCE_CHIPS_BY_CATEGORY).flat().forEach(add);
+    Object.values(RESOURCE_CHIP_ACTION_LABELS).forEach(add);
+
+    return out.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
 }
 
 export const MAX_RESOURCE_SERVICE_CHIPS = 6;

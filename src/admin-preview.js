@@ -607,7 +607,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     whenLine = 'Add start and end dates';
                 }
             } else if (dateTypeEv === 'deadline' && eventDateVal) {
-                whenLine = 'Deadline: ' + formatPreviewYmd(eventDateVal);
+                whenLine = 'Due by ' + formatPreviewYmd(eventDateVal);
             } else if (dateTypeEv === 'sessions') {
                 var sameTimeEv = document.getElementById('sessionSameTimeToggle')?.checked;
                 var sharedStartEv = document.getElementById('sessionSharedStartTime')?.value || '';

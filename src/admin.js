@@ -119,6 +119,7 @@ async function mountAdvisorPortal(userDetails) {
 async function handleAuthenticatedUser(userDetails) {
     setAuthView('loading', 'Opening advisor workspace...')
     await mountAdvisorPortal(userDetails)
+    import('./post-composer.js').then(({ mountPostComposer }) => mountPostComposer())
 }
 
 function handleSignedOut() {

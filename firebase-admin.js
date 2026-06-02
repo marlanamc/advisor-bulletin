@@ -241,11 +241,17 @@ class FirebaseAdminPanel {
         // Form validation
         this.setupFormValidation();
 
-        // Image upload preview
-        document.getElementById('image').addEventListener('change', (e) => this.handleImagePreview(e, 'image'));
-        document.getElementById('imageEs').addEventListener('change', (e) => this.handleImagePreview(e, 'imageEs'));
+        // Image upload preview — inputs may be dynamic (post-composer), so delegate from bulletinForm
+        const bulletinFormEl = document.getElementById('bulletinForm');
+        if (bulletinFormEl) {
+            bulletinFormEl.addEventListener('change', (e) => {
+                if (e.target.name === 'image') this.handleImagePreview(e, 'image');
+                else if (e.target.name === 'imageEs') this.handleImagePreview(e, 'imageEs');
+                else if (e.target.name === 'resourceLogo') this.handleImagePreview(e, 'resourceLogo');
+            });
+        }
         const resourceLogoInput = document.getElementById('resourceLogo');
-        if (resourceLogoInput) {
+        if (resourceLogoInput && !bulletinFormEl?.contains(resourceLogoInput)) {
             resourceLogoInput.addEventListener('change', (e) => this.handleImagePreview(e, 'resourceLogo'));
         }
 
@@ -402,53 +408,6 @@ class FirebaseAdminPanel {
         }
 
         this.updateAdvisorDashboard();
-    }
-
-    toggleAccordion(header) {
-        const section = header.closest('.ap-accordion-section');
-        const isOpen = section.classList.contains('open');
-        
-        if (isOpen) {
-            section.classList.remove('open');
-        } else {
-            section.classList.add('open');
-        }
-    }
-
-    autoExpandAccordions() {
-        // Check sections for values and expand if they have data
-        // 3. Event Details
-        const dateType = document.getElementById('dateType')?.value;
-        if (dateType) {
-            document.getElementById('eventDetailsAccordion')?.classList.add('open');
-        }
-
-        // 4. Spanish Translation
-        const titleEs = document.getElementById('titleEs')?.value;
-        const summaryEs = document.getElementById('summaryEs')?.value;
-        const hasImageEs = document.getElementById('imageEsPreview')?.querySelector('img');
-        if (titleEs || summaryEs || hasImageEs) {
-            const step4 = [...document.querySelectorAll('.ap-accordion-section')].find(s => s.querySelector('.ap-step-number')?.textContent === '4');
-            if (step4) step4.classList.add('open');
-        }
-
-        // 5. Contact & Location
-        const company = document.getElementById('company')?.value;
-        const contact = document.getElementById('contact')?.value;
-        const location = document.getElementById('location')?.value;
-        const phone = document.getElementById('contactPhone')?.value;
-        const hours = document.getElementById('contactHours')?.value;
-        if (company || contact || location || phone || hours) {
-            const step5 = [...document.querySelectorAll('.ap-accordion-section')].find(s => s.querySelector('.ap-step-number')?.textContent === '5');
-            if (step5) step5.classList.add('open');
-        }
-
-        // 6. Target Student Group
-        const classType = document.getElementById('classType')?.value;
-        if (classType) {
-            const step6 = [...document.querySelectorAll('.ap-accordion-section')].find(s => s.querySelector('.ap-step-number')?.textContent === '6');
-            if (step6) step6.classList.add('open');
-        }
     }
 
     syncFlyerUploadUI() {
@@ -645,7 +604,6 @@ class FirebaseAdminPanel {
                     const advisorsRailBtn = document.getElementById('advisorsRailBtn');
                     if (advisorsRailBtn) advisorsRailBtn.style.display = this.currentUser.isAdmin ? '' : 'none';
                 }
-                this.populateAdvisorSelects(this.currentUser.name);
             }).catch(err => console.error('Error loading advisor metadata:', err));
         } catch (error) {
             console.error('Error signing in to advisor portal:', error);
@@ -765,8 +723,6 @@ class FirebaseAdminPanel {
         document.getElementById('logoutBtn').style.display = 'block';
         document.body.classList.add('ap-portal-active');
         document.getElementById('welcomeMessage').textContent = `Welcome, ${this.currentUser.name}!`;
-
-        this.populateAdvisorSelects(this.currentUser.name);
 
         // Show advisors tab only for admins
         const advisorsTabBtn = document.getElementById('advisorsTabBtn');
@@ -1072,17 +1028,8 @@ class FirebaseAdminPanel {
     }
 
     setSubmitButtonLabel(label) {
-        const submitBtn = document.getElementById('postBulletinBtn');
-        if (!submitBtn) return;
-
-        let labelEl = submitBtn.querySelector('.ap-btn-submit-label');
-        if (!labelEl) {
-            labelEl = document.createElement('span');
-            labelEl.className = 'ap-btn-submit-label';
-            submitBtn.appendChild(labelEl);
-        }
-
-        labelEl.textContent = label;
+        const cxBtn = document.getElementById('cxSubmitBtn');
+        if (cxBtn) cxBtn.textContent = label;
     }
 
     setLabelPriority(label, priority) {
@@ -1188,10 +1135,8 @@ class FirebaseAdminPanel {
 
         const titleInput = document.getElementById('title');
         const categoryInput = document.getElementById('category');
-        const advisorNameInput = document.getElementById('advisorName');
         if (titleInput) titleInput.required = nextMode === 'post' || nextMode === 'event';
         if (categoryInput) categoryInput.required = false;
-        if (advisorNameInput) advisorNameInput.required = nextMode === 'post' || nextMode === 'event';
         const descriptionInput = document.getElementById('description');
         if (descriptionInput) descriptionInput.required = nextMode === 'post' || nextMode === 'event';
 
@@ -1250,10 +1195,10 @@ class FirebaseAdminPanel {
         }
 
         if (!options.preserveFields && nextType === 'resource') {
-            document.getElementById('image').value = '';
-            document.getElementById('pdf').value = '';
-            document.getElementById('imagePreview').innerHTML = '';
-            document.getElementById('pdfPreview').innerHTML = '';
+            const imgIn = document.getElementById('image');
+            if (imgIn) imgIn.value = '';
+            const pdfIn = document.getElementById('pdf');
+            if (pdfIn) pdfIn.value = '';
             this.pendingImageData = null;
         }
 
@@ -1271,57 +1216,6 @@ class FirebaseAdminPanel {
             this.syncResourceKindUI();
         }
 
-        this.renumberVisibleFormSteps();
-    }
-
-    populateAdvisorSelects(selectedName = '') {
-        const sorted = [...this.advisors].sort((a, b) => {
-            const nameA = a.displayName || a.username || '';
-            const nameB = b.displayName || b.username || '';
-            return nameA.localeCompare(nameB);
-        });
-        ['advisorName', 'resourceAdvisorName'].forEach((selectId) => {
-            const select = document.getElementById(selectId);
-            if (!select) return;
-
-            const current = selectedName || select.value;
-            select.innerHTML = '<option value="">Select your name</option>' +
-                sorted.map((advisor) => {
-                    const name = advisor.displayName || advisor.username;
-                    const selected = name === current ? ' selected' : '';
-                    return `<option value="${this.escapeHtml(name)}"${selected}>${this.escapeHtml(name)}</option>`;
-                }).join('');
-        });
-    }
-
-    isElementVisible(element) {
-        if (!element) return false;
-        let current = element;
-        while (current && current !== document.body) {
-            const style = window.getComputedStyle(current);
-            if (style.display === 'none' || style.visibility === 'hidden') {
-                return false;
-            }
-            current = current.parentElement;
-        }
-        return true;
-    }
-
-    renumberVisibleFormSteps() {
-        const formCol = document.querySelector('.ap-create-form-col');
-        if (!formCol) return;
-
-        let step = 1;
-        formCol.querySelectorAll('.ap-step-number').forEach((badge) => {
-            const wrapper = badge.closest('.ap-step-header, .ap-accordion-section') || badge.parentElement;
-            if (this.isElementVisible(wrapper)) {
-                badge.dataset.step = String(step);
-                badge.textContent = '';
-                step += 1;
-            } else {
-                delete badge.dataset.step;
-            }
-        });
     }
 
     populateResourceCategoryField() {
@@ -1832,10 +1726,9 @@ class FirebaseAdminPanel {
 
         this.isSubmitting = true;
 
-        // Show loading state
-        const submitBtn = document.getElementById('postBulletinBtn');
-        submitBtn.classList.add('btn-loading');
-        submitBtn.disabled = true;
+        // Show loading state on composer submit button
+        const cxSubmitBtn = document.getElementById('cxSubmitBtn');
+        if (cxSubmitBtn) { cxSubmitBtn.classList.add('btn-loading'); cxSubmitBtn.disabled = true; }
 
         try {
             syncRichEditorsToForm();
@@ -1908,8 +1801,7 @@ class FirebaseAdminPanel {
             this.showTemporaryMessage(errorMessage, 'error');
         } finally {
             // Reset loading state
-            submitBtn.classList.remove('btn-loading');
-            submitBtn.disabled = false;
+            if (cxSubmitBtn) { cxSubmitBtn.classList.remove('btn-loading'); cxSubmitBtn.disabled = false; }
             this.setSubmitButtonLabel(
                 this.isEditMode
                     ? (this.contentType === 'resource' ? 'Update Resource' : 'Update Bulletin')
@@ -2796,6 +2688,7 @@ class FirebaseAdminPanel {
     handlePdfPreview(e) {
         const file = e.target.files[0];
         const preview = document.getElementById('pdfPreview');
+        if (!preview) return;
 
         if (file) {
             // Check file size (10MB limit for PDFs)
@@ -2832,8 +2725,10 @@ class FirebaseAdminPanel {
     }
 
     removePdfPreview() {
-        document.getElementById('pdf').value = '';
-        document.getElementById('pdfPreview').innerHTML = '';
+        const pdfIn = document.getElementById('pdf');
+        if (pdfIn) pdfIn.value = '';
+        const pdfPrev = document.getElementById('pdfPreview');
+        if (pdfPrev) pdfPrev.innerHTML = '';
     }
 
     handleResourcePdfPreview(e) {
@@ -2970,11 +2865,8 @@ class FirebaseAdminPanel {
         // Switch to post tab
         this.showTab('post');
         document.getElementById('bulletinForm').reset();
-        document.getElementById('imagePreview').innerHTML = '';
-        document.getElementById('imageEsPreview').innerHTML = '';
         const resourceLogoPreviewEl = document.getElementById('resourceLogoPreview');
         if (resourceLogoPreviewEl) resourceLogoPreviewEl.innerHTML = '';
-        document.getElementById('pdfPreview').innerHTML = '';
         this.pendingImageData = null;
         this.pendingImageEsData = null;
         this.pendingResourceLogoData = null;
@@ -3015,7 +2907,6 @@ class FirebaseAdminPanel {
             this.renderResourceServicePresets(bulletin.resourceCategory || '');
             document.getElementById('resourcePublished').checked = bulletin.isPublished !== false;
             document.getElementById('resourceOrder').value = bulletin.resourceOrder ?? '';
-            this.populateAdvisorSelects(bulletin.advisorName || '');
             document.getElementById('resourceAddress').value = bulletin.address || '';
             document.getElementById('resourcePhone').value = bulletin.phone || '';
             if (bulletin.phoneMode) {
@@ -3098,28 +2989,7 @@ class FirebaseAdminPanel {
             document.getElementById('endTime').value = bulletin.endTime || '';
             document.getElementById('eventLocation').value = bulletin.eventLocation || '';
             document.getElementById('eventLink').value = bulletin.eventLink || '';
-            this.populateAdvisorSelects(bulletin.advisorName || '');
-
-            if (bulletin.image) {
-                document.getElementById('imagePreview').innerHTML = `
-                    <div class="preview-container">
-                        <img src="${bulletin.image}" alt="Preview" class="preview-image">
-                        <button type="button" class="remove-image" onclick="adminPanel.removeImagePreview('image')">&times;</button>
-                    </div>
-                `;
-            }
-
-            if (bulletin.imageEs) {
-                document.getElementById('imageEsPreview').innerHTML = `
-                    <div class="preview-container">
-                        <img src="${bulletin.imageEs}" alt="Spanish Preview" class="preview-image">
-                        <button type="button" class="remove-image" onclick="adminPanel.removeImagePreview('imageEs')">&times;</button>
-                    </div>
-                `;
-                this.toggleSpanishFlyerPanel(true);
-            }
             this.syncFlyerUploadUI();
-            this.autoExpandAccordions();
         }
 
         // Store the bulletin ID for updating
@@ -3152,6 +3022,11 @@ class FirebaseAdminPanel {
         // Scroll form into view
         document.getElementById('bulletinForm')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         refreshRichEditors();
+
+        // Streamlined composer: insert blocks for whichever optional fields are populated
+        if (typeof window.PostComposer?.hydrateFromForm === 'function') {
+            window.PostComposer.hydrateFromForm();
+        }
     }
 
     canManageAllPosts() {
@@ -3269,7 +3144,6 @@ class FirebaseAdminPanel {
             }
             this.closeEditAdvisor();
             this.loadAdvisors();
-            this.refreshAdvisorDropdown();
             this.showToast('Advisor updated.', 'success');
         } catch (e) {
             this.showToast('Error saving advisor: ' + e.message, 'error');
@@ -3301,7 +3175,6 @@ class FirebaseAdminPanel {
             document.getElementById('newAdvisorEmail').value = '';
             document.getElementById('newAdvisorIsAdmin').checked = false;
             this.loadAdvisors();
-            this.refreshAdvisorDropdown();
             this.showToast(`${displayName} added to the advisor list.`, 'success');
             this.showTemporaryMessage(
                 `Next step (required): open Firebase Console → Authentication → Add user with email ${loginEmail}. They cannot log in until that account exists.`,
@@ -3320,16 +3193,10 @@ class FirebaseAdminPanel {
             await deleteDoc(doc(db, 'advisors', username));
             this.advisors = this.advisors.filter(a => a.username !== username);
             this.loadAdvisors();
-            this.refreshAdvisorDropdown();
             this.showToast(`${advisor.displayName} removed.`, 'success');
         } catch (e) {
             this.showToast('Error removing advisor: ' + e.message, 'error');
         }
-    }
-
-    refreshAdvisorDropdown() {
-        const current = document.getElementById('advisorName')?.value || document.getElementById('resourceAdvisorName')?.value || '';
-        this.populateAdvisorSelects(current);
     }
 
     loadManageBulletins() {
@@ -3378,7 +3245,7 @@ class FirebaseAdminPanel {
                     b.category,
                     b.resourceCategory,
                     this.isResourceBulletin(b) ? this.getResourceCategoryLabel(b.resourceCategory) : this.getCategoryDisplay(b.category),
-                    b.advisorName,
+                    this.getAdvisorDisplayName(b),
                     b.description,
                     b.url,
                     b.eventLink,
@@ -3444,7 +3311,7 @@ class FirebaseAdminPanel {
                 <p><strong>Status:</strong> ${statusLabel}</p>
                 <p><strong>Category:</strong> ${isResource ? this.getResourceCategoryLabel(bulletin.resourceCategory) : this.getCategoryDisplay(bulletin.category)}</p>
                 ${this.canManageAllPosts() && bulletin.postedBy !== this.currentUser.username ? `
-                    <p><strong>Advisor:</strong> ${this.escapeHtml(bulletin.advisorName)} (${this.escapeHtml(bulletin.postedBy)})</p>
+                    <p><strong>Advisor:</strong> ${this.escapeHtml(this.getAdvisorDisplayName(bulletin))} (${this.escapeHtml(bulletin.postedBy)})</p>
                 ` : ''}
                 <p><strong>Posted:</strong> ${bulletin.datePosted
                     ? new Date(bulletin.datePosted.toDate ? bulletin.datePosted.toDate() : bulletin.datePosted).toLocaleDateString()
@@ -3567,7 +3434,7 @@ class FirebaseAdminPanel {
                         <div class="reorder-card-title">${this.escapeHtml(title)}</div>
                         <div class="reorder-card-meta">
                             ${r.isPublished === false ? '<span class="reorder-pill reorder-pill-draft">Hidden</span>' : '<span class="reorder-pill reorder-pill-live">Live</span>'}
-                            <span class="reorder-card-advisor">Posted by ${this.escapeHtml(r.advisorName || '—')}</span>
+                            <span class="reorder-card-advisor">Posted by ${this.escapeHtml(this.getAdvisorDisplayName(r) || '—')}</span>
                         </div>
                     </div>
                 </div>
@@ -4051,6 +3918,7 @@ class FirebaseAdminPanel {
     setupFormValidation() {
         const titleInput = document.getElementById('title');
         const descriptionTextarea = document.getElementById('description');
+        if (!titleInput || !descriptionTextarea) return;
 
         // Title validation
         titleInput.addEventListener('input', (e) => {
@@ -4228,6 +4096,14 @@ class FirebaseAdminPanel {
         return (this.currentUser?.username || '').toLowerCase();
     }
 
+    getAdvisorDisplayName(doc) {
+        if (doc.advisorName) return doc.advisorName;
+        const uid = doc.createdBy || doc.postedBy || '';
+        if (!uid) return '';
+        const match = this.advisors.find(a => a.username === uid || a.uid === uid);
+        return match ? (match.displayName || match.username || '') : uid;
+    }
+
     async createBulletin(formData) {
         const bulletin = this.buildBulletinObject(formData);
         bulletin.postedBy = this.getAuthPostedBy();
@@ -4396,11 +4272,6 @@ class FirebaseAdminPanel {
 
             const suggestedIcon = document.getElementById('resourceCategory')?.dataset?.suggestedIcon || 'globe';
 
-            const advisorName = (formData.get('resourceAdvisorName') || '').trim();
-            if (!advisorName) {
-                throw new Error('Please select who is posting this resource.');
-            }
-
             const servicesRaw = (formData.get('resourceHighlights') || '').trim();
             const services = parseResourceServiceChips(servicesRaw);
             const resourceSummaryEn = (formData.get('resourceDescription') || '').trim();
@@ -4431,7 +4302,6 @@ class FirebaseAdminPanel {
                 highlights: services.join(', '),
                 services,
                 serviceChips: services,
-                advisorName: advisorName,
                 address: isDocument ? '' : (formData.get('resourceAddress') || '').trim(),
                 phone: isDocument ? '' : (formData.get('resourcePhone') || '').trim(),
                 phoneMode: isDocument ? 'call' : (formData.get('resourcePhoneMode') || 'call').trim(),
@@ -4487,7 +4357,6 @@ class FirebaseAdminPanel {
             eventLocation: formData.get('eventLocation') || '',
             eventLink: (formData.get('eventLink') || '').trim(),
             classType: formData.get('classType') || '',
-            advisorName: (formData.get('advisorName') || this.currentUser?.name || '').trim(),
             address: (formData.get('eventLocation') || '').trim(),
             phone: (formData.get('contactPhone') || '').trim(),
             phoneMode: (formData.get('contactPhoneMode') || 'call').trim(),
@@ -4593,11 +4462,6 @@ class FirebaseAdminPanel {
         this.toggleSpanishFlyerPanel(false);
         this.syncFlyerUploadUI();
 
-        // Reset advisor name dropdown to current user
-        if (this.currentUser) {
-            this.populateAdvisorSelects(this.currentUser.name);
-        }
-
         // Reset phone mode radios
         document.querySelectorAll('input[name="resourcePhoneMode"][value="call"]').forEach(r => r.checked = true);
         document.querySelectorAll('input[name="contactPhoneMode"][value="call"]').forEach(r => r.checked = true);
@@ -4619,11 +4483,6 @@ class FirebaseAdminPanel {
         document.getElementById('resourcePublished').checked = true;
         delete document.getElementById('resourceCategory').dataset.suggestedIcon;
         
-        // Collapse all accordions
-        document.querySelectorAll('.ap-accordion-section').forEach(section => {
-            section.classList.remove('open');
-        });
-
         // Return to the matching workspace list (resources, events, or bulletins).
         if (!options.stayOnCreate) {
             this.navigateToManagePage(managePage);
@@ -4634,10 +4493,11 @@ class FirebaseAdminPanel {
         if (!this.currentUser) return false;
         const u = this.currentUser.username;
         const n = this.currentUser.name;
+        const displayName = this.getAdvisorDisplayName(bulletin);
         return bulletin.postedBy === u ||
                bulletin.postedBy === n ||
-               bulletin.advisorName === n ||
-               bulletin.advisorName === u;
+               displayName === n ||
+               displayName === u;
     }
 
     formatTimeAgo(date) {

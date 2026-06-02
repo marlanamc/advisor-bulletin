@@ -449,679 +449,152 @@
                     </div>
 
                     <div class="ap-create-layout">
-                        <!-- Form Column -->
-                        <div class="ap-create-form-col">
 
-                            <div class="ap-step-header">
-                                <div class="ap-step-number"></div>
-                                <h3 class="ap-step-title">What are you posting?</h3>
-                            </div>
-                            <div class="ap-type-selector" role="group" aria-label="Choose post type" id="apTypeSelector">
-                                <button class="ap-type-card ap-type-bulletin selected selected-bulletin" type="button" onclick="apSelectType('bulletin')" id="apTypeBulletin" aria-pressed="true">
-                                    <div class="ap-type-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
-                                    <div class="ap-type-icon-ring">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                                    </div>
-                                    <div class="ap-type-name">Bulletin</div>
-                                    <div class="ap-type-desc">Shows on the home feed — announcements, updates, and opportunities</div>
+                        <!-- ── COMPOSER COLUMN ── -->
+                        <form id="bulletinForm" novalidate>
+                        <div class="ap-cx-col" id="apCxCol">
+                            <!-- type tabs -->
+                            <div class="cx-types" id="cxTypes">
+                                <button type="button" class="cx-type active" data-cx-type="bulletin">
+                                    <span class="cx-type-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+                                    <span><b>Bulletin</b><span>Shows on the home feed</span></span>
                                 </button>
-                                <button class="ap-type-card ap-type-resource" type="button" onclick="apSelectType('resource')" id="apTypeResource" aria-pressed="false">
-                                    <div class="ap-type-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
-                                    <div class="ap-type-icon-ring">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-                                    </div>
-                                    <div class="ap-type-name">Resource</div>
-                                    <div class="ap-type-desc">Saved in Find Help — jobs, immigration, housing, health, and more</div>
+                                <button type="button" class="cx-type" data-cx-type="resource">
+                                    <span class="cx-type-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></span>
+                                    <span><b>Resource</b><span>Saved in Find Help</span></span>
                                 </button>
-                                <button class="ap-type-card ap-type-event" type="button" onclick="apSelectType('event')" id="apTypeEvent" aria-pressed="false">
-                                    <div class="ap-type-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
-                                    <div class="ap-type-icon-ring">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                                    </div>
-                                    <div class="ap-type-name">Calendar Event</div>
-                                    <div class="ap-type-desc">Adds dates to the school calendar — holidays, workshops, deadlines</div>
-                                    <div class="ap-type-note">Not shown as a post on the home feed</div>
+                                <button type="button" class="cx-type" data-cx-type="event">
+                                    <span class="cx-type-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
+                                    <span><b>Calendar Event</b><span>Adds dates to the calendar</span></span>
                                 </button>
                             </div>
 
-                            <!-- ORIGINAL FORM (kept for JS compatibility, hidden/wrapped) -->
-                            <div id="postTab" class="tab-content active" role="tabpanel" aria-labelledby="post-tab" style="display:contents">
-                <div class="post-form-container">
-                    <h4 id="formHeader">Create New Bulletin</h4>
-                    <div class="content-type-switcher" role="tablist" aria-label="Choose content type">
-                        <button class="content-type-btn active" type="button" data-content-type="post" aria-pressed="true">📋 Bulletin</button>
-                        <button class="content-type-btn" type="button" data-content-type="resource" aria-pressed="false">🔗 Resource</button>
-                        <button class="content-type-btn" type="button" data-content-type="event" aria-pressed="false">📅 Event Date</button>
-                    </div>
-                    <div class="content-type-helper" id="contentTypeHelper">
-                        Use Posts for announcements, events, trainings, and opportunities.
-                    </div>
-                    <div class="advisor-form-steps" aria-label="Bulletin steps">
-                        <span class="active">1 · Pick a category</span>
-                        <span>2 · Write it simply</span>
-                        <span>3 · Preview</span>
-                    </div>
-                    
-                    <!-- Form Progress Indicator -->
-                    <div class="form-progress" id="formProgress" style="display: none;">
-                        <div class="form-progress-header">
-                            <h5 class="form-progress-title">Form Completion</h5>
-                            <span class="form-progress-percentage" id="progressPercentage">0%</span>
-                        </div>
-                        <div class="form-progress-bar">
-                            <div class="form-progress-fill" id="progressFill" style="width: 0%"></div>
-                        </div>
-                    </div>
-                    
-                    <form id="bulletinForm">
-                        <input type="hidden" id="contentType" name="contentType" value="post">
-
-                        <div class="ap-field-legend-wrap" id="apFieldLegend">
-                            <div class="ap-field-legend" role="note" aria-label="Field priority guide">
-                                <div class="ap-field-legend-row">
-                                    <span class="field-priority required">Required</span>
-                                    <span class="ap-field-legend-text">Must be filled before publishing.</span>
-                                </div>
-                                <div class="ap-field-legend-row">
-                                    <span class="field-priority recommended">Recommended</span>
-                                    <span class="ap-field-legend-text">Helps students but can be skipped.</span>
-                                </div>
-                                <div class="ap-field-legend-row">
-                                    <span class="field-priority optional">Optional</span>
-                                    <span class="ap-field-legend-text">Sections can be left blank.</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Step 2: Basic Information -->
-                        <div class="ap-step-header content-mode-section" data-content-mode="post event" style="margin-top: 24px;">
-                            <div class="ap-step-number"></div>
-                            <div>
-                                <h3 class="ap-step-title">Basic Information</h3>
-                                <p class="ap-step-subtitle" id="basicInfoStepSubtitle">Required to publish on the student feed</p>
-                            </div>
-                        </div>
-
-                        <div class="form-section required content-mode-section" data-content-mode="post event" style="border: none; background: transparent; box-shadow: none; margin-bottom: 0;">
-                            <div class="form-section-header" style="display: none;">
-                                <div class="form-section-icon">📋</div>
-                                <div>
-                                    <h3 class="form-section-title">Basic Information</h3>
-                                    <p class="form-section-subtitle">These fields are mandatory for all bulletins</p>
-                                </div>
-                            </div>
-                            
-                            <div class="form-group required-field title-field-group">
-                                <label for="title" class="required"><span id="titleLabelText">Title</span></label>
-                                <input type="text" id="title" name="title" required maxlength="200" class="required">
-                                <div class="field-feedback" id="titleFeedback"></div>
-                                <small class="input-help required">Keep it short and clear. This is what students will see first.</small>
-                            </div>
-
-                            <div class="form-group required-field ap-rich-field">
-                                <label for="description" class="required">Description</label>
-                                <div
-                                    class="ap-toolbar"
-                                    role="toolbar"
-                                    aria-label="Description formatting"
-                                    aria-controls="description"
-                                    data-rich-toolbar
-                                >
-                                    <button type="button" class="ap-toolbar-btn" data-format="bold" title="Bold (⌘B)" aria-label="Bold">
-                                        <strong>B</strong>
-                                    </button>
-                                    <button type="button" class="ap-toolbar-btn" data-format="italic" title="Italic (⌘I)" aria-label="Italic">
-                                        <em>I</em>
-                                    </button>
-                                    <button type="button" class="ap-toolbar-btn" data-format="underline" title="Underline (⌘U)" aria-label="Underline">
-                                        <u>U</u>
-                                    </button>
-                                    <button type="button" class="ap-toolbar-btn" data-format="bullet" title="Bullet list" aria-label="Bullet list">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
-                                            <line x1="9" y1="6" x2="20" y2="6"></line>
-                                            <line x1="9" y1="12" x2="20" y2="12"></line>
-                                            <line x1="9" y1="18" x2="20" y2="18"></line>
-                                            <circle cx="4" cy="6" r="1.5" fill="currentColor" stroke="none"></circle>
-                                            <circle cx="4" cy="12" r="1.5" fill="currentColor" stroke="none"></circle>
-                                            <circle cx="4" cy="18" r="1.5" fill="currentColor" stroke="none"></circle>
-                                        </svg>
-                                    </button>
-                                </div>
-                                <textarea id="description" name="description" rows="4" maxlength="2000" class="required"></textarea>
-                                <div class="field-feedback" id="descriptionFeedback"></div>
-                                <small class="input-help required">What you type is what students see in English. Use the toolbar for bold, italic, underline, or bullets.</small>
-                            </div>
-
-                            <div class="form-group required-field advisor-field-group" style="padding: 0 22px; margin-bottom: 0;">
-                                <label for="advisorName" class="required">Posted by</label>
-                                <select id="advisorName" name="advisorName" required class="required">
-                                    <option value="">Select your name</option>
-                                    <option value="Jorge">Jorge</option>
-                                    <option value="Fabiola">Fabiola</option>
-                                    <option value="Leidy">Leidy</option>
-                                    <option value="Carmen">Carmen</option>
-                                    <option value="Jerome">Jerome</option>
-                                    <option value="Felipe">Felipe</option>
-                                    <option value="Simonetta">Simonetta</option>
-                                    <option value="Mike K.">Mike K.</option>
-                                    <option value="Leah">Leah</option>
-                                    <option value="Administrator">Administrator</option>
-                                </select>
-                                <small class="input-help required">Select your name so students know who to contact.</small>
-                            </div>
-
-                            <div class="ap-category-picker-block category-field-group">
-                                <label for="category" class="required">Category</label>
-                                <small class="input-help ap-category-picker-help">Choose the topic students use to find this post. For permanent links, use Resources.</small>
-                                <select id="category" name="category" class="required ap-category-select-sr" tabindex="-1" aria-hidden="true">
-                                    <option value="">Select a category</option>
-                                    <option value="job">Job Opportunity</option>
-                                    <option value="training">Training / Workshop</option>
-                                    <option value="immigration">Immigration</option>
-                                    <option value="housing">Housing</option>
-                                    <option value="health">Health</option>
-                                    <option value="food">Food</option>
-                                    <option value="esol">English Class (ESOL)</option>
-                                    <option value="college">College &amp; GED</option>
-                                    <option value="money">Money Help</option>
-                                    <option value="career-fair">Career Fair</option>
-                                    <option value="announcement">Announcement</option>
-                                </select>
-                                <div class="advisor-category-picker" role="group" aria-label="Category">
-                                    <button type="button" data-category-pick="job">💼 Job Opportunity</button>
-                                    <button type="button" data-category-pick="training">📚 Training / Workshop</button>
-                                    <button type="button" data-category-pick="immigration">🌎 Immigration</button>
-                                    <button type="button" data-category-pick="housing">🏠 Housing</button>
-                                    <button type="button" data-category-pick="health">❤️ Health</button>
-                                    <button type="button" data-category-pick="food">🍽️ Food</button>
-                                    <button type="button" data-category-pick="esol">🗣️ English Class (ESOL)</button>
-                                    <button type="button" data-category-pick="college">🎓 College &amp; GED</button>
-                                    <button type="button" data-category-pick="money">💵 Money Help</button>
-                                    <button type="button" data-category-pick="career-fair">🤝 Career Fair</button>
-                                    <button type="button" data-category-pick="announcement">📣 Announcement</button>
-                                </div>
-                            </div>
-
-                            <div class="form-group optional-field">
-                                <label for="eventLink" class="recommended">Link</label>
-                                <div style="position: relative;">
-                                    <div style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--ap-text-3);">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-                                    </div>
-                                    <input type="url" id="eventLink" name="eventLink" class="recommended" style="padding-left: 38px;">
-                                </div>
-                                <small class="input-help">Add a website or registration link for more information.</small>
-                            </div>
-                        </div>
-
-                        <div class="form-section ap-visual-upload-section content-mode-section" data-content-mode="post event">
-                            <div class="ap-visual-upload-head">
-                                <div class="ap-visual-upload-head-text">
-                                    <h3 class="ap-visual-upload-title">Make it visual</h3>
-                                    <p class="ap-visual-upload-sub">A flyer is the first thing students notice on the board.</p>
-                                </div>
-                                <span class="ap-visual-upload-badge field-priority recommended">Recommended</span>
-                            </div>
-                            <div class="ap-visual-upload-body">
-                                <div class="ap-upload-zone ap-visual-flyer-zone" role="button" tabindex="0">
-                                    <div class="ap-upload-icon" aria-hidden="true">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                                    </div>
-                                    <div class="ap-upload-title">Drop flyer preview here</div>
-                                    <div class="ap-upload-sub">PNG/JPG, or PDF page 1 · max 10MB</div>
-                                </div>
-                                <input type="file" id="image" name="image" accept="image/jpeg,image/png,image/gif,image/webp,application/pdf,.pdf" class="file-input recommended" style="display: none;" aria-label="Upload flyer preview">
-                                <div id="imagePreview" class="image-preview ap-visual-flyer-preview"></div>
-
-                                <div id="apFlyerPdfAddon" class="ap-flyer-pdf-addon" hidden>
-                                    <div class="ap-flyer-pdf-addon-row">
-                                        <div class="ap-flyer-pdf-addon-icon" aria-hidden="true">📄</div>
-                                        <div class="ap-flyer-pdf-addon-copy">
-                                            <label for="pdf" class="optional">Student PDF attachment</label>
-                                            <small class="input-help">Optional — add the full document students can open from your post.</small>
-                                        </div>
-                                        <button type="button" class="ap-flyer-pdf-choose" onclick="document.getElementById('pdf').click()">Choose PDF</button>
-                                    </div>
-                                    <label class="ap-source-pdf-attach" for="attachSourcePdf">
-                                        <input type="checkbox" id="attachSourcePdf" name="attachSourcePdf" checked>
-                                        <span>Attach the preview PDF so students can open the full document.</span>
-                                    </label>
-                                    <input type="file" id="pdf" name="pdf" accept=".pdf,application/pdf" class="file-input ap-flyer-pdf-input" style="display: none;" aria-label="Attach PDF">
-                                    <div id="pdfPreview" class="pdf-preview"></div>
-                                </div>
-
-                                <button type="button" id="apFlyerEsToggle" class="ap-flyer-es-toggle" aria-expanded="false" aria-controls="apFlyerEsPanel">+ Add Spanish flyer (ES)</button>
-                                <div id="apFlyerEsPanel" class="ap-flyer-es-panel" hidden>
-                                    <label for="imageEs" class="optional">Spanish flyer</label>
-                                    <small class="input-help ap-image-es-help">Shown when students switch to Spanish (ES). English flyer is used if blank.</small>
-                                    <div class="ap-upload-dropzone ap-upload-dropzone-es">
-                                        <div class="ap-upload-dropzone-icon" aria-hidden="true">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                                        </div>
-                                        <div>
-                                            <div class="ap-upload-dropzone-title">Upload Spanish flyer preview</div>
-                                            <div class="ap-upload-dropzone-sub">PNG/JPG, or PDF page 1 · max 10MB</div>
-                                        </div>
-                                        <span class="ap-upload-lang-badge" aria-hidden="true">ES</span>
-                                    </div>
-                                    <input type="file" id="imageEs" name="imageEs" accept="image/jpeg,image/png,image/gif,image/webp,application/pdf,.pdf" class="file-input" style="display: none;" aria-label="Upload Spanish flyer">
-                                    <div id="imageEsPreview" class="image-preview"></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="form-section resource-primary content-mode-section" data-content-mode="resource" style="display: none;">
-                            <div class="form-section-header">
-                                <div class="ap-step-number"></div>
-                                <div>
-                                    <h3 class="form-section-title">Resource Details</h3>
-                                    <p class="form-section-subtitle ap-form-section-subtitle" id="resourceSectionSubtitle">Required to publish a resource</p>
-                                </div>
-                            </div>
-
-                            <div class="field-group double">
-                                <div class="form-group required-field">
-                                    <label for="resourceTitleEn" class="required">English Title</label>
-                                    <input type="text" id="resourceTitleEn" name="resourceTitleEn" maxlength="120" data-resource-required="true">
-                                    <small class="input-help required">Use short, familiar words students will recognize quickly.</small>
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="resourceTitleEs" class="recommended">Spanish Title</label>
-                                    <input type="text" id="resourceTitleEs" name="resourceTitleEs" maxlength="120">
-                                    <small class="input-help">Recommended for bilingual display. If left blank, English is reused.</small>
-                                </div>
-                            </div>
-
-                            <div class="ap-category-picker-block form-group required-field">
-                                <label for="resourceCategory" class="required">Resource Category</label>
-                                <small class="input-help ap-category-picker-help">Choose where students find this in Find Help — same topics as the student app.</small>
-                                <select id="resourceCategory" name="resourceCategory" class="required ap-category-select-sr" tabindex="-1" aria-hidden="true">
-                                    <option value="">Select a category</option>
-                                </select>
-                                <div class="advisor-category-picker" id="resourceCategoryPicker" role="group" aria-label="Resource category"></div>
-                            </div>
-
-                            <div class="form-group resource-kind-field">
-                                <label class="required">Resource type</label>
-                                <div class="resource-kind-toggle" role="radiogroup" aria-label="Resource type">
-                                    <label class="resource-kind-option">
-                                        <input type="radio" name="resourceKind" value="organization" checked>
-                                        <span class="resource-kind-option-copy">
-                                            <strong>Organization</strong>
-                                            <small>A place students can call, visit, or browse online.</small>
-                                        </span>
-                                    </label>
-                                    <label class="resource-kind-option">
-                                        <input type="radio" name="resourceKind" value="document">
-                                        <span class="resource-kind-option-copy">
-                                            <strong>Document / Form</strong>
-                                            <small>A PDF or form students can open, print, or fill out.</small>
-                                        </span>
-                                    </label>
-                                </div>
-                            </div>
-
-                            <div class="form-group required-field" id="resourceUrlField">
-                                <label for="resourceUrl" class="required" id="resourceUrlLabel">Link / URL</label>
-                                <input type="url" id="resourceUrl" name="resourceUrl" data-resource-required="true">
-                                <small class="input-help required" id="resourceUrlHelp">Paste the website students should open when they tap the resource.</small>
-                            </div>
-
-                            <div class="form-group resource-document-only" id="resourcePdfField" hidden>
-                                <label for="resourcePdf" class="optional" id="resourcePdfLabel">Form PDF</label>
-                                <small class="input-help" id="resourcePdfHelp">Optional — upload a PDF if students should open a file. A link above works instead.</small>
-                                <div class="resource-pdf-upload">
-                                    <button type="button" class="ap-flyer-pdf-choose" onclick="document.getElementById('resourcePdf').click()">Choose PDF</button>
-                                    <input type="file" id="resourcePdf" name="resourcePdf" accept=".pdf,application/pdf" class="file-input" style="display: none;" aria-label="Upload form PDF">
-                                    <div id="resourcePdfPreview" class="pdf-preview"></div>
-                                </div>
-                            </div>
-
-                            <details class="resource-action-links-field">
-                                <summary class="resource-action-links-summary">Extra action links &amp; PDFs (optional)</summary>
-                                <p class="input-help resource-action-links-intro">Add up to 5 extra buttons on the card — website links or uploaded PDFs. Good for family prep hubs and deep pages.</p>
-                                <div id="resourceActionLinkSlots"></div>
-                            </details>
-
-                            <div class="form-group resource-org-only">
-                                <label for="resourceLogo" class="optional">Organization Logo</label>
-                                <div style="display: flex; gap: 12px; align-items: center; padding: 16px; border: 1.5px dashed var(--ap-border-mid); border-radius: var(--ap-r-md); background: var(--ap-surface-2); cursor: pointer;" onclick="document.getElementById('resourceLogo').click()">
-                                    <div style="width: 44px; height: 44px; border-radius: 10px; background: #fff; display: grid; place-items: center; color: var(--ap-blue);">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 24px; height: 24px;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                                    </div>
-                                    <div>
-                                        <div style="font-weight: 700; font-size: 0.88rem; color: var(--ap-text);">Upload organization logo</div>
-                                        <div style="font-size: 0.74rem; color: var(--ap-text-3);">PNG or JPG (Max 10MB; auto-compressed to fit). Square logos work best.</div>
-                                    </div>
-                                </div>
-                                <input type="file" id="resourceLogo" name="resourceLogo" accept="image/*" class="file-input" style="display: none;">
-                                <div id="resourceLogoPreview" class="image-preview" style="margin-top: 10px;"></div>
-                            </div>
-
-                            <div class="form-group required-field resource-chips-field">
-                                <label for="resourceHighlights" class="required">Student help chips</label>
-                                <p class="resource-chips-intro">Up to 6 short actions on the card — what students can do at this place (e.g. <em>Get housing help</em>, <em>Apply for SNAP</em>).</p>
-                                <input type="text" id="resourceHighlights" name="resourceHighlights" maxlength="200" data-resource-required="true" aria-describedby="resourceChipSuggestionsHint resourceChipTips">
-                                <div class="resource-chips-suggestions" id="resourceChipSuggestions">
-                                    <p class="resource-chips-suggestions-label" id="resourceChipSuggestionsHint">Tap to add</p>
-                                    <div class="resource-service-presets" id="resourceServicePresets" role="group" aria-label="Suggested chips"></div>
-                                </div>
-                                <details class="resource-chips-tips" id="resourceChipTips">
-                                    <summary>Tips for writing chips</summary>
-                                    <div class="resource-chips-tips-body">
-                                        <p>Separate each chip with a comma or semicolon. Start with an action word: Get, Find, Apply, Call, Talk, Learn, Report, or Take.</p>
-                                        <p class="resource-chips-tips-examples"><strong>Examples:</strong> Get housing help · Apply for SNAP · Sign up for HiSET</p>
-                                        <p>Skip formal program names (like “Tenant Rights”) — phrase what the student can <em>do</em>.</p>
-                                    </div>
-                                </details>
-                            </div>
-
-                            <div class="field-group double">
-                                <div class="form-group">
-                                    <label for="resourceDescription" class="optional">Card summary (English)</label>
-                                    <textarea id="resourceDescription" name="resourceDescription" rows="2" maxlength="160"></textarea>
-                                    <small class="input-help">Shown right under the title on every card. Be specific (e.g. <em>"Hospitality jobs and training"</em> instead of <em>"Job training services"</em>).</small>
-                                </div>
-                                <div class="form-group">
-                                    <label for="resourceSummaryEs" class="optional">Card summary (Spanish)</label>
-                                    <textarea id="resourceSummaryEs" name="resourceSummaryEs" rows="2" maxlength="160"></textarea>
-                                    <small class="input-help">Same one-line summary in Spanish. If left blank, students in Spanish see the English summary.</small>
-                                </div>
-                            </div>
-
-                            <div class="field-group double resource-org-only">
-                                <div class="form-group">
-                                    <label for="resourceAddress" class="optional">Physical Address</label>
-                                    <input type="text" id="resourceAddress" name="resourceAddress">
-                                </div>
-                                <div class="form-group">
-                                    <label for="resourcePhone" class="optional">Phone Number</label>
-                                    <input type="tel" id="resourcePhone" name="resourcePhone">
-                                    <div class="phone-mode-selector">
-                                        <label>
-                                            <input type="radio" name="resourcePhoneMode" value="call" checked> Call
-                                        </label>
-                                        <label>
-                                            <input type="radio" name="resourcePhoneMode" value="text"> Text
-                                        </label>
-                                        <label>
-                                            <input type="radio" name="resourcePhoneMode" value="both"> Call or Text
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="form-group resource-org-only">
-                                <label for="resourceHours" class="optional">Hours of Operation</label>
-                                <input type="text" id="resourceHours" name="resourceHours">
-                                <small class="input-help">Mention languages spoken in the card summary or description if that matters for students.</small>
-                            </div>
-
-                            <div class="form-group required-field">
-                                <label for="resourceAdvisorName" class="required">Posted by</label>
-                                <select id="resourceAdvisorName" name="resourceAdvisorName" required class="required">
-                                    <option value="">Select your name</option>
-                                    <option value="Jorge">Jorge</option>
-                                    <option value="Fabiola">Fabiola</option>
-                                    <option value="Leidy">Leidy</option>
-                                    <option value="Carmen">Carmen</option>
-                                    <option value="Jerome">Jerome</option>
-                                    <option value="Felipe">Felipe</option>
-                                    <option value="Simonetta">Simonetta</option>
-                                    <option value="Mike K.">Mike K.</option>
-                                    <option value="Leah">Leah</option>
-                                    <option value="Administrator">Administrator</option>
-                                </select>
-                            </div>
-
-                            <div class="field-group double">
-                                <div class="form-group">
-                                    <label for="resourceOrder" class="optional">Display Order (advanced)</label>
-                                    <input type="number" id="resourceOrder" name="resourceOrder" min="0" max="999" step="1">
-                                    <small class="input-help">Most advisors don't need to set this. Use the <strong>Reorder</strong> button on the My Posts tab to drag resources into order instead.</small>
-                                </div>
-
-                                <div class="form-group resource-toggle-group">
-                                    <label for="resourcePublished">Published</label>
-                                    <div class="resource-publish-toggle">
-                                        <label class="toggle-switch">
-                                            <input type="checkbox" id="resourcePublished" name="resourcePublished" checked>
-                                            <span class="toggle-slider"></span>
-                                        </label>
-                                        <span class="toggle-label">Show this resource to students now</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Step 3: Event Details -->
-                        <div class="ap-accordion-section content-mode-section" id="eventDetailsAccordion" data-content-mode="post event">
-                            <div class="ap-accordion-header" onclick="adminPanel.toggleAccordion(this)">
-                                <div class="ap-step-number"></div>
-                                <h3 class="ap-accordion-title">Event Details <span class="field-priority optional ap-section-badge" id="eventDetailsSectionBadge">Optional</span></h3>
-                                <div class="ap-accordion-chevron">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-                                </div>
-                            </div>
-                            <div class="ap-accordion-content">
-                                <div class="field-group double event-date-type-row">
-                                    <div class="form-group event-field">
-                                        <label for="dateType" class="recommended">Date Type</label>
-                                        <select id="dateType" name="dateType" onchange="toggleDateFields()" class="recommended">
-                                            <option value="">No specific date</option>
-                                            <option value="deadline">Application Deadline</option>
-                                            <option value="event">Event Date</option>
-                                            <option value="sessions">Multiple Session Dates</option>
-                                            <option value="range">Event Date Range</option>
-                                        </select>
-                                    </div>
-
-                                    <div class="form-group event-field event-format-field">
-                                        <label for="eventLocation" class="optional">Event Format</label>
-                                        <select id="eventLocation" name="eventLocation" class="recommended">
-                                            <option value="">Select format</option>
-                                            <option value="in-person">In-Person</option>
-                                            <option value="online">Online</option>
-                                            <option value="hybrid">Hybrid</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div class="field-group" id="dateFields" style="display: none;">
-                                    <div class="form-group event-field" id="singleDateGroup">
-                                        <label for="eventDate" class="recommended">Date</label>
-                                        <input type="date" id="eventDate" name="eventDate" class="recommended">
-                                    </div>
-                                    <div class="form-group event-field" id="startDateGroup" style="display: none;">
-                                        <label for="startDate" class="recommended">Start Date</label>
-                                        <input type="date" id="startDate" name="startDate" class="recommended">
-                                    </div>
-                                    <div class="form-group event-field" id="endDateGroup" style="display: none;">
-                                        <label for="endDate" class="recommended">End Date</label>
-                                        <input type="date" id="endDate" name="endDate" class="recommended">
-                                    </div>
-                                    <div class="form-group event-field" id="sessionsDateGroup" style="display: none;">
-                                        <label class="recommended">Session dates &amp; times</label>
-                                        <small class="input-help">Add each session date. Use same time for all when every session shares one schedule.</small>
-                                        <div class="session-same-time-row">
-                                            <label class="session-same-time-toggle toggle-switch-label" for="sessionSameTimeToggle">
-                                                <span class="toggle-switch">
-                                                    <input type="checkbox" id="sessionSameTimeToggle" name="sessionSameTime">
-                                                    <span class="toggle-track"><span class="toggle-thumb"></span></span>
-                                                </span>
-                                                <span class="session-same-time-copy">Same time for every session</span>
-                                            </label>
-                                        </div>
-                                        <div id="sessionSharedTimeRow" class="session-shared-time-row" hidden>
-                                            <div class="field-group double session-shared-time-fields">
-                                                <div class="form-group">
-                                                    <label for="sessionSharedStartTime" class="optional">Start time</label>
-                                                    <input type="time" id="sessionSharedStartTime" name="sessionSharedStartTime" class="recommended">
-                                                </div>
-                                                <div class="form-group">
-                                                    <label for="sessionSharedEndTime" class="optional">End time</label>
-                                                    <input type="time" id="sessionSharedEndTime" name="sessionSharedEndTime" class="recommended">
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="event-session-grid-head" aria-hidden="true">
-                                            <span>Date</span>
-                                            <span>Start</span>
-                                            <span>End</span>
-                                            <span></span>
-                                        </div>
-                                        <div id="eventDatesList" class="event-dates-list"></div>
-                                        <button type="button" class="ap-btn ap-btn-ghost event-date-add-btn" id="addEventDateBtn">+ Add another session</button>
-                                    </div>
-                                </div>
-
-                                <div class="field-group double event-time-row">
-                                    <div class="form-group event-field">
-                                        <label for="startTime" class="optional">Start Time</label>
-                                        <input type="time" id="startTime" name="startTime" class="recommended">
-                                    </div>
-                                    <div class="form-group event-field">
-                                        <label for="endTime" class="optional">End Time</label>
-                                        <input type="time" id="endTime" name="endTime" class="recommended">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Step 4: Spanish Translation -->
-                        <div class="ap-accordion-section content-mode-section" data-content-mode="post">
-                            <div class="ap-accordion-header" onclick="adminPanel.toggleAccordion(this)">
-                                <div class="ap-step-number"></div>
-                                <h3 class="ap-accordion-title">Spanish Translation <span class="field-priority optional ap-section-badge">Optional</span></h3>
-                                <div class="ap-accordion-chevron">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-                                </div>
-                            </div>
-                            <div class="ap-accordion-content">
-                                <p class="input-help ap-spanish-translation-intro">Optional Spanish for students who use ES on the app. You can paste translations from a colleague — you do not need to write Spanish yourself.</p>
-                                <div class="form-group">
-                                    <label for="titleEs" class="optional">Spanish Title</label>
-                                    <input type="text" id="titleEs" name="titleEs" maxlength="200">
-                                    <small class="input-help">If blank, students in Spanish see the English title.</small>
-                                </div>
-                                <div class="form-group ap-rich-field">
-                                    <label for="summaryEs" class="optional">Spanish Summary</label>
-                                    <div
-                                        class="ap-toolbar"
-                                        role="toolbar"
-                                        aria-label="Spanish summary formatting"
-                                        aria-controls="summaryEs"
-                                        data-rich-toolbar
-                                    >
-                                        <button type="button" class="ap-toolbar-btn" data-format="bold" title="Bold (⌘B)" aria-label="Bold">
-                                            <strong>B</strong>
-                                        </button>
-                                        <button type="button" class="ap-toolbar-btn" data-format="italic" title="Italic (⌘I)" aria-label="Italic">
-                                            <em>I</em>
-                                        </button>
-                                        <button type="button" class="ap-toolbar-btn" data-format="underline" title="Underline (⌘U)" aria-label="Underline">
-                                            <u>U</u>
-                                        </button>
-                                        <button type="button" class="ap-toolbar-btn" data-format="bullet" title="Bullet list" aria-label="Bullet list">
-                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
-                                                <line x1="9" y1="6" x2="20" y2="6"></line>
-                                                <line x1="9" y1="12" x2="20" y2="12"></line>
-                                                <line x1="9" y1="18" x2="20" y2="18"></line>
-                                                <circle cx="4" cy="6" r="1.5" fill="currentColor" stroke="none"></circle>
-                                                <circle cx="4" cy="12" r="1.5" fill="currentColor" stroke="none"></circle>
-                                                <circle cx="4" cy="18" r="1.5" fill="currentColor" stroke="none"></circle>
-                                            </svg>
-                                        </button>
-                                    </div>
-                                    <textarea id="summaryEs" name="summaryEs" rows="3" maxlength="600"></textarea>
-                                    <small class="input-help">Shown when students switch to Spanish. If filled in, this replaces the English description for Spanish readers — update it when you change the English text. Paste a translation if needed.</small>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Step 5: Contact & Location -->
-                        <div class="ap-accordion-section content-mode-section" data-content-mode="post">
-                            <div class="ap-accordion-header" onclick="adminPanel.toggleAccordion(this)">
-                                <div class="ap-step-number"></div>
-                                <h3 class="ap-accordion-title">Contact &amp; Location <span class="field-priority optional ap-section-badge">Optional</span></h3>
-                                <div class="ap-accordion-chevron">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-                                </div>
-                            </div>
-                            <div class="ap-accordion-content">
-                                <div class="form-group">
-                                    <label for="company" class="optional">Organization/Company</label>
-                                    <input type="text" id="company" name="company">
-                                </div>
-                                <div class="field-group double">
-                                    <div class="form-group">
-                                        <label for="location" class="optional">Physical Address</label>
-                                        <input type="text" id="location" name="eventLocation">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="contactPhone" class="optional">Phone Number</label>
-                                        <input type="tel" id="contactPhone" name="contactPhone">
-                                        <div class="phone-mode-selector">
-                                            <label>
-                                                <input type="radio" name="contactPhoneMode" value="call" checked> Call
-                                            </label>
-                                            <label>
-                                                <input type="radio" name="contactPhoneMode" value="text"> Text
-                                            </label>
-                                            <label>
-                                                <input type="radio" name="contactPhoneMode" value="both"> Both
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="contactHours" class="optional">Hours Available</label>
-                                    <input type="text" id="contactHours" name="contactHours">
-                                    <small class="input-help">Mention languages in the post description if students need to know.</small>
-                                </div>
-                                <div class="form-group">
-                                    <label for="contact" class="optional">Additional Contact Notes</label>
-                                    <textarea id="contact" name="contact" rows="2"></textarea>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Step 6: Target Student Group -->
-                        <div class="ap-accordion-section content-mode-section" data-content-mode="post">
-                            <div class="ap-accordion-header" onclick="adminPanel.toggleAccordion(this)">
-                                <div class="ap-step-number"></div>
-                                <h3 class="ap-accordion-title">Target Student Group <span class="field-priority optional ap-section-badge">Optional</span></h3>
-                                <div class="ap-accordion-chevron">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-                                </div>
-                            </div>
-                            <div class="ap-accordion-content">
-
-                                <div class="form-group">
-                                    <select id="classType" name="classType" aria-label="Target student group">
-                                        <option value="">All students (Default)</option>
-                                        <option value="esol">ESOL</option>
-                                        <option value="hse">HSE</option>
-                                        <option value="famlit">FamLit</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-
-                    </form>
-                </div>
-            </div><!-- /postTab -->
-
-                            <!-- ── New v2 form actions bar ── -->
-                            <div class="ap-form-actions">
-                                <button type="submit" form="bulletinForm" class="ap-btn-submit" id="postBulletinBtn">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-                                    <span class="ap-btn-submit-label">Post to Students</span>
+                            <!-- resource sub-type chooser (only visible in resource mode) -->
+                            <div class="cx-reskind cx-hidden" id="cxResKind" role="group" aria-labelledby="cxResKindLabel">
+                                <p class="cx-reskind-label" id="cxResKindLabel">What kind of resource?</p>
+                                <div class="cx-reskind-track">
+                                <button type="button" data-cx-reskind="organization" class="sel">
+                                    <span class="rk-ic">🏢</span>
+                                    <span><b>A place or organization</b><span>Students can call, visit, or browse it online</span></span>
                                 </button>
+                                <button type="button" data-cx-reskind="document">
+                                    <span class="rk-ic">📄</span>
+                                    <span><b>A document or form</b><span>A PDF students open, print, or fill out</span></span>
+                                </button>
+                                </div>
                             </div>
 
-                        </div><!-- /ap-create-form-col -->
+                            <!-- composer card -->
+                            <div class="cx-compose">
+                                <!-- Bulletin hero: dual EN + ES flyer -->
+                                <div class="cx-flyerdrop-pair" id="cxBulletinHero">
+                                    <div class="cx-flyerdrop" data-cx-upload="en">
+                                        <span class="fic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></span>
+                                        <div class="cx-flyertxt">
+                                            <b class="cx-flyertitle">Start with your flyer</b>
+                                            <span class="cx-flyersub">Drop a PNG, JPG, or PDF — students see it on the card</span>
+                                        </div>
+                                        <button type="button" class="cx-flyerbtn">Choose file</button>
+                                    </div>
+                                    <div class="cx-flyerdrop es" data-cx-upload="es">
+                                        <span class="fic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></span>
+                                        <div class="cx-flyertxt">
+                                            <b class="cx-flyertitle">Spanish flyer</b>
+                                            <span class="cx-flyersub">Optional</span>
+                                        </div>
+                                        <button type="button" class="cx-flyerbtn">Choose</button>
+                                    </div>
+                                </div>
+
+                                <!-- Resource hero: single logo/PDF slot (hidden until resource mode) -->
+                                <div class="cx-flyerdrop light cx-hidden" id="cxResourceHero" data-cx-upload="resource">
+                                    <span class="fic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></span>
+                                    <div class="cx-flyertxt">
+                                        <b class="cx-flyertitle">Add a logo · optional</b>
+                                        <span class="cx-flyersub">A square logo makes the place recognizable on the card</span>
+                                    </div>
+                                    <button type="button" class="cx-flyerbtn">Choose image</button>
+                                </div>
+
+                                <!-- Event hero: date-first gold panel -->
+                                <div class="cx-eventwhen cx-hidden" id="cxEventWhen">
+                                    <div class="cx-eventwhen-head">
+                                        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
+                                        <div><b>When is it?</b><span class="sub">The date is what students see on the calendar</span></div>
+                                    </div>
+                                    <div class="cx-eventwhen-grid">
+                                        <div class="cx-field">
+                                            <label class="cx-label">Type</label>
+                                            <select class="cx-select" id="cxEvType">
+                                                <option value="event">Event date</option>
+                                                <option value="deadline">Deadline</option>
+                                                <option value="range">Date range</option>
+                                                <option value="sessions">Multiple sessions</option>
+                                            </select>
+                                        </div>
+                                        <div class="cx-field">
+                                            <label class="cx-label" id="cxEvDateLabel">Date</label>
+                                            <input type="date" class="cx-input" id="cxEvDate">
+                                        </div>
+                                        <div class="cx-field cx-hidden" id="cxEvEndWrap">
+                                            <label class="cx-label">End date</label>
+                                            <input type="date" class="cx-input" id="cxEvEnd">
+                                        </div>
+                                        <div class="cx-field">
+                                            <label class="cx-label">Start time <span class="cx-opt-tag">optional</span></label>
+                                            <input type="time" class="cx-input" id="cxEvStart">
+                                        </div>
+                                        <div class="cx-field">
+                                            <label class="cx-label">End time <span class="cx-opt-tag">optional</span></label>
+                                            <input type="time" class="cx-input" id="cxEvEndTime">
+                                        </div>
+                                    </div>
+                                    <!-- Multiple sessions repeater (visible when type=sessions) -->
+                                    <div class="cx-evmore cx-hidden" id="cxEvSessionsWrap">
+                                        <div id="cxEvSessionsList"></div>
+                                        <button type="button" class="cx-evmore-add" id="cxEvAddSession">+ Add another session date</button>
+                                    </div>
+                                </div>
+
+                                <!-- document body -->
+                                <div class="cx-doc">
+                                    <input class="cx-doc-title" id="cxTitle" placeholder="Untitled post — type a title" maxlength="200">
+                                    <div class="cx-doc-tagrow">
+                                        <button type="button" class="cx-doc-cat" id="cxCatBtn">
+                                            <span id="cxCatEm">🏷️</span> <span id="cxCatLabel">Add a category</span>
+                                        </button>
+                                    </div>
+                                    <textarea class="cx-doc-body" id="cxDesc" placeholder="Write what it is, who it's for, and how to sign up…" maxlength="2000"></textarea>
+
+                                    <!-- resource help chips (resource mode only) -->
+                                    <div class="cx-resblock cx-hidden" id="cxChipsBlock">
+                                        <label>What can students do here? <span class="cx-req">*</span></label>
+                                        <p class="cx-help" id="cxChipHelp">Up to 6 short actions shown on the card — phrase what the student can <em>do</em>.</p>
+                                        <div class="cx-chip-tools">
+                                            <span class="cx-chip-tools-label" id="cxChipSuggestLabel" aria-live="polite">Suggestions</span>
+                                            <button type="button" class="cx-chip-browse-btn" id="cxChipBrowseBtn">Browse all actions</button>
+                                        </div>
+                                        <div class="cx-tags" id="cxTags"><input id="cxTagInput" placeholder="Type an action and press Enter…"></div>
+                                        <div class="cx-tag-presets" id="cxTagPresets"></div>
+                                    </div>
+
+                                    <div class="cx-blocks" id="cxBlocks"></div>
+
+                                    <div class="cx-doc-divider"></div>
+                                    <div class="cx-insert">
+                                        <button type="button" class="cx-insert-btn" id="cxInsertBtn"><span class="pl">+</span> Add detail</button>
+                                        <div class="cx-insert-menu" id="cxInsertMenu"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="cx-actions">
+                                <button type="button" class="cx-btn-primary" id="cxSubmitBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Post to students</button>
+                                <span class="cx-actions-note">Title, a category, and a line of text is all it takes.</span>
+                            </div>
+                        </div>
+                        </form>
+                        <!-- ── /COMPOSER COLUMN ── -->
 
                         <!-- ── LIVE PREVIEW COLUMN ── -->
                         <div class="ap-preview-col">
@@ -1520,6 +993,17 @@
     </footer>
 
     <script type="module" src="/src/admin-preview.js"></script>
+
+    <!-- Category popover for the streamlined composer (fixed/absolute, shared) -->
+    <div class="cx-catpop" id="cxCatPop" style="position:fixed">
+        <div class="cx-cats" id="cxCatPopCats"></div>
+    </div>
+
+    <div class="cx-chip-browse-pop" id="cxChipBrowsePop" role="dialog" aria-label="Browse actions" style="position:fixed" hidden>
+        <label class="cx-chip-browse-search-label" for="cxChipBrowseSearch">Search actions</label>
+        <input type="search" class="cx-chip-browse-search" id="cxChipBrowseSearch" placeholder="Search actions…" autocomplete="off">
+        <div class="cx-chip-browse-list" id="cxChipBrowseList" role="listbox"></div>
+    </div>
 </body>
 </html>
 

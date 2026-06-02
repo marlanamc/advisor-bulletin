@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create a Post — EBHCS Advisor Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800&family=Source+Sans+3:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+
+<div class="cx-topbar">
+  <div class="cx-brand"><span class="cx-sail">⛵</span> EBHCS · Advisor Portal</div>
+  <nav class="cx-switch">
+    <a href="#" class="active">＋ Create</a>
+    <a href="#">My Posts</a>
+    <a href="#">Stats</a>
+  </nav>
+  <div class="cx-topbar-spacer"></div>
+  <div class="cx-topbar-note">Posting as <b>Jorge</b></div>
+</div>
+
+<div class="cx-app">
+  <div class="cx-head">
+    <h1>Create a Post</h1>
+    <p>Already have a flyer? Start there. Otherwise just write it like a note — add details inline only where you want them.</p>
+  </div>
+
+  <div class="cx-layout">
+    <div>
+      <!-- type tabs -->
+      <div class="cx-types">
+        <button class="cx-type active" data-type="bulletin">
+          <span class="cx-type-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+          <span><b>Bulletin</b><span>Shows on the home feed</span></span>
+        </button>
+        <button class="cx-type" data-type="resource">
+          <span class="cx-type-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></span>
+          <span><b>Resource</b><span>Saved in Find Help</span></span>
+        </button>
+        <button class="cx-type" data-type="event">
+          <span class="cx-type-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
+          <span><b>Calendar Event</b><span>Adds dates to the calendar</span></span>
+        </button>
+      </div>
+
+      <!-- resource sub-type chooser (resource mode only) -->
+      <div class="cx-reskind cx-hidden" id="cxResKind">
+        <button type="button" data-reskind="organization" class="sel">
+          <span class="rk-ic">🏢</span>
+          <span><b>A place or organization</b><span>Students can call, visit, or browse it online</span></span>
+        </button>
+        <button type="button" data-reskind="document">
+          <span class="rk-ic">📄</span>
+          <span><b>A document or form</b><span>A PDF students open, print, or fill out</span></span>
+        </button>
+      </div>
+
+      <div class="cx-compose">
+        <!-- flyer-first bar -->
+        <div class="cx-flyerdrop" data-upload>
+          <span class="fic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></span>
+          <div>
+            <b data-upload-name>Start with your flyer</b>
+            <span>Drop a PNG, JPG, or PDF — students see it on the card</span>
+          </div>
+          <button type="button" class="cx-flyerbtn">Choose file</button>
+          <input type="file" accept="image/*,application/pdf" hidden>
+        </div>
+
+        <!-- event: date-first hero (event mode only) -->
+        <div class="cx-eventwhen cx-hidden" id="cxEventWhen">
+          <div class="cx-eventwhen-head">
+            <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
+            <div><b>When is it?</b><span>The date is what students see on the calendar</span></div>
+          </div>
+          <div class="cx-eventwhen-grid">
+            <div class="cx-field">
+              <label class="cx-label">Type</label>
+              <select class="cx-select" id="cxEvType">
+                <option value="event">Event date</option>
+                <option value="deadline">Deadline</option>
+                <option value="range">Date range</option>
+                <option value="sessions">Multiple sessions</option>
+              </select>
+            </div>
+            <div class="cx-field">
+              <label class="cx-label" id="cxEvDateLabel">Date</label>
+              <input type="date" class="cx-input" id="cxEvDate">
+            </div>
+            <div class="cx-field cx-hidden" id="cxEvEndWrap">
+              <label class="cx-label">End date</label>
+              <input type="date" class="cx-input" id="cxEvEnd">
+            </div>
+            <div class="cx-field">
+              <label class="cx-label">Start time <span class="cx-opt-tag">optional</span></label>
+              <input type="time" class="cx-input" id="cxEvStart">
+            </div>
+            <div class="cx-field">
+              <label class="cx-label">End time <span class="cx-opt-tag">optional</span></label>
+              <input type="time" class="cx-input" id="cxEvEndTime">
+            </div>
+          </div>
+          <div class="cx-evmore cx-hidden" id="cxEvMoreWrap">
+            <div id="cxEvMore"></div>
+            <button type="button" class="cx-evmore-add" id="cxEvMoreAdd">+ Add another session date</button>
+          </div>
+        </div>
+
+        <!-- document composer -->
+        <div class="cx-doc">
+          <input class="cx-doc-title" data-f="title" placeholder="Untitled post — type a title" maxlength="200">
+          <div class="cx-doc-tagrow">
+            <button type="button" class="cx-doc-cat" id="cxCatBtn">
+              <span id="cxCatEm">🏷️</span> <span id="cxCatLabel">Add a category</span>
+            </button>
+          </div>
+          <textarea class="cx-doc-body" data-f="desc" placeholder="Write what it is, who it's for, and how to sign up…" maxlength="2000"></textarea>
+
+          <!-- resource help chips (resource mode only) -->
+          <div class="cx-resblock cx-hidden" id="cxChipsBlock">
+            <label>What can students do here? <span class="cx-req">*</span></label>
+            <p class="cx-help">Up to 6 short actions shown on the card — phrase what the student can <em>do</em>.</p>
+            <div class="cx-tags" id="cxTags"><input id="cxTagInput" placeholder="Type an action and press Enter…"></div>
+            <div class="cx-tag-presets" id="cxTagPresets"></div>
+          </div>
+
+          <div class="cx-blocks" id="cxBlocks"></div>
+
+          <div class="cx-doc-divider"></div>
+          <div class="cx-insert">
+            <button type="button" class="cx-insert-btn" id="cxInsertBtn"><span class="pl">+</span> Add detail</button>
+            <div class="cx-insert-menu" id="cxInsertMenu"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cx-actions">
+        <button class="cx-btn-primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Post to students</button>
+        <span class="cx-actions-note">Title, a category, and a line of text is all it takes.</span>
+      </div>
+    </div>
+
+    <!-- aside -->
+    <aside class="cx-aside">
+      <div class="cx-prev-wrap">
+        <div class="cx-prev-top"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="lbl">Student view</span></div>
+        <div class="cx-prev-stage">
+          <div class="cx-phone">
+            <div class="cx-phone-status">
+              <div class="cx-phone-brand"><span class="s">⛵</span> EBHCS</div>
+              <div class="cx-phone-lang"><span class="on">EN</span><span>ES</span></div>
+            </div>
+            <div class="cx-phone-feed">
+              <div class="cx-pcard" data-prev="bulletin">
+                <div class="cx-pcard-chipbar" data-p="chipbar" style="background:#c7d9fd;">
+                  <span class="cx-pcard-chip" data-p="chip"><span>📌</span> BULLETIN</span>
+                </div>
+                <div class="cx-pcard-img" data-p="img">
+                  <div class="ph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><span>FLYER / IMAGE</span></div>
+                </div>
+                <div class="cx-pcard-body">
+                  <div class="cx-pcard-title" data-p="title">Your post title appears here</div>
+                  <div class="cx-pcard-desc" data-p="desc">A short description shows here so students know what it's about.</div>
+                  <div class="cx-pcard-meta" data-p="meta"></div>
+                </div>
+                <div class="cx-pcard-foot"><span class="au" data-p="author">Jorge · Just now</span><span class="open">Open →</span></div>
+              </div>
+
+              <div class="cx-rcard cx-hidden" data-prev="resource">
+                <div class="cx-rcard-top">
+                  <div class="cx-rcard-logo" id="rpLogo" style="background:#e8f0fe;color:#1e4db7;">🏢</div>
+                  <div class="cx-rcard-htxt">
+                    <div class="cx-rcard-title" id="rpTitle">Name of the place</div>
+                    <div class="cx-rcard-cat" id="rpCat" style="color:#1e4db7;">CATEGORY</div>
+                  </div>
+                </div>
+                <div class="cx-rcard-sum" id="rpSum">One-line summary students see on the card.</div>
+                <div class="cx-rcard-chips" id="rpChips"></div>
+                <div class="cx-rcard-act" id="rpAct"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> Visit website</div>
+              </div>
+
+              <div class="cx-evcard cx-hidden" data-prev="event">
+                <div class="cx-pcard-chipbar" style="background:#fde68a;">
+                  <span class="cx-pcard-chip" style="background:#fbbf24;color:#92400e;"><span>📅</span> ON THE CALENDAR</span>
+                </div>
+                <div class="cx-evcard-row">
+                  <div class="cx-evcard-date"><span class="m" id="epMonth">—</span><span class="d" id="epDay">··</span></div>
+                  <div class="cx-evcard-info">
+                    <div class="cx-evcard-title" id="epTitle">Event name</div>
+                    <div class="cx-evcard-meta" id="epWhen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg> <span id="epWhenText">Add a date</span></div>
+                    <div class="cx-evcard-meta cx-hidden" id="epLoc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> <span id="epLocText"></span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cx-tips">
+        <h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> The idea</h4>
+        <ul>
+          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Most advisors already have a flyer — start from it</li>
+          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Feels like writing a note, not filling a form</li>
+          <li><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>“Add detail” inserts only the fields they pick</li>
+        </ul>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- category popover -->
+<div class="cx-catpop" id="cxCatPop"><div class="cx-cats" id="cxCatPopCats"></div></div>
+
+<script src="shared.js"></script>
+<script>
+(function () {
+  // ── category popover ───────────────────────────────
+  var CATS = window.CX.CATS;
+  var pop = document.getElementById("cxCatPop");
+  var popCats = document.getElementById("cxCatPopCats");
+  var catBtn = document.getElementById("cxCatBtn");
+  Object.keys(CATS).forEach(function(k){
+    var c = CATS[k];
+    var b = document.createElement("button");
+    b.type="button"; b.className="cx-cat"; b.dataset.cat=k;
+    b.innerHTML='<span class="cx-cat-em">'+c.em+'</span>'+c.chip;
+    b.addEventListener("click", function(){
+      window.CX.state.category = k;
+      document.getElementById("cxCatEm").textContent = c.em;
+      document.getElementById("cxCatLabel").textContent = c.chip;
+      catBtn.classList.add("set");
+      catBtn.style.color = c.fg; catBtn.style.borderColor = c.fg; catBtn.style.background = c.bg;
+      window.CX.sync();
+      pop.classList.remove("open");
+    });
+    popCats.appendChild(b);
+  });
+  catBtn.addEventListener("click", function(e){
+    e.stopPropagation();
+    var r = catBtn.getBoundingClientRect();
+    pop.style.left = (r.left + window.scrollX) + "px";
+    pop.style.top  = (r.bottom + window.scrollY + 6) + "px";
+    pop.classList.toggle("open");
+  });
+
+  // ── insert blocks (mode-aware) ─────────────────────
+  var BLOCKS = {
+    dates: { icon:"📅", label:"Dates & times", sub:"Deadline or event date", title:"Dates & times", html:
+      '<div class="cx-row2"><div class="cx-field" style="margin-bottom:0;"><label class="cx-label">What kind of date?</label><select class="cx-select" data-f="datetype"><option value="">No specific date</option><option>Application deadline</option><option>Event date</option><option>Multiple sessions</option></select></div>'+
+      '<div class="cx-field" style="margin-bottom:0;"><label class="cx-label">Date</label><input type="date" class="cx-input" data-f="date"></div></div>' },
+    link: { icon:"🔗", label:"Sign-up link", sub:"Registration or info page", title:"Sign-up link", html:
+      '<input type="url" class="cx-input" data-f="link" placeholder="https://…">' },
+    contact: { icon:"📞", label:"Contact & location", sub:"Org, address, phone", title:"Contact & location", html:
+      '<div class="cx-field"><label class="cx-label">Organization / company</label><input class="cx-input" data-f="company" placeholder="e.g. Boston Career Institute"></div>'+
+      '<div class="cx-row2"><div class="cx-field" style="margin-bottom:0;"><label class="cx-label">Address</label><input class="cx-input" data-f="location" placeholder="Street, city"></div>'+
+      '<div class="cx-field" style="margin-bottom:0;"><label class="cx-label">Phone</label><input type="tel" class="cx-input" data-f="phone" placeholder="(617) 555-0123"></div></div>' },
+    spanish: { icon:"🌎", label:"Spanish version", sub:"Reach students who read in Spanish", title:"Spanish version", rec:true, html:
+      '<div class="cx-field"><label class="cx-label">Spanish title</label><input class="cx-input" placeholder="If blank, English is used"></div>'+
+      '<div class="cx-field" style="margin-bottom:0;"><label class="cx-label">Spanish summary</label><textarea class="cx-textarea" rows="2" placeholder="Paste a translation — you don\'t have to write it yourself"></textarea></div>' },
+    audience: { icon:"🎯", label:"Who it's for", sub:"Target a class group", title:"Who it's for", html:
+      '<select class="cx-select" data-f="audience"><option value="">All students (default)</option><option>ESOL</option><option>HSE</option><option>FamLit</option></select>' },
+    format: { icon:"📍", label:"Format & location", sub:"In-person, online, or hybrid", title:"Format & location", html:
+      '<div class="cx-field"><label class="cx-label">Format</label><select class="cx-select" id="cxEvFormat" data-f="evformat"><option value="">Select format</option><option>In-person</option><option>Online</option><option>Hybrid</option></select></div>'+
+      '<div class="cx-field" style="margin-bottom:0;"><label class="cx-label">Location or meeting link</label><input class="cx-input" data-f="location" placeholder="Address or online link"></div>' },
+    // resource-specific
+    weblink: { icon:"🔗", label:"Website link", sub:"The page students open", title:"Website link", html:
+      '<input type="url" class="cx-input" data-f="link" placeholder="https://…">' },
+    phone: { icon:"📞", label:"Phone number", sub:"Call or text", title:"Phone number", html:
+      '<input type="tel" class="cx-input" data-f="phone" placeholder="(617) 555-0123" style="margin-bottom:10px;">'+
+      '<div style="display:flex;gap:16px;font-size:.82rem;color:var(--ap-text-2);"><label style="display:flex;gap:6px;align-items:center;"><input type="radio" name="rphone" checked> Call</label><label style="display:flex;gap:6px;align-items:center;"><input type="radio" name="rphone"> Text</label><label style="display:flex;gap:6px;align-items:center;"><input type="radio" name="rphone"> Both</label></div>' },
+    address: { icon:"📍", label:"Address", sub:"Where students go", title:"Address", html:
+      '<input class="cx-input" data-f="location" placeholder="Street, city">' },
+    hours: { icon:"🕒", label:"Hours", sub:"When they're open", title:"Hours of operation", html:
+      '<input class="cx-input" data-f="hours" placeholder="e.g. Mon–Fri 9am–5pm">' },
+    extras: { icon:"➕", label:"Extra button", sub:"A link or a PDF on the card", title:"Extra action button", html:
+      '<p class="cx-help" style="margin:0 0 10px;">Adds a button to the card — point it at a page <em>or</em> attach a PDF. Good for family-prep hubs and specific forms.</p>'+
+      '<input class="cx-input" placeholder="Button label (e.g. Family prep guide)" style="margin-bottom:10px;">'+
+      '<div class="cx-seg" data-toggle-pdf style="margin-bottom:10px;"><label class="on"><input type="radio" name="extk" value="link" checked> 🔗 Link</label><label><input type="radio" name="extk" value="pdf"> 📄 PDF</label></div>'+
+      '<div class="ex-link"><input type="url" class="cx-input" placeholder="https://…"></div>'+
+      '<div class="ex-pdf cx-hidden" style="display:flex;align-items:center;gap:10px;"><button type="button" class="cx-flyerbtn ex-pdf-btn" style="background:var(--ap-surface-2);border:1.5px solid var(--ap-border);color:var(--ap-text-2);">Choose PDF</button><input type="file" accept=".pdf,application/pdf" hidden><span class="ex-pdf-name" style="font-size:.8rem;color:var(--ap-text-3);"></span></div>' }
+  };
+  var MENUS = {
+    bulletin: ["spanish","dates","link","contact","audience"],
+    event:    ["spanish","format","link","audience"],
+    organization: ["spanish","weblink","phone","address","hours","extras"],
+    document: ["spanish","weblink","extras"]
+  };
+
+  var menu = document.getElementById("cxInsertMenu");
+  var btn = document.getElementById("cxInsertBtn");
+  var blocks = document.getElementById("cxBlocks");
+
+  function bindField(el){ var ev=(el.tagName==="SELECT")?"change":"input"; el.addEventListener(ev, refresh); }
+
+  function addBlock(key){
+    var def = BLOCKS[key];
+    var el = document.createElement("div");
+    el.className="cx-block"; el.dataset.block=key;
+    el.innerHTML = '<div class="cx-block-head"><b><span>'+def.icon+'</span> '+def.title+'</b><button class="cx-block-x" title="Remove">×</button></div>'+def.html;
+    blocks.appendChild(el);
+    el.querySelectorAll("[data-f]").forEach(bindField);
+    el.querySelector(".cx-block-x").addEventListener("click", function(){
+      el.remove();
+      var mi = menu.querySelector('[data-mi="'+key+'"]'); if (mi) mi.classList.remove("used");
+      refresh();
+    });
+    // wire Link/PDF toggle (extras block)
+    var seg = el.querySelector("[data-toggle-pdf]");
+    if (seg) {
+      var exLink = el.querySelector(".ex-link"), exPdf = el.querySelector(".ex-pdf");
+      seg.querySelectorAll("input[type=radio]").forEach(function(r){
+        r.addEventListener("change", function(){
+          seg.querySelectorAll("label").forEach(function(l){ l.classList.toggle("on", l.querySelector("input").checked); });
+          var pdf = r.value === "pdf" && r.checked;
+          exLink.classList.toggle("cx-hidden", pdf);
+          exPdf.classList.toggle("cx-hidden", !pdf);
+        });
+      });
+      var pdfBtn = el.querySelector(".ex-pdf-btn"), pdfIn = el.querySelector(".ex-pdf input[type=file]"), pdfName = el.querySelector(".ex-pdf-name");
+      if (pdfBtn) pdfBtn.addEventListener("click", function(){ pdfIn.click(); });
+      if (pdfIn) pdfIn.addEventListener("change", function(){ if (pdfIn.files[0]) pdfName.textContent = pdfIn.files[0].name; });
+    }
+    var mi = menu.querySelector('[data-mi="'+key+'"]'); if (mi) mi.classList.add("used");
+    menu.classList.remove("open");
+    refresh();
+  }
+
+  function buildMenu(keys){
+    menu.innerHTML = "";
+    blocks.innerHTML = ""; // mode changed — clear inserted detail blocks
+    keys.forEach(function(key){
+      var def = BLOCKS[key];
+      var item = document.createElement("button");
+      item.type="button"; item.className="cx-insert-item" + (def.rec ? " rec" : ""); item.dataset.mi=key;
+      item.innerHTML='<span class="mi">'+def.icon+'</span><span><b>'+def.label+(def.rec?' <em class="cx-mi-rec">Recommended</em>':'')+'</b><span>'+def.sub+'</span></span>';
+      item.addEventListener("click", function(){ addBlock(key); });
+      menu.appendChild(item);
+    });
+  }
+
+  btn.addEventListener("click", function(e){ e.stopPropagation(); menu.classList.toggle("open"); });
+  document.addEventListener("click", function(){ menu.classList.remove("open"); pop.classList.remove("open"); });
+  menu.addEventListener("click", function(e){ e.stopPropagation(); });
+  pop.addEventListener("click", function(e){ e.stopPropagation(); });
+
+  // ── mode (type + resource kind) ────────────────────
+  var resKind = "organization";
+  var hero = document.querySelector(".cx-flyerdrop");
+  var heroTitle = hero.querySelector("[data-upload-name]");
+  var heroSub = heroTitle.nextElementSibling;
+  var heroBtn = hero.querySelector(".cx-flyerbtn");
+  var titleInput = document.querySelector("[data-f='title']");
+  var descInput = document.querySelector("[data-f='desc']");
+  var resKindBar = document.getElementById("cxResKind");
+  var chipsBlock = document.getElementById("cxChipsBlock");
+  var eventWhen = document.getElementById("cxEventWhen");
+  var insertWrap = btn.closest(".cx-insert");
+
+  function isResource(){ return window.CX.state.type === "resource"; }
+  function isEvent(){ return window.CX.state.type === "event"; }
+
+  function applyMode(){
+    var t = window.CX.state.type;
+    var resource = (t === "resource");
+    var event = (t === "event");
+    resKindBar.classList.toggle("cx-hidden", !resource);
+    chipsBlock.classList.toggle("cx-hidden", !resource);
+    eventWhen.classList.toggle("cx-hidden", !event);
+    hero.classList.toggle("cx-hidden", event);   // events lead with the date, not a flyer
+
+    // hero zone
+    if (resource && resKind === "document") {
+      hero.classList.remove("light");
+      heroTitle.textContent = "Drop the PDF or form";
+      heroSub.textContent = "This file is the resource — students open it from the card";
+      heroBtn.textContent = "Choose PDF";
+    } else if (resource) {
+      hero.classList.add("light");
+      heroTitle.textContent = "Add a logo  ·  optional";
+      heroSub.textContent = "A square logo makes the place recognizable on the card";
+      heroBtn.textContent = "Choose image";
+    } else if (!event) {
+      hero.classList.remove("light");
+      heroTitle.textContent = "Start with your flyer";
+      heroSub.textContent = "Drop a PNG, JPG, or PDF — students see it on the card";
+      heroBtn.textContent = "Choose file";
+    }
+
+    // placeholders
+    if (resource) {
+      titleInput.placeholder = (resKind === "document") ? "Name of the document or form" : "Name of the place or organization";
+      descInput.placeholder = "One-line summary students see on the card";
+    } else if (event) {
+      titleInput.placeholder = "Event name — e.g. Parent–Teacher Night";
+      descInput.placeholder = "Any details students should know (optional)";
+    } else {
+      titleInput.placeholder = "Untitled post — type a title";
+      descInput.placeholder = "Write what it is, who it's for, and how to sign up…";
+    }
+
+    buildMenu(MENUS[resource ? resKind : t] || MENUS.bulletin);
+
+    // preview card swap
+    var pk = resource ? "resource" : (event ? "event" : "bulletin");
+    document.querySelectorAll("[data-prev]").forEach(function(c){
+      c.classList.toggle("cx-hidden", c.getAttribute("data-prev") !== pk);
+    });
+    refresh();
+  }
+
+  // reskind buttons
+  resKindBar.querySelectorAll("[data-reskind]").forEach(function(b){
+    b.addEventListener("click", function(){
+      resKindBar.querySelectorAll("[data-reskind]").forEach(function(x){ x.classList.remove("sel"); });
+      b.classList.add("sel");
+      resKind = b.getAttribute("data-reskind");
+      applyMode();
+    });
+  });
+  // hook type tabs (shared.js also listens; both run)
+  document.querySelectorAll("[data-type]").forEach(function(t){
+    t.addEventListener("click", function(){
+      document.querySelectorAll("[data-type]").forEach(function(x){ x.classList.remove("active"); });
+      t.classList.add("active");
+      window.CX.state.type = t.getAttribute("data-type");
+      applyMode();
+    });
+  });
+
+  // ── help chips (tags) ──────────────────────────────
+  var tagWrap = document.getElementById("cxTags");
+  var tagInput = document.getElementById("cxTagInput");
+  var presetWrap = document.getElementById("cxTagPresets");
+  var PRESETS = ["Get housing help","Apply for SNAP","Find a job","Talk to a lawyer","Sign up for classes","Get health care","Free legal advice","Find a food pantry"];
+  var tags = [];
+
+  function renderTags(){
+    tagWrap.querySelectorAll(".cx-tag").forEach(function(n){ n.remove(); });
+    tags.forEach(function(tx, i){
+      var pill = document.createElement("span");
+      pill.className = "cx-tag";
+      pill.innerHTML = tx + ' <button title="Remove">×</button>';
+      pill.querySelector("button").addEventListener("click", function(){ tags.splice(i,1); renderTags(); refresh(); });
+      tagWrap.insertBefore(pill, tagInput);
+    });
+    Array.prototype.forEach.call(presetWrap.children, function(p){
+      p.classList.toggle("used", tags.indexOf(p.textContent) > -1);
+    });
+    tagInput.placeholder = tags.length >= 6 ? "Max 6 — remove one to add more" : "Type an action and press Enter…";
+  }
+  function addTag(tx){ tx = (tx||"").trim().replace(/[,;]$/,""); if (!tx || tags.length>=6 || tags.indexOf(tx)>-1) return; tags.push(tx); renderTags(); refresh(); }
+  tagInput.addEventListener("keydown", function(e){ if (e.key==="Enter"||e.key===","){ e.preventDefault(); addTag(tagInput.value); tagInput.value=""; } });
+  PRESETS.forEach(function(p){
+    var b = document.createElement("button");
+    b.type="button"; b.className="cx-tag-preset"; b.textContent=p;
+    b.addEventListener("click", function(){ addTag(p); });
+    presetWrap.appendChild(b);
+  });
+
+  // ── preview (resource + event) ─────────────────────
+  function refresh(){
+    window.CX.sync(); // keeps bulletin card current too
+    if (isResource()) updateResourcePreview();
+    else if (isEvent()) updateEventPreview();
+  }
+
+  function updateResourcePreview(){
+    var cat = window.CX.state.category;
+    var c = cat ? CATS[cat] : null;
+    document.getElementById("rpTitle").textContent = (titleInput.value||"").trim() || (resKind==="document" ? "Name of the document" : "Name of the place");
+    document.getElementById("rpSum").textContent = (descInput.value||"").trim() || "One-line summary students see on the card.";
+    var catEl = document.getElementById("rpCat");
+    catEl.textContent = c ? c.chip.toUpperCase() : "CATEGORY";
+    catEl.style.color = c ? c.fg : "var(--ap-text-3)";
+    var logo = document.getElementById("rpLogo");
+    logo.textContent = c ? c.em : (resKind==="document" ? "📄" : "🏢");
+    logo.style.background = c ? c.bg : "var(--ap-surface-2)";
+    var chipHost = document.getElementById("rpChips");
+    chipHost.innerHTML = "";
+    tags.forEach(function(tx){ var s=document.createElement("span"); s.className="cx-rcard-chip"; s.textContent=tx; chipHost.appendChild(s); });
+    var act = document.getElementById("rpAct");
+    if (resKind === "document") {
+      act.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> View PDF';
+    } else {
+      act.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> Visit website';
+    }
+  }
+
+  function fmtTime(t){ if(!t) return ""; var p=t.split(":"); var h=+p[0]; var ap=h>=12?"PM":"AM"; h=h%12||12; return h+":"+p[1]+" "+ap; }
+
+  function updateEventPreview(){
+    document.getElementById("epTitle").textContent = (titleInput.value||"").trim() || "Event name";
+    var dateVal = document.getElementById("cxEvDate").value;
+    var m = document.getElementById("epMonth"), d = document.getElementById("epDay");
+    if (dateVal){ var dt=new Date(dateVal+"T00:00"); m.textContent=dt.toLocaleDateString("en-US",{month:"short"}).toUpperCase(); d.textContent=dt.getDate(); }
+    else { m.textContent="—"; d.textContent="··"; }
+
+    var type = document.getElementById("cxEvType").value;
+    var endVal = document.getElementById("cxEvEnd").value;
+    var st = document.getElementById("cxEvStart").value, et = document.getElementById("cxEvEndTime").value;
+    var whenText = document.getElementById("epWhenText");
+    if (!dateVal) { whenText.textContent = "Add a date"; }
+    else {
+      var bits = [];
+      var dStr = new Date(dateVal+"T00:00").toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"});
+      if (type === "deadline") bits.push("Apply by " + dStr);
+      else if (type === "range" && endVal) bits.push(dStr + " – " + new Date(endVal+"T00:00").toLocaleDateString("en-US",{month:"short",day:"numeric"}));
+      else bits.push(dStr);
+      if (st) bits.push(fmtTime(st) + (et ? "–"+fmtTime(et) : ""));
+      whenText.textContent = bits.join(" · ");
+    }
+
+    // format + location (only when the Format block is added)
+    var fmtSel = document.getElementById("cxEvFormat");
+    var fmt = fmtSel ? fmtSel.value : "";
+    var locInput = document.querySelector('.cx-block[data-block="format"] [data-f="location"]');
+    var loc = locInput ? (locInput.value||"").trim() : "";
+    var combined = [fmt, loc].filter(Boolean).join(" · ");
+    var locEl = document.getElementById("epLoc"), locText = document.getElementById("epLocText");
+    if (combined){ locEl.classList.remove("cx-hidden"); locText.textContent = combined; }
+    else locEl.classList.add("cx-hidden");
+  }
+
+  // ── event date-hero wiring ─────────────────────────
+  function updateEvType(){
+    var v = document.getElementById("cxEvType").value;
+    document.getElementById("cxEvEndWrap").classList.toggle("cx-hidden", v !== "range");
+    document.getElementById("cxEvMoreWrap").classList.toggle("cx-hidden", v !== "sessions");
+    document.getElementById("cxEvDateLabel").textContent = (v==="deadline") ? "Deadline date" : (v==="range") ? "Start date" : (v==="sessions") ? "First session" : "Date";
+  }
+  document.getElementById("cxEvType").addEventListener("change", function(){ updateEvType(); refresh(); });
+  ["cxEvDate","cxEvEnd","cxEvStart","cxEvEndTime"].forEach(function(id){
+    document.getElementById(id).addEventListener("change", refresh);
+  });
+  document.getElementById("cxEvMoreAdd").addEventListener("click", function(){
+    var row = document.createElement("div");
+    row.style.cssText = "display:flex;gap:8px;align-items:center;";
+    row.innerHTML = '<input type="date" class="cx-input"><input type="time" class="cx-input" style="max-width:130px;"><button type="button" class="cx-block-x" title="Remove">×</button>';
+    row.querySelector(".cx-block-x").addEventListener("click", function(){ row.remove(); });
+    document.getElementById("cxEvMore").appendChild(row);
+  });
+
+  titleInput.addEventListener("input", refresh);
+  descInput.addEventListener("input", refresh);
+
+  // category pick should also refresh resource/event preview
+  popCats.querySelectorAll(".cx-cat").forEach(function(b){ b.addEventListener("click", function(){ setTimeout(refresh,0); }); });
+
+  applyMode();
+})();
+</script>
+</body>
+</html>

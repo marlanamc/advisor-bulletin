@@ -640,7 +640,14 @@ class FirebaseBulletinBoard {
             }
 
             const isEs = this.getCurrentLang() === 'ES';
-            return isEs ? `${formatted.length} sesiones` : `${formatted.length} sessions`;
+            const firstSession = sessions[0];
+            const firstParsed = this.parseStoredYmdLocal(firstSession.date);
+            const firstLabel = firstParsed
+                ? firstParsed.toLocaleDateString(this.getLocale(), { month: 'short', day: 'numeric' })
+                : firstSession.date;
+            return isEs
+                ? `${formatted.length} sesiones desde el ${firstLabel}`
+                : `${formatted.length} sessions starting ${firstLabel}`;
         }
 
         const item = this.getDatesListItem(bulletin);
@@ -667,7 +674,7 @@ class FirebaseBulletinBoard {
         const dayLabel = date.toLocaleDateString(locale, { weekday: 'long', month: 'short', day: 'numeric' });
         const timeRange = this.formatTimeRange(bulletin.startTime, bulletin.endTime);
         const timeSuffix = timeRange ? ` · ${this.escapeHtml(timeRange)}` : '';
-        const prefix = isEs ? 'Comienza el' : 'Starts';
+        const prefix = isEs ? 'Comienza el' : 'From';
         const datePart = isEs ? dayLabel : dateLabel;
 
         return `<strong class="date-label-prefix">${this.escapeHtml(prefix)}</strong> ${this.escapeHtml(datePart)}${timeSuffix}`;
@@ -5474,13 +5481,13 @@ class FirebaseBulletinBoard {
             : this.formatTimeRange(bulletin.startTime, bulletin.endTime);
 
         if (kind === 'deadline') {
-            return isEs ? `Postular antes del ${dateLabel}` : `Apply by ${dateLabel}`;
+            return isEs ? `Vence el ${dateLabel}` : `Due by ${dateLabel}`;
         }
 
         if (kind === 'start') {
             return isEs
                 ? `Comienza el ${dayLabel}${timeRange ? ` · ${timeRange}` : ''}`
-                : `Starts ${dateLabel}${timeRange ? ` · ${timeRange}` : ''}`;
+                : `From ${dateLabel}${timeRange ? ` · ${timeRange}` : ''}`;
         }
 
         return `${dayLabel}${timeRange ? ` · ${timeRange}` : ''}`;
