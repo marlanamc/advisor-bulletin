@@ -2335,6 +2335,25 @@ body.ap-portal-active .main-content {
   margin-bottom: 18px;
 }
 
+/* Stats page: bulletin + resource bar charts on one row */
+.ap-stats-charts {
+  grid-template-areas:
+    "bulletins resources"
+    "status status";
+}
+
+.ap-stats-charts .ap-chart-card--bulletins {
+  grid-area: bulletins;
+}
+
+.ap-stats-charts .ap-chart-card--resources {
+  grid-area: resources;
+}
+
+.ap-stats-charts .ap-chart-card--status {
+  grid-area: status;
+}
+
 .ap-chart-card {
   background: var(--ap-surface);
   border-radius: var(--ap-r-xl);
@@ -2410,6 +2429,7 @@ body.ap-portal-active .main-content {
 .ap-donut-wrap {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 20px;
 }
 
@@ -2910,8 +2930,25 @@ body.ap-portal-active .main-content {
   .ap-stats-grid-big {
     grid-template-columns: repeat(2, 1fr);
   }
-  .ap-chart-grid {
+  .ap-chart-grid:not(.ap-stats-charts) {
     grid-template-columns: 1fr;
+  }
+
+  .ap-stats-charts {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "bulletins resources"
+      "status status";
+  }
+}
+
+@media (max-width: 640px) {
+  .ap-stats-charts {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "bulletins"
+      "resources"
+      "status";
   }
 }
 

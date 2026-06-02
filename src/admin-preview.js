@@ -1064,7 +1064,6 @@ document.addEventListener('DOMContentLoaded', function() {
         'career-fair':  { fill: 'ap-bar-fill-teal',   label: 'Career Fair' },
         'immigration':  { fill: 'ap-bar-fill-green',  label: 'Immigration' },
         'announcement': { fill: 'ap-bar-fill-teal',   label: 'Announce.' },
-        'resource':     { fill: 'ap-bar-fill-coral',  label: 'Resource' },
         'housing':      { fill: 'ap-bar-fill-coral',  label: 'Housing' },
         'health':       { fill: 'ap-bar-fill-coral',  label: 'Health' },
         'food':         { fill: 'ap-bar-fill-green',  label: 'Food' },
@@ -1072,10 +1071,29 @@ document.addEventListener('DOMContentLoaded', function() {
         'money':        { fill: 'ap-bar-fill-green',  label: 'Money Help' },
         'family':       { fill: 'ap-bar-fill-amber',  label: 'Family Help' },
         'childcare':    { fill: 'ap-bar-fill-amber',  label: 'Childcare' },
-        'legal-aid':    { fill: 'ap-bar-fill-purple', label: 'Legal Help' }
+        'legal-aid':    { fill: 'ap-bar-fill-purple', label: 'Legal Help' },
+        'uncategorized': { fill: 'ap-bar-fill-coral', label: 'Uncategorized' },
+        // Resource category ids (distinct from post ids, e.g. jobs vs job)
+        'jobs':         { fill: 'ap-bar-fill-blue',   label: 'Jobs' },
+        'hse':          { fill: 'ap-bar-fill-purple', label: 'GED / HSE' },
+        'other':        { fill: 'ap-bar-fill-coral',  label: 'Other' }
     };
 
-    function renderBarChart(containerId, rows, maxVal) {
+    function buildCategoryRows(items, keyFn, limit) {
+        var counts = {};
+        items.forEach(function(item) {
+            var key = keyFn(item);
+            counts[key] = (counts[key] || 0) + 1;
+        });
+        var rows = Object.entries(counts).sort(function(a, b) { return b[1] - a[1]; });
+        return rows.slice(0, limit || 6);
+    }
+
+    function maxBarValue(rows) {
+        return rows.length ? rows[0][1] : 1;
+    }
+
+    function renderBarChart(containerId, rows, maxVal, labelFn) {
         var el = document.getElementById(containerId);
         if (!el) return;
         if (!rows.length) {
@@ -1085,9 +1103,12 @@ document.addEventListener('DOMContentLoaded', function() {
         var max = maxVal || rows[0][1] || 1;
         el.innerHTML = rows.map(function(r) {
             var cat = CAT_COLORS[r[0]] || { fill: 'ap-bar-fill-blue', label: r[0] };
+            if (labelFn) {
+                cat = { fill: cat.fill, label: labelFn(r[0]) };
+            }
             var pct = Math.round((r[1] / max) * 100);
             return '<div class="ap-bar-row">' +
-                '<span class="ap-bar-label">' + cat.label + '</span>' +
+                '<span class="ap-bar-label">' + escHtml(cat.label) + '</span>' +
                 '<div class="ap-bar-track"><div class="ap-bar-fill ' + cat.fill + '" style="width:' + pct + '%"></div></div>' +
                 '<span class="ap-bar-val">' + r[1] + '</span>' +
             '</div>';
@@ -1160,17 +1181,24 @@ document.addEventListener('DOMContentLoaded', function() {
         setText('statsUpcomingEvents', upcomingEvents.length);
         setText('statsReach',    expiringSoon.length);
 
-        // ── Content by Category ─────────────────────────────────
-        var catPostCount = {};
-        bulletins.forEach(function(b) {
-            var key = ap.isResourceBulletin(b) ? 'resource' : (b.category || 'uncategorized');
-            catPostCount[key] = (catPostCount[key] || 0) + 1;
+        // ── Content by Category (bulletins vs resources) ─────────
+        var postBulletins = bulletins.filter(function(b) { return !ap.isResourceBulletin(b); });
+        var resourceBulletins = bulletins.filter(function(b) { return ap.isResourceBulletin(b); });
+        var bulletinCatRows = buildCategoryRows(postBulletins, function(b) {
+            return b.category || 'uncategorized';
+        }, 6);
+        var resourceCatRows = buildCategoryRows(resourceBulletins, function(b) {
+            return b.resourceCategory || 'other';
+        }, 6);
+        var bulletinCatMax = maxBarValue(bulletinCatRows);
+        var resourceCatMax = maxBarValue(resourceCatRows);
+        renderBarChart('statsCatChart', bulletinCatRows, bulletinCatMax);
+        renderBarChart('dashCatChart', bulletinCatRows, bulletinCatMax);
+        renderBarChart('statsPostCatChart', resourceCatRows, resourceCatMax, function(key) {
+            return typeof ap.getResourceCategoryLabel === 'function'
+                ? ap.getResourceCategoryLabel(key)
+                : key;
         });
-        var catPostRows = Object.entries(catPostCount).sort(function(a,b){ return b[1]-a[1]; }).slice(0,6);
-        var catMax  = catPostRows.length ? catPostRows[0][1] : 1;
-        renderBarChart('statsCatChart', catPostRows, catMax);
-        renderBarChart('dashCatChart',  catPostRows, catMax);
-        renderBarChart('statsPostCatChart', catPostRows, catMax);
 
         // ── Recent content ──────────────────────────────────────
         var recentRows = bulletins.slice()
@@ -1196,11 +1224,15 @@ document.addEventListener('DOMContentLoaded', function() {
         renderDashboardContentLists(live, resources, upcomingEvents, expiringSoon);
 
         // ── Content status donut ─────────────────────────────────
-        var devTotal = live.length + resources.length + upcomingEvents.length || 1;
-        var mobPct  = Math.round(live.length  / devTotal * 100);
-        var tabPct  = Math.round(resources.length / devTotal * 100);
-        var dskPct  = 100 - mobPct - tabPct;
-        updateDonut(mobPct, tabPct, dskPct);
+        var contentTotal = live.length + resources.length + upcomingEvents.length;
+        if (!contentTotal) {
+            updateDonut(0, 0, 0);
+        } else {
+            var livePct = Math.round(live.length / contentTotal * 100);
+            var resourcePct = Math.round(resources.length / contentTotal * 100);
+            var eventsPct = Math.max(0, 100 - livePct - resourcePct);
+            updateDonut(livePct, resourcePct, eventsPct);
+        }
         setText('statsDevMobile',  live.length);
         setText('statsDevTablet',  resources.length);
         setText('statsDevDesktop', upcomingEvents.length);
@@ -1228,22 +1260,19 @@ document.addEventListener('DOMContentLoaded', function() {
         if (el) el.textContent = val;
     }
 
-    function updateDonut(mobPct, tabPct, dskPct) {
-        // SVG circles: circumference = 2π×15.9 ≈ 100
+    function updateDonut(livePct, resourcePct, eventsPct) {
+        // SVG circles: circumference 2π×15.9 ≈ 100; parent svg is rotated -90deg in CSS.
         var svg = document.getElementById('statsDonutSvg');
         if (!svg) return;
         var circles = svg.querySelectorAll('circle[data-segment]');
-        // segments: mobile, tablet, desktop
-        var data = [
-            { pct: mobPct,  color: '#1a56db', offset: 25 },
-            { pct: tabPct,  color: '#059669', offset: 25 - mobPct },
-            { pct: dskPct,  color: '#d97706', offset: 25 - mobPct - tabPct }
-        ];
+        var pcts = [livePct, resourcePct, eventsPct];
+        var offset = 25;
         circles.forEach(function(c, i) {
-            var d = data[i];
-            if (!d) return;
-            c.setAttribute('stroke-dasharray', d.pct + ' ' + (100 - d.pct));
-            c.setAttribute('stroke-dashoffset', -d.offset);
+            var pct = Math.max(0, Math.min(100, pcts[i] || 0));
+            c.setAttribute('stroke-dasharray', pct + ' ' + (100 - pct));
+            c.setAttribute('stroke-dashoffset', String(-offset));
+            c.style.opacity = pct > 0 ? '1' : '0';
+            offset += pct;
         });
     }
 

@@ -302,6 +302,30 @@ test.describe('Advisor redesign', () => {
     await expect(page.locator('#statsUpcomingEvents')).toContainText('0');
     await expect(page.locator('#apPageStats .ap-top-posts')).toContainText('Free CNA class starts in June');
     await expect(page.locator('#analyticsRangeSelect')).toHaveCount(0);
+    await expect(page.locator('#statsCatChart')).toContainText('Training');
+    await expect(page.locator('#statsCatChart')).toContainText('Job Opp.');
+    await expect(page.locator('#statsCatChart')).not.toContainText('Resource');
+    await expect(page.locator('#statsPostCatChart')).toContainText('No content data yet');
+    const donutSegments = await page.locator('#statsDonutSvg circle[data-segment]').evaluateAll(nodes =>
+      nodes.map(node => ({
+        dasharray: node.getAttribute('stroke-dasharray'),
+        dashoffset: node.getAttribute('stroke-dashoffset'),
+        opacity: node.style.opacity,
+      }))
+    );
+    expect(donutSegments[0]).toEqual({ dasharray: '100 0', dashoffset: '-25', opacity: '1' });
+    expect(donutSegments[1].opacity).toBe('0');
+    expect(donutSegments[2].opacity).toBe('0');
+  });
+
+  test('stats page splits bulletin and resource category charts', async ({ page }) => {
+    await seedAdvisorResources(page);
+
+    await page.locator('#apNavStats').click();
+    await expect(page.locator('#statsCatChart')).toContainText('No content data yet');
+    await expect(page.locator('#statsCatChart')).not.toContainText('Resource');
+    await expect(page.locator('#statsPostCatChart')).toContainText('Health / Salud');
+    await expect(page.locator('#statsPostCatChart')).toContainText('Housing / Vivienda');
   });
 
   test('category picker stays in sync with bulletin category field', async ({ page }) => {

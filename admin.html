@@ -787,18 +787,23 @@
                         </div>
                     </div>
 
-                    <!-- Charts grid -->
-                    <div class="ap-chart-grid">
-                        <!-- Posts by category -->
-                        <div class="ap-chart-card">
-                            <div class="ap-chart-card-title">Posts by Category</div>
+                    <!-- Charts grid: category bars side by side, content status below -->
+                    <div class="ap-chart-grid ap-stats-charts">
+                        <div class="ap-chart-card ap-chart-card--bulletins">
+                            <div class="ap-chart-card-title">Bulletins by Category</div>
                             <div id="statsCatChart" class="ap-bar-chart">
                                 <p style="font-size:.82rem;color:var(--ap-text-3);">Loading…</p>
                             </div>
                         </div>
 
-                        <!-- Content status -->
-                        <div class="ap-chart-card">
+                        <div class="ap-chart-card ap-chart-card--resources">
+                            <div class="ap-chart-card-title">Resources by Category</div>
+                            <div id="statsPostCatChart" class="ap-bar-chart">
+                                <p style="font-size:.82rem;color:var(--ap-text-3);">Loading…</p>
+                            </div>
+                        </div>
+
+                        <div class="ap-chart-card ap-chart-card--status">
                             <div class="ap-chart-card-title">Content Status</div>
                             <div class="ap-donut-wrap">
                                 <div class="ap-donut">
@@ -828,16 +833,6 @@
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Posts per category (real data) -->
-                        <div class="ap-chart-card">
-                            <div class="ap-chart-card-title">Posts by Category</div>
-                            <div id="statsPostCatChart" class="ap-bar-chart">
-                                <p style="font-size:.82rem;color:var(--ap-text-3);">Loading…</p>
-                            </div>
-                        </div>
-
-
                     </div>
 
                     <!-- Current content table -->
