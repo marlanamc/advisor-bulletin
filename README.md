@@ -24,7 +24,7 @@ A modern, mobile-responsive, bilingual community bulletin board system for the *
 *   **PDF Document Attachments**: Advisors can upload PDF flyers (up to 10MB) alongside or instead of images. Students see a clean "📄 View PDF" download option.
 *   **Automated Expiration Ribbon**: Outdated opportunities display a grayscale diagonal "EXPIRED" banner once deadlines pass and are hidden from the public feed by default (with a "Show Expired" toggle).
 *   **Comprehensive Advisor Portal**:
-    *   **Content Status Dashboard**: Review live posts, resources, hidden resources, expiring posts, and content categories.
+    *   **Content Status Dashboard**: Review live posts, resources, upcoming events, expiring posts, and content categories.
     *   **Unified Post Creator**: Simplified type selectors to create Bulletins, Resources, or Calendar events.
     *   **Interactive My Posts Section**: Real-time search, sorting, deleting, and editing of existing opportunities.
 

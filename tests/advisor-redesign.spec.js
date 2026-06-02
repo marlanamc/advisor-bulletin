@@ -287,7 +287,7 @@ test.describe('Advisor redesign', () => {
     await expect(page.locator('#statLivePosts')).toBeVisible();
     await expect(page.locator('#statLivePosts')).toContainText('2');
     await expect(page.locator('#statResources')).toContainText('0');
-    await expect(page.locator('#statHiddenResources')).toContainText('0');
+    await expect(page.locator('#statUpcomingEvents')).toContainText('0');
     await expect(page.locator('#statusBreakdownList')).toContainText('Expiring soon');
     await expect(page.locator('#contentHealthList')).toContainText('Live posts');
     await expect(page.locator('.manage-analytics-strip')).toHaveCount(0);
@@ -299,7 +299,7 @@ test.describe('Advisor redesign', () => {
     await page.locator('#apNavStats').click();
     await expect(page.locator('#statsPublished')).toContainText('2');
     await expect(page.locator('#statsViews')).toContainText('0');
-    await expect(page.locator('#statsClicks')).toContainText('0');
+    await expect(page.locator('#statsUpcomingEvents')).toContainText('0');
     await expect(page.locator('#apPageStats .ap-top-posts')).toContainText('Free CNA class starts in June');
     await expect(page.locator('#analyticsRangeSelect')).toHaveCount(0);
   });

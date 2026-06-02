@@ -1386,25 +1386,8 @@ class FirebaseAdminPanel {
         });
     }
 
-    updateAdvisorDashboard() {
-        const posts = this.bulletins.filter((bulletin) => !this.isResourceBulletin(bulletin) && bulletin.isActive);
-        const livePosts = posts.filter((bulletin) => !this.isBulletinExpiredAdmin(bulletin));
-        const expiringSoon = posts.filter((bulletin) => bulletin.deadline && this.isDeadlineClose(bulletin.deadline) && !this.isBulletinExpiredAdmin(bulletin));
-        const resources = this.bulletins.filter((bulletin) => this.isResourceBulletin(bulletin) && bulletin.isActive);
-        const hiddenResources = resources.filter((bulletin) => bulletin.isPublished === false);
-
-        this.setText('statLivePosts', livePosts.length);
-        this.setText('statResources', resources.length);
-        this.setText('statHiddenResources', hiddenResources.length);
-        this.setText('statExpiringSoon', expiringSoon.length);
-
-        this.renderUpcomingDashboardEvents();
-    }
-
-    renderUpcomingDashboardEvents() {
-        const container = document.getElementById('dashUpcomingEvents');
-        if (!container) return;
-
+    /** Upcoming dated posts/events — filtered in memory from already-loaded bulletins (no extra reads). */
+    getUpcomingEventBulletins(limit = Infinity) {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
@@ -1421,8 +1404,31 @@ class FirebaseAdminPanel {
                 const aDay = new Date(`${String(a.eventDate || a.startDate).split('T')[0]}T00:00:00`);
                 const bDay = new Date(`${String(b.eventDate || b.startDate).split('T')[0]}T00:00:00`);
                 return aDay - bDay;
-            })
-            .slice(0, 4);
+            });
+
+        return Number.isFinite(limit) ? upcoming.slice(0, limit) : upcoming;
+    }
+
+    updateAdvisorDashboard() {
+        const posts = this.bulletins.filter((bulletin) => !this.isResourceBulletin(bulletin) && bulletin.isActive);
+        const livePosts = posts.filter((bulletin) => !this.isBulletinExpiredAdmin(bulletin));
+        const expiringSoon = posts.filter((bulletin) => bulletin.deadline && this.isDeadlineClose(bulletin.deadline) && !this.isBulletinExpiredAdmin(bulletin));
+        const resources = this.bulletins.filter((bulletin) => this.isResourceBulletin(bulletin) && bulletin.isActive);
+        const upcomingEvents = this.getUpcomingEventBulletins();
+
+        this.setText('statLivePosts', livePosts.length);
+        this.setText('statResources', resources.length);
+        this.setText('statUpcomingEvents', upcomingEvents.length);
+        this.setText('statExpiringSoon', expiringSoon.length);
+
+        this.renderUpcomingDashboardEvents();
+    }
+
+    renderUpcomingDashboardEvents() {
+        const container = document.getElementById('dashUpcomingEvents');
+        if (!container) return;
+
+        const upcoming = this.getUpcomingEventBulletins(4);
 
         if (!upcoming.length) {
             container.innerHTML = '<p style="color:var(--ap-text-3);font-size:.82rem;">No upcoming events. Create a calendar event to see it here.</p>';

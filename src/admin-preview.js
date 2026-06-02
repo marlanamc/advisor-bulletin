@@ -1148,14 +1148,16 @@ document.addEventListener('DOMContentLoaded', function() {
         var posts    = bulletins.filter(function(b) { return b.isActive && !ap.isResourceBulletin(b); });
         var live     = posts.filter(function(b) { return !ap.isBulletinExpiredAdmin(b); });
         var resources = bulletins.filter(function(b) { return b.isActive && ap.isResourceBulletin(b); });
-        var hiddenResources = resources.filter(function(b) { return b.isPublished === false; });
+        var upcomingEvents = typeof ap.getUpcomingEventBulletins === 'function'
+            ? ap.getUpcomingEventBulletins()
+            : [];
         var expiringSoon = posts.filter(function(b) {
             return b.deadline && ap.isDeadlineClose(b.deadline) && !ap.isBulletinExpiredAdmin(b);
         });
 
         setText('statsPublished', live.length);
         setText('statsViews',    resources.length);
-        setText('statsClicks',   hiddenResources.length);
+        setText('statsUpcomingEvents', upcomingEvents.length);
         setText('statsReach',    expiringSoon.length);
 
         // ── Content by Category ─────────────────────────────────
@@ -1191,33 +1193,33 @@ document.addEventListener('DOMContentLoaded', function() {
                 };
             });
         renderTopPostsTable(recentRows);
-        renderDashboardContentLists(live, resources, hiddenResources, expiringSoon);
+        renderDashboardContentLists(live, resources, upcomingEvents, expiringSoon);
 
         // ── Content status donut ─────────────────────────────────
-        var devTotal = live.length + resources.length + hiddenResources.length || 1;
+        var devTotal = live.length + resources.length + upcomingEvents.length || 1;
         var mobPct  = Math.round(live.length  / devTotal * 100);
         var tabPct  = Math.round(resources.length / devTotal * 100);
         var dskPct  = 100 - mobPct - tabPct;
         updateDonut(mobPct, tabPct, dskPct);
         setText('statsDevMobile',  live.length);
         setText('statsDevTablet',  resources.length);
-        setText('statsDevDesktop', hiddenResources.length);
+        setText('statsDevDesktop', upcomingEvents.length);
     }
 
-    function renderDashboardContentLists(livePosts, resources, hiddenResources, expiringSoon) {
+    function renderDashboardContentLists(livePosts, resources, upcomingEvents, expiringSoon) {
         var top = document.getElementById('contentHealthList');
         if (top) {
             top.innerHTML =
                 '<div class="status-row"><span>Live posts</span><strong>' + livePosts.length + '</strong></div>' +
                 '<div class="status-row"><span>Resources</span><strong>' + resources.length + '</strong></div>' +
-                '<div class="status-row"><span>Hidden resources</span><strong>' + hiddenResources.length + '</strong></div>';
+                '<div class="status-row"><span>Upcoming events</span><strong>' + upcomingEvents.length + '</strong></div>';
         }
 
         var status = document.getElementById('statusBreakdownList');
         if (status) {
             status.innerHTML =
                 '<div class="status-row"><span>Expiring soon</span><strong>' + expiringSoon.length + '</strong></div>' +
-                '<div class="status-row"><span>Needs review</span><strong>' + (hiddenResources.length + expiringSoon.length) + '</strong></div>';
+                '<div class="status-row"><span>Needs attention</span><strong>' + expiringSoon.length + '</strong></div>';
         }
     }
 
