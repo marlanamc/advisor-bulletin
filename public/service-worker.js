@@ -7,10 +7,7 @@
 // 2. Student navigations use network-first with cache fallback for offline
 //    support. Admin navigations bypass this worker entirely so the browser
 //    fetches admin HTML directly (admin.html also unregisters the SW).
-//    /version.json (fetched separately by app-update.js, never cached here)
-//    is the source of truth for "is there a new deploy?" — when it changes,
-//    app-update.js shows an update banner and asks this worker to cache the
-//    fresh student shell before the user refreshes.
+//    /version.json is never cached here (deploy version checks bypass the SW).
 //
 // 3. Hashed /assets/* are immutable, so we cache-first them and only hit the
 //    network on a miss.
