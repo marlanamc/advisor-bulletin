@@ -3682,19 +3682,20 @@ class FirebaseAdminPanel {
     }
 
     isBulletinExpiredAdmin(bulletin) {
-        if (!bulletin || !bulletin.deadline) {
-            return false;
-        }
-
-        const deadlineDate = new Date(bulletin.deadline);
-        if (Number.isNaN(deadlineDate.getTime())) {
-            return false;
-        }
-
+        if (!bulletin) return false;
+        const endOfDay = (dateStr) => {
+            const d = new Date(dateStr);
+            d.setHours(23, 59, 59, 999);
+            return d;
+        };
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        deadlineDate.setHours(23, 59, 59, 999);
-        return deadlineDate < today;
+        // Prefer explicit deadline, fall back to endDate then eventDate so that
+        // events and range posts without a separate deadline field also expire.
+        const check = bulletin.deadline || bulletin.endDate || bulletin.eventDate;
+        if (!check) return false;
+        const d = endOfDay(check);
+        return !Number.isNaN(d.getTime()) && d < today;
     }
 
     escapeHtml(text) {
@@ -4235,7 +4236,6 @@ class FirebaseAdminPanel {
             hours: (formData.get('contactHours') || '').trim(),
             isActive: true,
             isPublished: true,
-            hideFromMainFeed: false,
             image: null,
             pdfUrl: null
         };
