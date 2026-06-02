@@ -1214,6 +1214,14 @@ body.ap-portal-active .main-content {
   border: 1px solid #e2e8f2;
 }
 
+.ap-phone-mockup.ap-phone-mockup--resource-preview {
+  overflow: visible;
+}
+
+.ap-preview-frame:has(.ap-phone-mockup--resource-preview) {
+  overflow: visible;
+}
+
 .ap-phone-status {
   background: #0a1d3a;
   padding: 9px 10px 8px;

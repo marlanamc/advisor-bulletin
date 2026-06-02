@@ -261,6 +261,7 @@ function mirror(name, value) {
     const form = document.getElementById('bulletinForm')
     if (!form) return
     let inp = form.querySelector(`input[type="hidden"][name="${name}"]`)
+        || form.querySelector(`[name="${name}"]:not([data-cx-mirror])`)
     if (!inp) {
         inp = document.createElement('input')
         inp.type = 'hidden'
@@ -271,7 +272,125 @@ function mirror(name, value) {
     inp.value = value ?? ''
 }
 
+/** Public API — populate mirror fields from firebase-admin edit flow */
+export function setFormMirror(name, value) {
+    mirror(name, value)
+}
+
+function ensureMetaFields() {
+    const form = document.getElementById('bulletinForm')
+    if (!form) return
+
+    if (!form.querySelector('[name="resourcePublished"]')) {
+        const pub = document.createElement('input')
+        pub.type = 'hidden'
+        pub.name = 'resourcePublished'
+        pub.id = 'resourcePublished'
+        pub.value = 'on'
+        form.appendChild(pub)
+    }
+    if (!form.querySelector('[name="resourceOrder"]')) {
+        const order = document.createElement('input')
+        order.type = 'hidden'
+        order.name = 'resourceOrder'
+        order.id = 'resourceOrder'
+        form.appendChild(order)
+    }
+}
+
+/** Switch composer type without clearing blocks (edit-prefill) */
+export function selectComposerType(type) {
+    state.type = type
+    document.querySelectorAll('[data-cx-type]').forEach(b => {
+        b.classList.toggle('active', b.getAttribute('data-cx-type') === type)
+    })
+    applyMode()
+}
+
+export function resetComposer() {
+    state.type = 'bulletin'
+    state.resKind = 'organization'
+    state.category = null
+    state.helpTags = []
+    state.insertedBlocks = []
+
+    document.querySelectorAll('[data-cx-type]').forEach(b => {
+        b.classList.toggle('active', b.getAttribute('data-cx-type') === 'bulletin')
+    })
+    document.querySelectorAll('[data-cx-reskind]').forEach(b => {
+        b.classList.toggle('sel', b.getAttribute('data-cx-reskind') === 'organization')
+    })
+
+    const titleInp = document.getElementById('cxTitle')
+    const descInp = document.getElementById('cxDesc')
+    if (titleInp) titleInp.value = ''
+    if (descInp) descInp.value = ''
+
+    resetCategoryPill()
+    clearAllBlocks()
+    renderHelpTags()
+
+    mirror('contentType', 'post')
+    mirror('resourceKind', 'organization')
+    mirror('title', '')
+    mirror('description', '')
+    mirror('resourceTitleEn', '')
+    mirror('resourceDescription', '')
+    mirror('resourceHighlights', '')
+    setFormMirror('resourcePublished', 'on')
+    setFormMirror('resourceOrder', '')
+
+    clearResourceLogoPreview()
+    applyMode()
+    syncPreview()
+}
+
+function clearResourceLogoPreview() {
+    if (typeof window.clearResourceLogoPreviewSrc === 'function') {
+        window.clearResourceLogoPreviewSrc()
+    } else {
+        if (window.__resourceLogoBlobUrl) URL.revokeObjectURL(window.__resourceLogoBlobUrl)
+        window.__resourceLogoBlobUrl = ''
+        window.__resourceLogoPreviewSrc = ''
+    }
+    const hero = document.getElementById('cxResourceHero')
+    if (hero) hero.classList.remove('has-logo')
+}
+
 /** Sync all data-cx-mirror inputs in a block (or the whole composer) into hidden mirrors */
+function getMirrorValue(name) {
+    const form = document.getElementById('bulletinForm')
+    if (!form) return ''
+    const el = form.querySelector(`input[type="hidden"][name="${name}"]`)
+        || form.querySelector(`[name="${name}"]:not([data-cx-mirror])`)
+    return el?.value ?? ''
+}
+
+/** Copy existing hidden mirror values into a newly inserted block before syncMirrors runs */
+function prefillBlockFromMirrors(block) {
+    if (!block) return
+    block.querySelectorAll('[data-cx-mirror]').forEach(el => {
+        const name = el.getAttribute('data-cx-mirror')
+        const val = getMirrorValue(name)
+        if (!val) return
+        if (el.type === 'radio') {
+            el.checked = el.value === val
+        } else {
+            el.value = val
+        }
+    })
+
+    // Extra action button: sync link/pdf toggle from stored type
+    const linkType = getMirrorValue('resourceActionLink1Type')
+    if (linkType) {
+        const typeRadio = block.querySelector(`input[name="cxExtKind"][value="${linkType}"]`)
+        if (typeRadio) {
+            typeRadio.checked = true
+            typeRadio.dispatchEvent(new Event('change'))
+        }
+    }
+}
+
 function syncMirrors(root = document.getElementById('apCxCol')) {
     if (!root) return
     root.querySelectorAll('[data-cx-mirror]').forEach(el => {
@@ -476,7 +595,9 @@ ${htmlContent}`
                 if (r.name === 'cxExtKind') mirror('resourceActionLink1Type', r.value)
             })
         })
-        mirror('resourceActionLink1Type', 'url') // default
+        if (!getMirrorValue('resourceActionLink1Type')) {
+            mirror('resourceActionLink1Type', 'url')
+        }
     }
 
     // Wire all data-cx-mirror inputs in this block
@@ -576,6 +697,7 @@ ${htmlContent}`
     const menuItem = document.querySelector(`[data-mi-key="${key}"]`)
     if (menuItem) menuItem.classList.add('used')
 
+    prefillBlockFromMirrors(block)
     syncMirrors()
     syncPreview()
 }
@@ -671,6 +793,10 @@ function applyMode() {
 
     // Sync contentType hidden field so handleBulletinSubmit routes correctly
     mirror('contentType', isResource ? 'resource' : 'post')
+    const form = document.getElementById('bulletinForm')
+    if (form) {
+        form.dataset.contentMode = isResource ? 'resource' : isEvent ? 'event' : 'post'
+    }
     // Sync contentMode on adminPanel (used by validateRequiredCategorySelection etc.)
     if (window.adminPanel) {
         if (isResource) {
@@ -792,7 +918,21 @@ function bindUploads() {
                 else logoInput.click()
             })
         }
-        logoInput.addEventListener('change', e => window.adminPanel?.handleImagePreview(e, 'resourceLogo'))
+        logoInput.addEventListener('change', e => {
+            const file = e.target.files?.[0]
+            if (file && state.resKind !== 'document') {
+                if (window.__resourceLogoBlobUrl) URL.revokeObjectURL(window.__resourceLogoBlobUrl)
+                const blobUrl = URL.createObjectURL(file)
+                if (typeof window.setResourceLogoPreviewSrc === 'function') {
+                    window.setResourceLogoPreviewSrc(blobUrl)
+                } else {
+                    window.__resourceLogoBlobUrl = blobUrl
+                    window.__resourceLogoPreviewSrc = blobUrl
+                    window.syncAdminStudentPreview?.()
+                }
+            }
+            window.adminPanel?.handleImagePreview(e, 'resourceLogo')
+        })
         pdfInput.addEventListener('change',  e => window.adminPanel?.handleResourcePdfPreview(e))
     }
 }
@@ -970,8 +1110,25 @@ function addHelpTag(tx) {
     renderChipBrowseList(document.getElementById('cxChipBrowseSearch')?.value || '')
 }
 
-function syncHelpTags() {
+function syncComposerBeforePreview() {
+    syncMirrors()
     mirror('resourceHighlights', state.helpTags.join(', '))
+}
+
+export function getHelpTags() {
+    return [...state.helpTags]
+}
+
+/** Preview mode for the student-view phone mockup */
+export function getPreviewMode() {
+    if (!isComposerActive()) return null
+    if (state.type === 'resource') return 'resource'
+    if (state.type === 'event') return 'event'
+    return 'post'
+}
+
+function syncHelpTags() {
+    syncComposerBeforePreview()
     syncPreview()
 }
 
@@ -1021,7 +1178,12 @@ export function hydrateFromForm() {
     const gv = name => (form.querySelector(`[name="${name}"]`)?.value || '').trim()
 
     // Determine and apply mode
-    const contentType = gv('contentType') === 'resource' ? 'resource' : 'post'
+    const adminMode = window.adminPanel?.contentMode
+    const contentType = gv('contentType') === 'resource' || adminMode === 'resource'
+        ? 'resource'
+        : adminMode === 'event'
+            ? 'event'
+            : 'post'
     const resKind = gv('resourceKind') || 'organization'
     if (contentType === 'resource') {
         state.type    = 'resource'
@@ -1033,12 +1195,15 @@ export function hydrateFromForm() {
         document.querySelectorAll('[data-cx-reskind]').forEach(b => {
             b.classList.toggle('sel', b.getAttribute('data-cx-reskind') === resKind)
         })
-    } else {
-        // event vs bulletin — check if it has a dateType set
-        const dateType = gv('dateType')
-        state.type = dateType ? 'event' : 'bulletin'
+    } else if (adminMode === 'event') {
+        state.type = 'event'
         document.querySelectorAll('[data-cx-type]').forEach(b => {
-            b.classList.toggle('active', b.getAttribute('data-cx-type') === state.type)
+            b.classList.toggle('active', b.getAttribute('data-cx-type') === 'event')
+        })
+    } else {
+        state.type = 'bulletin'
+        document.querySelectorAll('[data-cx-type]').forEach(b => {
+            b.classList.toggle('active', b.getAttribute('data-cx-type') === 'bulletin')
         })
     }
 
@@ -1098,6 +1263,9 @@ export function hydrateFromForm() {
         if (gv('resourcePhone')) insertBlock('phone')
         if (gv('resourceAddress')) insertBlock('address')
         if (gv('resourceHours')) insertBlock('hours')
+        if (gv('resourceActionLink1LabelEn') || gv('resourceActionLink1Url') || gv('resourceActionLink1ExistingPdfUrl')) {
+            insertBlock('extras')
+        }
         // help tags
         const highlights = gv('resourceHighlights')
         if (highlights) {
@@ -1160,6 +1328,25 @@ export function hydrateFromForm() {
                 else el.value = hiddenVal
             }
         })
+
+        // Extra action button: restore link vs PDF mode
+        const linkType = gv('resourceActionLink1Type') || (gv('resourceActionLink1ExistingPdfUrl') ? 'pdf' : 'url')
+        const extrasBlock = document.querySelector('#cxBlocks [data-cx-block="extras"]')
+        if (extrasBlock) {
+            const typeRadio = extrasBlock.querySelector(`input[name="cxExtKind"][value="${linkType}"]`)
+            if (typeRadio) {
+                typeRadio.checked = true
+                typeRadio.dispatchEvent(new Event('change'))
+            }
+            const existingPdf = gv('resourceActionLink1ExistingPdfUrl')
+            if (existingPdf) {
+                const pdfName = extrasBlock.querySelector('.ex-pdf-name')
+                if (pdfName) pdfName.textContent = 'Current PDF on file'
+            }
+        }
+
+        syncMirrors()
+        syncPreview()
     })
 }
 
@@ -1309,10 +1496,19 @@ export function mountPostComposer() {
     bindHelpChips()
     bindUploads()
     bindSubmitButton()
+    ensureMetaFields()
 
     // Initial mode state
     applyMode()
 
-    // Expose for edit-prefill hook from loadEditBulletin
-    window.PostComposer = { hydrateFromForm }
+    // Expose for edit-prefill hook from editBulletin
+    window.PostComposer = {
+        hydrateFromForm,
+        setFormMirror,
+        selectComposerType,
+        resetComposer,
+        getHelpTags,
+        getPreviewMode,
+        syncComposerBeforePreview,
+    }
 }

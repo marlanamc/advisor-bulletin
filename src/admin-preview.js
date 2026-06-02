@@ -136,6 +136,9 @@ document.addEventListener('DOMContentLoaded', function() {
             if (typeof ap.renumberVisibleFormSteps === 'function') {
                 ap.renumberVisibleFormSteps();
             }
+            if (!window.__skipCreatePreviewSync && typeof window.syncAdminStudentPreview === 'function') {
+                window.syncAdminStudentPreview();
+            }
         }
         if (POSTS_PAGE_FILTERS[page]) {
             var preset = POSTS_PAGE_FILTERS[page];
@@ -247,12 +250,109 @@ document.addEventListener('DOMContentLoaded', function() {
         return map[v] || '';
     }
 
+    function getFormFieldValue(name) {
+        var el = document.getElementById(name)
+            || document.querySelector('#bulletinForm [name="' + name + '"]')
+            || document.getElementById('_cx_mirror_' + name);
+        if (el) return el.value || '';
+        if (name === 'title' || name === 'resourceTitleEn') {
+            var cxTitle = document.getElementById('cxTitle');
+            if (cxTitle && cxTitle.value) return cxTitle.value;
+        }
+        if (name === 'description' || name === 'resourceDescription') {
+            var cxDesc = document.getElementById('cxDesc');
+            if (cxDesc && cxDesc.value) return cxDesc.value;
+        }
+        return '';
+    }
+
     function getPreviewMode() {
+        if (typeof window.PostComposer?.getPreviewMode === 'function') {
+            var composerMode = window.PostComposer.getPreviewMode();
+            if (composerMode) return composerMode;
+        }
+
+        var activeCx = document.querySelector('#apCxCol [data-cx-type].active');
+        if (activeCx) {
+            var cxType = activeCx.getAttribute('data-cx-type');
+            if (cxType === 'resource') return 'resource';
+            if (cxType === 'event') return 'event';
+            if (cxType === 'bulletin') return 'post';
+        }
+
         var form = document.getElementById('bulletinForm');
         var mode = form && form.dataset.contentMode;
         if (mode === 'event') return 'event';
-        var hidden = document.getElementById('contentType');
-        return hidden && hidden.value === 'resource' ? 'resource' : 'post';
+        if (mode === 'resource') return 'resource';
+
+        var adminMode = window.adminPanel && window.adminPanel.contentMode;
+        if (adminMode === 'event') return 'event';
+        if (adminMode === 'resource') return 'resource';
+
+        return getFormFieldValue('contentType') === 'resource' ? 'resource' : 'post';
+    }
+
+    function getResourceHighlightsForPreview() {
+        if (typeof window.PostComposer?.getHelpTags === 'function') {
+            var tags = window.PostComposer.getHelpTags();
+            if (tags && tags.length) return tags;
+        }
+        return parseResourceServiceChips(getFormFieldValue('resourceHighlights'));
+    }
+
+    function updateResourceLogoPreviewOnly() {
+        var mode = getPreviewMode();
+        markPhonePreviewMode(mode);
+        if (mode !== 'resource') {
+            syncPreview();
+            return;
+        }
+        var cardWrap = document.querySelector('.ap-preview-card');
+        var card = cardWrap && cardWrap.querySelector('.mobile-resource-card.ap-preview-resource-mock');
+        if (!card) {
+            syncPreview();
+            return;
+        }
+        var category = getFormFieldValue('resourceCategory');
+        var resourceKind = normalizeResourceKind(getFormFieldValue('resourceKind'));
+        applyResourceLogoToTile(
+            card.querySelector('.mobile-resource-card__logo-tile'),
+            getResourceLogoPreviewSrc(),
+            resourceKind === 'document',
+            PREVIEW_RESOURCE_COLORS[category] || '#0a1d3a',
+            previewResourceIcon(category)
+        );
+        initResourceLogoTiles(cardWrap);
+        setPreviewNav('resources');
+    }
+
+    function setResourceLogoPreviewSrc(src) {
+        if (window.__resourceLogoBlobUrl && src !== window.__resourceLogoBlobUrl) {
+            URL.revokeObjectURL(window.__resourceLogoBlobUrl);
+            window.__resourceLogoBlobUrl = '';
+        }
+        if (src && src.indexOf('blob:') === 0) {
+            window.__resourceLogoBlobUrl = src;
+        }
+        window.__resourceLogoPreviewSrc = src || '';
+        updateResourceLogoPreviewOnly();
+    }
+
+    function clearResourceLogoPreviewSrc() {
+        if (window.__resourceLogoBlobUrl) {
+            URL.revokeObjectURL(window.__resourceLogoBlobUrl);
+            window.__resourceLogoBlobUrl = '';
+        }
+        window.__resourceLogoPreviewSrc = '';
+        updateResourceLogoPreviewOnly();
+    }
+
+    function markPhonePreviewMode(mode) {
+        var phone = document.querySelector('.ap-phone-mockup');
+        if (!phone) return;
+        phone.classList.toggle('ap-phone-mockup--resource-preview', mode === 'resource');
+        phone.classList.toggle('ap-phone-mockup--post-preview', mode === 'post');
+        phone.classList.toggle('ap-phone-mockup--event-preview', mode === 'event');
     }
 
     function setPreviewNav(active) {
@@ -367,6 +467,52 @@ document.addEventListener('DOMContentLoaded', function() {
         return String(raw).replace(/\s+/g, ' ').trim();
     }
 
+    /** Logo for resource student preview — pending upload, edit-prefill, or legacy div */
+    function getResourceLogoPreviewSrc() {
+        if (window.__resourceLogoPreviewSrc) {
+            return window.__resourceLogoPreviewSrc;
+        }
+        var legacyImg = document.querySelector('#resourceLogoPreview .preview-image');
+        if (legacyImg && legacyImg.getAttribute('src')) {
+            return legacyImg.getAttribute('src');
+        }
+        var pending = window.adminPanel && window.adminPanel.pendingResourceLogoData;
+        if (pending && pending.dataUrl) {
+            return pending.dataUrl;
+        }
+        if (window.adminPanel && window.adminPanel.isEditMode && window.adminPanel.editingBulletinId) {
+            if (window.adminPanel.removeResourceLogo) return '';
+            var editingId = window.adminPanel.editingBulletinId;
+            var bulletin = (window.adminPanel.bulletins || []).find(function(b) { return b.id === editingId; });
+            if (bulletin && bulletin.resourceLogo) {
+                return bulletin.resourceLogo;
+            }
+        }
+        return '';
+    }
+
+    function applyResourceLogoToTile(tile, logoSrc, isDocument, accent, iconSvg) {
+        if (!tile) return;
+        tile.innerHTML = '';
+        if (isDocument) {
+            tile.innerHTML = '<span class="mobile-resource-card__icon-fallback mobile-resource-card__icon-fallback--document" style="background:' + accent + '" aria-hidden="true">' + DOCUMENT_TILE_ICON_SVG + '</span>';
+            return;
+        }
+        if (logoSrc) {
+            var img = document.createElement('img');
+            img.src = logoSrc;
+            img.alt = '';
+            img.addEventListener('load', function() {
+                if (typeof window.applyResourceLogoTileLayout === 'function') {
+                    window.applyResourceLogoTileLayout(img);
+                }
+            }, { once: true });
+            tile.appendChild(img);
+            return;
+        }
+        tile.innerHTML = '<span class="mobile-resource-card__icon-fallback" style="background:' + accent + '" aria-hidden="true">' + iconSvg + '</span>';
+    }
+
     function buildResourcePreviewCard(data) {
         var category = data.category || '';
         var accent = PREVIEW_RESOURCE_COLORS[category] || '#0a1d3a';
@@ -380,9 +526,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         var logoTile = isDocument
             ? '<span class="mobile-resource-card__icon-fallback mobile-resource-card__icon-fallback--document" style="background:' + accent + '" aria-hidden="true">' + DOCUMENT_TILE_ICON_SVG + '</span>'
-            : (logoSrc
-                ? '<img src="' + escPreview(logoSrc) + '" alt="" onload="window.applyResourceLogoTileLayout&&window.applyResourceLogoTileLayout(this)">'
-                : '<span class="mobile-resource-card__icon-fallback" style="background:' + accent + '" aria-hidden="true">' + iconSvg + '</span>');
+            : '<span class="mobile-resource-card__icon-fallback" style="background:' + accent + '" aria-hidden="true">' + iconSvg + '</span>';
 
         var headingHtml =
             '<div class="mobile-resource-card__heading">' +
@@ -515,30 +659,35 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function syncPreview() {
         var mode = getPreviewMode();
+        markPhonePreviewMode(mode);
 
         if (mode === 'resource') {
+            if (typeof window.PostComposer?.syncComposerBeforePreview === 'function') {
+                window.PostComposer.syncComposerBeforePreview();
+            }
             var cardWrap = document.querySelector('.ap-preview-card');
             if (!cardWrap) return;
 
-            var title = (document.getElementById('resourceTitleEn')?.value || '').trim();
-            var titleEs = (document.getElementById('resourceTitleEs')?.value || '').trim();
-            var category = document.getElementById('resourceCategory')?.value || '';
-            var desc = (document.getElementById('resourceDescription')?.value || '').trim();
-            var summaryEs = (document.getElementById('resourceSummaryEs')?.value || '').trim();
-            var highlights = parseResourceServiceChips(document.getElementById('resourceHighlights')?.value || '');
-            var logoImg = document.querySelector('#resourceLogoPreview .preview-image');
-            var logoSrc = logoImg && logoImg.getAttribute('src') ? logoImg.getAttribute('src') : '';
-            var url = (document.getElementById('resourceUrl')?.value || '').trim();
-            var phone = (document.getElementById('resourcePhone')?.value || '').trim();
-            var address = (document.getElementById('resourceAddress')?.value || '').trim();
-            var hours = (document.getElementById('resourceHours')?.value || '').trim();
+            var title = getFormFieldValue('resourceTitleEn').trim();
+            var titleEs = getFormFieldValue('resourceTitleEs').trim();
+            var category = getFormFieldValue('resourceCategory');
+            var desc = getFormFieldValue('resourceDescription').trim();
+            var summaryEs = getFormFieldValue('resourceSummaryEs').trim();
+            var highlights = getResourceHighlightsForPreview();
+            var logoSrc = getResourceLogoPreviewSrc();
+            var url = getFormFieldValue('resourceUrl').trim();
+            var phone = getFormFieldValue('resourcePhone').trim();
+            var address = getFormFieldValue('resourceAddress').trim();
+            var hours = getFormFieldValue('resourceHours').trim();
             var actionLinks = [];
             for (var linkIndex = 1; linkIndex <= MAX_RESOURCE_ACTION_LINKS; linkIndex += 1) {
-                var labelEn = (document.getElementById('resourceActionLink' + linkIndex + 'LabelEn')?.value || '').trim();
-                var labelEs = (document.getElementById('resourceActionLink' + linkIndex + 'LabelEs')?.value || '').trim();
-                var linkType = document.querySelector('input[name="resourceActionLink' + linkIndex + 'Type"]:checked')?.value || 'url';
-                var linkUrl = (document.getElementById('resourceActionLink' + linkIndex + 'Url')?.value || '').trim();
-                var existingPdfUrl = (document.getElementById('resourceActionLink' + linkIndex + 'ExistingPdfUrl')?.value || '').trim();
+                var labelEn = getFormFieldValue('resourceActionLink' + linkIndex + 'LabelEn').trim();
+                var labelEs = getFormFieldValue('resourceActionLink' + linkIndex + 'LabelEs').trim();
+                var linkType = document.querySelector('input[name="resourceActionLink' + linkIndex + 'Type"]:checked')?.value
+                    || getFormFieldValue('resourceActionLink' + linkIndex + 'Type')
+                    || 'url';
+                var linkUrl = getFormFieldValue('resourceActionLink' + linkIndex + 'Url').trim();
+                var existingPdfUrl = getFormFieldValue('resourceActionLink' + linkIndex + 'ExistingPdfUrl').trim();
                 var hasSelectedPdf = Boolean(document.getElementById('resourceActionLink' + linkIndex + 'Pdf')?.files?.length);
                 if (!labelEn) continue;
                 if (linkType === 'pdf' && (hasSelectedPdf || existingPdfUrl)) {
@@ -556,7 +705,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
 
-            var resourceKind = normalizeResourceKind(document.querySelector('input[name="resourceKind"]:checked')?.value);
+            var resourceKind = normalizeResourceKind(
+                document.querySelector('input[name="resourceKind"]:checked')?.value
+                || getFormFieldValue('resourceKind')
+            );
+            var isDocumentResource = resourceKind === 'document';
             var pdfPreviewLink = document.querySelector('#resourcePdfPreview .pdf-preview-info a');
             var pdfUrl = pdfPreviewLink && pdfPreviewLink.getAttribute('href') ? pdfPreviewLink.getAttribute('href') : '';
             var hasSelectedPdf = Boolean(document.getElementById('resourcePdf')?.files?.length);
@@ -568,7 +721,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 desc: desc,
                 summaryEs: summaryEs,
                 highlights: highlights,
-                logoSrc: logoSrc,
+                logoSrc: '',
                 url: url,
                 phone: phone,
                 address: address,
@@ -577,6 +730,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 resourceKind: resourceKind,
                 pdfUrl: hasSelectedPdf ? 'preview://selected-pdf' : pdfUrl
             });
+            applyResourceLogoToTile(
+                cardWrap.querySelector('.mobile-resource-card__logo-tile'),
+                logoSrc,
+                isDocumentResource,
+                PREVIEW_RESOURCE_COLORS[category] || '#0a1d3a',
+                previewResourceIcon(category)
+            );
             initResourceLogoTiles(cardWrap);
             setPreviewNav('resources');
             return;
@@ -586,18 +746,30 @@ document.addEventListener('DOMContentLoaded', function() {
             var cardWrapEv = document.querySelector('.ap-preview-card');
             if (!cardWrapEv) return;
 
-            var titleEv = (document.getElementById('title')?.value || '').trim();
-            var descEv = (document.getElementById('description')?.value || '').trim();
-            var advisorEv = document.getElementById('advisorName')?.value || 'Advisor';
-            var dateTypeEv = document.getElementById('dateType')?.value || '';
-            var eventDateVal = document.getElementById('eventDate')?.value || '';
-            var startDateVal = document.getElementById('startDate')?.value || '';
-            var endDateVal = document.getElementById('endDate')?.value || '';
-            var startT = document.getElementById('startTime')?.value || '';
-            var endT = document.getElementById('endTime')?.value || '';
-            var fmtSel = document.getElementById('eventLocation')?.value || '';
-            var addr = (document.getElementById('location')?.value || '').trim();
-            var evLink = (document.getElementById('eventLink')?.value || '').trim();
+            var titleEv = getFormFieldValue('title').trim();
+            var descEv = getFormFieldValue('description').trim();
+            var advisorEv = getFormFieldValue('advisorName') || 'Advisor';
+            var dateTypeEv = getFormFieldValue('dateType');
+            var eventDateVal = getFormFieldValue('eventDate');
+            var startDateVal = getFormFieldValue('startDate');
+            var endDateVal = getFormFieldValue('endDate');
+            var startT = getFormFieldValue('startTime');
+            var endT = getFormFieldValue('endTime');
+            var fmtSel = getFormFieldValue('eventLocation');
+            var addr = getFormFieldValue('location').trim();
+            var evLink = getFormFieldValue('eventLink').trim();
+
+            // Event hero fields (composer) take precedence when present
+            var cxEvType = document.getElementById('cxEvType')?.value;
+            if (cxEvType) dateTypeEv = cxEvType;
+            var cxEvDate = document.getElementById('cxEvDate')?.value;
+            if (cxEvDate) eventDateVal = cxEvDate;
+            var cxEvEnd = document.getElementById('cxEvEnd')?.value;
+            if (cxEvEnd) endDateVal = cxEvEnd;
+            var cxEvStart = document.getElementById('cxEvStart')?.value;
+            if (cxEvStart) startT = cxEvStart;
+            var cxEvEndTime = document.getElementById('cxEvEndTime')?.value;
+            if (cxEvEndTime) endT = cxEvEndTime;
 
             var whenLine = '';
             if (dateTypeEv === 'range') {
@@ -655,7 +827,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 : '';
 
             // Get category for event preview styling
-            var catEv = document.getElementById('category')?.value || '';
+            var catEv = getFormFieldValue('category');
             var m = PREVIEW_CAT_META[catEv] || { accent: '#6d28d9', tint: '#ede9fe', grad: 'linear-gradient(145deg,#c4b5fd,#ede9fe)', label: 'EVENT', emoji: '📅' };
 
             cardWrapEv.innerHTML =
@@ -707,16 +879,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
         setPreviewNav('home');
 
-        var titleInput  = document.getElementById('title');
-        var descInput   = document.getElementById('description');
-        var advisorSel  = document.getElementById('advisorName');
-        var catSel      = document.getElementById('category');
-        var imageInput  = document.getElementById('image');
-
-        var titleVal   = (titleInput ? titleInput.value.trim() : '') || '';
-        var descVal    = (descInput  ? descInput.value.trim()  : '') || '';
-        var advisorVal = (advisorSel ? advisorSel.value        : '') || 'Advisor';
-        var catVal     = (catSel     ? catSel.value            : '') || '';
+        var titleVal   = getFormFieldValue('title').trim();
+        var descVal    = getFormFieldValue('description').trim();
+        var advisorVal = getFormFieldValue('advisorName') || 'Advisor';
+        var catVal     = getFormFieldValue('category');
+        var imageInput  = document.getElementById('image')
+            || document.getElementById('_cxUploadEn');
 
         var cardWrapPost = document.querySelector('.ap-preview-card');
         if (cardWrapPost) {
@@ -772,16 +940,31 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ── Bind live preview to title/desc ──────────────────────────
     function bindPreviewListeners() {
+        ['cxTitle', 'cxDesc'].forEach(function(id) {
+            var el = document.getElementById(id);
+            if (!el) return;
+            el.addEventListener('input', syncPreview);
+            el.addEventListener('change', syncPreview);
+        });
+        var bulletinForm = document.getElementById('bulletinForm');
+        if (bulletinForm) {
+            bulletinForm.addEventListener('input', function(e) {
+                if (!e.target || !e.target.name || e.target.type === 'file') return;
+                syncPreview();
+            });
+            bulletinForm.addEventListener('change', function(e) {
+                if (!e.target || !e.target.name || e.target.type === 'file') return;
+                syncPreview();
+            });
+        }
         ['title','category','resourceTitleEn','resourceTitleEs','description','summaryEs','resourceDescription','resourceSummaryEs','advisorName','resourceAdvisorName','resourceCategory','resourceUrl','resourceHighlights','resourcePhone','resourceAddress','resourceHours','resourcePublished','resourceKind','dateType','eventDate','startDate','endDate','startTime','endTime','location','eventLink','eventLocation'].forEach(function(id) {
             var el = document.getElementById(id);
             if (!el) return;
             el.addEventListener('input', syncPreview);
             el.addEventListener('change', syncPreview);
         });
-        var imgEl = document.getElementById('image');
+        var imgEl = document.getElementById('image') || document.getElementById('_cxUploadEn');
         if (imgEl) imgEl.addEventListener('change', syncPreview);
-
-        var logoPreviewEl = document.getElementById('resourceLogoPreview');
         if (logoPreviewEl && typeof MutationObserver !== 'undefined') {
             new MutationObserver(syncPreview).observe(logoPreviewEl, {
                 childList: true,
@@ -791,7 +974,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
 
-        var resourcePdfInput = document.getElementById('resourcePdf');
+        var resourcePdfInput = document.getElementById('resourcePdf') || document.getElementById('_cxUploadResPdf');
         if (resourcePdfInput) resourcePdfInput.addEventListener('change', syncPreview);
 
         var actionLinkSlots = document.getElementById('resourceActionLinkSlots');
@@ -1116,6 +1299,8 @@ document.addEventListener('DOMContentLoaded', function() {
         initAdvisorDisplay();
         bindPreviewListeners();
         window.syncAdminStudentPreview = syncPreview;
+        window.setResourceLogoPreviewSrc = setResourceLogoPreviewSrc;
+        window.clearResourceLogoPreviewSrc = clearResourceLogoPreviewSrc;
         installShowTabBridge();
         installStatsBridge();
         // Watch for adminPanel becoming visible

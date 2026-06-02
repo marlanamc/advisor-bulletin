@@ -1032,6 +1032,70 @@ class FirebaseAdminPanel {
         if (cxBtn) cxBtn.textContent = label;
     }
 
+    /** Set a bulletin form field — works with legacy inputs and composer mirror hiddens */
+    setComposerMirror(name, value, options = {}) {
+        if (typeof window.PostComposer?.setFormMirror === 'function') {
+            window.PostComposer.setFormMirror(name, value ?? '');
+        }
+
+        const el = document.getElementById(name)
+            || document.querySelector(`#bulletinForm [name="${name}"]`)
+            || document.getElementById(`_cx_mirror_${name}`);
+        if (!el) return;
+
+        if (el.type === 'checkbox') {
+            el.checked = value === true || value === 'on';
+        } else {
+            el.value = value ?? '';
+        }
+
+        if (options.dataset && el.dataset) {
+            Object.entries(options.dataset).forEach(([key, datasetValue]) => {
+                if (datasetValue === null || datasetValue === undefined) {
+                    delete el.dataset[key];
+                } else {
+                    el.dataset[key] = datasetValue;
+                }
+            });
+        }
+    }
+
+    writeSessionMirrorInputs(sessions = []) {
+        const form = document.getElementById('bulletinForm');
+        if (!form) return;
+        form.querySelectorAll('input[data-cx-session]').forEach((node) => node.remove());
+        sessions.forEach((session) => {
+            const date = session?.date || '';
+            if (!date) return;
+            const startTime = session?.startTime || '';
+            const endTime = session?.endTime || '';
+            const d = document.createElement('input');
+            d.type = 'hidden';
+            d.name = 'eventDates';
+            d.value = date;
+            d.setAttribute('data-cx-session', '1');
+            form.appendChild(d);
+            const st = document.createElement('input');
+            st.type = 'hidden';
+            st.name = 'eventSessionStartTimes';
+            st.value = startTime;
+            st.setAttribute('data-cx-session', '1');
+            form.appendChild(st);
+            const et = document.createElement('input');
+            et.type = 'hidden';
+            et.name = 'eventSessionEndTimes';
+            et.value = endTime;
+            et.setAttribute('data-cx-session', '1');
+            form.appendChild(et);
+        });
+    }
+
+    getComposerFormFieldValue(name, formData) {
+        const rich = getRichTextFieldValue(name).trim();
+        if (rich) return rich;
+        return String(formData.get(name) || '').trim();
+    }
+
     setLabelPriority(label, priority) {
         if (!label) return;
         label.classList.remove('required', 'optional', 'recommended');
@@ -1106,7 +1170,8 @@ class FirebaseAdminPanel {
         this.contentType = nextType;
         this.contentMode = nextMode;
 
-        const hiddenInput = document.getElementById('contentType');
+        const hiddenInput = document.getElementById('contentType')
+            || document.querySelector('#bulletinForm [name="contentType"]');
         if (hiddenInput) {
             hiddenInput.value = nextType;
         }
@@ -1733,9 +1798,10 @@ class FirebaseAdminPanel {
         try {
             syncRichEditorsToForm();
             const formData = new FormData(e.target);
-            formData.set('description', getRichTextFieldValue('description').trim());
-            formData.set('summaryEs', getRichTextFieldValue('summaryEs').trim());
-            formData.set('resourceDescription', getRichTextFieldValue('resourceDescription').trim());
+            formData.set('description', this.getComposerFormFieldValue('description', formData));
+            formData.set('summaryEs', this.getComposerFormFieldValue('summaryEs', formData));
+            formData.set('resourceDescription', this.getComposerFormFieldValue('resourceDescription', formData));
+            formData.set('resourceSummaryEs', this.getComposerFormFieldValue('resourceSummaryEs', formData));
             if (!this.validateRequiredCategorySelection(formData)) {
                 return;
             }
@@ -2328,7 +2394,7 @@ class FirebaseAdminPanel {
                     if (!validation.isValid) {
                         this.showTemporaryMessage(validation.error, 'error');
                         e.target.value = '';
-                        preview.innerHTML = '';
+                        if (preview) preview.innerHTML = '';
                         this[pendingKey] = null;
                         return;
                     }
@@ -2362,7 +2428,8 @@ class FirebaseAdminPanel {
                     ? `<small>Converted from PDF (page 1${flyerSource.pdfPageCount > 1 ? ` of ${flyerSource.pdfPageCount}` : ''})</small>`
                     : '';
 
-                preview.innerHTML = `
+                if (preview) {
+                    preview.innerHTML = `
                     <div class="preview-container">
                         <img src="${processed.dataUrl}" alt="Preview" class="preview-image">
                         <button type="button" class="remove-image" onclick="adminPanel.removeImagePreview('${fieldName}')" aria-label="Remove image">&times;</button>
@@ -2374,9 +2441,19 @@ class FirebaseAdminPanel {
                         </div>
                     </div>
                 `;
+                } else if (fieldName === 'image' || fieldName === 'imageEs') {
+                    const prevImg = document.getElementById('previewImg');
+                    if (prevImg) {
+                        prevImg.classList.add('ap-preview-pc-top--image');
+                        prevImg.innerHTML = `<div class="ap-preview-pc-image-stage"><img class="ap-preview-pc-poster-image" src="${processed.dataUrl}" alt="Preview"></div>`;
+                    }
+                }
 
                 if (fieldName === 'resourceLogo') {
                     this.updateResourceIconGroupState();
+                    if (typeof window.setResourceLogoPreviewSrc === 'function') {
+                        window.setResourceLogoPreviewSrc(processed.dataUrl);
+                    }
                 } else if (fieldName === 'image') {
                     this.syncFlyerUploadUI();
                 } else if (fieldName === 'imageEs') {
@@ -2402,10 +2479,13 @@ class FirebaseAdminPanel {
                         : 'Could not process this image. Please try a smaller JPG or PNG.');
                 this.showTemporaryMessage(message, 'error');
                 e.target.value = '';
-                preview.innerHTML = '';
+                if (preview) preview.innerHTML = '';
                 this[pendingKey] = null;
                 if (fieldName === 'resourceLogo') {
                     this.updateResourceIconGroupState();
+                    if (typeof window.clearResourceLogoPreviewSrc === 'function') {
+                        window.clearResourceLogoPreviewSrc();
+                    }
                 }
             }
         } else {
@@ -2658,7 +2738,8 @@ class FirebaseAdminPanel {
 
     removeImagePreview(fieldName = 'image') {
         const { previewId, pendingKey } = this.getImageFieldConfig(fieldName);
-        const input = document.getElementById(fieldName);
+        const input = document.getElementById(fieldName)
+            || document.querySelector(`#bulletinForm [name="${fieldName}"]`);
         const preview = document.getElementById(previewId);
 
         if (input) input.value = '';
@@ -2670,6 +2751,9 @@ class FirebaseAdminPanel {
                 this.removeResourceLogo = true;
             }
             this.updateResourceIconGroupState();
+            if (typeof window.clearResourceLogoPreviewSrc === 'function') {
+                window.clearResourceLogoPreviewSrc();
+            }
         }
 
         if (fieldName === 'image') {
@@ -2862,8 +2946,10 @@ class FirebaseAdminPanel {
 
         this.editReturnManagePage = this.getManagePageForContentKind(bulletin);
 
-        // Switch to post tab
+        // Switch to post tab (skip preview sync until edit data is loaded)
+        window.__skipCreatePreviewSync = true;
         this.showTab('post');
+        window.__skipCreatePreviewSync = false;
         document.getElementById('bulletinForm').reset();
         const resourceLogoPreviewEl = document.getElementById('resourceLogoPreview');
         if (resourceLogoPreviewEl) resourceLogoPreviewEl.innerHTML = '';
@@ -2876,50 +2962,50 @@ class FirebaseAdminPanel {
         this.isEditMode = true;
         this.editingBulletinId = bulletinId;
 
-        const isResource = this.isResourceBulletin(bulletin);
-        this.setContentType(isResource ? 'resource' : 'post', { preserveFields: true, silent: true });
-        if (typeof window.apSelectType === 'function') {
-            window.apSelectType(isResource ? 'resource' : 'bulletin');
+        const contentKind = this.getManageContentKind(bulletin);
+        const isResource = contentKind === 'resource';
+        const isEvent = contentKind === 'event';
+        const set = (name, value, options) => this.setComposerMirror(name, value, options);
+
+        this.setContentType(isResource ? 'resource' : isEvent ? 'event' : 'post', { preserveFields: true, silent: true });
+        if (typeof window.PostComposer?.selectComposerType === 'function') {
+            window.PostComposer.selectComposerType(isResource ? 'resource' : isEvent ? 'event' : 'bulletin');
+        } else if (typeof window.apSelectType === 'function') {
+            window.apSelectType(isResource ? 'resource' : isEvent ? 'event' : 'bulletin');
         }
 
         if (isResource) {
-            document.getElementById('resourceTitleEn').value = bulletin.titleEn || bulletin.title || '';
-            document.getElementById('resourceTitleEs').value = bulletin.titleEs || '';
-            document.getElementById('resourceCategory').value = bulletin.resourceCategory || '';
-            this.syncResourceCategoryPicker(bulletin.resourceCategory || '');
-            if (bulletin.resourceIcon) {
-                const categoryEl = document.getElementById('resourceCategory');
-                if (categoryEl) categoryEl.dataset.suggestedIcon = bulletin.resourceIcon;
-            }
-            document.getElementById('resourceUrl').value = bulletin.url || bulletin.eventLink || '';
-            document.getElementById('resourceDescription').value = bulletin.description || '';
-            const resourceSummaryEsField = document.getElementById('resourceSummaryEs');
-            if (resourceSummaryEsField) {
-                resourceSummaryEsField.value = bulletin.summaryEs || '';
-            }
+            const resourceKind = normalizeResourceKind(bulletin.resourceKind);
+            set('contentType', 'resource');
+            set('resourceKind', resourceKind);
+            set('resourceTitleEn', bulletin.titleEn || bulletin.title || '');
+            set('resourceTitleEs', bulletin.titleEs || '');
+            set('resourceCategory', bulletin.resourceCategory || '', {
+                dataset: { suggestedIcon: bulletin.resourceIcon || null },
+            });
+            set('resourceUrl', bulletin.url || bulletin.eventLink || '');
+            set('resourceDescription', bulletin.description || '');
+            set('resourceSummaryEs', bulletin.summaryEs || '');
+
             const serviceValues = Array.isArray(bulletin.serviceChips) && bulletin.serviceChips.length
                 ? bulletin.serviceChips
                 : bulletin.services;
             const serviceLabels = Array.isArray(serviceValues) && serviceValues.length
                 ? formatResourceServiceChipsInput(serviceValues)
                 : formatResourceServiceChipsInput(bulletin.highlights || '');
-            document.getElementById('resourceHighlights').value = serviceLabels;
-            this.renderResourceServicePresets(bulletin.resourceCategory || '');
-            document.getElementById('resourcePublished').checked = bulletin.isPublished !== false;
-            document.getElementById('resourceOrder').value = bulletin.resourceOrder ?? '';
-            document.getElementById('resourceAddress').value = bulletin.address || '';
-            document.getElementById('resourcePhone').value = bulletin.phone || '';
-            if (bulletin.phoneMode) {
-                const radio = document.querySelector(`input[name="resourcePhoneMode"][value="${bulletin.phoneMode}"]`);
-                if (radio) radio.checked = true;
-            }
-            document.getElementById('resourceHours').value = bulletin.hours || '';
-            this.populateResourceActionLinkFields(bulletin.actionLinks);
+            set('resourceHighlights', serviceLabels);
+            set('resourcePublished', bulletin.isPublished !== false ? 'on' : '');
+            set('resourceOrder', bulletin.resourceOrder ?? '');
+            set('resourceAddress', bulletin.address || '');
+            set('resourcePhone', bulletin.phone || '');
+            set('resourcePhoneMode', bulletin.phoneMode || 'call');
+            set('resourceHours', bulletin.hours || '');
 
-            const resourceKind = normalizeResourceKind(bulletin.resourceKind);
-            const kindRadio = document.querySelector(`input[name="resourceKind"][value="${resourceKind}"]`);
-            if (kindRadio) kindRadio.checked = true;
-            this.syncResourceKindUI();
+            const actionLinkValues = getResourceActionLinkFieldValues(bulletin.actionLinks);
+            Object.entries(actionLinkValues).forEach(([fieldId, value]) => {
+                set(fieldId, value);
+            });
+            this.removedActionLinkPdfSlots = new Set();
             this.renderExistingResourcePdfPreview(bulletin.pdfUrl || '');
 
             const resourceLogoPreview = document.getElementById('resourceLogoPreview');
@@ -2935,60 +3021,50 @@ class FirebaseAdminPanel {
                     resourceLogoPreview.innerHTML = '';
                 }
             }
+            if (bulletin.resourceLogo && typeof window.setResourceLogoPreviewSrc === 'function') {
+                window.setResourceLogoPreviewSrc(bulletin.resourceLogo);
+            }
             this.updateResourceIconGroupState();
         } else {
-            document.getElementById('title').value = bulletin.title;
-            document.getElementById('titleEs').value = bulletin.titleEs || '';
-            document.getElementById('category').value = bulletin.category;
-            document.getElementById('description').value = bulletin.description;
-            document.getElementById('summaryEs').value = bulletin.summaryEs || '';
-            document.getElementById('company').value = bulletin.company || '';
-            document.getElementById('contact').value = bulletin.contact || '';
-            document.getElementById('contactPhone').value = bulletin.phone || '';
-            if (bulletin.phoneMode) {
-                const radio = document.querySelector(`input[name="contactPhoneMode"][value="${bulletin.phoneMode}"]`);
-                if (radio) radio.checked = true;
-            }
-            document.getElementById('contactHours').value = bulletin.hours || '';
+            set('title', bulletin.title || '');
+            set('titleEs', bulletin.titleEs || '');
+            set('category', bulletin.category || '');
+            set('description', bulletin.description || '');
+            set('summaryEs', bulletin.summaryEs || '');
+            set('company', bulletin.company || '');
+            set('contact', bulletin.contact || '');
+            set('contactPhone', bulletin.phone || '');
+            set('contactPhoneMode', bulletin.phoneMode || 'call');
+            set('contactHours', bulletin.hours || '');
+            set('classType', bulletin.classType || '');
+            set('eventLocation', bulletin.eventLocation || '');
+            set('eventLink', bulletin.eventLink || '');
+
             if (bulletin.dateType) {
-                document.getElementById('dateType').value = bulletin.dateType;
-                toggleDateFields();
+                set('dateType', bulletin.dateType);
 
                 if (bulletin.dateType === 'deadline' || bulletin.dateType === 'event') {
-                    document.getElementById('eventDate').value = bulletin.eventDate || '';
+                    set('eventDate', bulletin.eventDate || '');
                 } else if (bulletin.dateType === 'range') {
-                    document.getElementById('startDate').value = bulletin.startDate || '';
-                    document.getElementById('endDate').value = bulletin.endDate || '';
+                    set('startDate', bulletin.startDate || '');
+                    set('endDate', bulletin.endDate || '');
+                    set('eventDate', bulletin.startDate || bulletin.eventDate || '');
                 } else if (bulletin.dateType === 'sessions') {
                     const sessionRows = this.getBulletinEventSessions(bulletin);
-                    const sameTime = sessionsShareSameTime(sessionRows);
-                    const sameTimeToggle = document.getElementById('sessionSameTimeToggle');
-                    const sharedStart = document.getElementById('sessionSharedStartTime');
-                    const sharedEnd = document.getElementById('sessionSharedEndTime');
-                    if (sameTimeToggle) sameTimeToggle.checked = sameTime;
-                    if (sameTime && sessionRows.length) {
-                        if (sharedStart) sharedStart.value = sessionRows[0].startTime || '';
-                        if (sharedEnd) sharedEnd.value = sessionRows[0].endTime || '';
-                    }
-                    this.renderEventDatesList(
+                    this.writeSessionMirrorInputs(
                         sessionRows.length ? sessionRows : [{ date: '' }, { date: '' }],
-                        { startTime: bulletin.startTime || '', endTime: bulletin.endTime || '' },
-                        { preserveSameTime: true }
                     );
-                    this.syncSessionSameTimeUI();
+                    set('eventDate', sessionRows[0]?.date || '');
+                    set('startTime', sessionRows[0]?.startTime || bulletin.startTime || '');
+                    set('endTime', sessionRows[0]?.endTime || bulletin.endTime || '');
                 }
-            } else {
-                document.getElementById('dateType').value = bulletin.deadline ? 'deadline' : '';
-                if (bulletin.deadline) {
-                    toggleDateFields();
-                    document.getElementById('eventDate').value = bulletin.deadline;
-                }
+            } else if (bulletin.deadline) {
+                set('dateType', 'deadline');
+                set('eventDate', bulletin.deadline);
             }
-            document.getElementById('classType').value = bulletin.classType || '';
-            document.getElementById('startTime').value = bulletin.startTime || '';
-            document.getElementById('endTime').value = bulletin.endTime || '';
-            document.getElementById('eventLocation').value = bulletin.eventLocation || '';
-            document.getElementById('eventLink').value = bulletin.eventLink || '';
+
+            set('startTime', bulletin.startTime || '');
+            set('endTime', bulletin.endTime || '');
             this.syncFlyerUploadUI();
         }
 
@@ -3026,6 +3102,29 @@ class FirebaseAdminPanel {
         // Streamlined composer: insert blocks for whichever optional fields are populated
         if (typeof window.PostComposer?.hydrateFromForm === 'function') {
             window.PostComposer.hydrateFromForm();
+        } else if (typeof window.syncAdminStudentPreview === 'function') {
+            window.syncAdminStudentPreview();
+        }
+
+        // hydrateFromForm defers its own preview sync; ensure resource/post edit still updates
+        if (typeof window.PostComposer?.hydrateFromForm === 'function') {
+            requestAnimationFrame(() => {
+                if (typeof window.PostComposer?.syncComposerBeforePreview === 'function') {
+                    window.PostComposer.syncComposerBeforePreview();
+                }
+                if (typeof window.syncAdminStudentPreview === 'function') {
+                    window.syncAdminStudentPreview();
+                }
+            });
+        }
+
+        // Show existing flyer in student preview when editing a post
+        if (!isResource && bulletin.image) {
+            const prevImg = document.getElementById('previewImg');
+            if (prevImg) {
+                prevImg.classList.add('ap-preview-pc-top--image');
+                prevImg.innerHTML = `<div class="ap-preview-pc-image-stage"><img class="ap-preview-pc-poster-image" src="${this.escapeAttribute(bulletin.image)}" alt="Preview"></div>`;
+            }
         }
     }
 
@@ -4250,7 +4349,13 @@ class FirebaseAdminPanel {
             }
 
             if (!isDocument && !url) {
-                throw new Error('Resource link is required.');
+                if (this.isEditMode && this.editingBulletinId) {
+                    const existing = this.bulletins.find((b) => b.id === this.editingBulletinId);
+                    url = (existing?.url || existing?.eventLink || '').trim();
+                }
+                if (!url) {
+                    throw new Error('Resource link is required.');
+                }
             }
 
             if (url) {
@@ -4270,7 +4375,9 @@ class FirebaseAdminPanel {
                 throw new Error('Display order must be a whole number from 0 to 999.');
             }
 
-            const suggestedIcon = document.getElementById('resourceCategory')?.dataset?.suggestedIcon || 'globe';
+            const suggestedIcon = document.getElementById('resourceCategory')?.dataset?.suggestedIcon
+                || document.querySelector('#bulletinForm [name="resourceCategory"]')?.dataset?.suggestedIcon
+                || 'globe';
 
             const servicesRaw = (formData.get('resourceHighlights') || '').trim();
             const services = parseResourceServiceChips(servicesRaw);
@@ -4280,9 +4387,12 @@ class FirebaseAdminPanel {
                 throw new Error('Add at least one service chip, or a card summary so students can tell this resource apart.');
             }
 
+            const existingResource = this.isEditMode && this.editingBulletinId
+                ? this.bulletins.find((b) => b.id === this.editingBulletinId)
+                : null;
             const actionLinks = parseResourceActionLinkSlotsFromForm(formData, {
                 removedPdfSlots: this.removedActionLinkPdfSlots,
-                existingLinks: [],
+                existingLinks: existingResource?.actionLinks || [],
             });
 
             return {
@@ -4470,18 +4580,32 @@ class FirebaseAdminPanel {
         const actionLinksDetails = document.querySelector('.resource-action-links-field');
         if (actionLinksDetails) actionLinksDetails.open = false;
 
-        // Reset date fields
-        document.getElementById('dateType').value = '';
-        const sameTimeToggle = document.getElementById('sessionSameTimeToggle');
-        if (sameTimeToggle) sameTimeToggle.checked = false;
-        const sharedRow = document.getElementById('sessionSharedTimeRow');
-        if (sharedRow) sharedRow.hidden = true;
-        document.getElementById('sessionsDateGroup')?.classList.remove('is-same-time');
-        this.renderEventDatesList([{ date: '' }]);
-        toggleDateFields();
+        // Reset date fields (legacy form only — composer reset handles the new UI)
+        if (typeof window.PostComposer?.resetComposer === 'function') {
+            window.PostComposer.resetComposer();
+        } else {
+            const dateTypeField = document.getElementById('dateType')
+                || document.querySelector('#bulletinForm [name="dateType"]');
+            if (dateTypeField) dateTypeField.value = '';
+            const sameTimeToggle = document.getElementById('sessionSameTimeToggle');
+            if (sameTimeToggle) sameTimeToggle.checked = false;
+            const sharedRow = document.getElementById('sessionSharedTimeRow');
+            if (sharedRow) sharedRow.hidden = true;
+            document.getElementById('sessionsDateGroup')?.classList.remove('is-same-time');
+            this.renderEventDatesList([{ date: '' }]);
+            if (typeof toggleDateFields === 'function') toggleDateFields();
+        }
+        document.getElementById('bulletinForm')?.querySelectorAll('input[data-cx-session]').forEach((node) => node.remove());
         this.setContentType('post', { preserveFields: true, silent: true });
-        document.getElementById('resourcePublished').checked = true;
-        delete document.getElementById('resourceCategory').dataset.suggestedIcon;
+        const resourcePublished = document.getElementById('resourcePublished')
+            || document.querySelector('#bulletinForm [name="resourcePublished"]');
+        if (resourcePublished) {
+            if (resourcePublished.type === 'checkbox') resourcePublished.checked = true;
+            else resourcePublished.value = 'on';
+        }
+        const resourceCategory = document.getElementById('resourceCategory')
+            || document.querySelector('#bulletinForm [name="resourceCategory"]');
+        if (resourceCategory?.dataset) delete resourceCategory.dataset.suggestedIcon;
         
         // Return to the matching workspace list (resources, events, or bulletins).
         if (!options.stayOnCreate) {
@@ -4644,11 +4768,17 @@ function handleTabKeydown(event, tabName) {
 }
 
 function toggleDateFields() {
-    const dateType = document.getElementById('dateType').value;
+    const dateTypeEl = document.getElementById('dateType');
     const dateFields = document.getElementById('dateFields');
     const singleDateGroup = document.getElementById('singleDateGroup');
     const startDateGroup = document.getElementById('startDateGroup');
     const endDateGroup = document.getElementById('endDateGroup');
+    // Streamlined composer has no legacy date UI — dates live in optional blocks / event hero.
+    if (!dateTypeEl || !dateFields || !singleDateGroup || !startDateGroup || !endDateGroup) {
+        return;
+    }
+
+    const dateType = dateTypeEl.value;
     const sessionsDateGroup = document.getElementById('sessionsDateGroup');
     const eventTimeRow = document.querySelector('.event-time-row');
     const eventDateInput = document.getElementById('eventDate');
