@@ -267,6 +267,19 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function getPreviewMode() {
+        if (window.adminPanel && window.adminPanel.isEditMode && window.adminPanel.editingBulletinId) {
+            var editingId = window.adminPanel.editingBulletinId;
+            var editingItem = (window.adminPanel.bulletins || []).find(function(b) { return b.id === editingId; });
+            if (editingItem) {
+                if (typeof window.adminPanel.getManageContentKind === 'function') {
+                    var kind = window.adminPanel.getManageContentKind(editingItem);
+                    if (kind === 'resource') return 'resource';
+                    if (kind === 'event') return 'event';
+                }
+                if (editingItem.type === 'resource') return 'resource';
+            }
+        }
+
         if (typeof window.PostComposer?.getPreviewMode === 'function') {
             var composerMode = window.PostComposer.getPreviewMode();
             if (composerMode) return composerMode;
@@ -965,6 +978,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         var imgEl = document.getElementById('image') || document.getElementById('_cxUploadEn');
         if (imgEl) imgEl.addEventListener('change', syncPreview);
+        var logoPreviewEl = document.getElementById('resourceLogoPreview');
         if (logoPreviewEl && typeof MutationObserver !== 'undefined') {
             new MutationObserver(syncPreview).observe(logoPreviewEl, {
                 childList: true,
@@ -1296,11 +1310,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ── Init ──────────────────────────────────────────────────────
     function init() {
-        initAdvisorDisplay();
-        bindPreviewListeners();
         window.syncAdminStudentPreview = syncPreview;
         window.setResourceLogoPreviewSrc = setResourceLogoPreviewSrc;
         window.clearResourceLogoPreviewSrc = clearResourceLogoPreviewSrc;
+        initAdvisorDisplay();
+        bindPreviewListeners();
         installShowTabBridge();
         installStatsBridge();
         // Watch for adminPanel becoming visible

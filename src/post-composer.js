@@ -30,9 +30,13 @@ const CATS = {
     housing:       { em: '🏠', chip: 'Housing',       bg: '#fff1ec', fg: '#c2410c' },
     health:        { em: '❤️', chip: 'Health',        bg: '#ffe9ee', fg: '#be123c' },
     food:          { em: '🍽️', chip: 'Food',          bg: '#fffbea', fg: '#b45309' },
+    jobs:          { em: '💼', chip: 'Jobs',          bg: '#e8f0fe', fg: '#1e4db7' },
+    family:        { em: '👨‍👩‍👧', chip: 'Family',   bg: '#fff7ed', fg: '#c2410c' },
     esol:          { em: '🗣️', chip: 'ESOL',          bg: '#e8f0fe', fg: '#1e4db7' },
+    hse:           { em: '📚', chip: 'GED / HSE',      bg: '#f0eeff', fg: '#7c3aed' },
     college:       { em: '🎓', chip: 'College',       bg: '#f0eeff', fg: '#7c3aed' },
     money:         { em: '💵', chip: 'Money Help',    bg: '#e6f7f0', fg: '#059669' },
+    'legal-aid':   { em: '⚖️', chip: 'Legal Help',    bg: '#eef2ff', fg: '#4338ca' },
     'career-fair': { em: '🤝', chip: 'Career Fair',   bg: '#fff1ec', fg: '#c2410c' },
     announcement:  { em: '📣', chip: 'Announcement',  bg: '#f0f4f9', fg: '#3d5a80' },
 }
@@ -299,12 +303,37 @@ function ensureMetaFields() {
 }
 
 /** Switch composer type without clearing blocks (edit-prefill) */
-export function selectComposerType(type) {
+export function selectComposerType(type, options = {}) {
     state.type = type
+    if (type === 'resource' && options.resourceKind) {
+        state.resKind = options.resourceKind
+        mirror('resourceKind', options.resourceKind)
+        document.querySelectorAll('[data-cx-reskind]').forEach(b => {
+            b.classList.toggle('sel', b.getAttribute('data-cx-reskind') === options.resourceKind)
+        })
+    }
+    if (type === 'resource' && options.resourceHighlights) {
+        state.helpTags = String(options.resourceHighlights)
+            .split(',')
+            .map(s => getActionResourceChipLabel(s.trim()))
+            .filter(Boolean)
+        mirror('resourceHighlights', state.helpTags.join(', '))
+    } else if (type !== 'resource') {
+        state.resKind = 'organization'
+        state.helpTags = []
+        mirror('resourceKind', 'organization')
+        mirror('resourceHighlights', '')
+        document.querySelectorAll('[data-cx-reskind]').forEach(b => {
+            b.classList.toggle('sel', b.getAttribute('data-cx-reskind') === 'organization')
+        })
+    }
     document.querySelectorAll('[data-cx-type]').forEach(b => {
         b.classList.toggle('active', b.getAttribute('data-cx-type') === type)
     })
-    applyMode()
+    applyMode({ syncPreview: options.syncPreview !== false })
+    if (type === 'resource' && options.resourceHighlights) {
+        renderHelpTags()
+    }
 }
 
 export function resetComposer() {
@@ -738,7 +767,7 @@ function clearAllBlocks() {
 }
 
 // ── applyMode(): reshapes hero, placeholders, menu ────────────────────────
-function applyMode() {
+function applyMode(options = {}) {
     const { type, resKind } = state
     const isResource = type === 'resource'
     const isEvent    = type === 'event'
@@ -811,7 +840,9 @@ function applyMode() {
     // Rebuild add-detail menu
     buildInsertMenu()
 
-    syncPreview()
+    if (options.syncPreview !== false) {
+        syncPreview()
+    }
 }
 
 // ── Type tabs ─────────────────────────────────────────────────────────────
@@ -1185,6 +1216,7 @@ export function hydrateFromForm() {
             ? 'event'
             : 'post'
     const resKind = gv('resourceKind') || 'organization'
+    const restoredResourceHighlights = gv('resourceHighlights')
     if (contentType === 'resource') {
         state.type    = 'resource'
         state.resKind = resKind
@@ -1207,7 +1239,7 @@ export function hydrateFromForm() {
         })
     }
 
-    applyMode()
+    applyMode({ syncPreview: false })
 
     // Restore category pill
     const cat = gv('category') || gv('resourceCategory')
@@ -1267,13 +1299,14 @@ export function hydrateFromForm() {
             insertBlock('extras')
         }
         // help tags
-        const highlights = gv('resourceHighlights')
+        const highlights = restoredResourceHighlights || gv('resourceHighlights')
         if (highlights) {
             state.helpTags = highlights
                 .split(',')
                 .map(s => getActionResourceChipLabel(s.trim()))
                 .filter(Boolean)
             renderHelpTags()
+            mirror('resourceHighlights', state.helpTags.join(', '))
         }
     }
 

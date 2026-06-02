@@ -2966,13 +2966,9 @@ class FirebaseAdminPanel {
         const isResource = contentKind === 'resource';
         const isEvent = contentKind === 'event';
         const set = (name, value, options) => this.setComposerMirror(name, value, options);
+        let resourceServiceLabels = '';
 
         this.setContentType(isResource ? 'resource' : isEvent ? 'event' : 'post', { preserveFields: true, silent: true });
-        if (typeof window.PostComposer?.selectComposerType === 'function') {
-            window.PostComposer.selectComposerType(isResource ? 'resource' : isEvent ? 'event' : 'bulletin');
-        } else if (typeof window.apSelectType === 'function') {
-            window.apSelectType(isResource ? 'resource' : isEvent ? 'event' : 'bulletin');
-        }
 
         if (isResource) {
             const resourceKind = normalizeResourceKind(bulletin.resourceKind);
@@ -2990,10 +2986,10 @@ class FirebaseAdminPanel {
             const serviceValues = Array.isArray(bulletin.serviceChips) && bulletin.serviceChips.length
                 ? bulletin.serviceChips
                 : bulletin.services;
-            const serviceLabels = Array.isArray(serviceValues) && serviceValues.length
+            resourceServiceLabels = Array.isArray(serviceValues) && serviceValues.length
                 ? formatResourceServiceChipsInput(serviceValues)
                 : formatResourceServiceChipsInput(bulletin.highlights || '');
-            set('resourceHighlights', serviceLabels);
+            set('resourceHighlights', resourceServiceLabels);
             set('resourcePublished', bulletin.isPublished !== false ? 'on' : '');
             set('resourceOrder', bulletin.resourceOrder ?? '');
             set('resourceAddress', bulletin.address || '');
@@ -3066,6 +3062,19 @@ class FirebaseAdminPanel {
             set('startTime', bulletin.startTime || '');
             set('endTime', bulletin.endTime || '');
             this.syncFlyerUploadUI();
+        }
+
+        if (typeof window.PostComposer?.selectComposerType === 'function') {
+            window.PostComposer.selectComposerType(isResource ? 'resource' : isEvent ? 'event' : 'bulletin', {
+                resourceKind: isResource ? normalizeResourceKind(bulletin.resourceKind) : undefined,
+                resourceHighlights: isResource ? resourceServiceLabels : undefined,
+                syncPreview: false,
+            });
+        } else if (typeof window.apSelectType === 'function') {
+            window.apSelectType(isResource ? 'resource' : isEvent ? 'event' : 'bulletin');
+        }
+        if (typeof window.syncAdminStudentPreview === 'function') {
+            window.syncAdminStudentPreview();
         }
 
         // Store the bulletin ID for updating
