@@ -3952,6 +3952,13 @@ class FirebaseAdminPanel {
         return (this.currentUser?.username || '').toLowerCase();
     }
 
+    getAuthAdvisorName() {
+        const name = (this.currentUser?.name || '').trim();
+        if (name) return name;
+        const fromDirectory = this.getUserDisplayName(this.getAuthPostedBy());
+        return (fromDirectory || 'Advisor').trim();
+    }
+
     getAdvisorDisplayName(doc) {
         if (doc.advisorName) return doc.advisorName;
         const uid = doc.createdBy || doc.postedBy || '';
@@ -3963,6 +3970,7 @@ class FirebaseAdminPanel {
     async createBulletin(formData) {
         const bulletin = this.buildBulletinObject(formData);
         bulletin.postedBy = this.getAuthPostedBy();
+        bulletin.advisorName = this.getAuthAdvisorName();
         bulletin.datePosted = serverTimestamp();
         bulletin.createdAt = serverTimestamp();
         bulletin.updatedAt = serverTimestamp();
@@ -4018,6 +4026,7 @@ class FirebaseAdminPanel {
         const existingBulletin = this.bulletins.find(b => b.id === bulletinId);
         if (existingBulletin) {
             bulletin.postedBy = existingBulletin.postedBy;
+            bulletin.advisorName = existingBulletin.advisorName || this.getAuthAdvisorName();
             bulletin.datePosted = existingBulletin.datePosted;
             bulletin.createdAt = existingBulletin.createdAt || existingBulletin.datePosted;
             bulletin.image = this.isResourceBulletin(bulletin) ? null : (existingBulletin.image || null);
