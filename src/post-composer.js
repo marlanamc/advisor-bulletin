@@ -5,6 +5,7 @@ import {
     MAX_RESOURCE_SERVICE_CHIPS,
     resolveResourceChipCategory,
 } from './resource-chip-labels.js'
+import { MAX_RESOURCE_ACTION_LINKS } from './resource-action-links.js'
 
 /**
  * Streamlined Post Composer — UI layer for the new Create-a-Post experience.
@@ -176,19 +177,22 @@ const BLOCK_DEFS = {
         },
     },
     extras: {
-        icon: '➕', label: 'Extra button', sub: 'A link or a PDF on the card', title: 'Extra action button',
-        html() {
+        icon: '➕',
+        label: 'Extra button',
+        sub: 'A link or PDF on the card (up to 5 buttons)',
+        title: 'Extra action button',
+        html(slot = 1) {
             return `
 <p class="cx-help" style="margin:0 0 10px">Adds a button to the card — point it at a page <em>or</em> attach a PDF.</p>
-<input class="cx-input" data-cx-mirror="resourceActionLink1LabelEn" placeholder="Button label (e.g. Family prep guide)" style="margin-bottom:10px">
+<input class="cx-input" data-cx-mirror="resourceActionLink${slot}LabelEn" placeholder="Button label (e.g. Steps to apply)" style="margin-bottom:10px">
 <div class="cx-seg" data-cx-toggle-pdf style="margin-bottom:10px">
-  <label class="on"><input type="radio" name="cxExtKind" value="url" checked> 🔗 Link</label>
-  <label><input type="radio" name="cxExtKind" value="pdf"> 📄 PDF</label>
+  <label class="on"><input type="radio" name="cxExtKind${slot}" value="url" checked> 🔗 Link</label>
+  <label><input type="radio" name="cxExtKind${slot}" value="pdf"> 📄 PDF</label>
 </div>
-<div class="ex-link"><input type="url" class="cx-input" data-cx-mirror="resourceActionLink1Url" placeholder="https://…"></div>
+<div class="ex-link"><input type="url" class="cx-input" data-cx-mirror="resourceActionLink${slot}Url" placeholder="https://…"></div>
 <div class="ex-pdf cx-hidden" style="display:flex;align-items:center;gap:10px">
   <button type="button" class="cx-flyerbtn ex-pdf-btn" style="background:var(--ap-surface-2);border:1.5px solid var(--ap-border);color:var(--ap-text-2)">Choose PDF</button>
-  <input type="file" accept=".pdf,application/pdf" name="resourceActionLink1Pdf" hidden>
+  <input type="file" accept=".pdf,application/pdf" name="resourceActionLink${slot}Pdf" hidden>
   <span class="ex-pdf-name" style="font-size:.8rem;color:var(--ap-text-3)"></span>
 </div>`
         },
@@ -258,6 +262,102 @@ let state = {
 function qs(sel, root = document) { return root.querySelector(sel) }
 function isComposerActive() {
     return !!document.getElementById('apCxCol')
+}
+
+function extrasBlockKey(slot) {
+    return `extras-${slot}`
+}
+
+function parseExtrasBlockKey(blockKey) {
+    const match = String(blockKey || '').match(/^extras-(\d+)$/)
+    return match ? Number(match[1]) : null
+}
+
+function getUsedActionLinkSlots() {
+    return state.insertedBlocks
+        .map(parseExtrasBlockKey)
+        .filter((slot) => Number.isInteger(slot) && slot >= 1)
+        .sort((a, b) => a - b)
+}
+
+function getNextActionLinkSlot() {
+    const used = new Set(getUsedActionLinkSlots())
+    for (let slot = 1; slot <= MAX_RESOURCE_ACTION_LINKS; slot += 1) {
+        if (!used.has(slot)) return slot
+    }
+    return null
+}
+
+function clearActionLinkSlotMirrors(slot) {
+    mirror(`resourceActionLink${slot}LabelEn`, '')
+    mirror(`resourceActionLink${slot}LabelEs`, '')
+    mirror(`resourceActionLink${slot}Url`, '')
+    mirror(`resourceActionLink${slot}Type`, '')
+    mirror(`resourceActionLink${slot}ExistingPdfUrl`, '')
+    const pdfInput = document.querySelector(`#bulletinForm [name="resourceActionLink${slot}Pdf"]`)
+    if (pdfInput) pdfInput.value = ''
+}
+
+function syncExtrasMenuState() {
+    const menuItem = document.querySelector('[data-mi-key="extras"]')
+    if (!menuItem) return
+    const usedCount = getUsedActionLinkSlots().length
+    const remaining = MAX_RESOURCE_ACTION_LINKS - usedCount
+    menuItem.classList.toggle('used', remaining <= 0)
+    menuItem.disabled = remaining <= 0
+    const sub = menuItem.querySelector('span span')
+    if (sub) {
+        sub.textContent = remaining <= 0
+            ? 'Maximum of 5 buttons reached'
+            : remaining === MAX_RESOURCE_ACTION_LINKS
+                ? BLOCK_DEFS.extras.sub
+                : `${remaining} more button${remaining === 1 ? '' : 's'} available`
+    }
+}
+
+function wireExtrasBlock(block, slot) {
+    const seg = block.querySelector('[data-cx-toggle-pdf]')
+    if (!seg) return
+
+    const exLink = block.querySelector('.ex-link')
+    const exPdf = block.querySelector('.ex-pdf')
+    const pdfBtn = block.querySelector('.ex-pdf-btn')
+    const pdfIn = block.querySelector('.ex-pdf input[type=file]')
+    const pdfName = block.querySelector('.ex-pdf-name')
+
+    seg.querySelectorAll('input[type=radio]').forEach((r) => {
+        r.addEventListener('change', () => {
+            const isPdf = r.value === 'pdf' && r.checked
+            seg.querySelectorAll('label').forEach((l) => l.classList.toggle('on', l.querySelector('input')?.checked))
+            exLink?.classList.toggle('cx-hidden', isPdf)
+            exPdf?.classList.toggle('cx-hidden', !isPdf)
+            if (r.checked) mirror(`resourceActionLink${slot}Type`, r.value)
+        })
+    })
+    if (pdfBtn && pdfIn) {
+        pdfBtn.addEventListener('click', () => pdfIn.click())
+        pdfIn.addEventListener('change', () => {
+            if (pdfIn.files[0] && pdfName) pdfName.textContent = pdfIn.files[0].name
+        })
+    }
+    if (!getMirrorValue(`resourceActionLink${slot}Type`)) {
+        mirror(`resourceActionLink${slot}Type`, 'url')
+    }
+}
+
+function restoreExtrasBlockUi(block, slot) {
+    const linkType = getMirrorValue(`resourceActionLink${slot}Type`)
+        || (getMirrorValue(`resourceActionLink${slot}ExistingPdfUrl`) ? 'pdf' : 'url')
+    const typeRadio = block.querySelector(`input[name="cxExtKind${slot}"][value="${linkType}"]`)
+    if (typeRadio) {
+        typeRadio.checked = true
+        typeRadio.dispatchEvent(new Event('change'))
+    }
+    const existingPdf = getMirrorValue(`resourceActionLink${slot}ExistingPdfUrl`)
+    if (existingPdf) {
+        const pdfName = block.querySelector('.ex-pdf-name')
+        if (pdfName) pdfName.textContent = 'Current PDF on file'
+    }
 }
 
 /** Write a value into a named hidden input inside #bulletinForm */
@@ -356,7 +456,7 @@ export function resetComposer() {
     if (descInp) descInp.value = ''
 
     resetCategoryPill()
-    clearAllBlocks()
+    clearAllBlocks({ clearActionLinkMirrors: true })
     renderHelpTags()
 
     mirror('contentType', 'post')
@@ -409,15 +509,8 @@ function prefillBlockFromMirrors(block) {
         }
     })
 
-    // Extra action button: sync link/pdf toggle from stored type
-    const linkType = getMirrorValue('resourceActionLink1Type')
-    if (linkType) {
-        const typeRadio = block.querySelector(`input[name="cxExtKind"][value="${linkType}"]`)
-        if (typeRadio) {
-            typeRadio.checked = true
-            typeRadio.dispatchEvent(new Event('change'))
-        }
-    }
+    const extrasSlot = Number(block.dataset.cxActionLinkSlot)
+    if (extrasSlot) restoreExtrasBlockUi(block, extrasSlot)
 }
 
 function syncMirrors(root = document.getElementById('apCxCol')) {
@@ -591,7 +684,7 @@ function buildInsertMenu() {
         btn.type = 'button'
         btn.className = 'cx-insert-item' + (def.rec ? ' rec' : '')
         btn.dataset.miKey = key
-        if (state.insertedBlocks.includes(key)) btn.classList.add('used')
+        if (key !== 'extras' && state.insertedBlocks.includes(key)) btn.classList.add('used')
         btn.innerHTML = `
 <span class="mi">${def.icon}</span>
 <span>
@@ -601,67 +694,54 @@ function buildInsertMenu() {
         btn.addEventListener('click', () => { insertBlock(key); menuEl.classList.remove('open') })
         menuEl.appendChild(btn)
     })
+    syncExtrasMenuState()
 }
 
-function insertBlock(key) {
-    if (state.insertedBlocks.includes(key)) return
+function insertBlock(key, options = {}) {
     const def = BLOCK_DEFS[key]
     if (!def) return
 
-    state.insertedBlocks.push(key)
+    let blockKey = key
+    let actionLinkSlot = null
+    if (key === 'extras') {
+        actionLinkSlot = options.slot || getNextActionLinkSlot()
+        if (!actionLinkSlot) return
+        blockKey = extrasBlockKey(actionLinkSlot)
+    }
+
+    if (state.insertedBlocks.includes(blockKey)) return
+
+    state.insertedBlocks.push(blockKey)
 
     const blocksEl = document.getElementById('cxBlocks')
     const block = document.createElement('div')
     block.className = 'cx-block'
     block.dataset.cxBlock = key
-    const htmlContent = typeof def.html === 'function' ? def.html(state.type) : def.html
+    if (actionLinkSlot) block.dataset.cxActionLinkSlot = String(actionLinkSlot)
+    const htmlContent = typeof def.html === 'function'
+        ? def.html(actionLinkSlot || state.type)
+        : def.html
+    const blockTitle = actionLinkSlot && actionLinkSlot > 1
+        ? `${def.title} ${actionLinkSlot}`
+        : def.title
     block.innerHTML = `
 <div class="cx-block-head">
-  <b><span>${def.icon}</span> ${def.title}</b>
+  <b><span>${def.icon}</span> ${blockTitle}</b>
   <button type="button" class="cx-block-x" title="Remove">×</button>
 </div>
 ${htmlContent}`
     blocksEl.appendChild(block)
 
     // Wire remove button
-    block.querySelector('.cx-block-x').addEventListener('click', () => removeBlock(key, block))
+    block.querySelector('.cx-block-x').addEventListener('click', () => removeBlock(blockKey, block))
 
     // Wire radio mirror (contactPhoneMode, resourcePhoneMode)
     block.querySelectorAll('input[type="radio"]').forEach(r => {
         r.addEventListener('change', () => syncMirrors())
     })
 
-    // Wire extra-button link/pdf toggle
-    const seg = block.querySelector('[data-cx-toggle-pdf]')
-    if (seg) {
-        const exLink = block.querySelector('.ex-link')
-        const exPdf  = block.querySelector('.ex-pdf')
-        const pdfBtn = block.querySelector('.ex-pdf-btn')
-        const pdfIn  = block.querySelector('.ex-pdf input[type=file]')
-        const pdfName = block.querySelector('.ex-pdf-name')
-        seg.querySelectorAll('input[type=radio]').forEach(r => {
-            r.addEventListener('change', () => {
-                const isPdf = r.value === 'pdf' && r.checked
-                seg.querySelectorAll('label').forEach(l => l.classList.toggle('on', l.querySelector('input').checked))
-                exLink?.classList.toggle('cx-hidden', isPdf)
-                exPdf?.classList.toggle('cx-hidden', !isPdf)
-            })
-        })
-        if (pdfBtn && pdfIn) {
-            pdfBtn.addEventListener('click', () => pdfIn.click())
-            pdfIn.addEventListener('change', () => {
-                if (pdfIn.files[0] && pdfName) pdfName.textContent = pdfIn.files[0].name
-            })
-        }
-        // Mirror the link/pdf type selection for extras block
-        seg.querySelectorAll('input[type=radio]').forEach(r => {
-            r.addEventListener('change', () => {
-                if (r.name === 'cxExtKind') mirror('resourceActionLink1Type', r.value)
-            })
-        })
-        if (!getMirrorValue('resourceActionLink1Type')) {
-            mirror('resourceActionLink1Type', 'url')
-        }
+    if (key === 'extras' && actionLinkSlot) {
+        wireExtrasBlock(block, actionLinkSlot)
     }
 
     // Wire all data-cx-mirror inputs in this block
@@ -757,9 +837,12 @@ ${htmlContent}`
         block._syncBlkDateMirrors = syncBlkDateMirrors
     }
 
-    // Mark menu item used
-    const menuItem = document.querySelector(`[data-mi-key="${key}"]`)
-    if (menuItem) menuItem.classList.add('used')
+    if (key === 'extras') {
+        syncExtrasMenuState()
+    } else {
+        const menuItem = document.querySelector(`[data-mi-key="${key}"]`)
+        if (menuItem) menuItem.classList.add('used')
+    }
 
     prefillBlockFromMirrors(block)
     syncMirrors()
@@ -769,11 +852,13 @@ ${htmlContent}`
 function removeBlock(key, blockEl) {
     blockEl.remove()
     state.insertedBlocks = state.insertedBlocks.filter(k => k !== key)
-    // Clear all mirrors that belonged to this block
     clearBlockMirrors(key)
-    // Un-mark menu item
-    const menuItem = document.querySelector(`[data-mi-key="${key}"]`)
-    if (menuItem) menuItem.classList.remove('used')
+    if (parseExtrasBlockKey(key)) {
+        syncExtrasMenuState()
+    } else {
+        const menuItem = document.querySelector(`[data-mi-key="${key}"]`)
+        if (menuItem) menuItem.classList.remove('used')
+    }
     syncPreview()
 }
 
@@ -789,16 +874,26 @@ function clearBlockMirrors(key) {
         address:  ['resourceAddress'],
         hours:    ['resourceHours'],
         format:   ['eventFormat', 'eventLocation'],
-        extras:   ['resourceActionLink1LabelEn', 'resourceActionLink1Url', 'resourceActionLink1Type'],
+    }
+    const extrasSlot = parseExtrasBlockKey(key)
+    if (extrasSlot) {
+        clearActionLinkSlotMirrors(extrasSlot)
+        return
     }
     const names = mirrorNames[key] || []
     names.forEach(n => mirror(n, ''))
 }
 
-function clearAllBlocks() {
+function clearAllBlocks(options = {}) {
     const blocksEl = document.getElementById('cxBlocks')
     if (blocksEl) blocksEl.innerHTML = ''
     state.insertedBlocks = []
+    if (options.clearActionLinkMirrors) {
+        for (let slot = 1; slot <= MAX_RESOURCE_ACTION_LINKS; slot += 1) {
+            clearActionLinkSlotMirrors(slot)
+        }
+    }
+    syncExtrasMenuState()
 }
 
 // ── applyMode(): reshapes hero, placeholders, menu ────────────────────────
@@ -889,7 +984,7 @@ function bindTypeTabs() {
             state.type = btn.getAttribute('data-cx-type')
             state.category = null
             resetCategoryPill()
-            clearAllBlocks()
+            clearAllBlocks({ clearActionLinkMirrors: true })
             applyMode()
         })
     })
@@ -903,7 +998,7 @@ function bindResKindButtons() {
             btn.classList.add('sel')
             state.resKind = btn.getAttribute('data-cx-reskind')
             mirror('resourceKind', state.resKind)
-            clearAllBlocks()
+            clearAllBlocks({ clearActionLinkMirrors: true })
             applyMode()
         })
     })
@@ -1215,7 +1310,10 @@ function bindInsertButton() {
     const btn  = document.getElementById('cxInsertBtn')
     const menu = document.getElementById('cxInsertMenu')
     if (!btn || !menu) return
-    btn.addEventListener('click', e => { e.stopPropagation(); menu.classList.toggle('open') })
+    btn.addEventListener('click', (e) => {
+        e.stopPropagation()
+        menu.classList.add('open')
+    })
     document.addEventListener('click', () => menu.classList.remove('open'))
     menu.addEventListener('click', e => e.stopPropagation())
 }
@@ -1330,8 +1428,12 @@ export function hydrateFromForm() {
         if (gv('resourcePhone')) insertBlock('phone')
         if (gv('resourceAddress')) insertBlock('address')
         if (gv('resourceHours')) insertBlock('hours')
-        if (gv('resourceActionLink1LabelEn') || gv('resourceActionLink1Url') || gv('resourceActionLink1ExistingPdfUrl')) {
-            insertBlock('extras')
+        for (let slot = 1; slot <= MAX_RESOURCE_ACTION_LINKS; slot += 1) {
+            if (gv(`resourceActionLink${slot}LabelEn`)
+                || gv(`resourceActionLink${slot}Url`)
+                || gv(`resourceActionLink${slot}ExistingPdfUrl`)) {
+                insertBlock('extras', { slot })
+            }
         }
         // help tags
         const highlights = restoredResourceHighlights || gv('resourceHighlights')
@@ -1397,21 +1499,10 @@ export function hydrateFromForm() {
             }
         })
 
-        // Extra action button: restore link vs PDF mode
-        const linkType = gv('resourceActionLink1Type') || (gv('resourceActionLink1ExistingPdfUrl') ? 'pdf' : 'url')
-        const extrasBlock = document.querySelector('#cxBlocks [data-cx-block="extras"]')
-        if (extrasBlock) {
-            const typeRadio = extrasBlock.querySelector(`input[name="cxExtKind"][value="${linkType}"]`)
-            if (typeRadio) {
-                typeRadio.checked = true
-                typeRadio.dispatchEvent(new Event('change'))
-            }
-            const existingPdf = gv('resourceActionLink1ExistingPdfUrl')
-            if (existingPdf) {
-                const pdfName = extrasBlock.querySelector('.ex-pdf-name')
-                if (pdfName) pdfName.textContent = 'Current PDF on file'
-            }
-        }
+        document.querySelectorAll('#cxBlocks [data-cx-block="extras"]').forEach((extrasBlock) => {
+            const slot = Number(extrasBlock.dataset.cxActionLinkSlot) || 1
+            restoreExtrasBlockUi(extrasBlock, slot)
+        })
 
         syncMirrors()
         syncPreview()

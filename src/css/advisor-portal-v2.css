@@ -3602,7 +3602,8 @@ body.ap-portal-active .main-content {
 .cx-insert-item .mi { width: 30px; height: 30px; border-radius: 8px; background: var(--ap-surface-2); display: grid; place-items: center; font-size: 15px; flex-shrink: 0; }
 .cx-insert-item b { font-family: var(--ap-font-head); font-size: .84rem; font-weight: 700; color: var(--ap-text); display: block; }
 .cx-insert-item span { font-size: .72rem; color: var(--ap-text-3); }
-.cx-insert-item.used { opacity: .4; pointer-events: none; }
+.cx-insert-item.used,
+.cx-insert-item:disabled { opacity: .4; pointer-events: none; }
 .cx-insert-item.rec { background: linear-gradient(180deg, #fff, var(--ap-mint)); }
 .cx-insert-item.rec .mi { background: var(--ap-mint-mid); }
 .cx-mi-rec { font-family: var(--ap-font-head); font-size: .6rem; font-weight: 800; letter-spacing: .03em; text-transform: uppercase; color: var(--ap-green); background: var(--ap-green-dim); border-radius: var(--ap-r-pill); padding: 1px 7px; margin-left: 6px; vertical-align: 1px; }

@@ -192,7 +192,12 @@ document.addEventListener('DOMContentLoaded', function() {
             chip.className = 'ap-preview-type-chip ' + map.chipCls;
             chip.textContent = map.chipText;
         }
-        // Sync existing content-type-btn for JS compat
+        // Streamlined composer (data-cx-type tabs)
+        if (typeof window.PostComposer?.selectComposerType === 'function') {
+            window.PostComposer.selectComposerType(type, { syncPreview: true });
+            return;
+        }
+        // Legacy fallback: hidden content-type buttons
         var btns = document.querySelectorAll('.content-type-btn');
         btns.forEach(function(btn) {
             var ct = btn.getAttribute('data-content-type');
@@ -200,6 +205,10 @@ document.addEventListener('DOMContentLoaded', function() {
             btn.classList.toggle('active', match);
             if (match) btn.click();
         });
+        if (window.adminPanel && typeof window.adminPanel.setContentType === 'function') {
+            var panelType = type === 'resource' ? 'resource' : type === 'event' ? 'event' : 'post';
+            window.adminPanel.setContentType(panelType, { preserveFields: true, silent: true });
+        }
         syncPreview();
     };
 

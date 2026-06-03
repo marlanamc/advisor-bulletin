@@ -670,6 +670,45 @@ test.describe('Advisor redesign', () => {
     await expect(page.locator('#apNavResources')).toHaveClass(/active/);
   });
 
+  test('resource composer allows up to five extra action buttons', async ({ page }) => {
+    await showSeededAdvisorDashboard(page);
+    await page.waitForFunction(() => typeof window.PostComposer?.selectComposerType === 'function');
+
+    await page.getByRole('button', { name: 'Resource', exact: true }).click();
+    await page.locator('#cxInsertBtn').click();
+
+    for (let i = 0; i < 5; i += 1) {
+      await page.locator('#cxInsertBtn').click();
+      await page.locator('[data-mi-key="extras"]').click();
+    }
+
+    await expect(page.locator('#cxBlocks [data-cx-block="extras"]')).toHaveCount(5);
+    await expect(page.locator('[data-mi-key="extras"]')).toBeDisabled();
+    await expect(page.locator('#bulletinForm [name="resourceActionLink5LabelEn"]')).toBeAttached();
+  });
+
+  test('dashboard quick create selects resource and calendar event composer modes', async ({ page }) => {
+    await showSeededAdvisorDashboard(page);
+    await page.waitForFunction(() => typeof window.PostComposer?.selectComposerType === 'function');
+
+    await page.getByRole('button', { name: 'Resource', exact: true }).click();
+    await expect(page.locator('#apPageCreate')).toHaveClass(/active/);
+    await expect(page.locator('[data-cx-type="resource"]')).toHaveClass(/active/);
+    await expect(page.locator('#bulletinForm [name="contentType"]')).toHaveValue('resource');
+
+    await page.locator('#apNavDashboard').click();
+    await page.getByRole('button', { name: 'Calendar Event', exact: true }).click();
+    await expect(page.locator('[data-cx-type="event"]')).toHaveClass(/active/);
+    await expect(page.locator('#bulletinForm [name="contentType"]')).toHaveValue('post');
+    await expect(page.locator('#bulletinForm')).toHaveAttribute('data-content-mode', 'event');
+
+    await page.locator('#apNavDashboard').click();
+    await page.getByRole('button', { name: 'Bulletin', exact: true }).click();
+    await expect(page.locator('[data-cx-type="bulletin"]')).toHaveClass(/active/);
+    await expect(page.locator('#bulletinForm [name="contentType"]')).toHaveValue('post');
+    await expect(page.locator('#bulletinForm')).toHaveAttribute('data-content-mode', 'post');
+  });
+
   test('switches between edit targets without stale composer mode or preview state', async ({ page }) => {
     await seedAdvisorEditFixtures(page);
 
