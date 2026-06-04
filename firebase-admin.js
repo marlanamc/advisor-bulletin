@@ -46,7 +46,7 @@ import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage
 // the canonical list cannot silently be missing from the admin form.
 const ADMIN_RESOURCE_CATEGORY_DATA = {
     immigration: ['Immigration / Inmigración', '🌎', 'shield'],
-    jobs:        ['Jobs / Empleos', '💼', 'briefcase'],
+    jobs:        ['Job Help / Ayuda con empleo', '💼', 'briefcase'],
     food:        ['Food / Comida', '🍽️', 'food'],
     family:      ['Child Care / Cuidado de niños', '👨‍👩‍👧', 'family'],
     health:      ['Health / Salud', '❤️', 'heart'],

@@ -176,7 +176,7 @@ const PostHero = ({ category, accent }) => {
 // Category metadata - colors, labels (en/es)
 const CAT_META = {
   announcement: { id: 'announcement', en: 'Announcements', es: 'Anuncios', short: 'News', accent: '#2e7af0', tint: '#dde9ff', heroTop: '#a9c8ff', heroBot: '#dde9ff', sun: '#fff8eb', fg1: '#7eb1ff', fg2: '#dde9ff' },
-  job: { id: 'job', en: 'Jobs', es: 'Trabajos', short: 'Jobs', accent: '#1f3d7a', tint: '#e1e9f7', heroTop: '#7eb1ff', heroBot: '#e1e9f7', sun: '#ffc857', fg1: '#1f3d7a', fg2: '#5a7bb7' },
+  job: { id: 'job', en: 'Job Help', es: 'Ayuda con empleo', short: 'Job Help', accent: '#1f3d7a', tint: '#e1e9f7', heroTop: '#7eb1ff', heroBot: '#e1e9f7', sun: '#ffc857', fg1: '#1f3d7a', fg2: '#5a7bb7' },
   training: { id: 'training', en: 'Training', es: 'Entrenamiento', short: 'Class', accent: '#7b4ec7', tint: '#ece4f9', heroTop: '#b89bea', heroBot: '#ece4f9', sun: '#fff', fg1: '#7b4ec7', fg2: '#c4afe7' },
   college: { id: 'college', en: 'College & GED', es: 'Universidad', short: 'School', accent: '#0a1d3a', tint: '#dde2eb', heroTop: '#5a7bb7', heroBot: '#dde2eb', sun: '#ffc857', fg1: '#0a1d3a', fg2: '#3a4f78' },
   immigration: { id: 'immigration', en: 'Immigration', es: 'Inmigración', short: 'Legal', accent: '#0d8a7a', tint: '#cfeee8', heroTop: '#5fc4b3', heroBot: '#cfeee8', sun: '#fff', fg1: '#0d8a7a', fg2: '#7fd4c6' },

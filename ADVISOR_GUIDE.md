@@ -1,219 +1,256 @@
-# 📋 EBHCS Bulletin Board - Advisor Guide
+# EBHCS Advisor Bulletin Board - Posting Guide
 
-## Quick Start (3 Steps)
+This guide shows advisors how to create, preview, publish, and manage posts in the current Advisor Portal. Use it for Bulletins, Resources, and Calendar/Event posts.
 
-**1. Go to the website** → **2. Click "Advisor Portal" (at bottom of page)** → **3. Login and post!**
+Printable version: [docs/advisor-posting-guide.html](docs/advisor-posting-guide.html)
 
----
+## What Changed
 
-## 🔐 **STEP 1: LOGIN**
+The EBHCS bulletin board has grown from a simple list of posts into a student-facing support hub and a more complete advisor posting tool.
 
-### How to Access
-1. Go to the bulletin board website
-2. Scroll to the **bottom of the page**
-3. Click **"⛵ Advisor Portal"** button
+For students:
 
-### Your Login Info
-- **Username**: Use your first name (lowercase)
-  - Example: `jorge`, `fabiola`, `leidy`, `carmen`, `jerome`, `felipe`, `simonetta`, `mike`, `leah`
-- **First-time password**: `ebhcs2025`
-- **You'll be asked to change your password** on first login (for security)
+- The site is easier to browse by topic, date, and type of help.
+- Students can use **Find Help** to scan resources by action, such as getting housing help, applying for SNAP, finding legal help, or taking English classes.
+- Resource cards now show clear action buttons like **Website**, **Directions**, **Call**, **Open form**, and extra buttons for important links or PDFs.
+- Repeated events and multi-session bulletins stay visible as upcoming sessions approach.
+- English and Spanish labels help students understand key actions quickly.
 
-### Login Problems?
-- ❌ **"Invalid username"** → Try lowercase first name only
-- ❌ **"Wrong password"** → Make sure caps lock is OFF
-- ❌ **"Too many attempts"** → Wait 15 minutes and try again
-- ❌ **Still having trouble?** → Let Marlie know!
+For advisors:
 
----
+- The Advisor Portal now separates posting into **Bulletins**, **Resources**, and **Calendar Events**.
+- The composer gives advisors optional detail blocks for Spanish text, dates, links, contact information, audience, and resource actions.
+- Advisors can add multiple session dates to one bulletin instead of making duplicate posts.
+- Resources can include student action chips and up to 5 extra URL or PDF buttons.
+- Separate management pages make it easier to edit or delete bulletins, resources, and events after publishing.
 
-## 📝 **STEP 2: POST A BULLETIN**
+## Student Site Screenshots
 
-### Fill Out the Simple Form
+These screenshots show the public student experience advisors are posting into.
 
-**Required Fields (marked with *):**
-1. **Title**: Be specific and clear
-   - ✅ "Customer Service Job - Boston Medical Center"
+![Desktop Find Help page with resource cards](docs/screenshots/13-student-site-find-help-desktop.png)
 
-2. **Category**: Choose the best fit
-   - 💼 **Job Opportunity** → Employment positions
-   - 📚 **Training/Workshop** → Skills training, classes
-   - 🎓 **College/University** → Educational programs
-   - 📢 **Announcement** → General information
-   - 🛠️ **Resource/Service** → Support services
+![Mobile student home feed](docs/screenshots/14-student-site-home-mobile.png)
 
-3. **Description**: Include important details
-   - What is it?
-   - Who is it for?
-   - Requirements (if any)
-   - Benefits/what they'll learn
+![Mobile Find Help topic grid](docs/screenshots/15-student-site-find-help-mobile.png)
 
-4. **Your Name**: Select from dropdown
+## Quick Start
 
-**Optional Fields:**
-- **Company/Organization**: Who is offering this
-- **Contact Info**: How to apply or get more info
-- **Deadline**: When applications are due
-- **Image**: Add a logo or flyer (optional)
+1. Open the student bulletin board website.
+2. Scroll to the bottom and select **Advisor Portal**.
+3. Log in with your EBHCS advisor account.
+4. Open **Create Post**.
+5. Choose the kind of post: **Bulletin**, **Resource**, or **Calendar/Event**.
+6. Fill in the main fields, add any details students need, preview the post, then publish.
 
-### Tips for Great Posts
-- ⏰ **Include deadlines** → Helps students prioritize
-- 📞 **Always include contact info** → Phone, email, or website
-- 🖼️ **Add images when possible** → Makes posts more eye-catching
+![Admin login screen](docs/screenshots/01-admin-login.png)
+![Advisor dashboard entry point](docs/screenshots/02-admin-dashboard.png)
 
----
+## Login
 
-## 👀 **STEP 3: PREVIEW & POST**
+Use the username or EBHCS email assigned to you. New advisor accounts may start with a temporary password and may ask you to change it on first login.
 
-1. **Click "Preview"** → See exactly how students will see your post
-2. **Make changes** → Click "Edit" if you need to fix anything
-3. **Click "Post Bulletin"** → Your post goes live immediately!
+If login does not work:
 
-**Your post appears on the student page right away!**
+- Check that caps lock is off.
+- Try your lowercase first name if you normally use a username.
+- Use **Forgot Password?** if you need a reset email.
+- Ask the site administrator if your account has not been created yet.
 
----
+## Create A Post
 
-## 🛠️ **MANAGE & EDIT YOUR POSTS**
+Open **Create Post** and pick the post type before filling in details.
 
-### View Your Posts
-1. Login to Advisor Portal
-2. Click the **"My Posts"** tab in the sidebar
-3. See all your active, expired, or pending bulletins
+![Create Post type selection](docs/screenshots/03-create-post-type-selection.png)
 
-### Edit a Post
-1. Find the post you want to update under **"My Posts"**
-2. Click the **"✏️ Edit"** button on the post card
-3. The app will open the **"Create Post"** tab with your post's details pre-filled
-4. Make your changes and click the **"Update Bulletin"** button to save immediately
+Use the three post types this way:
 
-### Delete Old Posts
-1. Find the post you want to remove
-2. Click the **"🗑️ Delete"** button
-3. Confirm deletion
+- **Bulletin**: job help, trainings, announcements, deadlines, and general opportunities.
+- **Resource**: Ongoing services, forms, help organizations, and student support links.
+- **Calendar/Event**: Events that should appear as dated student opportunities.
 
-**Please edit or delete expired or filled positions!**
+Start with the required fields:
 
----
+- **English title**: Write a clear student-facing title.
+- **Category** or **Resource category**: Choose the closest match.
+- **Summary/details**: Explain what the student should know and what to do next.
 
-## 📤 **SHARING FEATURE**
+Then use **Add detail** for optional sections:
 
-Each bulletin has a **"📤 Share"** button that students can use to:
-- Share via WhatsApp, Facebook, email, text
-- Copy the link to share anywhere
-- Native mobile sharing (on phones)
+- **Spanish version**: Add Spanish title and summary. If Spanish text is blank, English is used.
+- **Dates & times**: Add a deadline, single event date, date range, or multiple sessions.
+- **Sign-up link** or **Website link**: Add the page students should open.
+- **Contact & location**: Add organization, address, phone, and call/text preference.
+- **Who it's for**: Mark the audience as all students, ESOL, HSE, or FamLit.
 
-This helps students share opportunities with friends and family!
+## Bulletin Dates And Multiple Sessions
 
----
+Use **Dates & times** when a bulletin has a deadline, event date, date range, or repeated sessions.
 
-## ❓ **COMMON QUESTIONS**
+![Bulletin Dates & times block](docs/screenshots/04-bulletin-dates-times.png)
 
-### **Q: How do I change my password?**
-**A:** You'll be prompted on first login. You can also contact tech support.
+For a bulletin with multiple meeting dates:
 
-### **Q: Can I edit a post after publishing?**
-**A:** Yes! Go to the **"My Posts"** tab in the sidebar, find your post, and click the **"✏️ Edit"** button. This loads your post's content back into the creation form so you can make updates and save them.
+1. Select **Add detail**.
+2. Choose **Dates & times**.
+3. In **What kind of date?**, choose **Multiple sessions**.
+4. Add at least two session dates.
+5. Add start and end times when they are useful for students.
+6. Preview the card before publishing.
 
-### **Q: How long do posts stay up?**
-**A:** Forever, until you delete them. However, they will display an "EXPIRED" ribbon once their deadline date has passed, and they will be hidden from the student feed by default. Please keep them updated!
+![Multiple sessions entered](docs/screenshots/05-multiple-sessions.png)
 
-### **Q: Can I add multiple images?**
-**A:** One image per post for now.
+How reposting works for multiple-session bulletins:
 
-### **Q: What image size works best?**
-**A:** Any size under 5MB works. Square images look best.
+- The post is stored as one bulletin with multiple session dates.
+- After one session has passed, the system sorts the post back toward the top while another future session remains.
+- The post stops getting this sorting boost after the final session has passed.
+- This helps students notice repeated events without advisors creating duplicate posts.
 
-### **Q: Who can see the bulletins?**
-**A:** Anyone with the website link - perfect for students to share with family!
+## Resource Posts
 
-### **Q: How do I know if students are seeing my posts?**
-**A:** Students will contact you directly using the info you provide.
+Choose **Resource** for ongoing help, organizations, forms, service directories, or student support pages.
 
----
+Resource posts can be one of two kinds:
 
-## 🆘 **NEED HELP?**
+- **Organization/service**: A resource with a website, phone, address, hours, or service chips.
+- **Document/form**: A PDF or official form students can open.
 
-### **Forgot Your Password?**
-1. Click "Forgot Password?" on login screen
-2. Enter your @ebhcs.org email address
-3. Check your email for a password reset link
-4. Click the link to set a new password
+Every resource needs:
 
-### **Technical Problems?**
-- Website not loading → Try refreshing or different browser
-- Can't upload image → Check file size (must be under 5MB)
-- Still having issues → Contact: **tech@ebhcs.org**
+- **English title**
+- **Resource category**
+- Either at least one **student action chip** or a short card summary
+- A link for organization/service resources, unless the post already has one while editing
 
-### **Content Questions?**
-- Not sure if something should be posted → Ask your supervisor
-- Need help writing a post → Ask a colleague to review
-- Want to coordinate with other advisors → Check existing posts first
+![Resource composer with chips](docs/screenshots/06-resource-service-chips.png)
 
----
+## Student Action Chips
 
-## 💡 **BEST PRACTICES**
+Student action chips are short labels that tell students what a resource helps with, such as **Get housing help**, **Apply for SNAP**, or **Talk to a lawyer**.
 
-### **Post Regularly**
-- Check for new opportunities weekly
-- Remove expired posts promptly
-- Update deadlines if they change
+Use chips when the resource offers concrete help that students should be able to scan quickly.
 
-### **Write Student-Friendly Posts**
-- Use simple, clear language
-- Include all important details
-- Always provide contact information
-- Mention if bilingual skills are needed/preferred
+How chips work:
 
-### **Categories to Use**
-- **Jobs**: Full-time, part-time, internships, apprenticeships
-- **Training**: Skills workshops, certification programs, classes
-- **College**: Degree programs, continuing education, scholarships
-- **Announcements**: Important updates, events, deadlines
-- **Resources**: Support services, assistance programs, tools
+- Suggested chips appear based on the resource category.
+- Advisors can type a chip and press Enter.
+- Advisors can browse/search the chip catalog.
+- Up to 6 chips show on the student-facing card.
+- Duplicate chips are removed.
+- Chips show bilingual labels where translations exist.
 
-### **What Makes a Good Post**
-```
-✅ GOOD EXAMPLE:
+Good chip examples:
 
-Title: "Medical Assistant Training - Free Program"
+- **Apply for SNAP**
+- **Find a job**
+- **Get housing help**
+- **Talk to a lawyer**
+- **Get health care**
+- **Take English classes**
 
-Category: Training/Workshop
+Avoid vague chips like **Helpful**, **Important**, or **More info**. Use the summary field for general explanation.
 
-Description: "Free 12-week medical assistant training program.
-No experience needed - we provide all training! Classes are
-weekday mornings 9am-12pm. Job placement assistance included.
-English and Spanish instruction available."
+## Extra Buttons On Resource Cards
 
-Organization: "Boston Career Institute"
+Extra buttons add more actions to a resource card. Use them for supporting pages, application steps, eligibility details, forms, flyers, or PDFs.
 
-Contact: "Call 617-555-0123 or visit bci.org/apply"
+![Extra button Link mode](docs/screenshots/07-extra-button-link.png)
+![Extra button PDF mode](docs/screenshots/08-extra-button-pdf.png)
 
-Deadline: [Next month's date]
-```
+Rules for extra buttons:
 
----
+- A resource can have up to 5 extra buttons.
+- Each button needs an English label.
+- Spanish label falls back to English when left blank.
+- Each button can point to a URL or a PDF.
+- URL buttons open in a new browser tab.
+- PDF buttons open the uploaded PDF.
 
-## 🎯 **YOUR IMPACT**
+Examples:
 
-Every bulletin you post can change a student's life by connecting them to:
-- 💰 Better job opportunities
-- 📚 Skills training and education
-- 🏆 Career advancement paths
-- 🤝 Support services and resources
+- **Steps to apply** -> application instructions page
+- **Eligibility rules** -> PDF flyer
+- **Class schedule** -> schedule page
+- **Referral form** -> PDF form
 
-**Thank you for helping our ESOL students succeed!**
+## What Students See
 
----
+Student cards show the most useful actions directly on the card.
 
-## 📞 **QUICK REFERENCE**
+![Student preview card](docs/screenshots/09-student-preview-card.png)
 
-| **What** | **How** |
-|----------|---------|
-| **Login** | Website → Bottom → "Advisor Portal" |
-| **Username** | Your first name (lowercase) |
-| **First Password** | `ebhcs2025` |
-| **Post** | Fill form → Preview → Post Bulletin |
-| **Edit / Delete** | Login → My Posts → Edit or Delete |
-| **Help** | tech@ebhcs.org |
+Depending on the resource details, students may see:
 
-**Keep this guide handy and happy posting! 🎉**
+- **Call** when a phone number is provided.
+- **Website** when a resource URL is provided.
+- **Directions** when an address is provided.
+- **Open form** for document/form resources.
+- **Official source** when a document resource also has a website.
+- Extra action buttons from the resource's extra button blocks.
+- Student action chips under the summary.
+- A share button on the card.
+
+![Live student-facing card/detail view](docs/screenshots/10-student-live-card.png)
+
+## Preview And Publish
+
+Before publishing:
+
+1. Review the phone preview in the Advisor Portal.
+2. Check the title, summary, dates, chips, and buttons.
+3. Confirm links and PDFs point to the right place.
+4. Publish only when the preview is clear for students.
+
+Posts appear on the student site right away after publishing.
+
+## Manage And Edit Posts
+
+Open the matching management section for the type of post you want to update:
+
+- **My Bulletins** for announcements, jobs, trainings, and general bulletins.
+- **My Resources** for Find Help resources and documents.
+- **My Events** for calendar events.
+
+Administrators can manage all posts.
+
+![My Bulletins edit and delete controls](docs/screenshots/11-my-bulletins-edit-delete.png)
+
+Use **Edit** when:
+
+- Details changed.
+- A link or PDF needs to be corrected.
+- Session dates or times changed.
+- A resource needs more or fewer chips.
+- Extra buttons need to be added, removed, or updated.
+
+Use **Delete** when:
+
+- A job is filled.
+- An opportunity is no longer available.
+- A post should no longer appear to students.
+
+## Best Practices
+
+- Write titles students can understand quickly.
+- Put the most important student action in the first sentence.
+- Add Spanish text when possible.
+- Use dates for deadlines and events.
+- Use multiple sessions instead of duplicate posts for repeated events.
+- Use resource chips for concrete services, not general descriptions.
+- Keep extra buttons specific and action-oriented.
+- Preview before publishing.
+- Remove or update old posts regularly.
+
+## Quick Reference
+
+| Task | Where to go |
+| --- | --- |
+| Log in | Student site footer -> **Advisor Portal** |
+| Create a bulletin | **Create Post** -> **Bulletin** |
+| Create a resource | **Create Post** -> **Resource** |
+| Add repeated event dates | **Add detail** -> **Dates & times** -> **Multiple sessions** |
+| Add student action chips | Resource composer chip field |
+| Add extra URL/PDF buttons | Resource composer -> **Add detail** -> **Extra button** |
+| Preview | Phone preview in Advisor Portal |
+| Edit or delete | **My Bulletins**, **My Resources**, or **My Events** |

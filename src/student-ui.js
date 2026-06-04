@@ -151,7 +151,7 @@ var CAT_DATA = {
         ]
     },
     job: {
-        label: { en: 'Jobs', es: 'Empleos' },
+        label: { en: 'Job Help', es: 'Ayuda con empleo' },
         color: '#1f3d7a',
         iconSvg: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>',
         orgs: [

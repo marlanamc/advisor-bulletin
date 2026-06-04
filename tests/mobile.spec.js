@@ -125,7 +125,7 @@ test.describe('Mobile app shell', () => {
     await expect(storyBubble).toBeVisible();
     await expect(page.locator('#feedStoryCats')).toContainText('Immigration');
     await expect(page.locator('#feedStoryCats')).toContainText('Housing');
-    await expect(page.locator('#feedStoryCats')).toContainText('Jobs');
+    await expect(page.locator('#feedStoryCats')).toContainText('Job Help');
     await expect(page.locator('#feedStoryCats')).toContainText('Health');
   });
 

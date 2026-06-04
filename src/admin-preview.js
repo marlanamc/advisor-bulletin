@@ -384,7 +384,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     var PREVIEW_CAT_META = {
-        job:          { accent: '#1e40af', tint: '#dbeafe', grad: 'linear-gradient(145deg,#bfdbfe,#dbeafe)', label: 'JOBS',        emoji: '💼' },
+        job:          { accent: '#1e40af', tint: '#dbeafe', grad: 'linear-gradient(145deg,#bfdbfe,#dbeafe)', label: 'JOB HELP',    emoji: '💼' },
         training:     { accent: '#7b4ec7', tint: '#ede9fe', grad: 'linear-gradient(145deg,#ddd6fe,#ede9fe)', label: 'TRAINING',    emoji: '📚' },
         college:      { accent: '#4338ca', tint: '#e0e7ff', grad: 'linear-gradient(145deg,#c7d2fe,#e0e7ff)', label: 'COLLEGE',     emoji: '🎓' },
         immigration:  { accent: '#0d8a7a', tint: '#ccfbf1', grad: 'linear-gradient(145deg,#99f6e4,#ccfbf1)', label: 'IMMIGRATION', emoji: '🌍' },
@@ -1083,7 +1083,7 @@ document.addEventListener('DOMContentLoaded', function() {
         'legal-aid':    { fill: 'ap-bar-fill-purple', label: 'Legal Help' },
         'uncategorized': { fill: 'ap-bar-fill-coral', label: 'Uncategorized' },
         // Resource category ids (distinct from post ids, e.g. jobs vs job)
-        'jobs':         { fill: 'ap-bar-fill-blue',   label: 'Jobs' },
+        'jobs':         { fill: 'ap-bar-fill-blue',   label: 'Job Help' },
         'hse':          { fill: 'ap-bar-fill-purple', label: 'GED / HSE' },
         'other':        { fill: 'ap-bar-fill-coral',  label: 'Other' }
     };

@@ -19,7 +19,7 @@ A modern, mobile-responsive, bilingual community bulletin board system for the *
 ## ✨ Features
 
 *   **Bilingual Translation**: Complete English/Spanish toggle for headings, filters, buttons, and help drawers.
-*   **Custom Story Resource Bubbles**: Quick filter bubbles at the top of the feed for critical areas (Immigration, Jobs, Housing, Health).
+*   **Custom Story Resource Bubbles**: Quick filter bubbles at the top of the feed for critical areas (Immigration, Job Help, Housing, Health).
 *   **Color-Coordinated Multi-Select Filters**: Filter chips categorized by opportunity type, deadlines, and ESOL class levels (HSE, FamLit, ESOL).
 *   **PDF Document Attachments**: Advisors can upload PDF flyers (up to 10MB) alongside or instead of images. Students see a clean "📄 View PDF" download option.
 *   **Automated Expiration Ribbon**: Outdated opportunities display a grayscale diagonal "EXPIRED" banner once deadlines pass and are hidden from the public feed by default (with a "Show Expired" toggle).

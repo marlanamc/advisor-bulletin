@@ -78,8 +78,8 @@ const RESOURCE_CATEGORY_CONFIG = {
         color: '#0d9488'
     },
     jobs: {
-        labelEn: 'Jobs',
-        labelEs: 'Empleos',
+        labelEn: 'Job Help',
+        labelEs: 'Ayuda con empleo',
         icon: 'briefcase',
         color: '#24498f'
     },
@@ -165,13 +165,13 @@ const FEED_CATEGORY_CONTENT = {
     },
     job: {
         icon: '💼',
-        title: 'Job Posts',
+        title: 'Job Help',
         description: 'See advisor posts about job openings, hiring notices, resumes, and career support.',
         chips: ['Hiring Now', 'Resume Help', 'Career Support']
     },
     jobs: {
         icon: '💼',
-        title: 'Job Posts',
+        title: 'Job Help',
         description: 'See advisor posts about job openings, hiring notices, resumes, and career support.',
         chips: ['Hiring Now', 'Resume Help', 'Career Support']
     },
@@ -3055,7 +3055,7 @@ class FirebaseBulletinBoard {
     }
 
     getStoryBubbleResources(resources) {
-        // Show one bubble per category (Immigration, Jobs, Housing, etc.) using category labels.
+        // Show one bubble per category (Immigration, Job Help, Housing, etc.) using category labels.
         // This keeps the header consistent instead of swapping "Immigration" for the first resource's title.
         const bubbles = [];
 
@@ -3900,7 +3900,7 @@ class FirebaseBulletinBoard {
 
     getCatMeta(category) {
         const map = {
-            job:           { accent: '#1e40af', tint: '#dbeafe', grad: 'linear-gradient(145deg,#bfdbfe 0%,#dbeafe 100%)', label: 'Jobs',         labelEs: 'Empleos',        badge: 'JOBS',         emoji: '💼' },
+            job:           { accent: '#1e40af', tint: '#dbeafe', grad: 'linear-gradient(145deg,#bfdbfe 0%,#dbeafe 100%)', label: 'Job Help',     labelEs: 'Ayuda con empleo', badge: 'HELP',         emoji: '💼' },
             training:      { accent: '#7b4ec7', tint: '#ede9fe', grad: 'linear-gradient(145deg,#ddd6fe 0%,#ede9fe 100%)', label: 'Training',      labelEs: 'Capacitación',   badge: 'FREE',         emoji: '📚' },
             college:       { accent: '#4338ca', tint: '#e0e7ff', grad: 'linear-gradient(145deg,#c7d2fe 0%,#e0e7ff 100%)', label: 'College',       labelEs: 'Universidad',    badge: 'APPLY',        emoji: '🎓' },
             immigration:   { accent: '#0d8a7a', tint: '#ccfbf1', grad: 'linear-gradient(145deg,#99f6e4 0%,#ccfbf1 100%)', label: 'Immigration',   labelEs: 'Inmigración',    badge: 'FREE',         emoji: '🌍' },
