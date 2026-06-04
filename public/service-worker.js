@@ -14,7 +14,7 @@
 //
 // 4. Firestore / Google APIs and /version.json are always bypassed.
 
-const CACHE_NAME = 'ebhcs-bulletin-v8';
+const CACHE_NAME = 'ebhcs-bulletin-v9';
 
 const FETCH_RETRIES = 3;
 const FETCH_BACKOFF_MS = 500;

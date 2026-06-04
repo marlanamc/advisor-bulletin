@@ -1,5 +1,8 @@
 const { test, expect } = require('@playwright/test');
 
+const DEPLOY_VERSION_STORAGE_KEY = 'ebhcs_student_deploy_version';
+const DEPLOY_RELOAD_GUARD_KEY = 'ebhcs_student_reload_version';
+
 async function resetPwaState(page) {
   await page.goto('/googlecb709123fbf8d92e.html');
   await page.evaluate(async () => {
@@ -9,6 +12,7 @@ async function resetPwaState(page) {
     await Promise.all(names.map((name) => caches.delete(name)));
     sessionStorage.clear();
     localStorage.removeItem('ebhcs_bulletins_v1');
+    localStorage.removeItem('ebhcs_student_deploy_version');
   });
 }
 
@@ -29,6 +33,35 @@ async function registerReadyServiceWorker(page) {
   });
 }
 
+async function mockDeployVersion(page, getVersion) {
+  await page.route('**/version.json', async (route) => {
+    const version = typeof getVersion === 'function' ? getVersion() : getVersion;
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ v: version }),
+    });
+  });
+}
+
+async function waitForStoredDeployVersion(page, expectedVersion) {
+  await page.waitForFunction(
+    ({ key, expected }) => localStorage.getItem(key) === expected,
+    { key: DEPLOY_VERSION_STORAGE_KEY, expected: expectedVersion }
+  );
+}
+
+function countStudentDocumentRequests(page) {
+  let count = 0;
+  page.on('request', (request) => {
+    const url = new URL(request.url());
+    if (request.resourceType() === 'document' && url.pathname === '/') {
+      count += 1;
+    }
+  });
+  return () => count;
+}
+
 test.describe('PWA service worker', () => {
   test('first and repeat loads keep the student shell usable', async ({ page }) => {
     await resetPwaState(page);
@@ -41,6 +74,75 @@ test.describe('PWA service worker', () => {
     await page.reload({ waitUntil: 'domcontentloaded' });
     await expect(page.locator('.app-topbar')).toBeVisible();
     await expect(page.locator('[data-app-view="calendar"]').first()).toBeAttached();
+  });
+
+  test('student page registers the service worker with update cache bypassed', async ({ page }) => {
+    await resetPwaState(page);
+
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(async () => {
+      const registration = await navigator.serviceWorker.getRegistration();
+      return registration?.updateViaCache === 'none';
+    });
+
+    const updateViaCache = await page.evaluate(async () => {
+      const registration = await navigator.serviceWorker.getRegistration();
+      return registration?.updateViaCache;
+    });
+
+    expect(updateViaCache).toBe('none');
+  });
+
+  test('deploy version check records first version without reloading', async ({ page }) => {
+    await resetPwaState(page);
+    await mockDeployVersion(page, 'deploy-v1');
+    const documentRequestCount = countStudentDocumentRequests(page);
+
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await waitForStoredDeployVersion(page, 'deploy-v1');
+    await page.waitForTimeout(300);
+
+    expect(documentRequestCount()).toBe(1);
+  });
+
+  test('changed deploy version triggers one automatic student reload', async ({ page }) => {
+    await resetPwaState(page);
+    let deployVersion = 'deploy-v1';
+    await mockDeployVersion(page, () => deployVersion);
+
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await waitForStoredDeployVersion(page, 'deploy-v1');
+
+    const documentRequestCount = countStudentDocumentRequests(page);
+    deployVersion = 'deploy-v2';
+    await page.reload({ waitUntil: 'domcontentloaded' });
+
+    await waitForStoredDeployVersion(page, 'deploy-v2');
+    await expect.poll(documentRequestCount, { timeout: 5000 }).toBe(2);
+    await page.waitForTimeout(500);
+
+    const reloadGuard = await page.evaluate((key) => sessionStorage.getItem(key), DEPLOY_RELOAD_GUARD_KEY);
+    expect(reloadGuard).toBe('deploy-v2');
+    expect(documentRequestCount()).toBe(2);
+  });
+
+  test('deploy reload guard prevents a loop for the same changed version', async ({ page }) => {
+    await resetPwaState(page);
+    await mockDeployVersion(page, 'deploy-v2');
+    await page.addInitScript(({ versionKey, guardKey }) => {
+      localStorage.setItem(versionKey, 'deploy-v1');
+      sessionStorage.setItem(guardKey, 'deploy-v2');
+    }, {
+      versionKey: DEPLOY_VERSION_STORAGE_KEY,
+      guardKey: DEPLOY_RELOAD_GUARD_KEY,
+    });
+    const documentRequestCount = countStudentDocumentRequests(page);
+
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await waitForStoredDeployVersion(page, 'deploy-v2');
+    await page.waitForTimeout(500);
+
+    expect(documentRequestCount()).toBe(1);
   });
 
   test('fresh-shell update message caches the student shell before reload', async ({ page }) => {
