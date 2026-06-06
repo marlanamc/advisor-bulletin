@@ -12,6 +12,7 @@ async function resetPwaState(page) {
     await Promise.all(names.map((name) => caches.delete(name)));
     sessionStorage.clear();
     localStorage.removeItem('ebhcs_bulletins_v1');
+    localStorage.removeItem('ebhcs_student_feed_snapshot_v1');
     localStorage.removeItem('ebhcs_student_deploy_version');
   });
 }

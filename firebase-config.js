@@ -45,6 +45,14 @@ import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestor
 
 installClientErrorLogger('student')
 
+function recordStudentPerf(name, detail) {
+    try {
+        performance.mark(name, detail ? { detail } : undefined);
+    } catch {}
+    window.__ebhcsPerf = window.__ebhcsPerf || [];
+    window.__ebhcsPerf.push({ name, at: Math.round(performance.now()), detail });
+}
+
 function prefersInstantScroll() {
     return window.matchMedia('(hover: none) and (pointer: coarse)').matches;
 }
@@ -363,6 +371,7 @@ class FirebaseBulletinBoard {
         this.trackedCardViews = new Set();
         this.activeDetailBulletinId = null;
         this.bulletinsHydrated = false;
+        this.firestoreFirstSnapshotRecorded = false;
         this.handleHashChange = this.handleHashRouting.bind(this);
         this.handleDescriptionToggle = this.handleDescriptionToggle.bind(this);
         this.init();
@@ -412,6 +421,9 @@ class FirebaseBulletinBoard {
     showBulletinsLoading() {
         const grid = document.getElementById('bulletinGrid');
         const emptyState = document.getElementById('feedEmptyState');
+        if (grid?.getAttribute('data-snapshot-rendered') === 'true') {
+            return;
+        }
         if (emptyState) {
             emptyState.style.display = 'none';
         }
@@ -426,6 +438,10 @@ class FirebaseBulletinBoard {
     }
 
     applyBulletinSnapshot(snapshot) {
+        if (!this.firestoreFirstSnapshotRecorded) {
+            this.firestoreFirstSnapshotRecorded = true;
+            recordStudentPerf('ebhcs:firestore-first-snapshot', { size: snapshot.size });
+        }
         const next = [];
         snapshot.forEach((docSnap) => {
             next.push({
@@ -440,6 +456,7 @@ class FirebaseBulletinBoard {
         this.populateAdvisorFilters();
         this.renderResourceCategoryFilters();
         this.displayBulletins();
+        recordStudentPerf('ebhcs:cards-rendered', { count: this.bulletins.length });
     }
 
     setupRealtimeListener() {
@@ -451,6 +468,7 @@ class FirebaseBulletinBoard {
             this.populateAdvisorFilters();
             this.renderResourceCategoryFilters();
             this.displayBulletins();
+            recordStudentPerf('ebhcs:cards-rendered', { source: 'bulletin-cache', count: this.bulletins.length });
         } else {
             this.showBulletinsLoading();
         }

@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "vite",
     "start": "vite",
-    "prebuild": "node scripts/check-resource-categories-sync.mjs",
+    "build:snapshot": "node scripts/build-student-feed-snapshot.mjs",
+    "prebuild": "npm run build:snapshot && node scripts/check-resource-categories-sync.mjs",
     "build": "vite build",
     "deploy": "npm run build && firebase deploy",
     "preview": "vite preview",

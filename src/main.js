@@ -1,18 +1,49 @@
 import './css/index.css'
 import { initImageLightbox } from './lightbox.js'
+import { recordStudentPerf, renderStudentSnapshot } from './student-snapshot.js'
 
 initImageLightbox()
 
-// Defer firebase-config until just after first paint so the shell can render,
-// then hydrate cached/local Firestore data without waiting for idle time.
+let firebaseConfigLoadPromise = null
+
+// Defer firebase-config until the snapshot path has had priority. The full
+// Firebase app still hydrates the live feed, but first useful content should
+// not wait for Firestore or the Firebase vendor chunk on weak mobile networks.
 function loadFirebaseConfig() {
-    import('../firebase-config.js')
+    if (!firebaseConfigLoadPromise) {
+        recordStudentPerf('ebhcs:firebase-import-started')
+        firebaseConfigLoadPromise = import('../firebase-config.js')
+            .then((module) => {
+                recordStudentPerf('ebhcs:firebase-module-loaded')
+                return module
+            })
+            .catch((error) => {
+                recordStudentPerf('ebhcs:firebase-module-failed')
+                throw error
+            })
+    }
+    return firebaseConfigLoadPromise
+}
+
+async function bootstrapStudentApp() {
+    try {
+        await renderStudentSnapshot()
+    } finally {
+        const load = () => loadFirebaseConfig().catch((error) => {
+            console.error('[Student App] Firebase hydration failed:', error)
+        })
+        if ('requestIdleCallback' in window) {
+            window.requestIdleCallback(load, { timeout: 1200 })
+        } else {
+            setTimeout(load, 250)
+        }
+    }
 }
 
 if ('requestAnimationFrame' in window) {
-    requestAnimationFrame(() => setTimeout(loadFirebaseConfig, 0))
+    requestAnimationFrame(() => setTimeout(bootstrapStudentApp, 0))
 } else {
-    setTimeout(loadFirebaseConfig, 0)
+    setTimeout(bootstrapStudentApp, 0)
 }
 
 const DEPLOY_VERSION_URL = '/version.json'
@@ -108,6 +139,10 @@ async function checkDeployVersion() {
 }
 
 function watchServiceWorkerUpdates(registration) {
+    if (!registration || typeof navigator.serviceWorker?.addEventListener !== 'function') {
+        return
+    }
+
     registration.addEventListener('updatefound', () => {
         const installingWorker = registration.installing
         if (!installingWorker) return
@@ -129,6 +164,9 @@ async function registerServiceWorker() {
         const registration = await navigator.serviceWorker.register('/service-worker.js', {
             updateViaCache: 'none',
         })
+        if (!registration) {
+            return
+        }
         watchServiceWorkerUpdates(registration)
         registration.update().catch(() => {})
         console.log('[Service Worker] Registered successfully with scope:', registration.scope)

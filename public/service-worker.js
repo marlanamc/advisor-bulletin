@@ -15,7 +15,7 @@
 //
 // 4. Firestore / Google APIs and /version.json are always bypassed.
 
-const CACHE_NAME = 'ebhcs-bulletin-v11';
+const CACHE_NAME = 'ebhcs-bulletin-v12';
 
 const FETCH_RETRIES = 3;
 const FETCH_BACKOFF_MS = 500;
@@ -23,6 +23,7 @@ const FETCH_BACKOFF_MS = 500;
 const APP_SHELL = [
   '/',
   '/manifest.json',
+  '/student-feed-snapshot.json',
   '/favicon.ico',
   '/images/app-icon-192.png',
   '/images/app-icon-512.png',
