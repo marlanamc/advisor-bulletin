@@ -14,14 +14,13 @@
 //
 // 4. Firestore / Google APIs and /version.json are always bypassed.
 
-const CACHE_NAME = 'ebhcs-bulletin-v9';
+const CACHE_NAME = 'ebhcs-bulletin-v10';
 
 const FETCH_RETRIES = 3;
 const FETCH_BACKOFF_MS = 500;
 
 const APP_SHELL = [
   '/',
-  '/index.html',
   '/manifest.json',
   '/favicon.ico',
   '/images/app-icon-192.png',
@@ -36,17 +35,30 @@ const APP_SHELL = [
 const STUDENT_SHELL_ALIASES = ['/', '/index.html'];
 const ADMIN_SHELL_ALIASES = ['/admin', '/admin.html'];
 
+function isCacheableResponse(response) {
+  return response
+    && response.type === 'basic'
+    && response.ok
+    && !response.redirected;
+}
+
+async function safePrecache(cache, url) {
+  try {
+    const request = new Request(url, { cache: 'reload' });
+    const response = await fetch(request);
+    if (isCacheableResponse(response)) {
+      await cache.put(url, response);
+    }
+  } catch (err) {
+    console.warn('[Service Worker] Shell pre-cache miss:', url, err);
+  }
+}
+
 async function precacheAppShell(cache) {
   // Use cache:'reload' on the shell HTML so we never install a stale copy
   // (Firebase Hosting marks index.html as no-store, which we honor here).
-  await Promise.all(
-    APP_SHELL.map((url) => {
-      const request = new Request(url, { cache: 'reload' });
-      return cache.add(request).catch((err) => {
-        console.warn('[Service Worker] Shell pre-cache miss:', url, err);
-      });
-    })
-  );
+  // Only pre-cache '/' — Firebase cleanUrls 301-redirects /index.html to /.
+  await Promise.all(APP_SHELL.map((url) => safePrecache(cache, url)));
 }
 
 async function precacheBuiltAssets(cache) {
@@ -56,11 +68,7 @@ async function precacheBuiltAssets(cache) {
     const { assets } = await res.json();
     if (!Array.isArray(assets)) return;
     await Promise.all(
-      assets.map((url) =>
-        cache.add(new Request(url, { cache: 'reload' })).catch((err) => {
-          console.warn('[Service Worker] Asset pre-cache miss:', url, err);
-        })
-      )
+      assets.map((url) => safePrecache(cache, url))
     );
   } catch (err) {
     // Manifest missing on first deploy or offline — runtime caching still works.
@@ -116,10 +124,14 @@ function isAdminShellPath(pathname) {
 
 function getShellInfo(pathname) {
   return {
-    cacheKey: '/index.html',
-    networkPath: '/index.html',
+    cacheKey: '/',
+    networkPath: '/',
     aliases: STUDENT_SHELL_ALIASES,
   };
+}
+
+function shouldBypassServiceWorker(requestUrl) {
+  return requestUrl.searchParams.has('sw') && requestUrl.searchParams.get('sw') === 'off';
 }
 
 function shouldBypass(request, requestUrl) {
@@ -177,7 +189,7 @@ async function fetchAndCacheShell(shellInfo) {
   const request = new Request(shellInfo.networkPath, { cache: 'reload' });
   const networkResponse = await fetchWithRetry(request);
 
-  if (networkResponse && networkResponse.status === 200) {
+  if (isCacheableResponse(networkResponse)) {
     await Promise.all(
       [shellInfo.cacheKey, ...shellInfo.aliases].map((key) =>
         cache.put(key, networkResponse.clone()).catch(() => {})
@@ -217,7 +229,7 @@ async function handleNavigation(request) {
 
   try {
     const fresh = await fetchAndCacheShell(shellInfo);
-    if (fresh && fresh.status === 200) return fresh;
+    if (isCacheableResponse(fresh)) return fresh;
   } catch {
     // Network failed — fall through to cache fallback.
   }
@@ -232,9 +244,9 @@ self.addEventListener('message', (event) => {
   if (event.data?.type !== 'PREPARE_FRESH_SHELL') return;
 
   event.waitUntil(
-    fetchAndCacheShell(getShellInfo('/index.html'))
+    fetchAndCacheShell(getShellInfo('/'))
       .then((response) => {
-        event.ports?.[0]?.postMessage({ ok: Boolean(response && response.status === 200) });
+        event.ports?.[0]?.postMessage({ ok: isCacheableResponse(response) });
       })
       .catch(() => {
         event.ports?.[0]?.postMessage({ ok: false });
@@ -265,7 +277,7 @@ async function handleHashedAsset(request) {
     }
   }
 
-  if (networkResponse && networkResponse.status === 200) {
+  if (isCacheableResponse(networkResponse)) {
     safeCachePut(cache, request, networkResponse.clone());
   }
   return networkResponse;
@@ -277,7 +289,7 @@ async function handleShellAsset(request) {
   const cached = await cache.match(request);
   const fetchPromise = fetch(request)
     .then((networkResponse) => {
-      if (networkResponse && networkResponse.status === 200) {
+      if (isCacheableResponse(networkResponse)) {
         safeCachePut(cache, request, networkResponse.clone());
       }
       return networkResponse;
@@ -297,6 +309,7 @@ self.addEventListener('fetch', (event) => {
   const requestUrl = new URL(request.url);
 
   if (shouldBypass(request, requestUrl)) return;
+  if (shouldBypassServiceWorker(requestUrl)) return;
 
   if (isHTMLNavigation(request, requestUrl)) {
     // Admin is not the offline PWA — let the browser fetch it directly so a

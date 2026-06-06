@@ -160,15 +160,78 @@ test.describe('PWA service worker', () => {
       const message = await response;
       const cacheNames = await caches.keys();
       const cache = await caches.open(cacheNames.find((name) => name.startsWith('ebhcs-bulletin-')));
-      const cached = await cache.match('/index.html');
+      const cachedRoot = await cache.match('/');
+      const cachedAlias = await cache.match('/index.html');
 
       return {
         ok: message?.ok,
-        cachedStatus: cached?.status || 0,
+        cachedRootStatus: cachedRoot?.status || 0,
+        cachedAliasStatus: cachedAlias?.status || 0,
       };
     });
 
-    expect(result).toEqual({ ok: true, cachedStatus: 200 });
+    expect(result).toEqual({ ok: true, cachedRootStatus: 200, cachedAliasStatus: 200 });
+  });
+
+  test('student navigation avoids caching or serving redirect-followed shell responses', async ({ page }) => {
+    await resetPwaState(page);
+    await registerReadyServiceWorker(page);
+
+    await page.route('**/index.html', async (route) => {
+      await route.fulfill({
+        status: 301,
+        headers: { Location: '/' },
+        body: 'Redirecting',
+      });
+    });
+
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('.app-topbar')).toBeVisible();
+
+    const cacheState = await page.evaluate(async () => {
+      const cacheNames = await caches.keys();
+      const cacheName = cacheNames.find((name) => name.startsWith('ebhcs-bulletin-'));
+      const cache = await caches.open(cacheName);
+      const cachedRoot = await cache.match('/');
+      const cachedIndex = await cache.match('/index.html');
+
+      return {
+        hasRoot: Boolean(cachedRoot),
+        hasIndex: Boolean(cachedIndex),
+        rootRedirected: cachedRoot?.redirected || false,
+        indexRedirected: cachedIndex?.redirected || false,
+      };
+    });
+
+    expect(cacheState.hasRoot).toBe(true);
+    expect(cacheState.hasIndex).toBe(true);
+    expect(cacheState.rootRedirected).toBe(false);
+    expect(cacheState.indexRedirected).toBe(false);
+  });
+
+  test('?sw=off bypasses the service worker for recovery loads', async ({ page }) => {
+    await resetPwaState(page);
+    await registerReadyServiceWorker(page);
+
+    let swIntercepted = false;
+    await page.evaluate(() => {
+      navigator.serviceWorker.addEventListener('message', () => {});
+    });
+
+    const registration = await page.evaluate(async () => navigator.serviceWorker.getRegistration());
+    expect(registration).toBeTruthy();
+
+    await page.route('**/*', async (route) => {
+      const url = new URL(route.request().url());
+      if (url.searchParams.get('sw') === 'off' && route.request().resourceType() === 'document') {
+        swIntercepted = true;
+      }
+      await route.continue();
+    });
+
+    await page.goto('/?sw=off', { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('.app-topbar')).toBeVisible();
+    expect(swIntercepted).toBe(true);
   });
 
   test('/admin and /admin.html use the admin shell, not the student shell', async ({ page }) => {
