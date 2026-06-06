@@ -4,8 +4,9 @@
 //    critical hashed JS/CSS listed in /asset-manifest.json. Deferred Firebase
 //    chunks are cached at runtime after first use, not during install.
 //
-// 2. Student navigations use network-first with cache fallback for offline
-//    support. Admin navigations bypass this worker entirely so the browser
+// 2. Student navigations use stale-while-revalidate: serve the cached shell
+//    immediately on repeat visits, refresh in the background. First visit is
+//    network-only with offline fallback. Admin navigations bypass this worker.
 //    fetches admin HTML directly (admin.html also unregisters the SW).
 //    /version.json is never cached here (deploy version checks bypass the SW).
 //
@@ -14,7 +15,7 @@
 //
 // 4. Firestore / Google APIs and /version.json are always bypassed.
 
-const CACHE_NAME = 'ebhcs-bulletin-v10';
+const CACHE_NAME = 'ebhcs-bulletin-v11';
 
 const FETCH_RETRIES = 3;
 const FETCH_BACKOFF_MS = 500;
@@ -220,22 +221,26 @@ async function matchCachedShell(cache, request, shellInfo) {
   return null;
 }
 
-// Network-first for student navigations: always try the network so post-deploy
-// loads get fresh HTML immediately. Fall back to cached shell when offline.
+// Stale-while-revalidate for student navigations: repeat PWA launches return
+// the cached shell immediately (critical on slow mobile networks). Fresh HTML
+// is fetched in the background; deploy updates use /version.json + reload.
 async function handleNavigation(request) {
   const cache = await caches.open(CACHE_NAME);
   const requestUrl = new URL(request.url);
   const shellInfo = getShellInfo(requestUrl.pathname);
+  const cached = await matchCachedShell(cache, request, shellInfo);
+
+  if (cached) {
+    fetchAndCacheShell(shellInfo).catch(() => {});
+    return cached;
+  }
 
   try {
     const fresh = await fetchAndCacheShell(shellInfo);
     if (isCacheableResponse(fresh)) return fresh;
   } catch {
-    // Network failed — fall through to cache fallback.
+    // Network failed — fall through to offline page.
   }
-
-  const cached = await matchCachedShell(cache, request, shellInfo);
-  if (cached) return cached;
 
   return offlineShellResponse();
 }

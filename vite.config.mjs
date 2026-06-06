@@ -32,6 +32,16 @@ function emitAssetManifest() {
         for (const m of html.matchAll(/(?:href|src)="(\/assets\/[^"]+)"/g)) {
           add(m[1])
         }
+        const mainJs = html.match(/src="(\/assets\/main-[^"]+\.js)"/)
+        if (mainJs) {
+          const mainContent = readFileSync(
+            resolve(__dirname, 'dist', mainJs[1].replace(/^\//, '')),
+            'utf8'
+          )
+          for (const m of mainContent.matchAll(/"assets\/([^"]+)"/g)) {
+            add(`/assets/${m[1]}`)
+          }
+        }
       } catch (err) {
         console.warn('[emit-asset-manifest] could not read dist/index.html:', err)
       }

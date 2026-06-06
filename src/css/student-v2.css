@@ -1254,7 +1254,10 @@ a.about-action-card {
     font-weight: 600;
     font-size: 11px;
     margin-top: -2px;
-    max-height: 1.4em;
+    line-height: 1.15;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    max-height: 2.6em;
     transition: opacity 0.24s ease, max-height 0.24s ease, margin 0.24s ease, font-size 0.24s ease;
 }
 
@@ -1443,6 +1446,15 @@ a.about-action-card {
 
     .story-row-wrap--bilingual .story-row-see-all {
         font-size: 13px;
+    }
+
+    /* Wider bubbles so bilingual EN/ES labels can wrap without clipping */
+    .story-row-wrap--bilingual .story-bubble {
+        width: 84px;
+    }
+
+    .story-row-wrap--bilingual .story-bubble-label {
+        max-width: 84px;
     }
 }
 

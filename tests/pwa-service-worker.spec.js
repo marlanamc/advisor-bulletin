@@ -266,24 +266,25 @@ test.describe('PWA service worker', () => {
     await expect(page.locator('body')).toContainText(/Admin|Advisor|Sign In|Dashboard/i);
   });
 
-  test('student navigation prefers network html over stale cached shell', async ({ page }) => {
+  test('student navigation serves cached shell immediately on repeat visit', async ({ page }) => {
     await resetPwaState(page);
     await registerReadyServiceWorker(page);
     await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('.app-topbar')).toBeVisible();
 
-    await page.evaluate(async () => {
-      const cacheNames = await caches.keys();
-      const cacheName = cacheNames.find((name) => name.startsWith('ebhcs-bulletin-'));
-      const cache = await caches.open(cacheName);
-      const stale = new Response('<!doctype html><title>Stale Student</title><body><h1>Stale Student Shell</h1></body>', {
-        headers: { 'Content-Type': 'text/html; charset=utf-8' },
-      });
-      await cache.put('/index.html', stale.clone());
-      await cache.put('/', stale.clone());
+    await page.route('**/*', async (route) => {
+      const url = new URL(route.request().url());
+      if (route.request().resourceType() === 'document' && url.pathname === '/') {
+        await new Promise((resolve) => setTimeout(resolve, 4000));
+      }
+      await route.continue();
     });
 
+    const startedAt = Date.now();
     await page.reload({ waitUntil: 'domcontentloaded' });
-    await expect(page.locator('body')).not.toContainText('Stale Student Shell');
+    const elapsedMs = Date.now() - startedAt;
+
+    expect(elapsedMs).toBeLessThan(3000);
     await expect(page.locator('.app-topbar')).toBeVisible();
   });
 
