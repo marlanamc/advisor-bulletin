@@ -128,6 +128,7 @@ function isExpired(item) {
 
 function isCalendarOnly(item) {
     if (item.type === 'resource') return true;
+    if (item.hideFromMainFeed === true) return true;
     const dt = item.dateType;
     if (dt !== 'event' && dt !== 'range' && dt !== 'sessions') return false;
     return item.category === 'announcement'

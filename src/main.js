@@ -26,11 +26,32 @@ function loadFirebaseConfig() {
     return firebaseConfigLoadPromise
 }
 
+// Warm the browser HTTP cache for the deferred Firebase chunks so the idle
+// import below doesn't pay full network latency. Manifest is missing in dev
+// and on first deploys — silently skip.
+async function preloadDeferredChunks() {
+    try {
+        const response = await fetch('/asset-manifest.json')
+        if (!response.ok) return
+        const { deferred } = await response.json()
+        if (!Array.isArray(deferred)) return
+        for (const href of deferred) {
+            const link = document.createElement('link')
+            link.rel = 'modulepreload'
+            link.href = href
+            document.head.appendChild(link)
+        }
+    } catch {
+        // Never let warm-up block or break the feed.
+    }
+}
+
 async function bootstrapStudentApp() {
     try {
         initBulletinGridEvents()
         await renderStudentSnapshot()
     } finally {
+        preloadDeferredChunks()
         const load = () => loadFirebaseConfig().catch((error) => {
             console.error('[Student App] Firebase hydration failed:', error)
         })

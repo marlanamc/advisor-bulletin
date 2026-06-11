@@ -967,9 +967,13 @@ class FirebaseAdminPanel {
                 ? `${submittedLabel} updated successfully!`
                 : `${submittedLabel} saved successfully! Check ${manageLabel}.`;
             if (submittedType === 'post') {
-                successMessage += ' It should appear on the student feed shortly.';
-                if (formData.get('summaryEs')) {
-                    successMessage += ' Students in Spanish see Spanish Summary instead of Description when a summary is filled in.';
+                if (this.contentMode === 'event') {
+                    successMessage += ' It should appear on the student calendar shortly.';
+                } else {
+                    successMessage += ' It should appear on the student feed shortly.';
+                    if (formData.get('summaryEs')) {
+                        successMessage += ' Students in Spanish see Spanish Summary instead of Description when a summary is filled in.';
+                    }
                 }
             }
             this.showTemporaryMessage(successMessage, 'success');
@@ -2117,6 +2121,7 @@ class FirebaseAdminPanel {
             hours: (formData.get('contactHours') || '').trim(),
             isActive: true,
             isPublished: true,
+            hideFromMainFeed: this.contentMode === 'event',
             image: null,
             pdfUrl: null
         };

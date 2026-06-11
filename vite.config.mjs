@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite'
 import { resolve } from 'path'
-import { writeFileSync, readFileSync } from 'fs'
+import { writeFileSync, readFileSync, readdirSync } from 'fs'
 
 function emitDeployVersionFile() {
   return {
@@ -35,7 +35,20 @@ function emitAssetManifest() {
       } catch (err) {
         console.warn('[emit-asset-manifest] could not read dist/index.html:', err)
       }
-      const payload = JSON.stringify({ assets })
+      // Firebase chunks are not pre-cached (the SW only reads `assets`), but the
+      // student page modulepreloads them after the snapshot renders so the idle
+      // import hits a warm HTTP cache.
+      const deferred = []
+      try {
+        for (const file of readdirSync(resolve(__dirname, 'dist/assets'))) {
+          if (/^firebase-(config|vendor)-.+\.js$/.test(file)) {
+            deferred.push(`/assets/${file}`)
+          }
+        }
+      } catch (err) {
+        console.warn('[emit-asset-manifest] could not read dist/assets:', err)
+      }
+      const payload = JSON.stringify({ assets, deferred })
       writeFileSync(resolve(__dirname, 'dist/asset-manifest.json'), payload)
     },
   }

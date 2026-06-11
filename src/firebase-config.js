@@ -41,7 +41,7 @@ import {
     RESOURCE_KIND_DOCUMENT,
 } from './resource-kinds.js'
 import { initResourceLogoTiles } from './resource-logo-tile.js'
-import { collection, doc, getDoc, query, where, orderBy, onSnapshot } from 'firebase/firestore'
+import { collection, doc, getDoc, query, where, orderBy, limit, onSnapshot } from 'firebase/firestore'
 
 installClientErrorLogger('student')
 
@@ -216,7 +216,8 @@ class FirebaseBulletinBoard {
             this.showBulletinsLoading();
         }
 
-        const q = query(collection(db, 'bulletins'), where('isActive', '==', true), orderBy('datePosted', 'desc'));
+        // Cap reads as the archive grows — well above what the feed ever shows.
+        const q = query(collection(db, 'bulletins'), where('isActive', '==', true), orderBy('datePosted', 'desc'), limit(100));
         onSnapshot(q, (snapshot) => {
             // Ignore empty cache-only snapshots while the server response is still pending.
             if (snapshot.empty && snapshot.metadata.fromCache && !this.bulletinsHydrated) {
@@ -1457,6 +1458,7 @@ class FirebaseBulletinBoard {
     /** Simple dated labels (Event Date tab) — calendar/upcoming only, not main feed cards. */
     isCalendarEventBulletin(bulletin) {
         if (!bulletin || this.isResourceBulletin(bulletin)) return false;
+        if (bulletin.hideFromMainFeed === true) return true;
 
         const dt = bulletin.dateType;
         if (dt !== 'event' && dt !== 'range' && dt !== 'sessions') return false;

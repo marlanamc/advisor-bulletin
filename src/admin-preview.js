@@ -194,7 +194,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         // Streamlined composer (data-cx-type tabs)
         if (typeof window.PostComposer?.selectComposerType === 'function') {
-            window.PostComposer.selectComposerType(type, { syncPreview: true });
+            window.PostComposer.selectComposerType(type, { syncPreview: true, resetFields: true });
             return;
         }
         // Legacy fallback: hidden content-type buttons

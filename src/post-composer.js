@@ -103,7 +103,7 @@ const BLOCK_DEFS = {
         },
     },
     link: {
-        icon: '🔗', label: 'Sign-up link', sub: 'Registration or info page', title: 'Sign-up link',
+        icon: '🔗', label: 'Info link', sub: 'More information or registration page', title: 'Info link',
         html() {
             return `<input type="url" class="cx-input" data-cx-mirror="eventLink" placeholder="https://…">`
         },
@@ -404,6 +404,9 @@ function ensureMetaFields() {
 
 /** Switch composer type without clearing blocks (edit-prefill) */
 export function selectComposerType(type, options = {}) {
+    if (options.resetFields) {
+        clearComposerForNewPost()
+    }
     state.type = type
     if (type === 'resource' && options.resourceKind) {
         state.resKind = options.resourceKind
@@ -440,7 +443,6 @@ export function resetComposer() {
     state.type = 'bulletin'
     state.resKind = 'organization'
     state.category = null
-    state.helpTags = []
     state.insertedBlocks = []
 
     document.querySelectorAll('[data-cx-type]').forEach(b => {
@@ -450,26 +452,7 @@ export function resetComposer() {
         b.classList.toggle('sel', b.getAttribute('data-cx-reskind') === 'organization')
     })
 
-    const titleInp = document.getElementById('cxTitle')
-    const descInp = document.getElementById('cxDesc')
-    if (titleInp) titleInp.value = ''
-    if (descInp) descInp.value = ''
-
-    resetCategoryPill()
-    clearAllBlocks({ clearActionLinkMirrors: true })
-    renderHelpTags()
-
-    mirror('contentType', 'post')
-    mirror('resourceKind', 'organization')
-    mirror('title', '')
-    mirror('description', '')
-    mirror('resourceTitleEn', '')
-    mirror('resourceDescription', '')
-    mirror('resourceHighlights', '')
-    setFormMirror('resourcePublished', 'on')
-    setFormMirror('resourceOrder', '')
-
-    clearResourceLogoPreview()
+    clearComposerForNewPost()
     applyMode()
     syncPreview()
 }
@@ -896,6 +879,56 @@ function clearAllBlocks(options = {}) {
     syncExtrasMenuState()
 }
 
+const POST_EVENT_MIRROR_FIELDS = [
+    'title', 'titleEs', 'description', 'summaryEs',
+    'category', 'classType', 'dateType', 'eventDate', 'startDate', 'endDate', 'startTime', 'endTime',
+    'eventLink', 'eventLocation', 'eventFormat', 'company', 'contact', 'contactPhone', 'contactPhoneMode', 'contactHours', 'address',
+]
+
+const RESOURCE_MIRROR_FIELDS = [
+    'resourceTitleEn', 'resourceTitleEs', 'resourceDescription', 'resourceSummaryEs',
+    'resourceUrl', 'resourcePhone', 'resourcePhoneMode', 'resourceAddress', 'resourceHours',
+    'resourceCategory', 'resourceHighlights',
+]
+
+function clearComposerMirrors() {
+    [...POST_EVENT_MIRROR_FIELDS, ...RESOURCE_MIRROR_FIELDS].forEach((name) => mirror(name, ''))
+    const form = document.getElementById('bulletinForm')
+    form?.querySelectorAll('input[data-cx-session]').forEach((node) => node.remove())
+}
+
+function resetEventHeroFields() {
+    const evType = document.getElementById('cxEvType')
+    if (evType) evType.value = 'event'
+    ;['cxEvDate', 'cxEvEnd', 'cxEvStart', 'cxEvEndTime'].forEach((id) => {
+        const el = document.getElementById(id)
+        if (el) el.value = ''
+    })
+    document.getElementById('cxEvEndWrap')?.classList.add('cx-hidden')
+    document.getElementById('cxEvSessionsWrap')?.classList.add('cx-hidden')
+    const sessionsList = document.getElementById('cxEvSessionsList')
+    if (sessionsList) sessionsList.innerHTML = ''
+}
+
+function clearComposerForNewPost() {
+    const titleInp = document.getElementById('cxTitle')
+    const descInp = document.getElementById('cxDesc')
+    if (titleInp) titleInp.value = ''
+    if (descInp) descInp.value = ''
+
+    resetCategoryPill()
+    clearAllBlocks({ clearActionLinkMirrors: true })
+    clearComposerMirrors()
+    resetEventHeroFields()
+    state.helpTags = []
+    renderHelpTags()
+    mirror('resourceKind', 'organization')
+    mirror('contentType', 'post')
+    setFormMirror('resourcePublished', 'on')
+    setFormMirror('resourceOrder', '')
+    clearResourceLogoPreview()
+}
+
 // ── applyMode(): reshapes hero, placeholders, menu ────────────────────────
 function applyMode(options = {}) {
     const { type, resKind } = state
@@ -976,6 +1009,18 @@ function applyMode(options = {}) {
 }
 
 // ── Type tabs ─────────────────────────────────────────────────────────────
+const OPTIONAL_DETAIL_MIRROR_FIELDS = [
+    'eventLink', 'eventLocation', 'eventFormat', 'company', 'contact', 'contactPhone', 'contactPhoneMode', 'contactHours', 'address',
+    'titleEs', 'summaryEs', 'classType',
+    'resourceUrl', 'resourcePhone', 'resourcePhoneMode', 'resourceAddress', 'resourceHours',
+    'resourceTitleEs', 'resourceSummaryEs', 'resourceHighlights',
+]
+
+function clearOptionalDetailMirrors() {
+    OPTIONAL_DETAIL_MIRROR_FIELDS.forEach((name) => mirror(name, ''))
+    resetEventHeroFields()
+}
+
 function bindTypeTabs() {
     document.querySelectorAll('[data-cx-type]').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -985,6 +1030,9 @@ function bindTypeTabs() {
             state.category = null
             resetCategoryPill()
             clearAllBlocks({ clearActionLinkMirrors: true })
+            clearOptionalDetailMirrors()
+            state.helpTags = []
+            renderHelpTags()
             applyMode()
         })
     })

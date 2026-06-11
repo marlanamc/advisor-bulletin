@@ -169,6 +169,7 @@ export class AdminComposerFormMethods {
     /** Simple dated announcements created via the Event Date tab (label + date, no body). */
     isCalendarEventBulletin(bulletin) {
         if (!bulletin || this.isResourceBulletin(bulletin)) return false;
+        if (bulletin.hideFromMainFeed === true) return true;
 
         const dt = bulletin.dateType;
         if (dt !== 'event' && dt !== 'range' && dt !== 'sessions') return false;
