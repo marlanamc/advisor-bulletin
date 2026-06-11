@@ -63,6 +63,17 @@ service cloud.firestore {
         && isPrivilegedAdvisor(request.auth.token.email);
     }
 
+    match /config/studentDirectory {
+      // The student-facing advisor directory (names, titles, contact emails).
+      // Published from the admin Advisors tab; the student site falls back to
+      // the static list in src/advisor-directory.js when this doc is absent.
+      allow read: if true;
+      allow write: if request.auth != null
+        && isPrivilegedAdvisor(request.auth.token.email)
+        && request.resource.data.advisors is list
+        && request.resource.data.advisors.size() <= 50;
+    }
+
     match /analyticsEvents/{eventId} {
       // Engagement analytics have been removed to keep Firestore costs low.
       allow read, write: if false;

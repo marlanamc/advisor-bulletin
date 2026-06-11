@@ -41,7 +41,7 @@ import {
     RESOURCE_KIND_DOCUMENT,
 } from './src/resource-kinds.js'
 import { initResourceLogoTiles } from './src/resource-logo-tile.js'
-import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore'
+import { collection, doc, getDoc, query, where, orderBy, onSnapshot } from 'firebase/firestore'
 
 installClientErrorLogger('student')
 
@@ -83,6 +83,8 @@ class FirebaseBulletinBoard {
         this.activeDetailBulletinId = null;
         this.bulletinsHydrated = false;
         this.firestoreFirstSnapshotRecorded = false;
+        // Static fallback until config/studentDirectory loads from Firestore.
+        this.advisorDirectory = STUDENT_ADVISOR_DIRECTORY;
         this.handleHashChange = this.handleHashRouting.bind(this);
         this.handleDescriptionToggle = this.handleDescriptionToggle.bind(this);
         this.init();
@@ -95,9 +97,39 @@ class FirebaseBulletinBoard {
         this.loadBulletins();
         this.checkAutoLogin();
         this.setupRealtimeListener();
+        this.loadAdvisorDirectory();
         this.switchView('feed', { skipRender: true, preserveDetail: true });
         this.closeSearchLayer({ preserveScroll: true, silent: true });
         window.addEventListener('hashchange', this.handleHashChange);
+    }
+
+    /**
+     * Replace the static advisor directory with the one published from the
+     * admin Advisors tab (config/studentDirectory). Falls back silently to
+     * src/advisor-directory.js when the doc is missing or unreadable.
+     */
+    async loadAdvisorDirectory() {
+        try {
+            const snap = await getDoc(doc(db, 'config', 'studentDirectory'));
+            const advisors = snap.exists() ? snap.data().advisors : null;
+            if (!Array.isArray(advisors) || advisors.length === 0) return;
+            const cleaned = advisors
+                .filter((a) => a && typeof a.name === 'string' && a.name.trim())
+                .map((a) => ({
+                    name: String(a.name).trim(),
+                    role: String(a.role || 'Advisor').trim(),
+                    email: String(a.email || '').trim(),
+                    loginUsername: String(a.loginUsername || '').trim(),
+                }));
+            if (cleaned.length === 0) return;
+            this.advisorDirectory = cleaned;
+            const aboutList = document.getElementById('aboutAdvisorList');
+            if (aboutList) delete aboutList.dataset.rendered;
+            this.renderStudentAdvisorDirectory();
+            this.renderAboutAdvisorList();
+        } catch (error) {
+            console.error('Error loading advisor directory:', error);
+        }
     }
 
     // --- bulletin cache helpers ---
@@ -1057,12 +1089,12 @@ class FirebaseBulletinBoard {
             return;
         }
 
-        list.innerHTML = STUDENT_ADVISOR_DIRECTORY.map((advisor, index) => {
+        list.innerHTML = this.advisorDirectory.map((advisor, index) => {
             const name = this.escapeHtml(advisor.name);
             const role = this.escapeHtml(advisor.role);
             const email = this.escapeHtml(advisor.email || '');
             const initials = this.escapeHtml(this.getAdvisorInitials(advisor.name));
-            const avatarColor = this.getAdvisorAvatarColor(index, STUDENT_ADVISOR_DIRECTORY.length);
+            const avatarColor = this.getAdvisorAvatarColor(index, this.advisorDirectory.length);
             return `
                 <article class="advisor-dir-card">
                     <div class="advisor-dir-avatar" style="background:${avatarColor.background};color:${avatarColor.color}" aria-hidden="true">${initials}</div>
@@ -1092,12 +1124,12 @@ class FirebaseBulletinBoard {
             return;
         }
 
-        list.innerHTML = STUDENT_ADVISOR_DIRECTORY.map((advisor, index) => {
+        list.innerHTML = this.advisorDirectory.map((advisor, index) => {
             const name = this.escapeHtml(advisor.name);
             const role = this.escapeHtml(advisor.role);
             const email = this.escapeHtml(advisor.email || '');
             const initials = this.escapeHtml(this.getAdvisorInitials(advisor.name));
-            const avatarColor = this.getAdvisorAvatarColor(index, STUDENT_ADVISOR_DIRECTORY.length);
+            const avatarColor = this.getAdvisorAvatarColor(index, this.advisorDirectory.length);
             return `
                 <a class="about-advisor-row" href="mailto:${email}" aria-label="Email ${name} at ${email}">
                     <span class="about-advisor-row-avatar" style="background:${avatarColor.background};color:${avatarColor.color}" aria-hidden="true">${initials}</span>

@@ -1,5 +1,8 @@
 /**
- * Canonical public advisor directory (student-facing contact list).
+ * Fallback public advisor directory (student-facing contact list).
+ * The live directory is the Firestore doc config/studentDirectory, published
+ * automatically from the admin Advisors tab; this static list is only used
+ * when that doc is missing or unreadable.
  * loginUsername matches Firestore `advisors` document id / bulletin login id.
  */
 export const STUDENT_ADVISOR_DIRECTORY = [
