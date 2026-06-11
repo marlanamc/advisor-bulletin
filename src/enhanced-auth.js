@@ -1,4 +1,4 @@
-import { db, auth } from './src/firebase-auth.js'
+import { db, auth } from './firebase-auth.js'
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore'
 import { signInWithEmailAndPassword, EmailAuthProvider, reauthenticateWithCredential, updatePassword, sendPasswordResetEmail } from 'firebase/auth'
 

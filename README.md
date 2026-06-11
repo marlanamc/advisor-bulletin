@@ -30,32 +30,34 @@ A modern, mobile-responsive, bilingual community bulletin board system for the *
 
 ---
 
-## 📂 Active File Structure
-
-The project has transitioned from client-side mockups (`script.js` & `admin-script.js`) to a structured, modular production app:
+## 📂 Project Layout
 
 ```
 advisor_bulletin/
-├── src/
-│   ├── main.js                  # Main entry point for the Student Feed
-│   ├── admin.js                 # Main entry point for the Advisor Dashboard
-│   ├── lightbox.js              # Full-screen image lightbox preview handler
-│   ├── error-logger.js          # Appends runtime client errors to Firestore for monitoring
-│   ├── feed-categories.js       # Student feed category labels and translations
-│   ├── pdf-flyer.js             # Client-side PDF preview and download rendering logic
-│   └── css/
-│       └── advisor-portal-v2.css # Modern styling sheet for the advisor portal
-├── index.html                   # Student bulletin board interface
-├── admin.html                   # Advisor portal interface
-├── firebase-config.js           # Client-side configuration and student feed handlers
-├── firebase-admin.js            # Server-side configurations and advisor dashboard logic
-├── enhanced-auth.js             # Firebase auth wrapper with password strength checks and default reset modal
-├── firestore.rules              # Strict read/write permissions and data schemas
-├── package.json                 # Project scripts and dependencies
-└── playwright.config.js         # Playwright test runners configuration
+├── index.html                   # Student bulletin board (entry page)
+├── admin.html                   # Advisor portal (entry page)
+├── src/                         # All application JavaScript and CSS
+│   ├── main.js                  #   Student entry: snapshot-first bootstrap, PWA updates
+│   ├── firebase-config.js       #   Student app (FirebaseBulletinBoard) + board-*.js modules
+│   ├── admin.js                 #   Advisor entry: auth wiring, page routing
+│   ├── firebase-admin.js        #   Admin panel (FirebaseAdminPanel) + admin-*.js modules
+│   ├── enhanced-auth.js         #   Login, lockout, forced password change
+│   ├── admin-roles.js           #   Privileged admin emails (sync-checked vs firestore.rules)
+│   └── css/                     #   Stylesheets
+├── public/                      # Static files served as-is (PWA service worker,
+│                                #   manifest, images, student feed snapshot, 404)
+├── docs/                        # All guides: DEPLOYMENT, FIREBASE_SETUP, TESTING,
+│                                #   ADVISOR_GUIDE, DIRECTOR_HANDOVER_GUIDE, screenshots
+├── scripts/                     # Maintenance scripts (see scripts/README.md)
+├── tests/                       # Playwright suite (gates every deploy)
+├── data/                        # CSV template for bulk resource imports
+├── config/                      # One-time setup artifacts (CORS configs, config template)
+├── firestore.rules              # Firestore security rules (the security boundary)
+├── storage.rules                # Storage security rules
+├── firebase.json                # Firebase Hosting/deploy configuration
+├── vite.config.mjs              # Build configuration
+└── playwright.config.js         # Test runner configuration
 ```
-
-*Note: `script.js` and `admin-script.js` in the root are legacy backup copies preserved for reference and are not active.*
 
 ---
 
@@ -118,7 +120,7 @@ npm run test:ui
 ---
 
 ## 📘 Guides & Reference
-*   **Deploying & Operations**: See [DEPLOYMENT.md](DEPLOYMENT.md) (how deploys work, credentials, billing, rollback) and [scripts/README.md](scripts/README.md) (maintenance scripts).
-*   **Setup Firebase Console**: See [FIREBASE_SETUP.md](FIREBASE_SETUP.md) and [FIREBASE_SECURITY_RULES.md](FIREBASE_SECURITY_RULES.md).
-*   **Advisor Tutorial**: Share the [ADVISOR_GUIDE.md](ADVISOR_GUIDE.md) with staff.
-*   **IT Handover**: Detailed administration procedures are detailed in [DIRECTOR_HANDOVER_GUIDE.md](DIRECTOR_HANDOVER_GUIDE.md).
+*   **Deploying & Operations**: See [DEPLOYMENT.md](docs/DEPLOYMENT.md) (how deploys work, credentials, billing, rollback) and [scripts/README.md](scripts/README.md) (maintenance scripts).
+*   **Setup Firebase Console**: See [FIREBASE_SETUP.md](docs/FIREBASE_SETUP.md) and [FIREBASE_SECURITY_RULES.md](docs/FIREBASE_SECURITY_RULES.md).
+*   **Advisor Tutorial**: Share the [ADVISOR_GUIDE.md](docs/ADVISOR_GUIDE.md) with staff.
+*   **IT Handover**: Detailed administration procedures are detailed in [DIRECTOR_HANDOVER_GUIDE.md](docs/DIRECTOR_HANDOVER_GUIDE.md).

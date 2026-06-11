@@ -13,7 +13,7 @@ let firebaseConfigLoadPromise = null
 function loadFirebaseConfig() {
     if (!firebaseConfigLoadPromise) {
         recordStudentPerf('ebhcs:firebase-import-started')
-        firebaseConfigLoadPromise = import('../firebase-config.js')
+        firebaseConfigLoadPromise = import('./firebase-config.js')
             .then((module) => {
                 recordStudentPerf('ebhcs:firebase-module-loaded')
                 return module

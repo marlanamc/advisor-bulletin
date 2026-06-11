@@ -2,7 +2,7 @@
 
 One-off and recurring maintenance tools. Run them from the repository root with Node 20 (`nvm use`).
 
-**Credentials:** scripts marked 🔑 write to (or read privileged data from) Firestore and need a service-account key — see "Service account" in [DEPLOYMENT.md](../DEPLOYMENT.md). Pass it as `GOOGLE_APPLICATION_CREDENTIALS=./service-account.json node scripts/<name>.mjs` (most also accept `--credentials=./service-account.json`).
+**Credentials:** scripts marked 🔑 write to (or read privileged data from) Firestore and need a service-account key — see "Service account" in [DEPLOYMENT.md](../docs/DEPLOYMENT.md). Pass it as `GOOGLE_APPLICATION_CREDENTIALS=./service-account.json node scripts/<name>.mjs` (most also accept `--credentials=./service-account.json`).
 
 **Safety:** every destructive script supports `--dry-run`. Always dry-run first.
 

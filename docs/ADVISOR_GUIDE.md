@@ -2,7 +2,7 @@
 
 This guide shows advisors how to create, preview, publish, and manage posts in the current Advisor Portal. Use it for Bulletins, Resources, and Calendar/Event posts.
 
-Printable version: [docs/advisor-posting-guide.html](docs/advisor-posting-guide.html)
+Printable version: [advisor-posting-guide.html](advisor-posting-guide.html)
 
 ## What Changed
 
@@ -28,11 +28,11 @@ For advisors:
 
 These screenshots show the public student experience advisors are posting into.
 
-![Desktop Find Help page with resource cards](docs/screenshots/13-student-site-find-help-desktop.png)
+![Desktop Find Help page with resource cards](screenshots/13-student-site-find-help-desktop.png)
 
-![Mobile student home feed](docs/screenshots/14-student-site-home-mobile.png)
+![Mobile student home feed](screenshots/14-student-site-home-mobile.png)
 
-![Mobile Find Help topic grid](docs/screenshots/15-student-site-find-help-mobile.png)
+![Mobile Find Help topic grid](screenshots/15-student-site-find-help-mobile.png)
 
 ## Quick Start
 
@@ -43,8 +43,8 @@ These screenshots show the public student experience advisors are posting into.
 5. Choose the kind of post: **Bulletin**, **Resource**, or **Calendar/Event**.
 6. Fill in the main fields, add any details students need, preview the post, then publish.
 
-![Admin login screen](docs/screenshots/01-admin-login.png)
-![Advisor dashboard entry point](docs/screenshots/02-admin-dashboard.png)
+![Admin login screen](screenshots/01-admin-login.png)
+![Advisor dashboard entry point](screenshots/02-admin-dashboard.png)
 
 ## Login
 
@@ -61,7 +61,7 @@ If login does not work:
 
 Open **Create Post** and pick the post type before filling in details.
 
-![Create Post type selection](docs/screenshots/03-create-post-type-selection.png)
+![Create Post type selection](screenshots/03-create-post-type-selection.png)
 
 Use the three post types this way:
 
@@ -87,7 +87,7 @@ Then use **Add detail** for optional sections:
 
 Use **Dates & times** when a bulletin has a deadline, event date, date range, or repeated sessions.
 
-![Bulletin Dates & times block](docs/screenshots/04-bulletin-dates-times.png)
+![Bulletin Dates & times block](screenshots/04-bulletin-dates-times.png)
 
 For a bulletin with multiple meeting dates:
 
@@ -98,7 +98,7 @@ For a bulletin with multiple meeting dates:
 5. Add start and end times when they are useful for students.
 6. Preview the card before publishing.
 
-![Multiple sessions entered](docs/screenshots/05-multiple-sessions.png)
+![Multiple sessions entered](screenshots/05-multiple-sessions.png)
 
 How reposting works for multiple-session bulletins:
 
@@ -123,7 +123,7 @@ Every resource needs:
 - Either at least one **student action chip** or a short card summary
 - A link for organization/service resources, unless the post already has one while editing
 
-![Resource composer with chips](docs/screenshots/06-resource-service-chips.png)
+![Resource composer with chips](screenshots/06-resource-service-chips.png)
 
 ## Student Action Chips
 
@@ -155,8 +155,8 @@ Avoid vague chips like **Helpful**, **Important**, or **More info**. Use the sum
 
 Extra buttons add more actions to a resource card. Use them for supporting pages, application steps, eligibility details, forms, flyers, or PDFs.
 
-![Extra button Link mode](docs/screenshots/07-extra-button-link.png)
-![Extra button PDF mode](docs/screenshots/08-extra-button-pdf.png)
+![Extra button Link mode](screenshots/07-extra-button-link.png)
+![Extra button PDF mode](screenshots/08-extra-button-pdf.png)
 
 Rules for extra buttons:
 
@@ -178,7 +178,7 @@ Examples:
 
 Student cards show the most useful actions directly on the card.
 
-![Student preview card](docs/screenshots/09-student-preview-card.png)
+![Student preview card](screenshots/09-student-preview-card.png)
 
 Depending on the resource details, students may see:
 
@@ -191,7 +191,7 @@ Depending on the resource details, students may see:
 - Student action chips under the summary.
 - A share button on the card.
 
-![Live student-facing card/detail view](docs/screenshots/10-student-live-card.png)
+![Live student-facing card/detail view](screenshots/10-student-live-card.png)
 
 ## Preview And Publish
 
@@ -214,7 +214,7 @@ Open the matching management section for the type of post you want to update:
 
 Administrators can manage all posts.
 
-![My Bulletins edit and delete controls](docs/screenshots/11-my-bulletins-edit-delete.png)
+![My Bulletins edit and delete controls](screenshots/11-my-bulletins-edit-delete.png)
 
 Use **Edit** when:
 
