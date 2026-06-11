@@ -113,13 +113,23 @@ test.describe('PWA service worker', () => {
 
     await page.goto('/', { waitUntil: 'domcontentloaded' });
     await waitForStoredDeployVersion(page, 'deploy-v1');
+    // The service worker's controllerchange event triggers a second deploy
+    // version check shortly after load. Let it finish while version.json
+    // still serves v1 — if we flip to v2 first, that mid-session check
+    // records v2 (guard + stored version persist across reloads) and our
+    // manual reload below then sees "v2 already applied" and never reloads.
+    await page.waitForFunction(() => navigator.serviceWorker.controller != null);
+    await page.waitForTimeout(750);
 
     const documentRequestCount = countStudentDocumentRequests(page);
     deployVersion = 'deploy-v2';
     await page.reload({ waitUntil: 'domcontentloaded' });
 
     await waitForStoredDeployVersion(page, 'deploy-v2');
-    await expect.poll(documentRequestCount, { timeout: 5000 }).toBe(2);
+    // prepareFreshShell can take up to 1.5s before the reload fires, and the
+    // navigation itself is slow when several Playwright workers share the dev
+    // server — keep the budget generous so this doesn't flake under load.
+    await expect.poll(documentRequestCount, { timeout: 15000 }).toBe(2);
     await page.waitForTimeout(500);
 
     const reloadGuard = await page.evaluate((key) => sessionStorage.getItem(key), DEPLOY_RELOAD_GUARD_KEY);
