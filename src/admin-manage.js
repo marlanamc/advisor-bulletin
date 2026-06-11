@@ -97,6 +97,8 @@ export class AdminManageMethods {
         document.getElementById('editAdvisorDisplayName').value = advisor.displayName;
         document.getElementById('editAdvisorEmail').value = getPublicAdvisorEmail(advisor);
         document.getElementById('editAdvisorIsAdmin').checked = advisor.isAdmin || false;
+        document.getElementById('editAdvisorPublicRole').value = advisor.publicRole || 'Advisor';
+        document.getElementById('editAdvisorShowInDirectory').checked = advisor.showInDirectory !== false;
         document.getElementById('editAdvisorModal').style.display = 'flex';
     }
 
@@ -109,13 +111,16 @@ export class AdminManageMethods {
         const displayName = document.getElementById('editAdvisorDisplayName').value.trim();
         const email = document.getElementById('editAdvisorEmail').value.trim();
         const isAdmin = document.getElementById('editAdvisorIsAdmin').checked;
+        const publicRole = document.getElementById('editAdvisorPublicRole').value.trim() || 'Advisor';
+        const showInDirectory = document.getElementById('editAdvisorShowInDirectory').checked;
         if (!username || !displayName) {
             this.showToast('Display name is required.', 'error'); return;
         }
         try {
-            await updateDoc(doc(db, 'advisors', username), { displayName, email, isAdmin });
+            await updateDoc(doc(db, 'advisors', username), { displayName, email, isAdmin, publicRole, showInDirectory });
             const idx = this.advisors.findIndex(a => a.username === username);
-            if (idx !== -1) this.advisors[idx] = { ...this.advisors[idx], displayName, email, isAdmin };
+            if (idx !== -1) this.advisors[idx] = { ...this.advisors[idx], displayName, email, isAdmin, publicRole, showInDirectory };
+            await this.publishStudentDirectory();
             // Keep current user's name in sync
             if (this.currentUser.username === username) {
                 this.currentUser.name = displayName;
@@ -143,6 +148,8 @@ export class AdminManageMethods {
         const displayName = document.getElementById('newAdvisorDisplayName').value.trim();
         const email = document.getElementById('newAdvisorEmail').value.trim();
         const isAdmin = document.getElementById('newAdvisorIsAdmin').checked;
+        const publicRole = document.getElementById('newAdvisorPublicRole').value.trim() || 'Advisor';
+        const showInDirectory = document.getElementById('newAdvisorShowInDirectory').checked;
         if (!username || !displayName) {
             this.showToast('Username and display name are required.', 'error'); return;
         }
@@ -155,13 +162,18 @@ export class AdminManageMethods {
                 displayName,
                 email: loginEmail,
                 isAdmin,
+                publicRole,
+                showInDirectory,
                 createdAt: serverTimestamp()
             });
-            this.advisors.push({ username, displayName, email: loginEmail, isAdmin });
+            this.advisors.push({ username, displayName, email: loginEmail, isAdmin, publicRole, showInDirectory });
+            await this.publishStudentDirectory();
             document.getElementById('newAdvisorUsername').value = '';
             document.getElementById('newAdvisorDisplayName').value = '';
             document.getElementById('newAdvisorEmail').value = '';
             document.getElementById('newAdvisorIsAdmin').checked = false;
+            document.getElementById('newAdvisorPublicRole').value = '';
+            document.getElementById('newAdvisorShowInDirectory').checked = true;
             this.loadAdvisors();
             this.showToast(`${displayName} added to the advisor list.`, 'success');
             this.showTemporaryMessage(
@@ -180,10 +192,44 @@ export class AdminManageMethods {
         try {
             await deleteDoc(doc(db, 'advisors', username));
             this.advisors = this.advisors.filter(a => a.username !== username);
+            await this.publishStudentDirectory();
             this.loadAdvisors();
             this.showToast(`${advisor.displayName} removed.`, 'success');
         } catch (e) {
             this.showToast('Error removing advisor: ' + e.message, 'error');
+        }
+    }
+
+    /**
+     * Write the student-facing advisor directory to config/studentDirectory.
+     * The student site reads this doc (publicly readable) and falls back to
+     * the static list in src/advisor-directory.js when it doesn't exist.
+     * Coordinators (any title other than "Advisor") sort first, matching the
+     * original hand-ordered list.
+     */
+    async publishStudentDirectory() {
+        const entries = this.advisors
+            .filter((a) => a.username !== 'admin' && a.showInDirectory !== false)
+            .map((a) => ({
+                name: a.displayName || a.username,
+                role: a.publicRole || 'Advisor',
+                email: getPublicAdvisorEmail(a),
+                loginUsername: a.username,
+            }))
+            .sort((a, b) => {
+                const aCoord = a.role === 'Advisor' ? 1 : 0;
+                const bCoord = b.role === 'Advisor' ? 1 : 0;
+                if (aCoord !== bCoord) return aCoord - bCoord;
+                return a.name.localeCompare(b.name);
+            });
+        try {
+            await setDoc(doc(db, 'config', 'studentDirectory'), {
+                advisors: entries,
+                updatedAt: serverTimestamp(),
+            });
+        } catch (e) {
+            console.error('publishStudentDirectory', e);
+            this.showToast('Advisor saved, but updating the student directory failed: ' + e.message, 'warning');
         }
     }
 

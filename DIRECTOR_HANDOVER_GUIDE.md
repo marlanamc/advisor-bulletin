@@ -29,10 +29,12 @@ The **Firebase Console keyholder** is the most important role. They are the only
 
 Both steps are required. Skipping step 2 means the advisor appears in dropdowns but **cannot log in**.
 
-1. **In the admin portal (Advisors tab):** Add the advisor with username + display name. Use their `@ebhcs.org` email if known.
+1. **In the admin portal (Advisors tab):** Add the advisor with username + display name. Use their `@ebhcs.org` email if known. Set their "Title on student site" (e.g. Advisor) and leave "Show on student site" on if students should see them in the advisor directory.
 2. **In Firebase Console:** Go to **Authentication → Users → Add user**. Create the same email (usually `username@ebhcs.org`) and a temporary password. Share the password securely and ask them to change it on first login.
 
 **When an advisor leaves:** Remove them from the Advisors tab in the admin portal. Optionally disable their Firebase Auth account in the Console (Authentication → Users).
+
+The student site's advisor directory updates automatically whenever you add, edit, or remove an advisor — no developer needed.
 
 ---
 

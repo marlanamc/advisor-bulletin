@@ -47,6 +47,7 @@ The rules in `firestore.rules` are the real security boundary of the site (the F
 
 - **Who is an admin:** the `isPrivilegedAdvisor` function near the bottom of `firestore.rules` lists the admin emails (currently `admin@ebhcs.org` and `leah@ebhcs.org`). To change admins, edit that function, then deploy rules (`firebase deploy --only firestore:rules` or a full deploy). Also update the matching reference in `enhanced-auth.js` (search for `admin@ebhcs.org`) and `FIREBASE_SECURITY_RULES.md` so code, rules, and docs stay in sync.
 - Rules changes are **not** deployed by the GitHub Action (it only publishes hosting). Deploy them manually as above.
+- **Student advisor directory:** the doc `config/studentDirectory` (publicly readable, admin-writable) is republished automatically whenever an admin adds/edits/removes an advisor in the portal. The student site falls back to the static list in `src/advisor-directory.js` if the doc is missing.
 
 ## Service account (for maintenance scripts)
 
