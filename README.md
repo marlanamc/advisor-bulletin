@@ -111,13 +111,14 @@ npm run test:ui
 ## 🔑 Advisor Credentials & Security
 
 *   **Advisor Domain**: Only email addresses ending in `@ebhcs.org` can access the portal.
-*   **Default Password**: New advisor accounts are created in the Firebase console with the temporary password `ebhcs123` or `ebhcs2025`.
-*   **Security Policy**: First-time login automatically redirects advisors to a secure password reset interface to transition off default credentials.
-*   **Edit Permissions**: Advisors can modify and delete only their own posts. Administrators (`admin@ebhcs.org`, `leah@ebhcs.org`, `mcreed@ebhcs.org`) have global update/delete overrides.
+*   **Temporary Passwords**: New advisor accounts are created in the Firebase Console (Authentication → Users) with a temporary password chosen by the admin. There is no hardcoded default — pick something unique per account.
+*   **Forced Password Change**: Run `node scripts/mark-password-change.mjs` to flag an account; the advisor is then required to set a new password at their next login (see [scripts/README.md](scripts/README.md)).
+*   **Edit Permissions**: Advisors can modify and delete only their own posts. Administrators (`admin@ebhcs.org`, `leah@ebhcs.org`) have global update/delete overrides — the authoritative list is `isPrivilegedAdvisor` in [firestore.rules](firestore.rules).
 
 ---
 
 ## 📘 Guides & Reference
+*   **Deploying & Operations**: See [DEPLOYMENT.md](DEPLOYMENT.md) (how deploys work, credentials, billing, rollback) and [scripts/README.md](scripts/README.md) (maintenance scripts).
 *   **Setup Firebase Console**: See [FIREBASE_SETUP.md](FIREBASE_SETUP.md) and [FIREBASE_SECURITY_RULES.md](FIREBASE_SECURITY_RULES.md).
 *   **Advisor Tutorial**: Share the [ADVISOR_GUIDE.md](ADVISOR_GUIDE.md) with staff.
 *   **IT Handover**: Detailed administration procedures are detailed in [DIRECTOR_HANDOVER_GUIDE.md](DIRECTOR_HANDOVER_GUIDE.md).

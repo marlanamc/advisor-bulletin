@@ -14,7 +14,7 @@ The production security rules are located in the [firestore.rules](firestore.rul
 These rules validate:
 1. **Public Read Access**: Active posts and published resources are readable by anyone (for student use).
 2. **Authenticated Write Access**: Creating and editing requires a verified `@ebhcs.org` account.
-3. **Ownership Limits**: Advisors can only update their own posts. Administrators (`admin@ebhcs.org`, `leah@ebhcs.org`, `mcreed@ebhcs.org`) have global overrides.
+3. **Ownership Limits**: Advisors can only update their own posts. Administrators (`admin@ebhcs.org`, `leah@ebhcs.org`) have global overrides. The authoritative list lives in the `isPrivilegedAdvisor` function in [firestore.rules](firestore.rules) — if you change it there, update this document too.
 4. **Data Shape Validation**: Field checks for text lengths, date formats (single event date, date ranges, multiple sessions, and deadlines), PDF attachments, and analytics/error properties.
 
 ## Firebase Authentication Setup
