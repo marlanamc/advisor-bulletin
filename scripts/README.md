@@ -28,6 +28,7 @@ These were used for the one-time import of curated community resources from `dat
 - **update-imported-summaries.mjs** 🔑 — pushes the latest EN/ES summaries from the seeder into already-imported Firestore docs, matched by org name + category.
 - **split-resource-descriptions.mjs** 🔑 — one-time fix that split combined "English. Español: …" descriptions into separate fields. Safe to re-run (skips already-split docs).
 - **repair-resource-visibility.mjs** 🔑 — diagnoses why a specific resource isn't visible to students (finds it by partial title, prints every visibility flag). `--fix` sets `isPublished`/`isActive` to true.
+- **patch-calendar-events.mjs** 🔑 — one-time backfill: sets `hideFromMainFeed: true` on calendar events saved before the Event composer fix. Dry-run by default; `--fix` to write. Use `--login` to sign in as `admin@ebhcs.org` (no service-account file), or pass `--credentials=…` / `GOOGLE_APPLICATION_CREDENTIALS`.
 
 ## Analytics
 
