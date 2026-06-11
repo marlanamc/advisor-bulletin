@@ -489,7 +489,12 @@ class FirebaseBulletinBoard {
                     this.displayBulletins();
                     return;
                 }
-                grid.innerHTML = '<div class="feed-load-error" role="alert"><p>Could not load posts. Check your connection and try again.</p><p class="empty-state-bilingual">No se pudieron cargar las publicaciones. Comprueba tu conexión.</p></div>';
+                // Keep snapshot cards on screen if they already rendered —
+                // slightly stale posts beat an error card.
+                if (grid.getAttribute('data-snapshot-rendered') === 'true') {
+                    return;
+                }
+                grid.innerHTML = '<div class="feed-load-error" role="alert"><p>Could not load posts. Check your connection and try again.</p><p class="empty-state-bilingual">No se pudieron cargar las publicaciones. Comprueba tu conexión.</p><button type="button" class="feed-load-retry" onclick="window.location.reload()">Try again / Intentar de nuevo</button></div>';
             }
         });
     }
@@ -3997,8 +4002,6 @@ class FirebaseBulletinBoard {
 
         const dateLabelHtml = this.formatFeedDateDisplayHtml(bulletin);
 
-        const openHandler = `window.bulletinBoard && window.bulletinBoard.showBulletinDetail('${bulletin.id}')`;
-
         const currentLang = document.body.getAttribute('data-lang') || 'EN';
         const displayImage = (currentLang === 'ES' && bulletin.imageEs) ? bulletin.imageEs : bulletin.image;
         const hasImage = Boolean(displayImage);
@@ -4022,7 +4025,7 @@ class FirebaseBulletinBoard {
             : 'decoding="async" loading="lazy"';
 
         return `
-    <article class="pc ${isExpired ? 'pc--expired' : ''}" id="bulletin-${bulletin.id}" data-bulletin-id="${bulletin.id}" onclick="${openHandler}" role="button" tabindex="0" style="cursor:pointer">
+    <article class="pc ${isExpired ? 'pc--expired' : ''}" id="bulletin-${bulletin.id}" data-bulletin-id="${bulletin.id}" role="button" tabindex="0" style="cursor:pointer">
       ${chipsBar}
       <div class="pc__top ${hasImage ? 'pc__top--image' : ''}" style="background:${hasImage ? '#f8fafc' : meta.grad}">
         ${hasImage
@@ -4049,32 +4052,6 @@ class FirebaseBulletinBoard {
         </div>
       </div>
     </article>
-        `;
-    }
-
-    _unused_createBulletinCard_v1(bulletin) {
-        const postedDate = this.formatPostedDate(bulletin.datePosted);
-        const isDeadlineClose = this.isApplicationDeadline(bulletin);
-        const isExpired = this.isBulletinExpired(bulletin);
-
-        const descriptionHtml = this.renderFormattedDescription(bulletin.description || '', bulletin.id, true);
-
-        return `
-            <div class="bulletin-card ${isExpired ? 'expired-bulletin' : ''}" id="bulletin-v1-${bulletin.id}">
-                ${isExpired ? '<div class="expired-banner">EXPIRED</div>' : ''}
-                <div class="bulletin-actions">
-                    <div class="bulletin-action-buttons">
-                        ${bulletin.pdfUrl ? `
-                            <button type="button" class="pdf-btn" title="View PDF document" aria-label="View PDF document for ${this.escapeHtml(bulletin.title)}" onclick="window.bulletinBoard.openPdfFromBulletin('${bulletin.id}')">
-                                📄 View PDF
-                            </button>
-                        ` : ''}
-                        <button class="share-btn" onclick="shareBulletin('${bulletin.id}', '${this.escapeHtml(bulletin.title).replace(/'/g, "&#39;")}')">
-                            📤 Share
-                        </button>
-                    </div>
-                </div>
-            </div>
         `;
     }
 
@@ -4304,66 +4281,6 @@ class FirebaseBulletinBoard {
         } catch (error) {
             return url.replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0];
         }
-    }
-
-    _unused_renderBulletinDetail_v1(bulletin) {
-        const isExpired = this.isBulletinExpired(bulletin);
-        return `
-            <article class="detail-card ${isExpired ? 'expired-bulletin' : ''}" id="detail-${bulletin.id}">
-                ${isExpired ? '<div class="expired-banner">EXPIRED</div>' : ''}
-                <div class="detail-header">
-                    <div>
-                        <div class="detail-title">${this.escapeHtml(this.getPostTitle(bulletin))}</div>
-                    </div>
-                    <span class="category-badge category-${bulletin.category}">${this.getCategoryDisplay(bulletin.category)}</span>
-                </div>
-
-                ${bulletin.image ? `
-                    <div class="detail-image">
-                        <img class="lightbox-trigger" data-lightbox-src="${bulletin.image}" src="${bulletin.image}" alt="Bulletin image for ${this.escapeHtml(bulletin.title)}">
-                    </div>
-                ` : ''}
-
-                <div class="detail-body">
-                    ${this.getPostDescription(bulletin) ? this.renderFormattedDescription(this.getPostDescription(bulletin), `${bulletin.id}-detail`) : ''}
-
-                        ${bulletin.company ? `
-                            <p><strong>Organization:</strong> ${this.escapeHtml(bulletin.company)}</p>
-                        ` : ''}
-
-                        ${bulletin.eventTime ? `
-                            <p><strong>Time:</strong> ${this.escapeHtml(this.formatEventTime(bulletin.eventTime))}</p>
-                        ` : ''}
-
-                        ${bulletin.classType ? `
-                            <p><strong>Class Type:</strong> ${this.getClassTypeDisplay(bulletin.classType)}</p>
-                        ` : ''}
-
-                        ${bulletin.contact ? `
-                            <p><strong>Contact:</strong><br>${this.escapeHtml(bulletin.contact).replace(/\n/g, '<br>')}</p>
-                        ` : ''}
-
-                        ${bulletin.eventLink ? `
-                            <p><strong>Link:</strong> <a href="${this.escapeAttribute(bulletin.eventLink)}" target="_blank" rel="noopener">${this.escapeHtml(this.formatLinkLabel(bulletin.eventLink, bulletin.category))}</a></p>
-                        ` : ''}
-                    </div>
-
-                <div class="detail-meta">
-                    ${this.renderDetailDateInfo(bulletin)}
-                    <div><strong>Posted:</strong> ${postedDate}</div>
-                </div>
-
-                <div class="detail-actions">
-                    <button type="button" class="close-btn" onclick="window.bulletinBoard.closeBulletinDetail()">Close</button>
-                    ${bulletin.pdfUrl ? `
-                        <button type="button" class="pdf-btn" title="View PDF" onclick="window.bulletinBoard.openPdfFromBulletin('${bulletin.id}')">
-                            📄 PDF
-                        </button>
-                    ` : ''}
-                    <button type="button" class="share-btn" onclick="shareBulletin('${bulletin.id}', '${this.escapeHtml(bulletin.title).replace(/'/g, "&#39;")}')">📤 Share</button>
-                </div>
-            </article>
-        `;
     }
 
     // Filter and Search Methods
