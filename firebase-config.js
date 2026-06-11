@@ -45,8 +45,8 @@ import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestor
 
 installClientErrorLogger('student')
 
+import { applyMethods } from './src/apply-methods.js'
 import {
-    applyMethods,
     recordStudentPerf,
     getScrollBehavior,
     scrollWindowTo,

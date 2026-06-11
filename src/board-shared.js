@@ -304,16 +304,3 @@ export const RESOURCE_ICON_SVGS = {
         </svg>
     `
 };
-
-/**
- * Copy every prototype method from a method-holder class onto the target
- * class. Lets FirebaseBulletinBoard live across several files without
- * changing any call sites ("this." keeps working).
- */
-export function applyMethods(targetClass, mixinClass) {
-    for (const [name, descriptor] of Object.entries(Object.getOwnPropertyDescriptors(mixinClass.prototype))) {
-        if (name !== 'constructor') {
-            Object.defineProperty(targetClass.prototype, name, descriptor);
-        }
-    }
-}
