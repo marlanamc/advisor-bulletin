@@ -222,6 +222,21 @@ body:not([data-lang="ES"]) .en-text { display: inline; }
     line-height: 1.45;
 }
 
+.feed-load-retry {
+    margin-top: 12px;
+    padding: 10px 18px;
+    border-radius: 10px;
+    border: 1px solid #fda4af;
+    background: #fff;
+    color: #9f1239;
+    font: 700 0.9rem var(--font-jakarta, 'Plus Jakarta Sans', system-ui, sans-serif);
+    cursor: pointer;
+}
+
+.feed-load-retry:hover {
+    background: #ffe4e6;
+}
+
 /* ── Feed search bar ─────────────────────────────────────── */
 
 /* ── Story row ────────────────────────────────────────────── */

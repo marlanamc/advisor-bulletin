@@ -200,30 +200,9 @@ function renderSnapshot(snapshot, source) {
     if (emptyState) emptyState.style.display = 'none';
     grid.innerHTML = posts.map((item, index) => createCard(item, index)).join('');
     grid.setAttribute('data-snapshot-rendered', 'true');
-    grid.addEventListener('click', onSnapshotCardClick);
-    grid.addEventListener('keydown', onSnapshotCardKeydown);
+    // Card click/keydown handling lives in feed-card-events.js, bound once in main.js.
     mark('ebhcs:snapshot-rendered', { source, count: posts.length });
     return true;
-}
-
-function onSnapshotCardClick(event) {
-    const card = event.target.closest('[data-bulletin-id]');
-    if (!card) return;
-    const id = card.getAttribute('data-bulletin-id');
-    if (!id) return;
-    window.__ebhcsPendingBulletinId = id;
-    window.location.hash = `bulletin-${id}`;
-    if (window.bulletinBoard?.showBulletinDetail) {
-        window.bulletinBoard.showBulletinDetail(id);
-    }
-}
-
-function onSnapshotCardKeydown(event) {
-    if (event.key !== 'Enter' && event.key !== ' ') return;
-    const card = event.target.closest('[data-bulletin-id]');
-    if (!card) return;
-    event.preventDefault();
-    card.click();
 }
 
 export async function renderStudentSnapshot() {

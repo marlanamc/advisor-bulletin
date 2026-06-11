@@ -1,5 +1,6 @@
 import './css/index.css'
 import { initImageLightbox } from './lightbox.js'
+import { initBulletinGridEvents } from './feed-card-events.js'
 import { recordStudentPerf, renderStudentSnapshot } from './student-snapshot.js'
 
 initImageLightbox()
@@ -27,6 +28,7 @@ function loadFirebaseConfig() {
 
 async function bootstrapStudentApp() {
     try {
+        initBulletinGridEvents()
         await renderStudentSnapshot()
     } finally {
         const load = () => loadFirebaseConfig().catch((error) => {
