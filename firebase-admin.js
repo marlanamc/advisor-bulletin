@@ -1,5 +1,6 @@
 import { db, auth, storage } from './src/firebase.js'
 import { getPublicAdvisorEmail, STUDENT_ADVISOR_DIRECTORY } from './src/advisor-directory.js'
+import { isPrivilegedAdminEmail } from './src/admin-roles.js'
 import { installClientErrorLogger } from './src/error-logger.js'
 import { getPostCategoryDisplay } from './src/feed-categories.js'
 import { AUTHORABLE_RESOURCE_CATEGORIES, AUTHORABLE_RESOURCE_CATEGORY_SET } from './src/resource-categories.js'
@@ -3000,7 +3001,15 @@ class FirebaseAdminPanel {
             }
             this.closeEditAdvisor();
             this.loadAdvisors();
-            this.showToast('Advisor updated.', 'success');
+            // The Admin checkbox only unlocks admin screens in this portal.
+            // Server-side privileges (edit/delete anyone's posts) come from the
+            // isPrivilegedAdvisor email list in firestore.rules, which needs a
+            // developer to change — warn so the mismatch isn't a surprise.
+            if (isAdmin && !isPrivilegedAdminEmail(this.getAdvisorAuthEmail(username))) {
+                this.showToast('Saved. Note: full admin rights (managing other advisors’ posts) also require a developer to add this account to the security rules — see DEPLOYMENT.md.', 'info');
+            } else {
+                this.showToast('Advisor updated.', 'success');
+            }
         } catch (e) {
             this.showToast('Error saving advisor: ' + e.message, 'error');
         }
@@ -3706,6 +3715,12 @@ class FirebaseAdminPanel {
 
     showSuccessMessage(message) {
         this.showTemporaryMessage(message, 'success');
+    }
+
+    // Alias used throughout advisor management; without it every
+    // this.showToast(...) call throws and kills the calling flow.
+    showToast(message, type = 'info') {
+        this.showTemporaryMessage(message, type);
     }
 
     showTemporaryMessage(message, type = 'info') {
