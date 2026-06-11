@@ -18,7 +18,7 @@
 
 ## Step 3: Configure Security Rules
 
-In Firestore Database → Rules, paste the content of the [firestore.rules](firestore.rules) file from the root of this project.
+In Firestore Database → Rules, paste the content of the [firestore.rules](../firestore.rules) file from the root of this project.
 
 These rules secure the bulletin board by:
 1. Permitting public read access only to active posts and published resources.
@@ -44,7 +44,7 @@ These rules secure the bulletin board by:
    - mike@ebhcs.org
    - leah@ebhcs.org
 
-   Choose a unique temporary password for each account when you create it, share it with the advisor privately, then run `node scripts/mark-password-change.mjs` so they must set their own password at first login (see [scripts/README.md](scripts/README.md)).
+   Choose a unique temporary password for each account when you create it, share it with the advisor privately, then run `node scripts/mark-password-change.mjs` so they must set their own password at first login (see [scripts/README.md](../scripts/README.md)).
 
 ## Step 5: Get Firebase Configuration
 
@@ -67,7 +67,7 @@ const firebaseConfig = {
 
 ## Step 6: Update Your Website Files
 
-Replace the configuration in `firebase-config.js` with your actual Firebase config.
+Replace the configuration in `src/firebase.js`, `src/firebase-student.js`, and `src/firebase-auth.js` with your actual Firebase config (a blank starting template is in `config/firebase-config-template.js`).
 
 ## Step 7: Deploy to Firebase Hosting (Optional but Recommended)
 

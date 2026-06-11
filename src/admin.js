@@ -3,7 +3,7 @@ import { mountEbhcsBrandLockups } from './ebhcs-brand-lockup.js'
 import { db, auth } from './firebase-auth.js'
 import { doc, getDoc } from 'firebase/firestore'
 import { onAuthStateChanged } from 'firebase/auth'
-import '../enhanced-auth.js'
+import './enhanced-auth.js'
 
 let portalMountPromise = null
 let shellBooted = false
@@ -103,7 +103,7 @@ async function mountAdvisorPortal(userDetails) {
             import('./css/admin.css'),
             import('./css/admin-auth.css'),
             import('./css/advisor-portal-v2.css'),
-            import('../firebase-admin.js'),
+            import('./firebase-admin.js'),
         ]).then(([, , , portal]) => portal.mountAdvisorPortal(userDetails))
     } else {
         const portal = await portalMountPromise

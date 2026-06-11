@@ -1,14 +1,14 @@
-import { db } from './src/firebase-student.js'
-import { STUDENT_ADVISOR_DIRECTORY } from './src/advisor-directory.js'
-import { installClientErrorLogger } from './src/error-logger.js'
-import { normalizePostCategory, getPostCategoryDisplay } from './src/feed-categories.js'
-import { RESOURCE_TILE_CATEGORIES } from './src/resource-categories.js'
+import { db } from './firebase-student.js'
+import { STUDENT_ADVISOR_DIRECTORY } from './advisor-directory.js'
+import { installClientErrorLogger } from './error-logger.js'
+import { normalizePostCategory, getPostCategoryDisplay } from './feed-categories.js'
+import { RESOURCE_TILE_CATEGORIES } from './resource-categories.js'
 import {
     getActionResourceChipLabel,
     MAX_RESOURCE_SERVICE_CHIPS,
     parseResourceServiceChips,
     translateResourceChipEs,
-} from './src/resource-chip-labels.js'
+} from './resource-chip-labels.js'
 import {
     normalizeEventSessions,
     parseSessionEntry,
@@ -17,7 +17,7 @@ import {
     getNextSessionStartMs,
     getSessionEndMs,
     sessionsShareSameTime,
-} from './src/event-sessions.js'
+} from './event-sessions.js'
 import {
     applyInlineFormatting as applyRichTextInlineFormatting,
     formatRichTextInline as renderRichTextInline,
@@ -26,26 +26,26 @@ import {
     getRichTextPlainLength,
     normalizeRichTextMarkers,
     truncateRichText,
-} from './src/rich-text.js'
-import { formatResourceHoursHtml } from './src/resource-hours.js'
+} from './rich-text.js'
+import { formatResourceHoursHtml } from './resource-hours.js'
 import {
     normalizeResourceActionLinks,
     RESOURCE_ACTION_LINK_ICON_SVG,
     RESOURCE_ACTION_LINK_PDF_ICON_SVG,
-} from './src/resource-action-links.js'
+} from './resource-action-links.js'
 import {
     DOCUMENT_TILE_ICON_SVG,
     isDocumentResource,
     normalizeResourceKind,
     OPEN_FORM_ICON_SVG,
     RESOURCE_KIND_DOCUMENT,
-} from './src/resource-kinds.js'
-import { initResourceLogoTiles } from './src/resource-logo-tile.js'
+} from './resource-kinds.js'
+import { initResourceLogoTiles } from './resource-logo-tile.js'
 import { collection, doc, getDoc, query, where, orderBy, onSnapshot } from 'firebase/firestore'
 
 installClientErrorLogger('student')
 
-import { applyMethods } from './src/apply-methods.js'
+import { applyMethods } from './apply-methods.js'
 import {
     recordStudentPerf,
     getScrollBehavior,
@@ -54,10 +54,10 @@ import {
     RESOURCE_CATEGORY_CONFIG,
     FEED_CATEGORY_CONTENT,
     RESOURCE_ICON_SVGS,
-} from './src/board-shared.js'
-import { BoardCalendarMethods } from './src/board-calendar.js'
-import { BoardResourcesMethods } from './src/board-resources.js'
-import { BoardDetailMethods } from './src/board-detail.js'
+} from './board-shared.js'
+import { BoardCalendarMethods } from './board-calendar.js'
+import { BoardResourcesMethods } from './board-resources.js'
+import { BoardDetailMethods } from './board-detail.js'
 
 
 // Firebase-enabled Bulletin Board System

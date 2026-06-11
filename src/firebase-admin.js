@@ -1,28 +1,28 @@
-import { db, auth, storage } from './src/firebase.js'
-import { getPublicAdvisorEmail, STUDENT_ADVISOR_DIRECTORY } from './src/advisor-directory.js'
-import { isPrivilegedAdminEmail } from './src/admin-roles.js'
-import { installClientErrorLogger } from './src/error-logger.js'
-import { getPostCategoryDisplay } from './src/feed-categories.js'
-import { AUTHORABLE_RESOURCE_CATEGORIES, AUTHORABLE_RESOURCE_CATEGORY_SET } from './src/resource-categories.js'
+import { db, auth, storage } from './firebase.js'
+import { getPublicAdvisorEmail, STUDENT_ADVISOR_DIRECTORY } from './advisor-directory.js'
+import { isPrivilegedAdminEmail } from './admin-roles.js'
+import { installClientErrorLogger } from './error-logger.js'
+import { getPostCategoryDisplay } from './feed-categories.js'
+import { AUTHORABLE_RESOURCE_CATEGORIES, AUTHORABLE_RESOURCE_CATEGORY_SET } from './resource-categories.js'
 import {
     formatResourceServiceChipsInput,
     getSuggestedResourceChips,
     MAX_RESOURCE_SERVICE_CHIPS,
     parseResourceServiceChips,
-} from './src/resource-chip-labels.js'
+} from './resource-chip-labels.js'
 import {
     getResourceActionLinkFieldValues,
     MAX_RESOURCE_ACTION_LINKS,
     normalizeResourceActionLinks,
     parseResourceActionLinkSlotsFromForm,
     stripActionLinkUploadMeta,
-} from './src/resource-action-links.js'
-import { initAdminFieldHelp } from './src/admin-field-help.js'
+} from './resource-action-links.js'
+import { initAdminFieldHelp } from './admin-field-help.js'
 import {
     isDocumentResource,
     normalizeResourceKind,
     RESOURCE_KIND_DOCUMENT,
-} from './src/resource-kinds.js'
+} from './resource-kinds.js'
 import {
     MAX_EVENT_SESSIONS,
     normalizeEventSessions,
@@ -32,8 +32,8 @@ import {
     formatSessionsDetailLines,
     getMultiSessionFeedSortMs,
     getNextSessionStartMs,
-} from './src/event-sessions.js'
-import { initDescriptionFormatToolbars, refreshRichEditors, syncRichEditorsToForm, getRichTextFieldValue } from './src/description-format.js'
+} from './event-sessions.js'
+import { initDescriptionFormatToolbars, refreshRichEditors, syncRichEditorsToForm, getRichTextFieldValue } from './description-format.js'
 import { collection, doc, query, where, orderBy, onSnapshot, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, deleteField, serverTimestamp, writeBatch } from 'firebase/firestore'
 
 installClientErrorLogger('admin')
@@ -45,11 +45,11 @@ import {
     isPdfFile,
     isFlyerImageFile,
     isImageOnlyFile,
-} from './src/admin-shared.js'
-import { applyMethods } from './src/apply-methods.js'
-import { AdminComposerFormMethods } from './src/admin-composer-form.js'
-import { AdminAttachmentMethods } from './src/admin-attachments.js'
-import { AdminManageMethods } from './src/admin-manage.js'
+} from './admin-shared.js'
+import { applyMethods } from './apply-methods.js'
+import { AdminComposerFormMethods } from './admin-composer-form.js'
+import { AdminAttachmentMethods } from './admin-attachments.js'
+import { AdminManageMethods } from './admin-manage.js'
 
 // Firebase-enabled Admin Panel
 class FirebaseAdminPanel {

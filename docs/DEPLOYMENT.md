@@ -45,7 +45,7 @@ npm run deploy          # = npm run build + firebase deploy
 
 The rules in `firestore.rules` are the real security boundary of the site (the Firebase API key in the source code is public by design — that is normal for Firebase web apps).
 
-- **Who is an admin:** the `isPrivilegedAdvisor` function near the bottom of `firestore.rules` lists the admin emails (currently `admin@ebhcs.org` and `leah@ebhcs.org`). To change admins, edit that function, then deploy rules (`firebase deploy --only firestore:rules` or a full deploy). Also update the matching reference in `enhanced-auth.js` (search for `admin@ebhcs.org`) and `FIREBASE_SECURITY_RULES.md` so code, rules, and docs stay in sync.
+- **Who is an admin:** the `isPrivilegedAdvisor` function near the bottom of `firestore.rules` lists the admin emails (currently `admin@ebhcs.org` and `leah@ebhcs.org`). To change admins, edit that function, then deploy rules (`firebase deploy --only firestore:rules` or a full deploy). Also update `src/admin-roles.js` (the build fails if it drifts from the rules) and `docs/FIREBASE_SECURITY_RULES.md` so code, rules, and docs stay in sync.
 - Rules changes are **not** deployed by the GitHub Action (it only publishes hosting). Deploy them manually as above.
 - **Student advisor directory:** the doc `config/studentDirectory` (publicly readable, admin-writable) is republished automatically whenever an admin adds/edits/removes an advisor in the portal. The student site falls back to the static list in `src/advisor-directory.js` if the doc is missing.
 
@@ -57,7 +57,7 @@ Some scripts in `scripts/` write to Firestore and need admin credentials:
 2. **Never commit that file.** Keep it outside the repository or rely on `.gitignore`.
 3. Pass it to scripts with `GOOGLE_APPLICATION_CREDENTIALS=./service-account.json node scripts/<name>.mjs` or `--credentials=./service-account.json` where supported.
 
-See [scripts/README.md](scripts/README.md) for what each script does.
+See [scripts/README.md](../scripts/README.md) for what each script does.
 
 ## Billing and usage
 
