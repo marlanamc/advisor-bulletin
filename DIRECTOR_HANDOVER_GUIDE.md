@@ -62,6 +62,8 @@ Student and admin pages automatically log JavaScript errors here. No developer a
 
 **Do not edit code or Firestore rules** unless you have a developer. The site is frozen as-is — operational fixes happen through the admin portal and Firebase Console only.
 
+If the whole site is broken after a code change, a previous version can be restored without a developer: Firebase Console → **Hosting** → Release history → **Rollback**. For anything involving code, deploys, or costs, hand your developer [DEPLOYMENT.md](DEPLOYMENT.md) — it explains how the site ships and where the safety rails are.
+
 ---
 
 ## 🔥 **PHASE 1: FIREBASE CONSOLE SETUP** (30 minutes)

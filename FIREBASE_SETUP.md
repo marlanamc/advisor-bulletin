@@ -23,7 +23,7 @@ In Firestore Database → Rules, paste the content of the [firestore.rules](fire
 These rules secure the bulletin board by:
 1. Permitting public read access only to active posts and published resources.
 2. Requiring an authenticated `@ebhcs.org` Google Account for creates and edits.
-3. Restricting post updates to the original creator, while administrators (`admin@ebhcs.org`, `leah@ebhcs.org`, `mcreed@ebhcs.org`) have global update/delete rights.
+3. Restricting post updates to the original creator, while administrators (`admin@ebhcs.org`, `leah@ebhcs.org`) have global update/delete rights (authoritative list: `isPrivilegedAdvisor` in `firestore.rules`).
 4. Ensuring structural data validation for posts, resources, analytics events, and error logs before writes are processed.
 
 ## Step 4: Set Up Authentication
@@ -32,17 +32,19 @@ These rules secure the bulletin board by:
 2. Click "Get started"
 3. Go to "Sign-in method" tab
 4. Enable "Email/Password"
-5. Add authorized users:
-   - admin@ebhcs.org (password: advisor123)
-   - jorge@ebhcs.org (password: ebhcs2025)
-   - fabiola@ebhcs.org (password: ebhcs2025)
-   - leidy@ebhcs.org (password: ebhcs2025)
-   - carmen@ebhcs.org (password: ebhcs2025)
-   - jerome@ebhcs.org (password: ebhcs2025)
-   - felipe@ebhcs.org (password: ebhcs2025)
-   - simonetta@ebhcs.org (password: ebhcs2025)
-   - mike@ebhcs.org (password: ebhcs2025)
-   - leah@ebhcs.org (password: ebhcs2025)
+5. Add authorized users (one Firebase Auth account per advisor, e.g.):
+   - admin@ebhcs.org
+   - jorge@ebhcs.org
+   - fabiola@ebhcs.org
+   - leidy@ebhcs.org
+   - carmen@ebhcs.org
+   - jerome@ebhcs.org
+   - felipe@ebhcs.org
+   - simonetta@ebhcs.org
+   - mike@ebhcs.org
+   - leah@ebhcs.org
+
+   Choose a unique temporary password for each account when you create it, share it with the advisor privately, then run `node scripts/mark-password-change.mjs` so they must set their own password at first login (see [scripts/README.md](scripts/README.md)).
 
 ## Step 5: Get Firebase Configuration
 

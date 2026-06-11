@@ -105,7 +105,7 @@ Latest test run (mobile-quick tests):
 - **tablet**: Tablet size (1024x1366)
 
 ### Web Server
-The tests automatically start a Python HTTP server on port 8080.
+Playwright automatically starts the Vite dev server (`npm run dev`) on http://localhost:5173 and reuses an already-running one locally. No credentials or extra setup are needed to run the tests.
 
 ## Viewing Test Reports
 
