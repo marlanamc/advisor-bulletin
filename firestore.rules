@@ -39,9 +39,13 @@ service cloud.firestore {
             && request.resource.data.resourceOrder >= 0
             && request.resource.data.resourceOrder <= 100000));
 
-      // Privileged advisors can permanently delete bulletins (e.g. to remove sensitive content).
+      // Privileged advisors can permanently delete any bulletin. Authors may delete
+      // their own inactive placeholders (cancelled or failed publish drafts).
       allow delete: if request.auth != null
-        && isPrivilegedAdvisor(request.auth.token.email);
+        && request.auth.token.email.matches('.*@ebhcs\\.org')
+        && (isPrivilegedAdvisor(request.auth.token.email)
+          || (resource.data.isActive == false
+            && resource.data.postedBy == getUsername(request.auth.token.email)));
     }
 
     match /users/{username} {

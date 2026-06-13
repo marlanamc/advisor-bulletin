@@ -1772,7 +1772,7 @@ class FirebaseBulletinBoard {
         const bulletinsList = bulletins.map(bulletin => {
             const isExpired = this.isBulletinExpired(bulletin);
             return `
-                <div class="day-event-item ${isExpired ? 'expired' : ''}" onclick="event.stopPropagation(); bulletinBoard.showBulletinDetail('${bulletin.id}')">
+                <div class="day-event-item ${isExpired ? 'expired' : ''}" onclick="event.stopPropagation(); bulletinBoard.showBulletinDetail('${this.escapeAttribute(bulletin.id)}')">
                     <div class="day-event-header">
                         <h3 class="day-event-title">${this.escapeHtml(this.getPostTitle(bulletin))}</h3>
                         <span class="category-badge category-${bulletin.category}">${this.getCategoryDisplay(bulletin.category)}</span>
@@ -1914,7 +1914,7 @@ class FirebaseBulletinBoard {
             : 'decoding="async" loading="lazy"';
 
         return `
-    <article class="pc ${isExpired ? 'pc--expired' : ''}" id="bulletin-${bulletin.id}" data-bulletin-id="${bulletin.id}" role="button" tabindex="0" style="cursor:pointer">
+    <article class="pc ${isExpired ? 'pc--expired' : ''}" id="bulletin-${this.escapeAttribute(bulletin.id)}" data-bulletin-id="${this.escapeAttribute(bulletin.id)}" role="button" tabindex="0" style="cursor:pointer">
       ${chipsBar}
       <div class="pc__top ${hasImage ? 'pc__top--image' : ''}" style="background:${hasImage ? '#f8fafc' : meta.grad}">
         ${hasImage
@@ -2473,7 +2473,7 @@ class FirebaseBulletinBoard {
             return `<div class="description-content expanded">${formatted}</div>`;
         }
 
-        const id = bulletinId;
+        const id = this.escapeAttribute(bulletinId);
 
         return `
             <div class="description-wrapper" data-bulletin="${id}">
@@ -2713,13 +2713,19 @@ function shareBulletin(bulletinId, bulletinTitle) {
     fallbackShare(bulletinTitle, shareUrl);
 }
 
+function escapeHtmlAttributeValue(text) {
+    const div = document.createElement('div');
+    div.textContent = String(text ?? '');
+    return div.innerHTML
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
 function fallbackShare(title, url) {
     // Ensure any existing share modal is closed before opening a new one
     closeShareModal();
 
-    // Defense-in-depth: escape the raw URL before injecting it into the readonly
-    // input's value attribute. The onclick handlers already encodeURIComponent it.
-    const urlAttr = String(url).replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+    const urlAttr = escapeHtmlAttributeValue(url);
 
     // Create share modal
     const modal = document.createElement('div');

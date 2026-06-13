@@ -36,6 +36,10 @@ import {
 import { initDescriptionFormatToolbars, refreshRichEditors, syncRichEditorsToForm, getRichTextFieldValue } from './description-format.js'
 import { collection, doc, query, where, orderBy, limit, onSnapshot, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, deleteField, serverTimestamp, writeBatch } from 'firebase/firestore'
 
+// Caps Firestore reads on the admin dashboard listener. Reorder validation falls back
+// to getDoc when an ID is missing from this cache (see reorderResourcesInCategory).
+const ADMIN_ACTIVE_BULLETINS_LIMIT = 500;
+
 installClientErrorLogger('admin')
 import { onAuthStateChanged, signOut, sendPasswordResetEmail } from 'firebase/auth'
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage'
@@ -88,7 +92,7 @@ class FirebaseAdminPanel {
             return;
         }
 
-        const q = query(collection(db, 'bulletins'), where('isActive', '==', true), orderBy('datePosted', 'desc'), limit(200))
+        const q = query(collection(db, 'bulletins'), where('isActive', '==', true), orderBy('datePosted', 'desc'), limit(ADMIN_ACTIVE_BULLETINS_LIMIT))
         this.bulletinsUnsubscribe = onSnapshot(q, (snapshot) => {
             this.bulletins = [];
             snapshot.forEach((doc) => {
@@ -1430,7 +1434,19 @@ class FirebaseAdminPanel {
         // the in-memory cache before writing. Every ID must reference a bulletin we
         // actually loaded AND belong to the category being reordered — otherwise a
         // stale/forged data-bulletin-id could rewrite resourceOrder on the wrong doc.
-        const resolved = orderedIds.map(id => this.bulletins.find(b => b.id === id));
+        // If the listener cap omitted a doc, fetch it once before rejecting the batch.
+        const resolved = await Promise.all(orderedIds.map(async (id) => {
+            let bulletin = this.bulletins.find(b => b.id === id);
+            if (bulletin) return bulletin;
+            try {
+                const snap = await getDoc(doc(db, 'bulletins', id));
+                if (!snap.exists()) return null;
+                return { id: snap.id, ...this.normalizeBulletin(snap.data()) };
+            } catch (error) {
+                console.error('Failed to fetch bulletin for reorder validation:', id, error);
+                return null;
+            }
+        }));
         // Match the grouping fallback used when the reorder UI is rendered
         // (resources with no category are grouped under 'other').
         const allValid = resolved.every(b => b && (b.resourceCategory || 'other') === category);
@@ -1883,6 +1899,7 @@ class FirebaseAdminPanel {
         const docRef = await addDoc(collection(db, 'bulletins'), bulletin);
         const bulletinId = docRef.id;
 
+        let assetsReady = false;
         try {
             if (this.isResourceBulletin(bulletin)) {
                 const resourceLogoFile = formData.get('resourceLogo');
@@ -1916,6 +1933,8 @@ class FirebaseAdminPanel {
                 }
             }
 
+            assetsReady = true;
+
             // All assets uploaded — now make the bulletin visible to students.
             if (shouldBeActive) {
                 await updateDoc(doc(db, 'bulletins', bulletinId), {
@@ -1924,19 +1943,17 @@ class FirebaseAdminPanel {
                 });
             }
         } catch (uploadError) {
-            // The placeholder doc was created but an asset upload failed (or the
-            // advisor cancelled the image cropper). Don't leave a half-built post.
-            if (uploadError && uploadError.code === 'user-cancelled') {
-                // Cancelled before anything was published — remove the doc entirely.
+            // The admin listener only loads isActive==true docs, so an inactive
+            // placeholder becomes invisible. Remove failed/cancelled drafts; keep
+            // the doc only if uploads finished but the final activation write failed.
+            if (!assetsReady) {
                 try {
                     await deleteDoc(doc(db, 'bulletins', bulletinId));
                 } catch (cleanupError) {
-                    console.error('Failed to remove cancelled bulletin:', cleanupError);
+                    console.error('Failed to remove draft bulletin after upload error:', cleanupError);
                 }
             } else {
-                // Genuine failure — the doc is already inactive (hidden from students),
-                // so just log and surface the error. The advisor can retry or delete it.
-                console.error('Bulletin asset upload failed; bulletin left inactive:', uploadError);
+                console.error('Bulletin uploads succeeded but activation failed; bulletin left inactive:', uploadError);
             }
             throw uploadError;
         }
@@ -1944,6 +1961,25 @@ class FirebaseAdminPanel {
         // Reload bulletins to show the new one
         this.loadManageBulletins();
         return bulletinId;
+    }
+
+    updateHasPendingAssetUploads(formData, bulletin) {
+        if (this.isResourceBulletin(bulletin)) {
+            const resourceLogoFile = formData.get('resourceLogo');
+            const resourcePdfFile = formData.get('resourcePdf');
+            if (resourceLogoFile && resourceLogoFile.size > 0) return true;
+            if (isDocumentResource(bulletin) && resourcePdfFile && resourcePdfFile.size > 0) return true;
+            return false;
+        }
+
+        const imageFile = formData.get('image');
+        const imageEsFile = formData.get('imageEs');
+        const pdfFile = formData.get('pdf');
+        return Boolean(
+            (imageFile && imageFile.size > 0)
+            || (imageEsFile && imageEsFile.size > 0)
+            || (pdfFile && pdfFile.size > 0)
+        );
     }
 
     async updateBulletin(formData, bulletinId) {
@@ -1977,54 +2013,88 @@ class FirebaseAdminPanel {
             }
         }
 
-        if (this.isResourceBulletin(bulletin)) {
-            const resourceLogoFile = formData.get('resourceLogo');
-            const resourcePdfFile = formData.get('resourcePdf');
-            const hasNewLogo = resourceLogoFile && resourceLogoFile.size > 0;
-
-            if (!hasNewLogo && this.removeResourceLogo) {
-                bulletin.resourceLogo = null;
-            }
-
-            const actionLinks = await this.finalizeResourceActionLinks(
-                formData,
-                bulletinId,
-                existingBulletin?.actionLinks || [],
-            );
-            bulletin.actionLinks = actionLinks;
-
-            if (hasNewLogo) {
-                await this.saveBulletin(bulletin, bulletinId);
-                await this.handleImageUpload(resourceLogoFile, bulletin, null, bulletinId, 'resourceLogo');
-            } else {
-                await this.saveBulletin(bulletin, bulletinId);
-            }
-
-            if (isDocumentResource(bulletin) && resourcePdfFile && resourcePdfFile.size > 0) {
-                await this.handlePdfUpload(resourcePdfFile, bulletin, bulletinId);
-            }
-
-            this.removeResourceLogo = false;
-            this.removeResourcePdf = false;
-            this.removedActionLinkPdfSlots = new Set();
-            return;
+        const pendingUploads = this.updateHasPendingAssetUploads(formData, bulletin);
+        const wasActive = existingBulletin?.isActive !== false;
+        if (pendingUploads && wasActive) {
+            bulletin.isActive = false;
         }
 
-        await this.saveBulletin(bulletin, bulletinId);
+        try {
+            if (this.isResourceBulletin(bulletin)) {
+                const resourceLogoFile = formData.get('resourceLogo');
+                const resourcePdfFile = formData.get('resourcePdf');
+                const hasNewLogo = resourceLogoFile && resourceLogoFile.size > 0;
 
-        const imageFile = formData.get('image');
-        const imageEsFile = formData.get('imageEs');
-        const pdfFile = formData.get('pdf');
-        const attachSourcePdf = formData.get('attachSourcePdf') === 'on';
+                if (!hasNewLogo && this.removeResourceLogo) {
+                    bulletin.resourceLogo = null;
+                }
 
-        if (imageFile && imageFile.size > 0) {
-            await this.handleImageUpload(imageFile, bulletin, pdfFile, bulletinId, 'image', { attachSourcePdf });
-        } else if (pdfFile && pdfFile.size > 0) {
-            await this.handlePdfUpload(pdfFile, bulletin, bulletinId);
-        }
+                const actionLinks = await this.finalizeResourceActionLinks(
+                    formData,
+                    bulletinId,
+                    existingBulletin?.actionLinks || [],
+                );
+                bulletin.actionLinks = actionLinks;
 
-        if (imageEsFile && imageEsFile.size > 0) {
-            await this.handleImageUpload(imageEsFile, bulletin, null, bulletinId, 'imageEs');
+                if (hasNewLogo) {
+                    await this.saveBulletin(bulletin, bulletinId);
+                    await this.handleImageUpload(resourceLogoFile, bulletin, null, bulletinId, 'resourceLogo');
+                } else {
+                    await this.saveBulletin(bulletin, bulletinId);
+                }
+
+                if (isDocumentResource(bulletin) && resourcePdfFile && resourcePdfFile.size > 0) {
+                    await this.handlePdfUpload(resourcePdfFile, bulletin, bulletinId);
+                }
+
+                if (pendingUploads && wasActive) {
+                    await updateDoc(doc(db, 'bulletins', bulletinId), {
+                        isActive: true,
+                        updatedAt: serverTimestamp(),
+                    });
+                }
+
+                this.removeResourceLogo = false;
+                this.removeResourcePdf = false;
+                this.removedActionLinkPdfSlots = new Set();
+                return;
+            }
+
+            await this.saveBulletin(bulletin, bulletinId);
+
+            const imageFile = formData.get('image');
+            const imageEsFile = formData.get('imageEs');
+            const pdfFile = formData.get('pdf');
+            const attachSourcePdf = formData.get('attachSourcePdf') === 'on';
+
+            if (imageFile && imageFile.size > 0) {
+                await this.handleImageUpload(imageFile, bulletin, pdfFile, bulletinId, 'image', { attachSourcePdf });
+            } else if (pdfFile && pdfFile.size > 0) {
+                await this.handlePdfUpload(pdfFile, bulletin, bulletinId);
+            }
+
+            if (imageEsFile && imageEsFile.size > 0) {
+                await this.handleImageUpload(imageEsFile, bulletin, null, bulletinId, 'imageEs');
+            }
+
+            if (pendingUploads && wasActive) {
+                await updateDoc(doc(db, 'bulletins', bulletinId), {
+                    isActive: true,
+                    updatedAt: serverTimestamp(),
+                });
+            }
+        } catch (error) {
+            if (pendingUploads && wasActive) {
+                try {
+                    await updateDoc(doc(db, 'bulletins', bulletinId), {
+                        isActive: true,
+                        updatedAt: serverTimestamp(),
+                    });
+                } catch (restoreError) {
+                    console.error('Failed to restore bulletin visibility after update error:', restoreError);
+                }
+            }
+            throw error;
         }
     }
 

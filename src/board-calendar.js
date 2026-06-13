@@ -115,7 +115,7 @@ export class BoardCalendarMethods {
             const meta = [weekday, timeLabel].filter(Boolean).join(' · ');
 
             return `
-                <button class="side-event" type="button" onclick="window.bulletinBoard && window.bulletinBoard.showBulletinDetail('${bulletin.id}')">
+                <button class="side-event" type="button" onclick="window.bulletinBoard && window.bulletinBoard.showBulletinDetail('${this.escapeAttribute(bulletin.id)}')">
                     <div class="side-date"><span>${month}</span><strong>${day}</strong></div>
                     <div>
                         <p class="side-event-title">${this.escapeHtml(this.getPostTitle(bulletin) || (this.getCurrentLang() === 'ES' ? 'Próximo evento' : 'Upcoming event'))}</p>
@@ -168,7 +168,7 @@ export class BoardCalendarMethods {
 
                         ${bulletin.classType ? `
                             <div class="bulletin-list-meta-item">
-                                <strong>Class Type:</strong> ${this.getClassTypeDisplay(bulletin.classType)}
+                                <strong>Class Type:</strong> ${this.escapeHtml(this.getClassTypeDisplay(bulletin.classType))}
                             </div>
                         ` : ''}
 
@@ -204,11 +204,11 @@ export class BoardCalendarMethods {
 
                     <div class="bulletin-list-actions">
                         ${bulletin.pdfUrl ? `
-                            <button type="button" class="pdf-btn" aria-label="View PDF document for ${this.escapeHtml(bulletin.title)}" onclick="window.bulletinBoard.openPdfFromBulletin('${bulletin.id}')">
+                            <button type="button" class="pdf-btn" aria-label="View PDF document for ${this.escapeHtml(bulletin.title)}" onclick="window.bulletinBoard.openPdfFromBulletin('${this.escapeAttribute(bulletin.id)}')">
                                 📄 View PDF
                             </button>
                         ` : ''}
-                        <button type="button" class="share-btn" onclick="shareBulletin('${bulletin.id}', '${this.escapeHtml(bulletin.title || '').replace(/'/g, "&#39;")}')">
+                        <button type="button" class="share-btn" onclick="shareBulletin('${this.escapeAttribute(bulletin.id)}', '${this.escapeAttribute(this.getPostTitle(bulletin) || '')}')">
                             📤 Share
                         </button>
                     </div>
@@ -557,7 +557,7 @@ export class BoardCalendarMethods {
         }
         
         return `
-            <div class="monthly-bulletin-item" onclick="bulletinBoard.showBulletinDetail('${bulletin.id}')">
+            <div class="monthly-bulletin-item" onclick="bulletinBoard.showBulletinDetail('${this.escapeAttribute(bulletin.id)}')">
                 <div class="monthly-bulletin-category category-${bulletin.category}"></div>
                 <div class="monthly-bulletin-title">${this.escapeHtml(this.getPostTitle(bulletin))}</div>
                 ${displayDate ? `

@@ -128,7 +128,7 @@ export class BoardDetailMethods {
                                 <span><strong>${this.escapeHtml(this.getDetailLinkActionLabel(bulletin.category))}</strong><small>${this.escapeHtml(this.getDisplayHost(detailExternalLink))}</small></span>
                             </a>
                         ` : ''}
-                        <button type="button" class="post-detail-action post-detail-action--share" onclick="shareBulletin('${bulletin.id}','${this.escapeHtml(bulletin.title || '').replace(/'/g,"&#39;")}')">
+                        <button type="button" class="post-detail-action post-detail-action--share" onclick="shareBulletin('${this.escapeAttribute(bulletin.id)}','${this.escapeAttribute(this.getPostTitle(bulletin) || '')}')">
                             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4"/><path d="m15.4 6.5-6.8 4"/></svg>
                             <strong>Share with a friend</strong>
                         </button>
