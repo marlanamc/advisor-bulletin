@@ -34,7 +34,7 @@ import {
     getNextSessionStartMs,
 } from './event-sessions.js'
 import { initDescriptionFormatToolbars, refreshRichEditors, syncRichEditorsToForm, getRichTextFieldValue } from './description-format.js'
-import { collection, doc, query, where, orderBy, onSnapshot, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, deleteField, serverTimestamp, writeBatch } from 'firebase/firestore'
+import { collection, doc, query, where, orderBy, limit, onSnapshot, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, deleteField, serverTimestamp, writeBatch } from 'firebase/firestore'
 
 installClientErrorLogger('admin')
 import { onAuthStateChanged, signOut, sendPasswordResetEmail } from 'firebase/auth'
@@ -88,7 +88,7 @@ class FirebaseAdminPanel {
             return;
         }
 
-        const q = query(collection(db, 'bulletins'), where('isActive', '==', true), orderBy('datePosted', 'desc'))
+        const q = query(collection(db, 'bulletins'), where('isActive', '==', true), orderBy('datePosted', 'desc'), limit(200))
         this.bulletinsUnsubscribe = onSnapshot(q, (snapshot) => {
             this.bulletins = [];
             snapshot.forEach((doc) => {
@@ -551,7 +551,8 @@ class FirebaseAdminPanel {
             this.advisors = snap.docs.map(d => ({ username: d.id, ...d.data() }));
         } catch (e) {
             console.error('Error loading advisors:', e);
-            this.advisors = [];
+            // Keep the existing list (static fallback or prior load) so a transient
+            // Firestore error doesn't blank the Advisors tab or break name lookups.
         }
     }
 
@@ -588,6 +589,14 @@ class FirebaseAdminPanel {
                     }
                 } catch (error) {
                     console.error('Error checking user password status:', error);
+                    // Fail safe on permission errors: if we can't confirm whether a
+                    // forced password change is pending, don't silently let the user
+                    // in — send them back to login. Transient errors (network/timeout)
+                    // can fall through and continue.
+                    if (error?.code === 'permission-denied') {
+                        this.setAuthView('login');
+                        return;
+                    }
                 }
 
                 if (!this.currentUser || this.currentUser.username !== username) {
@@ -980,8 +989,7 @@ class FirebaseAdminPanel {
         } catch (error) {
             if (error && error.code === 'user-cancelled') {
                 this.showTemporaryMessage('Post cancelled. You can review the content and try again.', 'info');
-                throw error;
-                
+                return;
             }
             console.error('Error submitting bulletin:', error);
             let errorMessage = `Error saving ${this.getCurrentContentLabel().toLowerCase()}. Please try again.`;
@@ -1417,6 +1425,21 @@ class FirebaseAdminPanel {
 
     async reorderResourcesInCategory(category, orderedIds) {
         if (!Array.isArray(orderedIds) || orderedIds.length === 0) return;
+
+        // The IDs come straight from draggable DOM nodes, so validate them against
+        // the in-memory cache before writing. Every ID must reference a bulletin we
+        // actually loaded AND belong to the category being reordered — otherwise a
+        // stale/forged data-bulletin-id could rewrite resourceOrder on the wrong doc.
+        const resolved = orderedIds.map(id => this.bulletins.find(b => b.id === id));
+        // Match the grouping fallback used when the reorder UI is rendered
+        // (resources with no category are grouped under 'other').
+        const allValid = resolved.every(b => b && (b.resourceCategory || 'other') === category);
+        if (!allValid) {
+            console.error('Reorder aborted: IDs did not match category', { category, orderedIds });
+            this.showTemporaryMessage('Could not save the new order. Please refresh and try again.', 'error');
+            return;
+        }
+
         const batch = writeBatch(db);
         orderedIds.forEach((id, i) => {
             batch.update(doc(db, 'bulletins', id), {
@@ -1425,9 +1448,8 @@ class FirebaseAdminPanel {
             });
         });
         await batch.commit();
-        orderedIds.forEach((id, i) => {
-            const bulletin = this.bulletins.find(b => b.id === id);
-            if (bulletin) bulletin.resourceOrder = (i + 1) * 10;
+        resolved.forEach((bulletin, i) => {
+            bulletin.resourceOrder = (i + 1) * 10;
         });
     }
 
@@ -1570,7 +1592,7 @@ class FirebaseAdminPanel {
 
     escapeHtml(text) {
         const div = document.createElement('div');
-        div.textContent = text;
+        div.textContent = String(text ?? '');
         return div.innerHTML;
     }
 
@@ -1851,42 +1873,72 @@ class FirebaseAdminPanel {
         bulletin.createdAt = serverTimestamp();
         bulletin.updatedAt = serverTimestamp();
 
+        // Publish as inactive first so students never see a half-uploaded card.
+        // We only flip isActive:true after every asset upload succeeds, which
+        // prevents orphaned "live" bulletins with broken/missing images or PDFs.
+        const shouldBeActive = bulletin.isActive !== false;
+        bulletin.isActive = false;
+
         // Create the Firestore document FIRST to get an ID
         const docRef = await addDoc(collection(db, 'bulletins'), bulletin);
         const bulletinId = docRef.id;
 
-        if (this.isResourceBulletin(bulletin)) {
-            const resourceLogoFile = formData.get('resourceLogo');
-            const resourcePdfFile = formData.get('resourcePdf');
-            const actionLinks = await this.finalizeResourceActionLinks(
-                formData,
-                bulletinId,
-                bulletin.actionLinks || [],
-            );
-            await updateDoc(doc(db, 'bulletins', bulletinId), { actionLinks });
-            if (resourceLogoFile && resourceLogoFile.size > 0) {
-                await this.handleImageUpload(resourceLogoFile, bulletin, null, bulletinId, 'resourceLogo');
-            }
-            if (isDocumentResource(bulletin) && resourcePdfFile && resourcePdfFile.size > 0) {
-                await this.handlePdfUpload(resourcePdfFile, bulletin, bulletinId);
-            }
-            this.loadManageBulletins();
-            return bulletinId;
-        }
+        try {
+            if (this.isResourceBulletin(bulletin)) {
+                const resourceLogoFile = formData.get('resourceLogo');
+                const resourcePdfFile = formData.get('resourcePdf');
+                const actionLinks = await this.finalizeResourceActionLinks(
+                    formData,
+                    bulletinId,
+                    bulletin.actionLinks || [],
+                );
+                await updateDoc(doc(db, 'bulletins', bulletinId), { actionLinks });
+                if (resourceLogoFile && resourceLogoFile.size > 0) {
+                    await this.handleImageUpload(resourceLogoFile, bulletin, null, bulletinId, 'resourceLogo');
+                }
+                if (isDocumentResource(bulletin) && resourcePdfFile && resourcePdfFile.size > 0) {
+                    await this.handlePdfUpload(resourcePdfFile, bulletin, bulletinId);
+                }
+            } else {
+                const imageFile = formData.get('image');
+                const imageEsFile = formData.get('imageEs');
+                const pdfFile = formData.get('pdf');
+                const attachSourcePdf = formData.get('attachSourcePdf') === 'on';
 
-        const imageFile = formData.get('image');
-        const imageEsFile = formData.get('imageEs');
-        const pdfFile = formData.get('pdf');
-        const attachSourcePdf = formData.get('attachSourcePdf') === 'on';
+                if (imageFile && imageFile.size > 0) {
+                    await this.handleImageUpload(imageFile, bulletin, pdfFile, bulletinId, 'image', { attachSourcePdf });
+                } else if (pdfFile && pdfFile.size > 0) {
+                    await this.handlePdfUpload(pdfFile, bulletin, bulletinId);
+                }
 
-        if (imageFile && imageFile.size > 0) {
-            await this.handleImageUpload(imageFile, bulletin, pdfFile, bulletinId, 'image', { attachSourcePdf });
-        } else if (pdfFile && pdfFile.size > 0) {
-            await this.handlePdfUpload(pdfFile, bulletin, bulletinId);
-        }
-        
-        if (imageEsFile && imageEsFile.size > 0) {
-            await this.handleImageUpload(imageEsFile, bulletin, null, bulletinId, 'imageEs');
+                if (imageEsFile && imageEsFile.size > 0) {
+                    await this.handleImageUpload(imageEsFile, bulletin, null, bulletinId, 'imageEs');
+                }
+            }
+
+            // All assets uploaded — now make the bulletin visible to students.
+            if (shouldBeActive) {
+                await updateDoc(doc(db, 'bulletins', bulletinId), {
+                    isActive: true,
+                    updatedAt: serverTimestamp(),
+                });
+            }
+        } catch (uploadError) {
+            // The placeholder doc was created but an asset upload failed (or the
+            // advisor cancelled the image cropper). Don't leave a half-built post.
+            if (uploadError && uploadError.code === 'user-cancelled') {
+                // Cancelled before anything was published — remove the doc entirely.
+                try {
+                    await deleteDoc(doc(db, 'bulletins', bulletinId));
+                } catch (cleanupError) {
+                    console.error('Failed to remove cancelled bulletin:', cleanupError);
+                }
+            } else {
+                // Genuine failure — the doc is already inactive (hidden from students),
+                // so just log and surface the error. The advisor can retry or delete it.
+                console.error('Bulletin asset upload failed; bulletin left inactive:', uploadError);
+            }
+            throw uploadError;
         }
 
         // Reload bulletins to show the new one
@@ -2155,7 +2207,9 @@ class FirebaseAdminPanel {
             const sizeInBytes = new Blob([bulletinStr]).size;
             const sizeInMB = (sizeInBytes / (1024 * 1024)).toFixed(2);
 
-            console.log(`Bulletin size: ${sizeInMB} MB (${sizeInBytes} bytes)`);
+            if (import.meta.env.DEV) {
+                console.log(`Bulletin size: ${sizeInMB} MB (${sizeInBytes} bytes)`);
+            }
 
             if (sizeInBytes > 1048576) { // 1MB in bytes
                 throw new Error(`Bulletin too large (${sizeInMB} MB). Firestore documents must be under 1 MB. Try using a smaller image.`);

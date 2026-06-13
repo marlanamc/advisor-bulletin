@@ -116,6 +116,10 @@ export class AdminManageMethods {
         if (!username || !displayName) {
             this.showToast('Display name is required.', 'error'); return;
         }
+        // Guard against double-clicks / slow Firestore responses firing two
+        // concurrent saves (which would each re-publish the student directory).
+        if (this.isSavingAdvisor) return;
+        this.isSavingAdvisor = true;
         try {
             await updateDoc(doc(db, 'advisors', username), { displayName, email, isAdmin, publicRole, showInDirectory });
             const idx = this.advisors.findIndex(a => a.username === username);
@@ -140,6 +144,8 @@ export class AdminManageMethods {
             }
         } catch (e) {
             this.showToast('Error saving advisor: ' + e.message, 'error');
+        } finally {
+            this.isSavingAdvisor = false;
         }
     }
 

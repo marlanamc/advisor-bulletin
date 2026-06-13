@@ -35,8 +35,9 @@ service cloud.firestore {
         && request.resource.data.type == 'resource'
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['resourceOrder', 'updatedAt'])
         && (request.resource.data.resourceOrder == null
-          || request.resource.data.resourceOrder is int
-          || request.resource.data.resourceOrder is float);
+          || ((request.resource.data.resourceOrder is int || request.resource.data.resourceOrder is float)
+            && request.resource.data.resourceOrder >= 0
+            && request.resource.data.resourceOrder <= 100000));
 
       // Privileged advisors can permanently delete bulletins (e.g. to remove sensitive content).
       allow delete: if request.auth != null
@@ -188,7 +189,9 @@ service cloud.firestore {
         && (!('resourceKind' in data) || data.resourceKind in ['organization', 'document'])
         && (!('actionLinks' in data) || validActionLinks(data.actionLinks))
         && (!('datePosted' in data) || data.datePosted is timestamp)
-        && (!('resourceOrder' in data) || data.resourceOrder == null || data.resourceOrder is int || data.resourceOrder is float);
+        && (!('resourceOrder' in data) || data.resourceOrder == null
+          || ((data.resourceOrder is int || data.resourceOrder is float)
+            && data.resourceOrder >= 0 && data.resourceOrder <= 100000));
 
       let validPost = data.type == 'post'
         && data.keys().hasAll(['title', 'category'])

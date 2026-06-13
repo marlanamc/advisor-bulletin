@@ -147,10 +147,10 @@ class EnhancedAuth {
             console.error('Login error:', error);
         }
 
-        const attemptsLeft = this.maxAttempts - (this.loginAttempts[username]?.count || 0);
-        if (attemptsLeft > 0 && attemptsLeft <= 3) {
-            errorMessage += ` (${attemptsLeft} attempts remaining)`;
-        }
+        // Note: we intentionally do NOT surface a client-side "attempts remaining"
+        // countdown. The localStorage counter is trivially bypassed and leaking the
+        // remaining count just hands an attacker a progress bar. Firebase Auth
+        // enforces the real rate limit server-side via auth/too-many-requests.
 
         this.showError('loginError', errorMessage);
     }

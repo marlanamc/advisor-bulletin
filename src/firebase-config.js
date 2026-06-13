@@ -2306,24 +2306,8 @@ class FirebaseBulletinBoard {
 
     escapeHtml(text) {
         const div = document.createElement('div');
-        div.textContent = text;
+        div.textContent = String(text ?? '');
         return div.innerHTML;
-    }
-
-    // Convert data URL to blob URL for better browser compatibility
-    dataUrlToBlobUrl(dataUrl) {
-        try {
-            // Convert data URL to blob
-            const response = fetch(dataUrl);
-            return response.then(res => res.blob())
-                .then(blob => {
-                    const blobUrl = URL.createObjectURL(blob);
-                    return blobUrl;
-                });
-        } catch (error) {
-            console.error('Error converting data URL to blob URL:', error);
-            return dataUrl; // Fallback to original data URL
-        }
     }
 
     // Open PDF from bulletin ID by looking up the bulletin data
@@ -2700,7 +2684,9 @@ class FirebaseBulletinBoard {
             this.currentCalendarMonth = 11;
             this.currentCalendarYear--;
         }
-        console.log('📅 Previous month:', this.currentCalendarMonth, this.currentCalendarYear);
+        if (import.meta.env.DEV) {
+            console.log('📅 Previous month:', this.currentCalendarMonth, this.currentCalendarYear);
+        }
         this.displayBulletins();
     }
 
@@ -2710,7 +2696,9 @@ class FirebaseBulletinBoard {
             this.currentCalendarMonth = 0;
             this.currentCalendarYear++;
         }
-        console.log('📅 Next month:', this.currentCalendarMonth, this.currentCalendarYear);
+        if (import.meta.env.DEV) {
+            console.log('📅 Next month:', this.currentCalendarMonth, this.currentCalendarYear);
+        }
         this.displayBulletins();
     }
 }
@@ -2728,6 +2716,10 @@ function shareBulletin(bulletinId, bulletinTitle) {
 function fallbackShare(title, url) {
     // Ensure any existing share modal is closed before opening a new one
     closeShareModal();
+
+    // Defense-in-depth: escape the raw URL before injecting it into the readonly
+    // input's value attribute. The onclick handlers already encodeURIComponent it.
+    const urlAttr = String(url).replace(/&/g, '&amp;').replace(/"/g, '&quot;');
 
     // Create share modal
     const modal = document.createElement('div');
@@ -2750,7 +2742,7 @@ function fallbackShare(title, url) {
                 </button>
             </div>
             <div class="share-link">
-                <input type="text" value="${url}" id="shareLink" readonly>
+                <input type="text" value="${urlAttr}" id="shareLink" readonly>
                 <button onclick="copyLink()" class="copy-btn">Copy Link</button>
             </div>
             <button onclick="closeShareModal()" class="close-share">Close</button>
