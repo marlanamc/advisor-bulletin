@@ -1,6 +1,7 @@
 const SNAPSHOT_URL = '/student-feed-snapshot.json';
 const SNAPSHOT_CACHE_KEY = 'ebhcs_student_feed_snapshot_v1';
 const SNAPSHOT_FETCH_TIMEOUT_MS = 2400;
+const SNAPSHOT_CACHE_TTL = 6 * 60 * 60 * 1000; // 6 hours
 
 const CATEGORY_META = {
     job: { label: 'Job Help', labelEs: 'Ayuda con empleo', emoji: '💼', accent: '#24498f', tint: '#eaf0ff', grad: 'linear-gradient(145deg,#dbeafe 0%,#f8fafc 100%)' },
@@ -37,12 +38,21 @@ function escapeAttribute(value) {
     return escapeHtml(value).replace(/`/g, '&#96;');
 }
 
+function isSnapshotFresh(snapshot) {
+    const generatedAt = snapshot?.generatedAt;
+    if (!generatedAt) return true;
+    const age = Date.now() - Date.parse(generatedAt);
+    return !Number.isNaN(age) && age <= SNAPSHOT_CACHE_TTL;
+}
+
 function readStoredSnapshot() {
     try {
         const raw = localStorage.getItem(SNAPSHOT_CACHE_KEY) || sessionStorage.getItem(SNAPSHOT_CACHE_KEY);
         if (!raw) return null;
         const parsed = JSON.parse(raw);
-        return Array.isArray(parsed?.items) && parsed.items.length ? parsed : null;
+        if (!Array.isArray(parsed?.items) || parsed.items.length === 0) return null;
+        if (!isSnapshotFresh(parsed)) return null;
+        return parsed;
     } catch {
         return null;
     }
@@ -117,13 +127,56 @@ function getDateLabel(item) {
     return label;
 }
 
+function parseYmdLocal(value) {
+    if (!value || typeof value !== 'string') return null;
+    const datePart = value.split('T')[0];
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(datePart)) return null;
+    const [year, month, day] = datePart.split('-').map(Number);
+    return new Date(year, month - 1, day);
+}
+
 function isExpired(item) {
-    const raw = item.endDate || item.eventDate || item.deadline || '';
-    const timestamp = getTimestampValue(raw);
-    if (!timestamp) return false;
-    const end = new Date(timestamp);
-    end.setHours(23, 59, 59, 999);
-    return end.getTime() < Date.now();
+    const now = new Date();
+
+    if (item.startDate && item.endDate) {
+        const endDate = parseYmdLocal(item.endDate) || new Date(item.endDate);
+        const endOfDay = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate(), 23, 59, 59);
+        return endOfDay < now;
+    }
+
+    if (item.dateType === 'sessions' && Array.isArray(item.eventDates) && item.eventDates.length) {
+        const lastSession = item.eventDates[item.eventDates.length - 1];
+        const lastDate = parseYmdLocal(lastSession.date) || new Date(lastSession.date);
+        const endTime = lastSession.endTime || item.endTime || '23:59';
+        const [hours, minutes] = endTime.split(':').map(Number);
+        const endMs = new Date(
+            lastDate.getFullYear(),
+            lastDate.getMonth(),
+            lastDate.getDate(),
+            Number.isFinite(hours) ? hours : 23,
+            Number.isFinite(minutes) ? minutes : 59,
+        ).getTime();
+        return endMs > 0 && endMs < now.getTime();
+    }
+
+    if (item.eventDate && item.endTime) {
+        const eventDateTime = new Date(`${String(item.eventDate).split('T')[0]}T${item.endTime}:00`);
+        return eventDateTime < now;
+    }
+
+    if (item.eventDate) {
+        const eventDate = parseYmdLocal(item.eventDate) || new Date(item.eventDate);
+        const endOfDay = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate(), 23, 59, 59);
+        return endOfDay < now;
+    }
+
+    if (item.deadline) {
+        const deadlineDay = parseYmdLocal(item.deadline) || new Date(item.deadline);
+        const endOfDay = new Date(deadlineDay.getFullYear(), deadlineDay.getMonth(), deadlineDay.getDate(), 23, 59, 59);
+        return endOfDay < now;
+    }
+
+    return false;
 }
 
 function isCalendarOnly(item) {
@@ -145,7 +198,6 @@ function iconSvg() {
 function createCard(item, index) {
     const category = normalizeCategory(item.category);
     const meta = CATEGORY_META[category] || CATEGORY_META.announcement;
-    const expired = isExpired(item);
     const title = getTitle(item);
     const titleShort = title.length > 40 ? `${title.slice(0, 38)}...` : title;
     const desc = getDescription(item);
@@ -154,10 +206,9 @@ function createCard(item, index) {
     const imageAttributes = index < 3 ? 'decoding="async" fetchpriority="high"' : 'decoding="async" loading="lazy"';
 
     return `
-    <article class="pc ${expired ? 'pc--expired' : ''}" id="bulletin-${escapeAttribute(item.id)}" data-bulletin-id="${escapeAttribute(item.id)}" role="button" tabindex="0" style="cursor:pointer">
+    <article class="pc" id="bulletin-${escapeAttribute(item.id)}" data-bulletin-id="${escapeAttribute(item.id)}" role="button" tabindex="0" style="cursor:pointer">
       <div class="pc__chip-bar" style="--chip-accent:${meta.accent};--chip-tint:${meta.tint}">
         <div class="pc__chips" role="list" aria-label="Post labels">
-          ${expired ? '<span class="pc__chip pc__chip--expired" role="listitem">Expired</span>' : ''}
           <span class="pc__chip pc__chip--category" role="listitem">
             <span class="pc__chip-emoji" aria-hidden="true">${meta.emoji}</span>
             <span class="en-text">${escapeHtml(meta.label.toUpperCase())}</span>
@@ -192,7 +243,7 @@ function renderSnapshot(snapshot, source) {
     }
 
     const posts = snapshot.items
-        .filter((item) => item.type !== 'resource' && !isCalendarOnly(item))
+        .filter((item) => item.type !== 'resource' && !isCalendarOnly(item) && !isExpired(item))
         .sort((a, b) => getTimestampValue(b.datePosted || b.createdAt) - getTimestampValue(a.datePosted || a.createdAt))
         .slice(0, 36);
 

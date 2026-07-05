@@ -83,6 +83,7 @@ class FirebaseBulletinBoard {
         this.activeDetailBulletinId = null;
         this.bulletinsHydrated = false;
         this.firestoreFirstSnapshotRecorded = false;
+        this.firestoreServerSnapshotReceived = false;
         // Static fallback until config/studentDirectory loads from Firestore.
         this.advisorDirectory = STUDENT_ADVISOR_DIRECTORY;
         this.handleHashChange = this.handleHashRouting.bind(this);
@@ -199,20 +200,32 @@ class FirebaseBulletinBoard {
         this.populateAdvisorFilters();
         this.renderResourceCategoryFilters();
         this.displayBulletins();
+        const grid = document.getElementById('bulletinGrid');
+        if (grid?.getAttribute('data-snapshot-rendered') === 'true') {
+            grid.removeAttribute('data-snapshot-rendered');
+        }
         recordStudentPerf('ebhcs:cards-rendered', { count: this.bulletins.length });
     }
 
+    isInstantSnapshotOnScreen() {
+        return document.getElementById('bulletinGrid')?.getAttribute('data-snapshot-rendered') === 'true';
+    }
+
     setupRealtimeListener() {
-        // Render from cache immediately so the feed appears before Firestore responds.
+        const snapshotOnScreen = this.isInstantSnapshotOnScreen();
         const cached = this._readCache();
         if (cached && cached.length > 0) {
             this.bulletins = cached;
-            this.bulletinsHydrated = true;
-            this.populateAdvisorFilters();
-            this.renderResourceCategoryFilters();
-            this.displayBulletins();
-            recordStudentPerf('ebhcs:cards-rendered', { source: 'bulletin-cache', count: this.bulletins.length });
-        } else {
+            // Keep the instant snapshot visible until Firestore confirms from the
+            // server — repainting from local cache can briefly resurrect deleted posts.
+            if (!snapshotOnScreen) {
+                this.bulletinsHydrated = true;
+                this.populateAdvisorFilters();
+                this.renderResourceCategoryFilters();
+                this.displayBulletins();
+                recordStudentPerf('ebhcs:cards-rendered', { source: 'bulletin-cache', count: this.bulletins.length });
+            }
+        } else if (!snapshotOnScreen) {
             this.showBulletinsLoading();
         }
 
@@ -223,6 +236,18 @@ class FirebaseBulletinBoard {
             if (snapshot.empty && snapshot.metadata.fromCache && !this.bulletinsHydrated) {
                 return;
             }
+            if (snapshot.metadata.fromCache) {
+                // Don't replace the instant snapshot (or an already-painted feed) with
+                // possibly stale offline cache — wait for the server snapshot instead.
+                if (this.isInstantSnapshotOnScreen() || this.firestoreServerSnapshotReceived) {
+                    return;
+                }
+                if (!this.bulletinsHydrated) {
+                    this.applyBulletinSnapshot(snapshot);
+                }
+                return;
+            }
+            this.firestoreServerSnapshotReceived = true;
             this.applyBulletinSnapshot(snapshot);
         }, (error) => {
             console.error('Error loading bulletins:', error);
