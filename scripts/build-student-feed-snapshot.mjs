@@ -78,6 +78,7 @@ function normalizeItem(id, data) {
     startTime: data.startTime || '',
     endTime: data.endTime || '',
     eventDates: Array.isArray(data.eventDates) ? data.eventDates.slice(0, 12) : [],
+    hideFromMainFeed: data.hideFromMainFeed === true,
     image: compactUrl(data.image, { allowImages: true }),
     imageEs: compactUrl(data.imageEs, { allowImages: true }),
     eventLink: compactUrl(data.eventLink || data.url),

@@ -15,7 +15,11 @@
 //
 // 4. Firestore / Google APIs and /version.json are always bypassed.
 
-const CACHE_NAME = 'ebhcs-bulletin-v12';
+const CACHE_NAME = 'ebhcs-bulletin-v13';
+
+// Feed snapshot is served network-first (fresh deploys must win); the cached
+// copy is only an offline fallback.
+const SNAPSHOT_JSON_PATH = '/student-feed-snapshot.json';
 
 const FETCH_RETRIES = 3;
 const FETCH_BACKOFF_MS = 500;
@@ -289,6 +293,25 @@ async function handleHashedAsset(request) {
   return networkResponse;
 }
 
+// Feed snapshot JSON: network-first with cache fallback. Stale-while-revalidate
+// here would keep flashing bulletins deleted since the copy was cached.
+async function handleSnapshotJson(request) {
+  const cache = await caches.open(CACHE_NAME);
+  try {
+    const networkResponse = await fetchWithRetry(request, { retries: 1 });
+    if (isCacheableResponse(networkResponse)) {
+      safeCachePut(cache, request, networkResponse.clone());
+      return networkResponse;
+    }
+    if (networkResponse) return networkResponse;
+  } catch {
+    // Offline — fall through to the cached copy.
+  }
+  const cached = await cache.match(SNAPSHOT_JSON_PATH);
+  if (cached) return cached;
+  return fetch(request);
+}
+
 // Shell icons / manifest: stale-while-revalidate.
 async function handleShellAsset(request) {
   const cache = await caches.open(CACHE_NAME);
@@ -329,6 +352,11 @@ self.addEventListener('fetch', (event) => {
 
   if (isHashedAsset(requestUrl)) {
     event.respondWith(handleHashedAsset(request));
+    return;
+  }
+
+  if (requestUrl.origin === self.location.origin && requestUrl.pathname === SNAPSHOT_JSON_PATH) {
+    event.respondWith(handleSnapshotJson(request));
     return;
   }
 

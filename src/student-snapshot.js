@@ -2,6 +2,11 @@ const SNAPSHOT_URL = '/student-feed-snapshot.json';
 const SNAPSHOT_CACHE_KEY = 'ebhcs_student_feed_snapshot_v1';
 const SNAPSHOT_FETCH_TIMEOUT_MS = 2400;
 const SNAPSHOT_CACHE_TTL = 6 * 60 * 60 * 1000; // 6 hours
+// The static JSON is a deploy-time artifact — allow it to be somewhat older
+// than the stored copy, but refuse to paint from one that is days stale
+// (it would flash posts deleted since the last deploy).
+const SNAPSHOT_NETWORK_TTL = 48 * 60 * 60 * 1000; // 48 hours
+const SNAPSHOT_MAX_STORED_ITEMS = 72;
 
 const CATEGORY_META = {
     job: { label: 'Job Help', labelEs: 'Ayuda con empleo', emoji: '💼', accent: '#24498f', tint: '#eaf0ff', grad: 'linear-gradient(145deg,#dbeafe 0%,#f8fafc 100%)' },
@@ -38,28 +43,40 @@ function escapeAttribute(value) {
     return escapeHtml(value).replace(/`/g, '&#96;');
 }
 
-function isSnapshotFresh(snapshot) {
+function isSnapshotFresh(snapshot, ttl = SNAPSHOT_CACHE_TTL) {
     const generatedAt = snapshot?.generatedAt;
     if (!generatedAt) return true;
     const age = Date.now() - Date.parse(generatedAt);
-    return !Number.isNaN(age) && age <= SNAPSHOT_CACHE_TTL;
+    return !Number.isNaN(age) && age <= ttl;
 }
 
-function readStoredSnapshot() {
+function readStoredSnapshotRaw() {
     try {
         const raw = localStorage.getItem(SNAPSHOT_CACHE_KEY) || sessionStorage.getItem(SNAPSHOT_CACHE_KEY);
         if (!raw) return null;
-        const parsed = JSON.parse(raw);
-        if (!Array.isArray(parsed?.items) || parsed.items.length === 0) return null;
-        if (!isSnapshotFresh(parsed)) return null;
-        return parsed;
+        return JSON.parse(raw);
     } catch {
         return null;
     }
 }
 
+function readStoredSnapshot() {
+    const parsed = readStoredSnapshotRaw();
+    if (!Array.isArray(parsed?.items) || parsed.items.length === 0) return null;
+    if (!isSnapshotFresh(parsed)) return null;
+    return parsed;
+}
+
 function writeStoredSnapshot(snapshot) {
     if (!Array.isArray(snapshot?.items) || snapshot.items.length === 0) return;
+    // Never clobber a newer stored snapshot (e.g. one written from live
+    // Firestore server data) with an older static deploy artifact.
+    const existing = readStoredSnapshotRaw();
+    if (existing?.generatedAt && snapshot.generatedAt) {
+        const existingTs = Date.parse(existing.generatedAt);
+        const nextTs = Date.parse(snapshot.generatedAt);
+        if (!Number.isNaN(existingTs) && !Number.isNaN(nextTs) && nextTs < existingTs) return;
+    }
     const payload = JSON.stringify(snapshot);
     try { localStorage.setItem(SNAPSHOT_CACHE_KEY, payload); } catch {}
     try { sessionStorage.setItem(SNAPSHOT_CACHE_KEY, payload); } catch {}
@@ -70,12 +87,15 @@ async function fetchSnapshot() {
     const timeout = setTimeout(() => controller.abort(), SNAPSHOT_FETCH_TIMEOUT_MS);
     try {
         const response = await fetch(SNAPSHOT_URL, {
-            cache: 'force-cache',
+            cache: 'no-cache',
             signal: controller.signal,
         });
         if (!response.ok) return null;
         const snapshot = await response.json();
-        return Array.isArray(snapshot?.items) && snapshot.items.length ? snapshot : null;
+        if (!Array.isArray(snapshot?.items) || snapshot.items.length === 0) return null;
+        // A stale deploy artifact would flash posts deleted since it was built.
+        if (!isSnapshotFresh(snapshot, SNAPSHOT_NETWORK_TTL)) return null;
+        return snapshot;
     } catch {
         return null;
     } finally {
@@ -144,18 +164,50 @@ function isExpired(item) {
         return endOfDay < now;
     }
 
-    if (item.dateType === 'sessions' && Array.isArray(item.eventDates) && item.eventDates.length) {
-        const lastSession = item.eventDates[item.eventDates.length - 1];
-        const lastDate = parseYmdLocal(lastSession.date) || new Date(lastSession.date);
-        const endTime = lastSession.endTime || item.endTime || '23:59';
-        const [hours, minutes] = endTime.split(':').map(Number);
-        const endMs = new Date(
-            lastDate.getFullYear(),
-            lastDate.getMonth(),
-            lastDate.getDate(),
-            Number.isFinite(hours) ? hours : 23,
-            Number.isFinite(minutes) ? minutes : 59,
-        ).getTime();
+    if (item.dateType === 'sessions') {
+        // Mirror isBulletinExpired: normalize (sort) sessions before picking
+        // the last one — Firestore may store them unsorted.
+        const rawSessions = Array.isArray(item.eventDates) && item.eventDates.length
+            ? item.eventDates
+            : (item.eventDate ? [item.eventDate] : []);
+        const sessions = rawSessions
+            .map((entry) => {
+                if (typeof entry === 'string') {
+                    return { date: entry.split('T')[0].trim(), endTime: '' };
+                }
+                if (entry && typeof entry === 'object') {
+                    return {
+                        date: String(entry.date || '').split('T')[0].trim(),
+                        endTime: String(entry.endTime || '').trim(),
+                    };
+                }
+                return null;
+            })
+            .filter((session) => session && /^\d{4}-\d{2}-\d{2}$/.test(session.date))
+            .sort((a, b) => a.date.localeCompare(b.date));
+        if (!sessions.length) return false;
+
+        const lastSession = sessions[sessions.length - 1];
+        const lastDate = parseYmdLocal(lastSession.date);
+        const endTime = lastSession.endTime || item.endTime || '';
+        let endMs;
+        if (endTime) {
+            const [hours, minutes] = endTime.split(':').map(Number);
+            endMs = new Date(
+                lastDate.getFullYear(),
+                lastDate.getMonth(),
+                lastDate.getDate(),
+                hours || 0,
+                minutes || 0,
+            ).getTime();
+        } else {
+            endMs = new Date(
+                lastDate.getFullYear(),
+                lastDate.getMonth(),
+                lastDate.getDate(),
+                23, 59, 59,
+            ).getTime();
+        }
         return endMs > 0 && endMs < now.getTime();
     }
 
@@ -282,4 +334,75 @@ export async function renderStudentSnapshot() {
 
 export function recordStudentPerf(name, detail) {
     mark(name, detail);
+}
+
+// --- server-derived snapshot -------------------------------------------------
+// Written from every confirmed Firestore server snapshot so the next visit's
+// instant paint reflects server truth (no resurrected deleted posts) instead
+// of the deploy-time static JSON.
+
+function toIsoDateValue(value) {
+    if (!value) return '';
+    if (typeof value.toDate === 'function') {
+        try { return value.toDate().toISOString(); } catch { return ''; }
+    }
+    if (typeof value === 'object' && typeof value.seconds === 'number') {
+        return new Date(value.seconds * 1000).toISOString();
+    }
+    if (value instanceof Date) return value.toISOString();
+    return String(value);
+}
+
+function compactText(value, max) {
+    const text = String(value || '').replace(/\s+/g, ' ').trim();
+    return text.length > max ? `${text.slice(0, max - 1).trim()}...` : text;
+}
+
+function compactStoredUrl(value) {
+    const url = String(value || '').trim();
+    if (!url || url.startsWith('data:') || url.length > 500) return '';
+    return url;
+}
+
+function serializeBulletinForSnapshot(item) {
+    return {
+        id: item.id,
+        type: item.type || 'post',
+        category: item.category || 'announcement',
+        title: compactText(item.title || item.titleEn || '', 180),
+        titleEs: compactText(item.titleEs || '', 180),
+        description: compactText(item.description || '', 420),
+        summaryEs: compactText(item.summaryEs || item.descriptionEs || '', 420),
+        advisorName: compactText(item.advisorName || 'Advisor', 80),
+        datePosted: toIsoDateValue(item.datePosted || item.createdAt),
+        createdAt: toIsoDateValue(item.createdAt),
+        dateType: item.dateType || '',
+        eventDate: item.eventDate || '',
+        startDate: item.startDate || '',
+        endDate: item.endDate || '',
+        deadline: item.deadline || '',
+        startTime: item.startTime || '',
+        endTime: item.endTime || '',
+        eventDates: Array.isArray(item.eventDates) ? item.eventDates.slice(0, 20) : [],
+        hideFromMainFeed: item.hideFromMainFeed === true,
+        image: compactStoredUrl(item.image),
+        imageEs: compactStoredUrl(item.imageEs),
+        eventLink: compactStoredUrl(item.eventLink || item.url),
+        pdfUrl: compactStoredUrl(item.pdfUrl),
+    };
+}
+
+export function storeServerSnapshot(bulletins) {
+    if (!Array.isArray(bulletins) || bulletins.length === 0) return;
+    // The instant paint only shows posts — skip resources to keep storage lean.
+    const items = bulletins
+        .filter((item) => item && item.id && item.type !== 'resource')
+        .slice(0, SNAPSHOT_MAX_STORED_ITEMS)
+        .map(serializeBulletinForSnapshot);
+    if (!items.length) return;
+    writeStoredSnapshot({
+        generatedAt: new Date().toISOString(),
+        source: 'firestore-live',
+        items,
+    });
 }

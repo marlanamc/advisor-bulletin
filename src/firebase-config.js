@@ -58,6 +58,7 @@ import {
 import { BoardCalendarMethods } from './board-calendar.js'
 import { BoardResourcesMethods } from './board-resources.js'
 import { BoardDetailMethods } from './board-detail.js'
+import { storeServerSnapshot } from './student-snapshot.js'
 
 
 // Firebase-enabled Bulletin Board System
@@ -197,6 +198,11 @@ class FirebaseBulletinBoard {
         this.bulletins = next;
         this.bulletinsHydrated = true;
         this._writeCache(this.bulletins);
+        if (!snapshot.metadata.fromCache) {
+            // Refresh the instant-paint snapshot with server truth so the next
+            // visit's first paint can't resurrect deleted posts.
+            storeServerSnapshot(this.bulletins);
+        }
         this.populateAdvisorFilters();
         this.renderResourceCategoryFilters();
         this.displayBulletins();
