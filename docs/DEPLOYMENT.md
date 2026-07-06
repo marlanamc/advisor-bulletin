@@ -9,7 +9,7 @@ How the EBHCS Advisor Bulletin Board gets from this repository to the live site,
 The GitHub Action (`.github/workflows/deploy.yml`) does this on each push:
 
 1. **Test job** — installs dependencies and runs the full Playwright suite (`npm test`) against a local dev server. If any test fails, **the deploy is blocked** and the live site stays on its previous version. A failure report is attached to the workflow run as an artifact.
-2. **Deploy job** — runs `npm run build` and publishes `dist/` to Firebase Hosting using the `FIREBASE_SERVICE_ACCOUNT` repository secret.
+2. **Deploy job** — runs `npm run build`, publishes `dist/` to Firebase Hosting, and deploys `firestore.rules` and `storage.rules` using the `FIREBASE_SERVICE_ACCOUNT` repository secret.
 
 `npm run build` automatically runs two pre-steps (`prebuild` in package.json):
 
@@ -46,7 +46,7 @@ npm run deploy          # = npm run build + firebase deploy
 The rules in `firestore.rules` are the real security boundary of the site (the Firebase API key in the source code is public by design — that is normal for Firebase web apps).
 
 - **Who is an admin:** the `isPrivilegedAdvisor` function near the bottom of `firestore.rules` lists the admin emails (currently `admin@ebhcs.org` and `leah@ebhcs.org`). To change admins, edit that function, then deploy rules (`firebase deploy --only firestore:rules` or a full deploy). Also update `src/admin-roles.js` (the build fails if it drifts from the rules) and `docs/FIREBASE_SECURITY_RULES.md` so code, rules, and docs stay in sync.
-- Rules changes are **not** deployed by the GitHub Action (it only publishes hosting). Deploy them manually as above.
+- Rules changes ship automatically with every push to `main` (the deploy job runs `firebase deploy --only firestore:rules,storage:uploads`). For an emergency rules-only deploy without a code change, run `firebase deploy --only firestore:rules,storage:uploads` manually (see below).
 - **Student advisor directory:** the doc `config/studentDirectory` (publicly readable, admin-writable) is republished automatically whenever an admin adds/edits/removes an advisor in the portal. The student site falls back to the static list in `src/advisor-directory.js` if the doc is missing.
 
 ## Service account (for maintenance scripts)
@@ -67,9 +67,15 @@ The project uses four Firebase products: **Firestore** (post data), **Authentica
 - Check usage: Firebase Console → the **Usage and billing** page (gear icon). If students ever see "quota exceeded" errors late in the day, that's the daily read limit — the snapshot-first loading was designed specifically to keep reads low, so investigate before paying for anything.
 - If the project is ever moved to the pay-as-you-go **Blaze** plan, set a budget alert in the same screen.
 
+## Daily snapshot refresh
+
+A separate workflow (`.github/workflows/refresh-snapshot.yml`) rebuilds and redeploys hosting **once per day at 09:00 UTC** (and on manual trigger via **Actions → Refresh Student Feed Snapshot → Run workflow**). This keeps `student-feed-snapshot.json` from going stale between code pushes — without it, students can briefly see bulletins that were deleted or expired since the last deploy.
+
+The refresh workflow runs `npm run build` (which regenerates the snapshot) and deploys hosting only. It does **not** redeploy security rules.
+
 ## Things a future maintainer should know
 
-- **Contact email:** `index.html` currently lists `mcreed@ebhcs.org` as the student-facing contact (two places — search the file). When Marlie is no longer reachable, change this to a monitored address and redeploy. <!-- HANDOVER TODO -->
+- **Contact email:** `index.html` currently lists `mcreed@ebhcs.org` as the student-facing contact (two places — search the file). When Marlie is no longer reachable, change this to a monitored address and redeploy. See [SUCCESSION_CHECKLIST.md](SUCCESSION_CHECKLIST.md) for the full handoff steps.
 - **Node version:** use Node 20 (see `.nvmrc`; run `nvm use` if you have nvm).
 - **Custom domain:** the site runs on Firebase Hosting's default domain. If the school adds a custom domain later: Firebase Console → Hosting → "Add custom domain" (Firebase handles the SSL certificate; you only add DNS records at the domain registrar).
 - **Rollback:** Firebase Console → Hosting → Release history → "Rollback" instantly restores a previous version of the site without touching git.

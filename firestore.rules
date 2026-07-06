@@ -4,22 +4,20 @@ service cloud.firestore {
     match /bulletins/{bulletinId} {
 
       // Students can read active content. Unpublished resources stay visible only to staff.
-      allow read: if isAdvisor(request.auth)
+      allow read: if isActiveAdvisor(request.auth)
         || (resource.data.isActive == true
           && (!('type' in resource.data)
             || resource.data.type != 'resource'
             || !('isPublished' in resource.data)
             || resource.data.isPublished == true));
 
-      // Only authenticated advisors can create content
-      allow create: if request.auth != null
-        && request.auth.token.email.matches('.*@ebhcs\\.org')
+      // Only advisors still on the advisor list can create content
+      allow create: if isActiveAdvisor(request.auth)
         && validateBulletinData(request.resource.data)
         && request.resource.data.postedBy == getUsername(request.auth.token.email);
 
       // Original authors can update their own content; admin/leah may update any content.
-      allow update: if request.auth != null
-        && request.auth.token.email.matches('.*@ebhcs\\.org')
+      allow update: if isActiveAdvisor(request.auth)
         && (isPrivilegedAdvisor(request.auth.token.email)
           || resource.data.postedBy == getUsername(request.auth.token.email))
         && validateBulletinData(request.resource.data)
@@ -27,10 +25,9 @@ service cloud.firestore {
         && (!('datePosted' in request.resource.data) || request.resource.data.datePosted == resource.data.datePosted)
         && (!('createdAt' in request.resource.data) || !('createdAt' in resource.data) || request.resource.data.createdAt == resource.data.createdAt);
 
-      // Any authenticated advisor can update the display order of a resource (drag-to-reorder).
+      // Any active advisor can update the display order of a resource (drag-to-reorder).
       // Only resourceOrder and updatedAt may change; everything else must remain identical.
-      allow update: if request.auth != null
-        && request.auth.token.email.matches('.*@ebhcs\\.org')
+      allow update: if isActiveAdvisor(request.auth)
         && resource.data.type == 'resource'
         && request.resource.data.type == 'resource'
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['resourceOrder', 'updatedAt'])
@@ -41,8 +38,7 @@ service cloud.firestore {
 
       // Privileged advisors can permanently delete any bulletin. Authors may delete
       // their own inactive placeholders (cancelled or failed publish drafts).
-      allow delete: if request.auth != null
-        && request.auth.token.email.matches('.*@ebhcs\\.org')
+      allow delete: if isActiveAdvisor(request.auth)
         && (isPrivilegedAdvisor(request.auth.token.email)
           || (resource.data.isActive == false
             && resource.data.postedBy == getUsername(request.auth.token.email)));
@@ -60,8 +56,8 @@ service cloud.firestore {
     }
 
     match /advisors/{username} {
-      // Any authenticated advisor can read the advisors list
-      allow read: if isAdvisor(request.auth);
+      // Any active advisor can read the advisors list
+      allow read: if isActiveAdvisor(request.auth);
 
       // Only privileged advisors can create, update, or delete advisor records
       allow write: if request.auth != null
@@ -88,8 +84,8 @@ service cloud.firestore {
       // Public clients can append sanitized runtime errors for monitoring.
       allow create: if validateClientError(request.resource.data);
 
-      // Advisors can review error logs in Firebase Console.
-      allow read: if isAdvisor(request.auth);
+      // Active advisors can review error logs in Firebase Console.
+      allow read: if isActiveAdvisor(request.auth);
 
       // Error logs are append-only from the public client.
       allow update, delete: if false;
@@ -102,6 +98,17 @@ service cloud.firestore {
     function isAdvisor(authInfo) {
       return authInfo != null
         && authInfo.token.email.matches('.*@ebhcs\\.org');
+    }
+
+    // An advisor is "active" only while their advisors/{username} doc exists.
+    // Removing an advisor in the portal (Advisors tab -> Remove) therefore
+    // revokes their write access immediately, even if their Firebase Auth
+    // login still exists. Privileged admins are exempt so the accounts that
+    // manage the advisor list can never lock themselves out.
+    function isActiveAdvisor(authInfo) {
+      return isAdvisor(authInfo)
+        && (isPrivilegedAdvisor(authInfo.token.email)
+          || exists(/databases/$(database)/documents/advisors/$(getUsername(authInfo.token.email))));
     }
 
     function isPrivilegedAdvisor(email) {

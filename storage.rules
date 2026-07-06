@@ -1,30 +1,43 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
+    // An advisor is "active" only while their advisors/{username} doc exists
+    // in Firestore (mirrors isActiveAdvisor in firestore.rules). Removing an
+    // advisor in the portal revokes upload access even if their Firebase Auth
+    // login still exists. Privileged admins are always allowed.
+    //
+    // Note: this uses cross-service rules (Storage reading Firestore). The
+    // first `firebase deploy` after adding this prompts once to grant the
+    // Storage service agent read access to Firestore — accept it.
+    function isActiveAdvisor() {
+      return request.auth != null
+        && request.auth.token.email.matches('.*@ebhcs\\.org')
+        && (request.auth.token.email in ['admin@ebhcs.org', 'leah@ebhcs.org']
+          || firestore.exists(/databases/(default)/documents/advisors/$(request.auth.token.email.split('@')[0])));
+    }
+
     // PDF files in pdfs/ folder
     match /pdfs/{allPaths=**} {
-      // Only authenticated ebhcs.org users can upload
-      allow write: if request.auth != null
-        && request.auth.token.email.matches('.*@ebhcs\\.org')
+      // Only active ebhcs.org advisors can upload
+      allow write: if isActiveAdvisor()
         && request.resource.size < 10 * 1024 * 1024  // 10MB limit
         && request.resource.contentType == 'application/pdf';
-      
+
       // Anyone can read PDFs (for student viewing)
       allow read: if true;
     }
-    
+
     // Images in images/ folder (if you add image storage later)
     match /images/{allPaths=**} {
-      // Only authenticated ebhcs.org users can upload
-      allow write: if request.auth != null
-        && request.auth.token.email.matches('.*@ebhcs\\.org')
+      // Only active ebhcs.org advisors can upload
+      allow write: if isActiveAdvisor()
         && request.resource.size < 5 * 1024 * 1024   // 5MB limit
         && request.resource.contentType.matches('image/.*');
-      
+
       // Anyone can read images
       allow read: if true;
     }
-    
+
     // Deny all other paths
     match /{allPaths=**} {
       allow read, write: if false;

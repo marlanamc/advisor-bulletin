@@ -59,3 +59,11 @@ jobs:
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           channelId: live
           projectId: ebhcs-bulletin-board
+
+      - name: Authenticate for rules deploy
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+
+      - name: Deploy Firestore and Storage rules
+        run: npx firebase-tools deploy --only firestore:rules,storage:uploads --project ebhcs-bulletin-board --non-interactive

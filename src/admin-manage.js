@@ -194,13 +194,17 @@ export class AdminManageMethods {
     async deleteAdvisor(username) {
         const advisor = this.advisors.find(a => a.username === username);
         if (!advisor) return;
-        if (!confirm(`Remove ${advisor.displayName} as an advisor? This won't delete their login account.`)) return;
+        if (!confirm(`Remove ${advisor.displayName} as an advisor?\n\nThis immediately blocks them from posting or editing content. Their login account still exists — also disable it in Firebase Console (Authentication → Users) to fully close access.`)) return;
         try {
             await deleteDoc(doc(db, 'advisors', username));
             this.advisors = this.advisors.filter(a => a.username !== username);
             await this.publishStudentDirectory();
             this.loadAdvisors();
             this.showToast(`${advisor.displayName} removed.`, 'success');
+            this.showTemporaryMessage(
+                `Final step (recommended): open Firebase Console → Authentication → Users and disable ${this.getAdvisorAuthEmail(username)} so the login can no longer be used.`,
+                'info'
+            );
         } catch (e) {
             this.showToast('Error removing advisor: ' + e.message, 'error');
         }

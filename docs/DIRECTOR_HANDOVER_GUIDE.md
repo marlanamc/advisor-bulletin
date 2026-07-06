@@ -32,7 +32,10 @@ Both steps are required. Skipping step 2 means the advisor appears in dropdowns 
 1. **In the admin portal (Advisors tab):** Add the advisor with username + display name. Use their `@ebhcs.org` email if known. Set their "Title on student site" (e.g. Advisor) and leave "Show on student site" on if students should see them in the advisor directory.
 2. **In Firebase Console:** Go to **Authentication → Users → Add user**. Create the same email (usually `username@ebhcs.org`) and a temporary password. Share the password securely and ask them to change it on first login.
 
-**When an advisor leaves:** Remove them from the Advisors tab in the admin portal. Optionally disable their Firebase Auth account in the Console (Authentication → Users).
+**When an advisor leaves (2 steps):**
+
+1. **In the admin portal (Advisors tab):** Click **Remove**. This immediately blocks them from posting or editing content — the security rules only allow writes from people on the advisor list.
+2. **In Firebase Console:** Go to **Authentication → Users**, find their account, and **Disable** (or delete) it. This closes off the login itself. Don't skip this — the account can otherwise still sign in, even though it can no longer post.
 
 The student site's advisor directory updates automatically whenever you add, edit, or remove an advisor — no developer needed.
 
@@ -46,6 +49,8 @@ Once a month, the Firebase keyholder should:
 2. Sort by newest. If empty (or only old entries), the site is healthy.
 3. If new errors appear, note the `message`, `page`, and `source` fields (`student` = public site, `admin` = advisor portal).
 4. Contact the technical fallback if errors are recurring or students report broken pages.
+5. **Prune old error logs** (optional, keeps Firestore tidy): from the repo root, run `npm run prune:errors` (dry-run), then `npm run prune:errors:confirm` if the count looks right. Requires a service account key — see [DEPLOYMENT.md](DEPLOYMENT.md).
+6. **Check the student feed cap**: in the admin portal dashboard, watch for the yellow/red warning about approaching the 200-active-item limit. If it appears, archive old posts in **Manage Posts**.
 
 Student and admin pages automatically log JavaScript errors here. No developer action is needed day-to-day unless errors show up.
 
@@ -64,7 +69,7 @@ Student and admin pages automatically log JavaScript errors here. No developer a
 
 **Do not edit code or Firestore rules** unless you have a developer. The site is frozen as-is — operational fixes happen through the admin portal and Firebase Console only.
 
-If the whole site is broken after a code change, a previous version can be restored without a developer: Firebase Console → **Hosting** → Release history → **Rollback**. For anything involving code, deploys, or costs, hand your developer [DEPLOYMENT.md](DEPLOYMENT.md) — it explains how the site ships and where the safety rails are.
+If the whole site is broken after a code change, a previous version can be restored without a developer: Firebase Console → **Hosting** → Release history → **Rollback**. For anything involving code, deploys, or costs, hand your developer [DEPLOYMENT.md](DEPLOYMENT.md) — it explains how the site ships and where the safety rails are. For long-term ownership changes (new Firebase keyholder, new privileged admin, contact email updates), see [SUCCESSION_CHECKLIST.md](SUCCESSION_CHECKLIST.md).
 
 ---
 
@@ -84,21 +89,21 @@ If the whole site is broken after a code change, a previous version can be resto
 
 | Username | Email Address | Initial Password | Role |
 |----------|---------------|------------------|------|
-| admin | admin@ebhcs.org | ebhcs123 | Administrator |
-| jorge | jorge@ebhcs.org | ebhcs123 | Advisor |
-| fabiola | fabiola@ebhcs.org | ebhcs123 | Advisor |
-| leidy | leidy@ebhcs.org | ebhcs123 | Advisor |
-| carmen | carmen@ebhcs.org | ebhcs123 | Advisor |
-| jerome | jerome@ebhcs.org | ebhcs123 | Advisor |
-| felipe | felipe@ebhcs.org | ebhcs123 | Advisor |
-| simonetta | simonetta@ebhcs.org | ebhcs123 | Advisor |
-| mike | mike@ebhcs.org | ebhcs123 | Advisor |
-| leah | leah@ebhcs.org | ebhcs123 | Administrator |
+| admin | admin@ebhcs.org | *(set a unique temporary password)* | Administrator |
+| jorge | jorge@ebhcs.org | *(set a unique temporary password)* | Advisor |
+| fabiola | fabiola@ebhcs.org | *(set a unique temporary password)* | Advisor |
+| leidy | leidy@ebhcs.org | *(set a unique temporary password)* | Advisor |
+| carmen | carmen@ebhcs.org | *(set a unique temporary password)* | Advisor |
+| jerome | jerome@ebhcs.org | *(set a unique temporary password)* | Advisor |
+| felipe | felipe@ebhcs.org | *(set a unique temporary password)* | Advisor |
+| simonetta | simonetta@ebhcs.org | *(set a unique temporary password)* | Advisor |
+| mike | mike@ebhcs.org | *(set a unique temporary password)* | Advisor |
+| leah | leah@ebhcs.org | *(set a unique temporary password)* | Administrator |
 
 **Creating Users:**
 1. Click **"Add user"**
 2. Enter email address
-3. Enter temporary password: `ebhcs123`
+3. Enter a **unique temporary password** for that account (do not reuse the same password across advisors). Share it securely out-of-band.
 4. Click **"Add user"**
 5. Repeat for all advisors
 
@@ -203,16 +208,16 @@ service cloud.firestore {
 ### ✅ **Test 2.1: Authentication Flow**
 - [ ] **Test Admin Login:**
   - Go to https://ebhcsjobboard.web.app/admin
-  - Login with: `admin@ebhcs.org` / `ebhcs123`
+  - Login with the admin account using the temporary password you set in Firebase Console
   - Verify admin panel loads
-  - Verify "Change Password" modal appears
-  - Change password to: `AdminEBHCS2025!`
+  - Verify "Change Password" modal appears (required — there is no skip option)
+  - Change password to a strong unique password
   - Verify login works with new password
 
 - [ ] **Test Advisor Login:**
-  - Login with: `jorge@ebhcs.org` / `ebhcs123`
+  - Login with a test advisor account using its temporary password
   - Verify password change prompt appears
-  - Change password to: `JorgeEBHCS2025!`
+  - Change password to a strong unique password
   - Verify login works with new password
 
 - [ ] **Test Password Reset:**

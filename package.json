@@ -16,7 +16,9 @@
     "test:headed": "playwright test --headed",
     "import:resources": "node scripts/import-resources.mjs",
     "clear:analytics": "node scripts/clear-analytics-events.mjs --dry-run",
-    "clear:analytics:confirm": "node scripts/clear-analytics-events.mjs --confirm"
+    "clear:analytics:confirm": "node scripts/clear-analytics-events.mjs --confirm",
+    "prune:errors": "node scripts/prune-client-errors.mjs --dry-run",
+    "prune:errors:confirm": "node scripts/prune-client-errors.mjs --confirm"
   },
   "dependencies": {
     "firebase": "^12.13.0",

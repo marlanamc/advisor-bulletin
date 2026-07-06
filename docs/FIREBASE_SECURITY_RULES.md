@@ -13,9 +13,11 @@ The production security rules are located in the [firestore.rules](../firestore.
 
 These rules validate:
 1. **Public Read Access**: Active posts and published resources are readable by anyone (for student use).
-2. **Authenticated Write Access**: Creating and editing requires a verified `@ebhcs.org` account.
-3. **Ownership Limits**: Advisors can only update their own posts. Administrators (`admin@ebhcs.org`, `leah@ebhcs.org`) have global overrides. The authoritative list lives in the `isPrivilegedAdvisor` function in [firestore.rules](../firestore.rules) — if you change it there, update this document too.
+2. **Active Advisor Write Access**: Creating and editing requires a verified `@ebhcs.org` account **and** an `advisors/{username}` doc in Firestore (the `isActiveAdvisor` function). Removing an advisor on the portal's Advisors tab therefore revokes their write access immediately, even before their login is disabled. The same check gates file uploads in [storage.rules](../storage.rules) via cross-service rules.
+3. **Ownership Limits**: Advisors can only update their own posts. Administrators (`admin@ebhcs.org`, `leah@ebhcs.org`) have global overrides and are exempt from the advisor-doc check so they can never lock themselves out. The authoritative list lives in `PRIVILEGED_ADMIN_EMAILS` in [src/admin-roles.js](../src/admin-roles.js), mirrored in [firestore.rules](../firestore.rules) and [storage.rules](../storage.rules) — `scripts/check-admin-emails-sync.mjs` fails the build if the three drift apart.
 4. **Data Shape Validation**: Field checks for text lengths, date formats (single event date, date ranges, multiple sessions, and deadlines), PDF attachments, and analytics/error properties.
+
+**Before deploying the active-advisor rules for the first time**, run `scripts/check-advisor-auth-sync.mjs` (needs a service account key) to confirm every current advisor has an `advisors/{username}` doc — anyone missing one will lose posting access when the rules ship.
 
 ## Firebase Authentication Setup
 

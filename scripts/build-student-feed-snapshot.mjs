@@ -6,12 +6,13 @@ import { resolve } from 'node:path';
 const PROJECT_ID = 'ebhcs-bulletin-board';
 const COLLECTION = 'bulletins';
 const OUT_PATH = resolve(process.cwd(), 'public/student-feed-snapshot.json');
-const MAX_ITEMS = 120;
-const MAX_POST_ITEMS = 72;
+// Keep in sync with the student listener limit in src/firebase-config.js (limit(200)).
+const MAX_ITEMS = 200;
+const MAX_POST_ITEMS = 120;
 // Pre-hydration snapshot cap for resources. Keep this comfortably above the real
 // resource count so students don't see a partial list before Firestore hydrates;
 // the live query corrects it on load. Bump if the resource directory keeps growing.
-const MAX_RESOURCE_ITEMS = 48;
+const MAX_RESOURCE_ITEMS = 80;
 
 function parseArgs(argv) {
   const args = { credentials: null, allowClient: true };

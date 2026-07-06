@@ -35,9 +35,6 @@ class EnhancedAuth {
         // Forgot password button
         document.getElementById('forgotPasswordBtn').addEventListener('click', () => this.showForgotPassword());
 
-        // Skip password change (temporary)
-        document.getElementById('skipPasswordChange').addEventListener('click', () => this.skipPasswordChange());
-
         // Real-time password validation
         document.getElementById('newPassword').addEventListener('input', () => this.checkPasswordStrength());
         document.getElementById('confirmPassword').addEventListener('input', () => this.validatePasswordMatch());
@@ -235,14 +232,6 @@ class EnhancedAuth {
             changeBtn.disabled = false;
             changeBtn.classList.remove('loading');
             changeBtn.textContent = 'Change Password';
-        }
-    }
-
-    skipPasswordChange() {
-        if (confirm('Are you sure you want to skip changing your password? We recommend changing it for security.')) {
-            const user = auth.currentUser;
-            document.getElementById('passwordChangeModal').style.display = 'none';
-            this.completeLogin(user.email.split('@')[0], user.email);
         }
     }
 

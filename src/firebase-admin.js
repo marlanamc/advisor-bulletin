@@ -39,6 +39,9 @@ import { collection, doc, query, where, orderBy, limit, onSnapshot, getDoc, getD
 // Caps Firestore reads on the admin dashboard listener. Reorder validation falls back
 // to getDoc when an ID is missing from this cache (see reorderResourcesInCategory).
 const ADMIN_ACTIVE_BULLETINS_LIMIT = 500;
+// Student feed query cap (src/firebase-config.js). Warn admins before posts drop off.
+const STUDENT_FEED_DISPLAY_LIMIT = 200;
+const ACTIVE_POST_CAP_WARN_AT = 85;
 
 installClientErrorLogger('admin')
 import { onAuthStateChanged, signOut, sendPasswordResetEmail } from 'firebase/auth'
@@ -812,7 +815,49 @@ class FirebaseAdminPanel {
         this.setText('statUpcomingEvents', upcomingEvents.length);
         this.setText('statExpiringSoon', expiringSoon.length);
 
+        this.updateActivePostCapWarning();
         this.renderUpcomingDashboardEvents();
+    }
+
+    updateActivePostCapWarning() {
+        const banner = document.getElementById('dashActivePostCapWarning');
+        if (!banner) return;
+
+        const activeCount = this.bulletins.length;
+        if (activeCount < ACTIVE_POST_CAP_WARN_AT) {
+            banner.hidden = true;
+            banner.replaceChildren();
+            return;
+        }
+
+        banner.hidden = false;
+        const remaining = Math.max(STUDENT_FEED_DISPLAY_LIMIT - activeCount, 0);
+        const severity = activeCount >= STUDENT_FEED_DISPLAY_LIMIT ? 'critical' : 'warning';
+        banner.dataset.severity = severity;
+        banner.replaceChildren();
+
+        const strong = document.createElement('strong');
+        strong.textContent = severity === 'critical'
+            ? `Student feed is full (${activeCount}/${STUDENT_FEED_DISPLAY_LIMIT} active items).`
+            : `Approaching the student feed limit (${activeCount}/${STUDENT_FEED_DISPLAY_LIMIT}).`;
+        banner.appendChild(strong);
+
+        const detail = document.createTextNode(severity === 'critical'
+            ? ' Oldest posts no longer appear on the student site. Archive or unpublish old posts in '
+            : ` ${remaining} slot${remaining === 1 ? '' : 's'} left before oldest posts stop appearing. Archive old posts in `);
+        banner.appendChild(detail);
+
+        const link = document.createElement('button');
+        link.type = 'button';
+        link.className = 'ap-cap-warning-link';
+        link.textContent = 'Manage Posts';
+        link.addEventListener('click', () => {
+            if (typeof window.apShowPage === 'function') {
+                window.apShowPage('posts');
+            }
+        });
+        banner.appendChild(link);
+        banner.appendChild(document.createTextNode('.'));
     }
 
     renderUpcomingDashboardEvents() {

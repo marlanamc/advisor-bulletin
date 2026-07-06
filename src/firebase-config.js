@@ -236,7 +236,7 @@ class FirebaseBulletinBoard {
         }
 
         // Cap reads as the archive grows — well above what the feed ever shows.
-        const q = query(collection(db, 'bulletins'), where('isActive', '==', true), orderBy('datePosted', 'desc'), limit(100));
+        const q = query(collection(db, 'bulletins'), where('isActive', '==', true), orderBy('datePosted', 'desc'), limit(200));
         onSnapshot(q, (snapshot) => {
             // Ignore empty cache-only snapshots while the server response is still pending.
             if (snapshot.empty && snapshot.metadata.fromCache && !this.bulletinsHydrated) {
