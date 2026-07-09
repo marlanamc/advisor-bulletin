@@ -1043,6 +1043,12 @@ document.addEventListener('DOMContentLoaded', function() {
         var m = document.getElementById('apToastMsg');
         if (!t) return;
         if (m) m.textContent = msg || 'Done!';
+        if (t.hidden) {
+            // Lift the anti-flash hidden attribute, then force a reflow so
+            // the slide-up transition still animates on the first toast.
+            t.hidden = false;
+            void t.offsetWidth;
+        }
         t.classList.add('show');
         setTimeout(function() { t.classList.remove('show'); }, 3000);
     };

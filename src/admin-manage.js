@@ -1,58 +1,22 @@
 // Advisor management, the Manage list, and resource reordering.
 // Extracted verbatim from firebase-admin.js; methods are merged onto
 // FirebaseAdminPanel.prototype by applyMethods() in firebase-admin.js.
-import { db, auth } from './firebase.js'
+import { db } from './firebase.js'
 import { getPublicAdvisorEmail } from './advisor-directory.js'
 import { isPrivilegedAdminEmail } from './admin-roles.js'
 import { isDocumentResource } from './resource-kinds.js'
 import { doc, setDoc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore'
-import { sendPasswordResetEmail } from 'firebase/auth'
 
 export class AdminManageMethods {
     canManageAllPosts() {
         return this.currentUser?.isAdmin === true;
     }
 
-    /** Email used for Firebase Auth sign-in (matches enhanced-auth parseLoginIdentifier). */
+    /** Google account used for portal sign-in (matches google-auth.js). */
     getAdvisorAuthEmail(username) {
         const u = String(username || '').trim().toLowerCase();
         if (!u) return '';
-        return u === 'admin' ? 'admin@ebhcs.org' : `${u}@ebhcs.org`;
-    }
-
-    async sendAdvisorPasswordReset(username) {
-        if (!this.canManageAllPosts()) {
-            this.showToast('Only admins can send password resets.', 'error');
-            return;
-        }
-        const authEmail = this.getAdvisorAuthEmail(username);
-        if (!authEmail) {
-            this.showToast('Invalid username.', 'error');
-            return;
-        }
-        const advisor = this.advisors.find((a) => a.username === username);
-        const label = advisor?.displayName || username;
-        const ok = confirm(
-            `Send a password reset email to:\n${authEmail}\n\nThis is their Firebase login address (${label}). They will set a new password using the link in that inbox.`
-        );
-        if (!ok) return;
-        try {
-            if (typeof auth === 'undefined') {
-                throw new Error('Authentication is not available.');
-            }
-            await sendPasswordResetEmail(auth, authEmail);
-            this.showToast(`Reset email sent to ${authEmail}.`, 'success');
-        } catch (e) {
-            const code = e?.code;
-            let msg = e?.message || 'Failed to send reset email.';
-            if (code === 'auth/user-not-found') {
-                msg = `No Firebase account for ${authEmail}. Create the user in Firebase Auth first, or fix the login email.`;
-            } else if (code === 'auth/too-many-requests') {
-                msg = 'Too many attempts. Try again later.';
-            }
-            console.error('sendAdvisorPasswordReset', e);
-            this.showToast(msg, 'error');
-        }
+        return `${u}@ebhcs.org`;
     }
 
     // ── Advisor Management ────────────────────────────────────────────
@@ -84,7 +48,6 @@ export class AdminManageMethods {
                         <button type="button" class="edit-btn" onclick="adminPanel.openEditAdvisor('${this.escapeHtml(a.username)}')">Edit</button>
                         ${a.username !== this.currentUser.username ? `<button type="button" class="delete-btn" onclick="adminPanel.deleteAdvisor('${this.escapeHtml(a.username)}')">Remove</button>` : ''}
                     </div>
-                    <button type="button" class="reset-password-btn" onclick="adminPanel.sendAdvisorPasswordReset('${this.escapeHtml(a.username)}')">Reset password</button>
                 </div>
             </div>
         `).join('');
@@ -152,12 +115,20 @@ export class AdminManageMethods {
     async addAdvisor() {
         const username = document.getElementById('newAdvisorUsername').value.trim().toLowerCase();
         const displayName = document.getElementById('newAdvisorDisplayName').value.trim();
-        const email = document.getElementById('newAdvisorEmail').value.trim();
+        const email = document.getElementById('newAdvisorEmail').value.trim().toLowerCase();
         const isAdmin = document.getElementById('newAdvisorIsAdmin').checked;
         const publicRole = document.getElementById('newAdvisorPublicRole').value.trim() || 'Advisor';
         const showInDirectory = document.getElementById('newAdvisorShowInDirectory').checked;
         if (!username || !displayName) {
             this.showToast('Username and display name are required.', 'error'); return;
+        }
+        // Access is granted by matching the Google sign-in email against
+        // advisors/{username}, so the username must be their real email prefix.
+        if (email && !email.endsWith('@ebhcs.org')) {
+            this.showToast('Email must be an @ebhcs.org address — it is what they sign in with.', 'error'); return;
+        }
+        if (email && email.split('@')[0] !== username) {
+            this.showToast(`Username must match their email: use "${email.split('@')[0]}" for ${email}.`, 'error'); return;
         }
         if (this.advisors.find(a => a.username === username)) {
             this.showToast('An advisor with that username already exists.', 'error'); return;
@@ -183,7 +154,7 @@ export class AdminManageMethods {
             this.loadAdvisors();
             this.showToast(`${displayName} added to the advisor list.`, 'success');
             this.showTemporaryMessage(
-                `Next step (required): open Firebase Console → Authentication → Add user with email ${loginEmail}. They cannot log in until that account exists.`,
+                `Done — no other setup needed. Tell them to open the Advisor Portal and click "Sign in with Google" using ${loginEmail}.`,
                 'info'
             );
         } catch (e) {
@@ -194,17 +165,13 @@ export class AdminManageMethods {
     async deleteAdvisor(username) {
         const advisor = this.advisors.find(a => a.username === username);
         if (!advisor) return;
-        if (!confirm(`Remove ${advisor.displayName} as an advisor?\n\nThis immediately blocks them from posting or editing content. Their login account still exists — also disable it in Firebase Console (Authentication → Users) to fully close access.`)) return;
+        if (!confirm(`Remove ${advisor.displayName} as an advisor?\n\nThis immediately locks them out of the portal — even if they sign in with Google, they will be turned away.`)) return;
         try {
             await deleteDoc(doc(db, 'advisors', username));
             this.advisors = this.advisors.filter(a => a.username !== username);
             await this.publishStudentDirectory();
             this.loadAdvisors();
-            this.showToast(`${advisor.displayName} removed.`, 'success');
-            this.showTemporaryMessage(
-                `Final step (recommended): open Firebase Console → Authentication → Users and disable ${this.getAdvisorAuthEmail(username)} so the login can no longer be used.`,
-                'info'
-            );
+            this.showToast(`${advisor.displayName} removed. They can no longer sign in to the portal.`, 'success');
         } catch (e) {
             this.showToast('Error removing advisor: ' + e.message, 'error');
         }

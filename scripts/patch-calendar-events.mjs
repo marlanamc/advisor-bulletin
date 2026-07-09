@@ -109,7 +109,7 @@ function matchReason(data) {
 }
 
 function parseArgs(argv) {
-  const args = { fix: false, credentials: null, id: '', login: false, email: 'admin@ebhcs.org' };
+  const args = { fix: false, credentials: null, id: '', login: false, email: 'mcreed@ebhcs.org' };
   for (const arg of argv) {
     if (arg === '--fix') args.fix = true;
     else if (arg === '--login') args.login = true;
@@ -121,7 +121,7 @@ function parseArgs(argv) {
 
 Options:
   --login           Sign in with an @ebhcs.org admin account (no service-account file)
-  --email=ADDR      Admin email for --login (default: admin@ebhcs.org)
+  --email=ADDR      Admin email for --login (default: mcreed@ebhcs.org)
   --credentials=PATH  Path to Firebase service-account JSON
   --fix             Write hideFromMainFeed: true (default is dry-run)
   --id=DOC_ID       Patch a single bulletin only

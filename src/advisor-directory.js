@@ -4,17 +4,19 @@
  * automatically from the admin Advisors tab; this static list is only used
  * when that doc is missing or unreadable.
  * loginUsername matches Firestore `advisors` document id / bulletin login id.
+ * Since the move to Google sign-in it is ALWAYS the prefix of the advisor's
+ * real @ebhcs.org email (the account they sign in with).
  */
 export const STUDENT_ADVISOR_DIRECTORY = [
-    { name: 'Leah', role: 'Coordinator/Educator', email: 'lgregory@ebhcs.org', loginUsername: 'leah' },
-    { name: 'Carmen', role: 'Advisor', email: 'vlalin@ebhcs.org', loginUsername: 'carmen' },
-    { name: 'Fabiola', role: 'Advisor', email: 'fvaquerano@ebhcs.org', loginUsername: 'fabiola' },
-    { name: 'Felipe', role: 'Advisor', email: 'fgallego@ebhcs.org', loginUsername: 'felipe' },
-    { name: 'Jerome', role: 'Advisor', email: 'jkiley@ebhcs.org', loginUsername: 'jerome' },
-    { name: 'Jorge', role: 'Advisor', email: 'rocha@ebhcs.org', loginUsername: 'jorge' },
-    { name: 'Leidy', role: 'Advisor', email: 'lalzate@ebhcs.org', loginUsername: 'leidy' },
-    { name: 'Mike K.', role: 'Advisor', email: 'mkelsen@ebhcs.org', loginUsername: 'mike' },
-    { name: 'Simonetta', role: 'Advisor', email: 'spiergentili@ebhcs.org', loginUsername: 'simonetta' }
+    { name: 'Leah', role: 'Coordinator/Educator', email: 'lgregory@ebhcs.org', loginUsername: 'lgregory' },
+    { name: 'Carmen', role: 'Advisor', email: 'vlalin@ebhcs.org', loginUsername: 'vlalin' },
+    { name: 'Fabiola', role: 'Advisor', email: 'fvaquerano@ebhcs.org', loginUsername: 'fvaquerano' },
+    { name: 'Felipe', role: 'Advisor', email: 'fgallego@ebhcs.org', loginUsername: 'fgallego' },
+    { name: 'Jerome', role: 'Advisor', email: 'jkiley@ebhcs.org', loginUsername: 'jkiley' },
+    { name: 'Jorge', role: 'Advisor', email: 'rocha@ebhcs.org', loginUsername: 'rocha' },
+    { name: 'Leidy', role: 'Advisor', email: 'lalzate@ebhcs.org', loginUsername: 'lalzate' },
+    { name: 'Mike K.', role: 'Advisor', email: 'mkelsen@ebhcs.org', loginUsername: 'mkelsen' },
+    { name: 'Simonetta', role: 'Advisor', email: 'spiergentili@ebhcs.org', loginUsername: 'spiergentili' }
 ];
 
 /**

@@ -13,7 +13,6 @@ One-off and recurring maintenance tools. Run them from the repository root with 
 
 ## Account management
 
-- **mark-password-change.mjs** 🔑 — sets `requirePasswordChange: true` on user docs so advisors must set a new password at next login. Use after creating accounts with temporary passwords. Flags: `--only u1,u2`, `--exclude u1,u2`, `--dry-run`, `--help`.
 - **update-roles.mjs** — interactive; signs in as an admin and writes `users/{id}` role docs (display name, email, isAdmin) for `leah`, `admin`, and `mcreed`. Edit the `TARGETS` list at the top before running if roles change.
 
 ## Bulk resource import pipeline (CSV → Firestore)
@@ -28,10 +27,10 @@ These were used for the one-time import of curated community resources from `dat
 - **update-imported-summaries.mjs** 🔑 — pushes the latest EN/ES summaries from the seeder into already-imported Firestore docs, matched by org name + category.
 - **split-resource-descriptions.mjs** 🔑 — one-time fix that split combined "English. Español: …" descriptions into separate fields. Safe to re-run (skips already-split docs).
 - **repair-resource-visibility.mjs** 🔑 — diagnoses why a specific resource isn't visible to students (finds it by partial title, prints every visibility flag). `--fix` sets `isPublished`/`isActive` to true.
-- **cleanup-inactive-draft-bulletins.mjs** — lists and optionally deletes inactive **post** placeholders left by failed publishes (`type === 'post'` only; never touches resources). Dry-run by default; `--confirm` to delete. Signs in as `admin@ebhcs.org` (password prompt) when no service account is configured.
+- **cleanup-inactive-draft-bulletins.mjs** — lists and optionally deletes inactive **post** placeholders left by failed publishes (`type === 'post'` only; never touches resources). Dry-run by default; `--confirm` to delete. Signs in as `mcreed@ebhcs.org` (password prompt) when no service account is configured.
 - **cleanup-stale-bulletins.mjs** — permanently deletes inactive bulletins of **all types** whose `updatedAt` is older than 180 days (configurable with `--days=`). Dry-run by default; `--confirm` to delete. Use for long-term Firestore hygiene after advisors have archived old content.
 - **prune-client-errors.mjs** 🔑 — deletes `errors` collection documents older than 90 days. Run via npm: `npm run prune:errors` (dry-run) then `npm run prune:errors:confirm`. Mentioned in the director guide monthly checklist.
-- **patch-calendar-events.mjs** 🔑 — one-time backfill: sets `hideFromMainFeed: true` on calendar events saved before the Event composer fix. Dry-run by default; `--fix` to write. Use `--login` to sign in as `admin@ebhcs.org` (no service-account file), or pass `--credentials=…` / `GOOGLE_APPLICATION_CREDENTIALS`.
+- **patch-calendar-events.mjs** 🔑 — one-time backfill: sets `hideFromMainFeed: true` on calendar events saved before the Event composer fix. Dry-run by default; `--fix` to write. Use `--login` to sign in as `mcreed@ebhcs.org` (no service-account file), or pass `--credentials=…` / `GOOGLE_APPLICATION_CREDENTIALS`.
 
 ## Analytics
 

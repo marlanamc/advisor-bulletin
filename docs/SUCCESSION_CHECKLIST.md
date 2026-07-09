@@ -21,7 +21,7 @@ CI deploys use `FIREBASE_SERVICE_ACCOUNT` in the GitHub repository secrets.
 
 ## 3. Add or remove a privileged admin
 
-Privileged admins can edit any post and manage the advisor list. Today: `admin@ebhcs.org` and `leah@ebhcs.org`.
+Privileged admins can edit any post and manage the advisor list. Today: `mcreed@ebhcs.org` and `lgregory@ebhcs.org`.
 
 **All three must stay in sync:**
 

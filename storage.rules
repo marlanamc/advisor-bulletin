@@ -12,7 +12,8 @@ service firebase.storage {
     function isActiveAdvisor() {
       return request.auth != null
         && request.auth.token.email.matches('.*@ebhcs\\.org')
-        && (request.auth.token.email in ['admin@ebhcs.org', 'leah@ebhcs.org']
+        && request.auth.token.email_verified == true
+        && (request.auth.token.email in ['mcreed@ebhcs.org', 'lgregory@ebhcs.org']
           || firestore.exists(/databases/(default)/documents/advisors/$(request.auth.token.email.split('@')[0])));
     }
 

@@ -45,7 +45,7 @@ npm run deploy          # = npm run build + firebase deploy
 
 The rules in `firestore.rules` are the real security boundary of the site (the Firebase API key in the source code is public by design — that is normal for Firebase web apps).
 
-- **Who is an admin:** the `isPrivilegedAdvisor` function near the bottom of `firestore.rules` lists the admin emails (currently `admin@ebhcs.org` and `leah@ebhcs.org`). To change admins, edit that function, then deploy rules (`firebase deploy --only firestore:rules` or a full deploy). Also update `src/admin-roles.js` (the build fails if it drifts from the rules) and `docs/FIREBASE_SECURITY_RULES.md` so code, rules, and docs stay in sync.
+- **Who is an admin:** the `isPrivilegedAdvisor` function near the bottom of `firestore.rules` lists the admin emails (currently `mcreed@ebhcs.org` and `lgregory@ebhcs.org`). To change admins, edit that function, then deploy rules (`firebase deploy --only firestore:rules` or a full deploy). Also update `src/admin-roles.js` (the build fails if it drifts from the rules) and `docs/FIREBASE_SECURITY_RULES.md` so code, rules, and docs stay in sync.
 - Rules changes ship automatically with every push to `main` (the deploy job runs `firebase deploy --only firestore:rules,storage:uploads`). For an emergency rules-only deploy without a code change, run `firebase deploy --only firestore:rules,storage:uploads` manually (see below).
 - **Student advisor directory:** the doc `config/studentDirectory` (publicly readable, admin-writable) is republished automatically whenever an admin adds/edits/removes an advisor in the portal. The student site falls back to the static list in `src/advisor-directory.js` if the doc is missing.
 

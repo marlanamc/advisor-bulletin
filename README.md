@@ -41,7 +41,7 @@ advisor_bulletin/
 │   ├── firebase-config.js       #   Student app (FirebaseBulletinBoard) + board-*.js modules
 │   ├── admin.js                 #   Advisor entry: auth wiring, page routing
 │   ├── firebase-admin.js        #   Admin panel (FirebaseAdminPanel) + admin-*.js modules
-│   ├── enhanced-auth.js         #   Login, lockout, forced password change
+│   ├── google-auth.js           #   Google Workspace sign-in + advisor-list gate
 │   ├── admin-roles.js           #   Privileged admin emails (sync-checked vs firestore.rules)
 │   └── css/                     #   Stylesheets
 ├── public/                      # Static files served as-is (PWA service worker,
@@ -112,10 +112,10 @@ npm run test:ui
 
 ## 🔑 Advisor Credentials & Security
 
-*   **Advisor Domain**: Only email addresses ending in `@ebhcs.org` can access the portal.
-*   **Temporary Passwords**: New advisor accounts are created in the Firebase Console (Authentication → Users) with a temporary password chosen by the admin. There is no hardcoded default — pick something unique per account.
-*   **Forced Password Change**: Run `node scripts/mark-password-change.mjs` to flag an account; the advisor is then required to set a new password at their next login (see [scripts/README.md](scripts/README.md)).
-*   **Edit Permissions**: Advisors can modify and delete only their own posts. Administrators (`admin@ebhcs.org`, `leah@ebhcs.org`) have global update/delete overrides — the authoritative list is `isPrivilegedAdvisor` in [firestore.rules](firestore.rules).
+*   **Google Sign-In Only**: Advisors sign in with their school Google account ("Sign in with Google"). There are no passwords to create, share, or reset.
+*   **Advisor Domain**: Only `@ebhcs.org` Google accounts can sign in, and only accounts on the admin-managed Advisors list (the `advisors/{username}` Firestore collection) get portal access — other school staff are turned away at sign-in.
+*   **Adding an Advisor**: An admin adds them on the portal's Advisors tab. No Firebase Console step needed — their account is created automatically the first time they sign in with Google.
+*   **Edit Permissions**: Advisors can modify and delete only their own posts. Administrators (`mcreed@ebhcs.org`, `lgregory@ebhcs.org`) have global update/delete overrides — the authoritative list is `isPrivilegedAdvisor` in [firestore.rules](firestore.rules).
 
 ---
 

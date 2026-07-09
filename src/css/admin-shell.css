@@ -91,8 +91,11 @@ body > header {
     cursor: pointer;
 }
 
+/* Only visible on the login/loading screens (the portal hides header and
+   footer). 228px ≈ header (156) + footer (66) + borders, so the footer sits
+   at the bottom of the first screen instead of below the fold. */
 .main-content {
-    min-height: calc(100vh - 110px);
+    min-height: calc(100vh - 228px);
 }
 
 .ap-toast {
@@ -125,6 +128,12 @@ body > header {
     transition-delay: 0s;
 }
 
+/* The markup ships with the hidden attribute so the toast can't flash
+   before this stylesheet loads; keep honoring it over display: flex. */
+.ap-toast[hidden] {
+    display: none;
+}
+
 .ap-toast-icon {
     width: 28px;
     height: 28px;
@@ -142,7 +151,7 @@ body > header {
 }
 
 .auth-loading-screen {
-    min-height: calc(100vh - 150px);
+    min-height: max(440px, calc(100vh - 228px));
     display: flex;
     align-items: flex-start;
     justify-content: center;
@@ -222,7 +231,7 @@ body > header {
 }
 
 .login-required {
-    min-height: calc(100vh - 150px);
+    min-height: max(440px, calc(100vh - 228px));
     display: grid;
     align-items: start;
     padding: 20px 16px 32px;
@@ -230,15 +239,15 @@ body > header {
 }
 
 .advisor-login-card h3 {
-    margin: 0 0 10px;
+    margin: 0 0 6px;
     color: var(--adv-text);
-    font: 800 1.8rem var(--adv-font-display);
+    font: 800 1.7rem var(--adv-font-display);
 }
 
 .advisor-login-card p {
-    margin: 0 0 18px;
+    margin: 0 0 20px;
     color: var(--adv-text-2);
-    font-size: 1rem;
+    font-size: 0.95rem;
     line-height: 1.5;
 }
 
@@ -273,24 +282,67 @@ input[type="password"] {
     font: 500 1rem var(--adv-font-body);
 }
 
-.password-input-wrapper {
-    position: relative;
-}
-
-.password-input-wrapper input {
-    padding-right: 76px;
-}
-
-.show-password {
-    position: absolute;
-    top: 50%;
-    right: 10px;
-    transform: translateY(-50%);
+.google-signin-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    min-height: 54px;
     border: 0;
-    background: transparent;
-    color: #8a95a6;
-    font: 600 0.9rem var(--adv-font-body);
+    border-radius: 12px;
+    background: #1a73e8;
+    color: #fff;
+    font: 700 1.05rem var(--adv-font-body);
     cursor: pointer;
+    box-shadow: 0 6px 18px rgba(26, 115, 232, 0.35);
+    transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.google-signin-btn:hover {
+    background: #1765cc;
+    box-shadow: 0 8px 22px rgba(26, 115, 232, 0.42);
+    transform: translateY(-1px);
+}
+
+.google-signin-btn:active {
+    transform: none;
+}
+
+.google-signin-btn:disabled {
+    opacity: 0.65;
+    cursor: wait;
+    transform: none;
+}
+
+.google-signin-logo-tile {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    flex: 0 0 auto;
+    border-radius: 8px;
+    background: #fff;
+}
+
+.google-signin-logo {
+    width: 18px;
+    height: 18px;
+}
+
+.advisor-login-note {
+    margin: 12px 0 0;
+    color: #52637d;
+    font-size: 0.84rem;
+    line-height: 1.5;
+    text-align: center;
+}
+
+.advisor-login-card .advisor-login-help {
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid #e8eef6;
+    font-size: 0.84rem;
 }
 
 .advisor-login-actions,

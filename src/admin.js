@@ -1,9 +1,8 @@
 import './css/admin-shell.css'
 import { mountEbhcsBrandLockups } from './ebhcs-brand-lockup.js'
-import { db, auth } from './firebase-auth.js'
-import { doc, getDoc } from 'firebase/firestore'
+import { auth } from './firebase-auth.js'
 import { onAuthStateChanged } from 'firebase/auth'
-import './enhanced-auth.js'
+import { verifyAdvisorAccess, recordAdvisorLogin, rejectSignIn } from './google-auth.js'
 
 let portalMountPromise = null
 let shellBooted = false
@@ -86,16 +85,6 @@ function getUserDetails(user) {
     }
 }
 
-async function shouldRequirePasswordChange(username) {
-    try {
-        const userDoc = await getDoc(doc(db, 'users', username))
-        return userDoc.exists() && userDoc.data().requirePasswordChange === true
-    } catch (error) {
-        console.error('Error checking user password status:', error)
-        return false
-    }
-}
-
 async function mountAdvisorPortal(userDetails) {
     if (!portalMountPromise) {
         setAuthView('loading', 'Opening advisor workspace...')
@@ -156,16 +145,18 @@ function bootShell() {
             return
         }
 
-        const userDetails = getUserDetails(user)
-        if (await shouldRequirePasswordChange(userDetails.username)) {
+        // Only @ebhcs.org accounts on the admin-managed advisor list may enter.
+        // Anyone else (other school staff, personal Gmail) is signed back out
+        // with an explanation. Security rules enforce the same thing server-side.
+        const access = await verifyAdvisorAccess(user)
+        if (!access.allowed) {
             setAuthView('login')
-            if (window.enhancedAuth) {
-                window.enhancedAuth.showPasswordChangeModal(userDetails.username)
-            }
+            await rejectSignIn(access.reason)
             return
         }
 
-        await handleAuthenticatedUser(userDetails)
+        recordAdvisorLogin(access.username, access.email)
+        await handleAuthenticatedUser(getUserDetails(user))
     })
 }
 

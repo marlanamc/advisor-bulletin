@@ -14,40 +14,29 @@ The production security rules are located in the [firestore.rules](../firestore.
 These rules validate:
 1. **Public Read Access**: Active posts and published resources are readable by anyone (for student use).
 2. **Active Advisor Write Access**: Creating and editing requires a verified `@ebhcs.org` account **and** an `advisors/{username}` doc in Firestore (the `isActiveAdvisor` function). Removing an advisor on the portal's Advisors tab therefore revokes their write access immediately, even before their login is disabled. The same check gates file uploads in [storage.rules](../storage.rules) via cross-service rules.
-3. **Ownership Limits**: Advisors can only update their own posts. Administrators (`admin@ebhcs.org`, `leah@ebhcs.org`) have global overrides and are exempt from the advisor-doc check so they can never lock themselves out. The authoritative list lives in `PRIVILEGED_ADMIN_EMAILS` in [src/admin-roles.js](../src/admin-roles.js), mirrored in [firestore.rules](../firestore.rules) and [storage.rules](../storage.rules) — `scripts/check-admin-emails-sync.mjs` fails the build if the three drift apart.
+3. **Ownership Limits**: Advisors can only update their own posts. Administrators (`mcreed@ebhcs.org`, `lgregory@ebhcs.org`) have global overrides and are exempt from the advisor-doc check so they can never lock themselves out. The authoritative list lives in `PRIVILEGED_ADMIN_EMAILS` in [src/admin-roles.js](../src/admin-roles.js), mirrored in [firestore.rules](../firestore.rules) and [storage.rules](../storage.rules) — `scripts/check-admin-emails-sync.mjs` fails the build if the three drift apart.
 4. **Data Shape Validation**: Field checks for text lengths, date formats (single event date, date ranges, multiple sessions, and deadlines), PDF attachments, and analytics/error properties.
 
-**Before deploying the active-advisor rules for the first time**, run `scripts/check-advisor-auth-sync.mjs` (needs a service account key) to confirm every current advisor has an `advisors/{username}` doc — anyone missing one will lose posting access when the rules ship.
+**Before deploying the active-advisor rules for the first time**, run `scripts/check-advisor-auth-sync.mjs` to confirm every current advisor has an `advisors/{username}` doc — anyone missing one will lose posting access when the rules ship. No service account key? Sign in with your admin password instead:
+
+```bash
+firebase login
+node scripts/check-advisor-auth-sync.mjs --email=mcreed@ebhcs.org
+```
 
 ## Firebase Authentication Setup
 
-### Required User Accounts
-Create Firebase Auth accounts for each advisor with these email addresses:
+### Sign-in Provider
+The portal uses **Google sign-in only** (no passwords):
 
-```
-admin@ebhcs.org
-jorge@ebhcs.org
-fabiola@ebhcs.org
-leidy@ebhcs.org
-carmen@ebhcs.org
-jerome@ebhcs.org
-felipe@ebhcs.org
-simonetta@ebhcs.org
-mike@ebhcs.org
-leah@ebhcs.org
-```
+1. Go to Firebase Console → Authentication → Sign-in method
+2. Add and enable the **Google** provider (pick a support email)
+3. Keep the **Email/Password** provider disabled
 
-### Creating User Accounts
-1. Go to Firebase Console → Authentication → Users
-2. Click "Add User"
-3. Enter email (e.g., jorge@ebhcs.org)
-4. Set initial password (advisors will change on first login)
-5. Repeat for all advisors
-
-### Recommended Initial Passwords
-- Use a temporary secure password like: `TempEBHCS2025!`
-- Force password change on first login
-- Minimum password requirements: 8+ characters, mixed case, numbers
+### Who Can Get In
+- The Google account picker is scoped to `@ebhcs.org` (the `hd` parameter), and any other domain is signed out by the client.
+- The rules additionally require `email_verified == true` (always true for Google sign-in) and an `advisors/{username}` doc — so only staff an admin has added on the Advisors tab can read or write portal data, even if other org accounts authenticate.
+- Advisor Firebase Auth accounts are created automatically at first Google sign-in; there is nothing to pre-create in the console.
 
 ## Database Structure
 
@@ -64,7 +53,7 @@ leah@ebhcs.org
   eventTime: "6:30 PM", // optional
   eventLink: "https://example.com/register", // optional URL
   advisorName: "Jorge",
-  postedBy: "jorge", // username from email
+  postedBy: "rocha", // prefix of the advisor's @ebhcs.org email
   datePosted: Timestamp, // Firebase server timestamp
   isActive: true, // false for deleted posts
   image: "data:image/jpeg;base64,..." // optional, base64 encoded
@@ -126,11 +115,11 @@ Create these composite indexes in Firebase Console → Firestore → Indexes:
 ## Emergency Access
 
 ### Admin Override (If Needed)
-For emergency situations, the admin@ebhcs.org account can be given elevated privileges:
+For emergency situations, the mcreed@ebhcs.org account can be given elevated privileges:
 
 ```javascript
 // Add this condition to allow admin full access
-|| request.auth.token.email == 'admin@ebhcs.org'
+|| request.auth.token.email == 'mcreed@ebhcs.org'
 ```
 
 ### Backup and Recovery

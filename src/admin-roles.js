@@ -4,8 +4,8 @@
 // firestore.rules — change both together, then deploy rules
 // (see DEPLOYMENT.md).
 export const PRIVILEGED_ADMIN_EMAILS = [
-    'admin@ebhcs.org',
-    'leah@ebhcs.org',
+    'mcreed@ebhcs.org',
+    'lgregory@ebhcs.org',
 ];
 
 export function isPrivilegedAdminEmail(email) {

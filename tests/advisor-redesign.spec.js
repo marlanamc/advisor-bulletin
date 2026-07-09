@@ -2,10 +2,10 @@ const { test, expect } = require('@playwright/test');
 
 async function showSeededAdvisorDashboard(page) {
   await page.goto('/admin.html');
-  await page.waitForSelector('#loginForm');
+  await page.waitForSelector('#googleSignInBtn');
   await page.evaluate(() => {
     document.dispatchEvent(new CustomEvent('userAuthenticated', {
-      detail: { username: 'jorge', email: 'jorge@ebhcs.org', name: 'Jorge' },
+      detail: { username: 'rocha', email: 'rocha@ebhcs.org', name: 'Jorge' },
     }));
   });
   await page.waitForFunction(() => typeof window.adminPanel?.updateAdvisorDashboard === 'function');
@@ -23,9 +23,9 @@ async function showSeededAdvisorDashboard(page) {
     }
 
     window.adminPanel.currentUser = {
-      username: 'jorge',
+      username: 'rocha',
       name: 'Jorge',
-      email: 'jorge@ebhcs.org',
+      email: 'rocha@ebhcs.org',
     };
 
     window.adminPanel.bulletins = [
@@ -36,7 +36,7 @@ async function showSeededAdvisorDashboard(page) {
         category: 'training',
         description: 'Become a Certified Nursing Assistant. 8 weeks. Free.',
         advisorName: 'Jorge',
-        postedBy: 'jorge',
+        postedBy: 'rocha',
         datePosted: new Date().toISOString(),
         deadline: '2027-05-30',
         isActive: true,
@@ -48,7 +48,7 @@ async function showSeededAdvisorDashboard(page) {
         category: 'job',
         description: 'Hyatt is hiring.',
         advisorName: 'Jorge',
-        postedBy: 'jorge',
+        postedBy: 'rocha',
         datePosted: new Date().toISOString(),
         isActive: true,
       },
@@ -75,9 +75,9 @@ async function seedAdvisorResources(page) {
   await page.evaluate(() => {
     const now = new Date().toISOString();
     window.adminPanel.currentUser = {
-      username: 'jorge',
+      username: 'rocha',
       name: 'Jorge',
-      email: 'jorge@ebhcs.org',
+      email: 'rocha@ebhcs.org',
       isAdmin: false,
     };
     window.adminPanel.bulletins = [
@@ -88,7 +88,7 @@ async function seedAdvisorResources(page) {
         titleEn: 'Find Your Funds',
         resourceCategory: 'health',
         advisorName: 'Import',
-        postedBy: 'jorge',
+        postedBy: 'rocha',
         datePosted: now,
         isActive: true,
         isPublished: true,
@@ -101,7 +101,7 @@ async function seedAdvisorResources(page) {
         titleEn: 'East Boston ABCD',
         resourceCategory: 'health',
         advisorName: 'Import',
-        postedBy: 'jorge',
+        postedBy: 'rocha',
         datePosted: now,
         isActive: true,
         isPublished: true,
@@ -114,7 +114,7 @@ async function seedAdvisorResources(page) {
         titleEn: 'Central Community Church',
         resourceCategory: 'housing',
         advisorName: 'Import',
-        postedBy: 'jorge',
+        postedBy: 'rocha',
         datePosted: now,
         isActive: true,
         isPublished: true,
@@ -138,9 +138,9 @@ async function seedAdvisorEditFixtures(page) {
   await page.evaluate(() => {
     const now = new Date().toISOString();
     window.adminPanel.currentUser = {
-      username: 'jorge',
+      username: 'rocha',
       name: 'Jorge',
-      email: 'jorge@ebhcs.org',
+      email: 'rocha@ebhcs.org',
       isAdmin: false,
     };
     window.adminPanel.bulletins = [
@@ -151,7 +151,7 @@ async function seedAdvisorEditFixtures(page) {
         category: 'job',
         description: 'Bring a draft resume and questions for the career advisor.',
         advisorName: 'Jorge',
-        postedBy: 'jorge',
+        postedBy: 'rocha',
         datePosted: now,
         isActive: true,
       },
@@ -165,7 +165,7 @@ async function seedAdvisorEditFixtures(page) {
         startTime: '17:30',
         endTime: '19:00',
         advisorName: 'Jorge',
-        postedBy: 'jorge',
+        postedBy: 'rocha',
         datePosted: now,
         isActive: true,
       },
@@ -194,7 +194,7 @@ async function seedAdvisorEditFixtures(page) {
           },
         ],
         advisorName: 'Jorge',
-        postedBy: 'jorge',
+        postedBy: 'rocha',
         datePosted: now,
         isActive: true,
         isPublished: true,
@@ -214,7 +214,7 @@ async function seedAdvisorEditFixtures(page) {
         pdfUrl: 'https://example.org/housing-rights.pdf',
         serviceChips: ['Get housing help'],
         advisorName: 'Jorge',
-        postedBy: 'jorge',
+        postedBy: 'rocha',
         datePosted: now,
         isActive: true,
         isPublished: true,
@@ -255,7 +255,7 @@ test.describe('Advisor redesign', () => {
   test('renders the redesigned advisor login screen', async ({ page }) => {
     await page.goto('/admin.html');
 
-    await expect(page.locator('#loginForm')).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('#googleSignInBtn')).toBeVisible({ timeout: 15000 });
     await expect(page.locator('.advisor-login-card')).toBeVisible();
     await expect(page.locator('.advisor-login-card')).toContainText('Advisor Portal');
     await expect(page.locator('.advisor-login-card')).toContainText('mcreed@ebhcs.org');
@@ -265,18 +265,28 @@ test.describe('Advisor redesign', () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/admin.html');
 
-    await expect(page.locator('#loginForm')).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('#googleSignInBtn')).toBeVisible({ timeout: 15000 });
     await expect(page.locator('.advisor-login-card')).toBeVisible();
     await expect(page.locator('#apToast')).not.toBeVisible();
-    await expect(page.locator('#apToastMsg')).toHaveText('Post published!');
 
-    const toastBox = await page.locator('#apToast').boundingBox();
+    // The toast ships with the hidden attribute (display: none) so it can't
+    // flash before the stylesheet loads; apShowToast lifts it on first use.
     const toastStyle = await page.locator('#apToast').evaluate((el) => {
       const style = window.getComputedStyle(el);
-      return { opacity: style.opacity, position: style.position };
+      return { display: style.display, hidden: el.hidden };
     });
+    expect(toastStyle).toEqual({ display: 'none', hidden: true });
+
+    // Manually lifting the attribute (what apShowToast does) still lands the
+    // toast in the bottom corner as a fixed overlay.
+    await page.evaluate(() => {
+      const t = document.getElementById('apToast');
+      t.hidden = false;
+      t.classList.add('show');
+    });
+    await expect(page.locator('#apToast')).toBeVisible();
+    const toastBox = await page.locator('#apToast').boundingBox();
     expect(toastBox).toBeTruthy();
-    expect(toastStyle).toEqual({ opacity: '0', position: 'fixed' });
     expect(toastBox.y).toBeGreaterThan(700);
   });
 
@@ -454,9 +464,9 @@ test.describe('Advisor redesign', () => {
     await page.evaluate(() => {
       const now = new Date().toISOString();
       window.adminPanel.currentUser = {
-        username: 'jorge',
+        username: 'rocha',
         name: 'Jorge',
-        email: 'jorge@ebhcs.org',
+        email: 'rocha@ebhcs.org',
         isAdmin: false,
       };
       window.adminPanel.bulletins = [
@@ -476,7 +486,7 @@ test.describe('Advisor redesign', () => {
           address: '10 Meridian St, East Boston',
           serviceChips: ['Get childcare help', 'Talk to a family worker'],
           advisorName: 'Jorge',
-          postedBy: 'jorge',
+          postedBy: 'rocha',
           datePosted: now,
           isActive: true,
           isPublished: true,

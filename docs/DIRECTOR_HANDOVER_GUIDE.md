@@ -25,17 +25,15 @@ The **Firebase Console keyholder** is the most important role. They are the only
 
 ---
 
-## ➕ **WHEN A NEW ADVISOR JOINS (2-STEP CHECKLIST)**
+## ➕ **WHEN A NEW ADVISOR JOINS (1 STEP)**
 
-Both steps are required. Skipping step 2 means the advisor appears in dropdowns but **cannot log in**.
+1. **In the admin portal (Advisors tab):** Add the advisor with username + display name. Use their `@ebhcs.org` email. Set their "Title on student site" (e.g. Advisor) and leave "Show on student site" on if students should see them in the advisor directory.
 
-1. **In the admin portal (Advisors tab):** Add the advisor with username + display name. Use their `@ebhcs.org` email if known. Set their "Title on student site" (e.g. Advisor) and leave "Show on student site" on if students should see them in the advisor directory.
-2. **In Firebase Console:** Go to **Authentication → Users → Add user**. Create the same email (usually `username@ebhcs.org`) and a temporary password. Share the password securely and ask them to change it on first login.
+That's it — no Firebase Console step. They sign in with **Sign in with Google** using their `@ebhcs.org` school account; their login account is created automatically the first time they do.
 
-**When an advisor leaves (2 steps):**
+**When an advisor leaves (1 step):**
 
-1. **In the admin portal (Advisors tab):** Click **Remove**. This immediately blocks them from posting or editing content — the security rules only allow writes from people on the advisor list.
-2. **In Firebase Console:** Go to **Authentication → Users**, find their account, and **Disable** (or delete) it. This closes off the login itself. Don't skip this — the account can otherwise still sign in, even though it can no longer post.
+1. **In the admin portal (Advisors tab):** Click **Remove**. This immediately locks them out — even if they sign in with Google, the portal turns them away and the security rules deny all reads and writes. (If their school Google account is also deactivated by the Workspace admin, that closes things off even sooner.)
 
 The student site's advisor directory updates automatically whenever you add, edit, or remove an advisor — no developer needed.
 
@@ -83,29 +81,9 @@ If the whole site is broken after a code change, a previous version can be resto
 
 ### ✅ **Step 1.2: Configure Authentication**
 - [ ] Go to **Authentication** → **Sign-in method**
-- [ ] Ensure **Email/Password** is enabled
-- [ ] Go to **Authentication** → **Users**
-- [ ] **Create user accounts** for each advisor:
+- [ ] Ensure the **Google** provider is enabled (and Email/Password is **disabled**)
 
-| Username | Email Address | Initial Password | Role |
-|----------|---------------|------------------|------|
-| admin | admin@ebhcs.org | *(set a unique temporary password)* | Administrator |
-| jorge | jorge@ebhcs.org | *(set a unique temporary password)* | Advisor |
-| fabiola | fabiola@ebhcs.org | *(set a unique temporary password)* | Advisor |
-| leidy | leidy@ebhcs.org | *(set a unique temporary password)* | Advisor |
-| carmen | carmen@ebhcs.org | *(set a unique temporary password)* | Advisor |
-| jerome | jerome@ebhcs.org | *(set a unique temporary password)* | Advisor |
-| felipe | felipe@ebhcs.org | *(set a unique temporary password)* | Advisor |
-| simonetta | simonetta@ebhcs.org | *(set a unique temporary password)* | Advisor |
-| mike | mike@ebhcs.org | *(set a unique temporary password)* | Advisor |
-| leah | leah@ebhcs.org | *(set a unique temporary password)* | Administrator |
-
-**Creating Users:**
-1. Click **"Add user"**
-2. Enter email address
-3. Enter a **unique temporary password** for that account (do not reuse the same password across advisors). Share it securely out-of-band.
-4. Click **"Add user"**
-5. Repeat for all advisors
+There are **no accounts to create**. Advisors sign in with their `@ebhcs.org` Google accounts, and Firebase creates their login automatically at first sign-in. Who gets portal access is controlled entirely from the portal's **Advisors tab** (see "When a new advisor joins" above).
 
 ### ✅ **Step 1.3: Configure Firestore Security Rules**
 - [ ] Go to **Firestore Database** → **Rules**
@@ -151,7 +129,7 @@ service cloud.firestore {
     }
 
     function isPrivilegedAdvisor(email) {
-      return email == 'admin@ebhcs.org' || email == 'leah@ebhcs.org';
+      return email == 'mcreed@ebhcs.org' || email == 'lgregory@ebhcs.org';
     }
 
     function validateBulletinData(data) {
@@ -174,15 +152,6 @@ service cloud.firestore {
 ```
 
 - [ ] Click **"Publish"**
-
-### ✅ **Step 1.4: Configure Email Templates (Optional)**
-- [ ] Go to **Authentication** → **Templates**
-- [ ] Click **"Password reset"**
-- [ ] Customize email template:
-  - **Subject:** "Reset your EBHCS Bulletin Board password"
-  - **Sender name:** "EBHCS Tech Support"
-  - **Action URL:** Leave default (Firebase handles this)
-- [ ] Click **"Save"**
 
 ### ✅ **Step 1.5: Set Up Firestore Indexes**
 - [ ] Go to **Firestore Database** → **Indexes**
@@ -208,24 +177,16 @@ service cloud.firestore {
 ### ✅ **Test 2.1: Authentication Flow**
 - [ ] **Test Admin Login:**
   - Go to https://ebhcsjobboard.web.app/admin
-  - Login with the admin account using the temporary password you set in Firebase Console
-  - Verify admin panel loads
-  - Verify "Change Password" modal appears (required — there is no skip option)
-  - Change password to a strong unique password
-  - Verify login works with new password
+  - Click **Sign in with Google** and pick an admin `@ebhcs.org` account
+  - Verify the admin panel loads and the Advisors tab is visible
 
 - [ ] **Test Advisor Login:**
-  - Login with a test advisor account using its temporary password
-  - Verify password change prompt appears
-  - Change password to a strong unique password
-  - Verify login works with new password
+  - Sign in with Google as an advisor who **is** on the Advisors list
+  - Verify the portal opens (without the Advisors tab)
 
-- [ ] **Test Password Reset:**
-  - Click "Forgot Password?"
-  - Enter: `jorge@ebhcs.org`
-  - Check email for reset link
-  - Click reset link and set new password
-  - Verify login works with new password
+- [ ] **Test the Advisor-List Gate:**
+  - Sign in with Google as an `@ebhcs.org` account that is **not** on the Advisors list
+  - Verify they see "isn't on the advisor list" and are signed back out
 
 ### ✅ **Test 2.2: Bulletin Creation**
 - [ ] **Test Required Fields:**
@@ -286,9 +247,8 @@ service cloud.firestore {
 
 ### ✅ **Test 2.5: Error Handling**
 - [ ] **Test Invalid Login:**
-  - Try wrong password
-  - Try non-existent email
-  - Verify appropriate error messages
+  - Try signing in with a personal (non-@ebhcs.org) Google account
+  - Verify it is rejected with a clear message
 
 - [ ] **Test Form Validation:**
   - Try invalid email format
@@ -307,8 +267,7 @@ service cloud.firestore {
 
 ### ✅ **Step 3.1: Create User Accounts Document**
 Create a document with:
-- All advisor email addresses
-- Initial passwords (to be changed on first login)
+- All advisor email addresses (their @ebhcs.org Google accounts)
 - Role assignments (admin vs advisor)
 - Contact information for tech support
 
@@ -330,19 +289,17 @@ Print out:
 ## 🚨 **CRITICAL SECURITY CHECKLIST**
 
 ### ✅ **Before Go-Live:**
-- [ ] All advisor accounts created in Firebase
-- [ ] All users have changed default passwords
+- [ ] All advisors added on the portal's Advisors tab
+- [ ] Google sign-in enabled; Email/Password provider disabled
 - [ ] Firestore security rules are active
 - [ ] Email domain restriction is working (@ebhcs.org only)
-- [ ] Admin accounts have strong passwords
-- [ ] Password reset emails are working
+- [ ] Non-listed @ebhcs.org accounts are turned away at sign-in
 - [ ] No test data in production database
 
 ### ✅ **Post Go-Live Monitoring:**
 - [ ] Monitor Firebase Console for failed login attempts
 - [ ] Check Firestore for any unusual activity
-- [ ] Verify all advisors can login successfully
-- [ ] Test password reset functionality
+- [ ] Verify all advisors can sign in with Google successfully
 - [ ] Monitor image upload sizes and storage usage
 
 ---

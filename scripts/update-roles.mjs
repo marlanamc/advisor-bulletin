@@ -14,9 +14,8 @@ const firebaseConfig = {
 };
 
 const TARGETS = [
-  { id: 'leah',   displayName: 'Leah',   email: 'lgregory@ebhcs.org', isAdmin: true  },
-  { id: 'admin',  displayName: 'Admin',  email: 'admin@ebhcs.org',    isAdmin: true  },
-  { id: 'mcreed', displayName: 'Marlie', email: 'mcreed@ebhcs.org',   isAdmin: false },
+  { id: 'lgregory', displayName: 'Leah',   email: 'lgregory@ebhcs.org', isAdmin: true },
+  { id: 'mcreed',   displayName: 'Marlie', email: 'mcreed@ebhcs.org',   isAdmin: true },
 ];
 
 function prompt(question, { hidden = false } = {}) {
@@ -42,14 +41,14 @@ function prompt(question, { hidden = false } = {}) {
 }
 
 async function main() {
-  const password = await prompt('Password for admin@ebhcs.org: ', { hidden: true });
+  const password = await prompt('Password for mcreed@ebhcs.org: ', { hidden: true });
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getFirestore(app);
 
-  await signInWithEmailAndPassword(auth, 'admin@ebhcs.org', password);
-  console.log('Signed in as admin@ebhcs.org');
+  await signInWithEmailAndPassword(auth, 'mcreed@ebhcs.org', password);
+  console.log('Signed in as mcreed@ebhcs.org');
 
   for (const target of TARGETS) {
     const ref = doc(db, 'advisors', target.id);

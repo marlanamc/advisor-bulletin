@@ -39,12 +39,9 @@ import { collection, doc, query, where, orderBy, limit, onSnapshot, getDoc, getD
 // Caps Firestore reads on the admin dashboard listener. Reorder validation falls back
 // to getDoc when an ID is missing from this cache (see reorderResourcesInCategory).
 const ADMIN_ACTIVE_BULLETINS_LIMIT = 500;
-// Student feed query cap (src/firebase-config.js). Warn admins before posts drop off.
-const STUDENT_FEED_DISPLAY_LIMIT = 200;
-const ACTIVE_POST_CAP_WARN_AT = 85;
 
 installClientErrorLogger('admin')
-import { onAuthStateChanged, signOut, sendPasswordResetEmail } from 'firebase/auth'
+import { signOut } from 'firebase/auth'
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage'
 
 import {
@@ -77,7 +74,7 @@ class FirebaseAdminPanel {
             username: a.loginUsername,
             displayName: a.name,
             email: a.email,
-            isAdmin: a.loginUsername === 'admin'
+            isAdmin: isPrivilegedAdminEmail(a.email)
         }));
         this.authTransitionInProgress = false;
         this.resourceReorderMode = false;
@@ -149,7 +146,7 @@ class FirebaseAdminPanel {
     bindEvents() {
         document.getElementById('logoutBtn').addEventListener('click', () => this.logout());
 
-        // Login form is handled by enhanced-auth.js
+        // Sign-in is handled by google-auth.js + the auth listener in admin.js
         document.addEventListener('userAuthenticated', (event) => {
             this.handleUserAuthenticated(event.detail);
         });
@@ -495,12 +492,13 @@ class FirebaseAdminPanel {
             const username = userDetails.username;
 
             // Set current user immediately with whatever name we have so the
-            // panel can open without waiting on Firestore.
+            // panel can open without waiting on Firestore. Privileged admins
+            // are admins by email (they may have no advisors/{username} doc).
             this.currentUser = {
                 username,
                 email: userDetails.email,
                 name: userDetails.name || username,
-                isAdmin: false
+                isAdmin: isPrivilegedAdminEmail(userDetails.email)
             };
 
             this.setAuthView('loading', `Welcome back, ${this.currentUser.name}!`);
@@ -514,7 +512,8 @@ class FirebaseAdminPanel {
                 const advisor = this.advisors.find(a => a.username === username);
                 if (advisor) {
                     this.currentUser.name = advisor.displayName || this.currentUser.name;
-                    this.currentUser.isAdmin = advisor.isAdmin === true;
+                    this.currentUser.isAdmin = advisor.isAdmin === true
+                        || isPrivilegedAdminEmail(this.currentUser.email);
                     const welcome = document.getElementById('welcomeMessage');
                     if (welcome) welcome.textContent = `Welcome, ${this.currentUser.name}!`;
 
@@ -563,67 +562,6 @@ class FirebaseAdminPanel {
         }
     }
 
-    checkAutoLogin() {
-        if (typeof auth === 'undefined') {
-            console.error('Firebase auth not initialized');
-            this.setAuthView('login');
-            return;
-        }
-
-        this.setAuthView('loading', 'Checking your session...');
-
-        auth.authStateReady().catch((error) => {
-            console.error('Auth readiness error:', error);
-            this.setAuthView('login');
-        });
-
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                if (this.authTransitionInProgress) {
-                    return;
-                }
-
-                const username = user.email.split('@')[0];
-
-                try {
-                    const userDoc = await getDoc(doc(db, 'users', username));
-                    if (userDoc.exists() && userDoc.data().requirePasswordChange === true) {
-                        this.setAuthView('login');
-                        if (window.enhancedAuth) {
-                            window.enhancedAuth.showPasswordChangeModal(username);
-                        }
-                        return;
-                    }
-                } catch (error) {
-                    console.error('Error checking user password status:', error);
-                    // Fail safe on permission errors: if we can't confirm whether a
-                    // forced password change is pending, don't silently let the user
-                    // in — send them back to login. Transient errors (network/timeout)
-                    // can fall through and continue.
-                    if (error?.code === 'permission-denied') {
-                        this.setAuthView('login');
-                        return;
-                    }
-                }
-
-                if (!this.currentUser || this.currentUser.username !== username) {
-                    await this.applyAuthenticatedUser({
-                        username,
-                        email: user.email,
-                        name: this.getUserDisplayName(username)
-                    });
-                }
-                return;
-            }
-
-            if (this.authTransitionInProgress) {
-                return;
-            }
-
-            this.handleSignedOut();
-        });
-    }
-
     async logout() {
         try {
             if (typeof auth === 'undefined') {
@@ -636,8 +574,11 @@ class FirebaseAdminPanel {
     }
 
     clearLoginForm() {
-        document.getElementById('username').value = '';
-        document.getElementById('password').value = '';
+        const errorDiv = document.getElementById('loginError');
+        if (errorDiv) {
+            errorDiv.textContent = '';
+            errorDiv.style.display = 'none';
+        }
     }
 
     showAdminPanel() {
@@ -780,6 +721,30 @@ class FirebaseAdminPanel {
         });
     }
 
+    /**
+     * Next occurrence of a dated bulletin on/after `today` (day precision).
+     * Multi-session bulletins resolve to their next remaining session, not the first one.
+     * @returns {{ day: Date, startTime: string, endTime: string } | null}
+     */
+    getNextUpcomingEventOccurrence(bulletin, today) {
+        if (bulletin.dateType === 'sessions') {
+            for (const session of this.getBulletinEventSessions(bulletin)) {
+                const day = new Date(`${session.date}T00:00:00`);
+                if (!Number.isNaN(day.getTime()) && day >= today) {
+                    return { day, startTime: session.startTime || '', endTime: session.endTime || '' };
+                }
+            }
+            return null;
+        }
+
+        const dateStr = bulletin.eventDate || bulletin.startDate;
+        if (!dateStr) return null;
+        const normalized = String(dateStr).split('T')[0];
+        const day = new Date(`${normalized}T00:00:00`);
+        if (Number.isNaN(day.getTime()) || day < today) return null;
+        return { day, startTime: bulletin.startTime || '', endTime: bulletin.endTime || '' };
+    }
+
     /** Upcoming dated posts/events — filtered in memory from already-loaded bulletins (no extra reads). */
     getUpcomingEventBulletins(limit = Infinity) {
         const today = new Date();
@@ -787,18 +752,10 @@ class FirebaseAdminPanel {
 
         const upcoming = this.bulletins
             .filter((bulletin) => !this.isResourceBulletin(bulletin) && bulletin.isActive !== false)
-            .filter((bulletin) => {
-                const dateStr = bulletin.eventDate || bulletin.startDate;
-                if (!dateStr) return false;
-                const normalized = String(dateStr).split('T')[0];
-                const eventDay = new Date(`${normalized}T00:00:00`);
-                return !Number.isNaN(eventDay.getTime()) && eventDay >= today;
-            })
-            .sort((a, b) => {
-                const aDay = new Date(`${String(a.eventDate || a.startDate).split('T')[0]}T00:00:00`);
-                const bDay = new Date(`${String(b.eventDate || b.startDate).split('T')[0]}T00:00:00`);
-                return aDay - bDay;
-            });
+            .map((bulletin) => ({ bulletin, next: this.getNextUpcomingEventOccurrence(bulletin, today) }))
+            .filter((entry) => entry.next)
+            .sort((a, b) => a.next.day - b.next.day)
+            .map((entry) => entry.bulletin);
 
         return Number.isFinite(limit) ? upcoming.slice(0, limit) : upcoming;
     }
@@ -815,55 +772,15 @@ class FirebaseAdminPanel {
         this.setText('statUpcomingEvents', upcomingEvents.length);
         this.setText('statExpiringSoon', expiringSoon.length);
 
-        this.updateActivePostCapWarning();
         this.renderUpcomingDashboardEvents();
-    }
-
-    updateActivePostCapWarning() {
-        const banner = document.getElementById('dashActivePostCapWarning');
-        if (!banner) return;
-
-        const activeCount = this.bulletins.length;
-        if (activeCount < ACTIVE_POST_CAP_WARN_AT) {
-            banner.hidden = true;
-            banner.replaceChildren();
-            return;
-        }
-
-        banner.hidden = false;
-        const remaining = Math.max(STUDENT_FEED_DISPLAY_LIMIT - activeCount, 0);
-        const severity = activeCount >= STUDENT_FEED_DISPLAY_LIMIT ? 'critical' : 'warning';
-        banner.dataset.severity = severity;
-        banner.replaceChildren();
-
-        const strong = document.createElement('strong');
-        strong.textContent = severity === 'critical'
-            ? `Student feed is full (${activeCount}/${STUDENT_FEED_DISPLAY_LIMIT} active items).`
-            : `Approaching the student feed limit (${activeCount}/${STUDENT_FEED_DISPLAY_LIMIT}).`;
-        banner.appendChild(strong);
-
-        const detail = document.createTextNode(severity === 'critical'
-            ? ' Oldest posts no longer appear on the student site. Archive or unpublish old posts in '
-            : ` ${remaining} slot${remaining === 1 ? '' : 's'} left before oldest posts stop appearing. Archive old posts in `);
-        banner.appendChild(detail);
-
-        const link = document.createElement('button');
-        link.type = 'button';
-        link.className = 'ap-cap-warning-link';
-        link.textContent = 'Manage Posts';
-        link.addEventListener('click', () => {
-            if (typeof window.apShowPage === 'function') {
-                window.apShowPage('posts');
-            }
-        });
-        banner.appendChild(link);
-        banner.appendChild(document.createTextNode('.'));
     }
 
     renderUpcomingDashboardEvents() {
         const container = document.getElementById('dashUpcomingEvents');
         if (!container) return;
 
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
         const upcoming = this.getUpcomingEventBulletins(4);
 
         if (!upcoming.length) {
@@ -872,13 +789,13 @@ class FirebaseAdminPanel {
         }
 
         container.innerHTML = upcoming.map((bulletin) => {
-            const dateStr = bulletin.eventDate || bulletin.startDate;
-            const normalized = String(dateStr).split('T')[0];
-            const eventDay = new Date(`${normalized}T00:00:00`);
+            const next = this.getNextUpcomingEventOccurrence(bulletin, today);
+            if (!next) return '';
+            const eventDay = next.day;
             const month = eventDay.toLocaleString('default', { month: 'short' }).toUpperCase();
             const day = eventDay.getDate();
             const title = bulletin.title || 'Untitled event';
-            const time = this.formatTimeRangeAdmin(bulletin.startTime, bulletin.endTime);
+            const time = this.formatTimeRangeAdmin(next.startTime, next.endTime);
 
             return `
                 <div class="ap-event-row">

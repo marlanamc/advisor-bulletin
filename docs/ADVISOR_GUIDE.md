@@ -38,7 +38,7 @@ These screenshots show the public student experience advisors are posting into.
 
 1. Open the student bulletin board website.
 2. Scroll to the bottom and select **Advisor Portal**.
-3. Log in with your EBHCS advisor account.
+3. Sign in with your @ebhcs.org Google account.
 4. Open **Create Post**.
 5. Choose the kind of post: **Bulletin**, **Resource**, or **Calendar/Event**.
 6. Fill in the main fields, add any details students need, preview the post, then publish.
@@ -48,14 +48,14 @@ These screenshots show the public student experience advisors are posting into.
 
 ## Login
 
-Use the username or EBHCS email assigned to you. New advisor accounts may start with a temporary password and may ask you to change it on first login.
+Click **Sign in with Google** and pick your **@ebhcs.org** school account. There is no password to remember — your school Google login is your portal login.
 
-If login does not work:
+If sign-in does not work:
 
-- Check that caps lock is off.
-- Try your lowercase first name if you normally use a username.
-- Use **Forgot Password?** if you need a reset email.
-- Ask the site administrator if your account has not been created yet.
+- Make sure you picked your **@ebhcs.org** account, not a personal Gmail.
+- If you see "isn't on the advisor list", ask an admin to add you on the **Advisors** tab, then sign in again.
+- If the sign-in window doesn't appear, allow pop-ups for this site in your browser.
+- Still stuck? Email **mcreed@ebhcs.org**.
 
 ## Create A Post
 

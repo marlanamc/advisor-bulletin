@@ -23,7 +23,7 @@ In Firestore Database → Rules, paste the content of the [firestore.rules](../f
 These rules secure the bulletin board by:
 1. Permitting public read access only to active posts and published resources.
 2. Requiring an authenticated `@ebhcs.org` Google Account for creates and edits.
-3. Restricting post updates to the original creator, while administrators (`admin@ebhcs.org`, `leah@ebhcs.org`) have global update/delete rights (authoritative list: `isPrivilegedAdvisor` in `firestore.rules`).
+3. Restricting post updates to the original creator, while administrators (`mcreed@ebhcs.org`, `lgregory@ebhcs.org`) have global update/delete rights (authoritative list: `isPrivilegedAdvisor` in `firestore.rules`).
 4. Ensuring structural data validation for posts, resources, analytics events, and error logs before writes are processed.
 
 ## Step 4: Set Up Authentication
@@ -32,19 +32,9 @@ These rules secure the bulletin board by:
 2. Click "Get started"
 3. Go to "Sign-in method" tab
 4. Enable "Email/Password"
-5. Add authorized users (one Firebase Auth account per advisor, e.g.):
-   - admin@ebhcs.org
-   - jorge@ebhcs.org
-   - fabiola@ebhcs.org
-   - leidy@ebhcs.org
-   - carmen@ebhcs.org
-   - jerome@ebhcs.org
-   - felipe@ebhcs.org
-   - simonetta@ebhcs.org
-   - mike@ebhcs.org
-   - leah@ebhcs.org
+5. Enable the **Google** sign-in provider (Authentication → Sign-in method → Add new provider → Google). Set the public-facing name to "EBHCS Bulletin Board" and pick a support email.
 
-   Choose a unique temporary password for each account when you create it, share it with the advisor privately, then run `node scripts/mark-password-change.mjs` so they must set their own password at first login (see [scripts/README.md](../scripts/README.md)).
+   No per-advisor account creation is needed: advisors sign in with their existing @ebhcs.org Google accounts, and their Firebase Auth account is created automatically on first sign-in. Portal access is controlled by the Advisors tab in the portal (the `advisors/{username}` Firestore collection), not by which Auth accounts exist. Leave the Email/Password provider disabled.
 
 ## Step 5: Get Firebase Configuration
 

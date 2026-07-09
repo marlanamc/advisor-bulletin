@@ -46,21 +46,24 @@ service cloud.firestore {
 
     match /users/{username} {
       // Users can read and write their own user document
-      allow read, write: if request.auth != null
-        && request.auth.token.email.matches('.*@ebhcs\\.org')
+      allow read, write: if isAdvisor(request.auth)
         && username == getUsername(request.auth.token.email);
 
-      // Admin can read/write any user document
-      allow read, write: if request.auth != null
-        && request.auth.token.email == 'admin@ebhcs.org';
+      // Privileged admins can read/write any user document
+      allow read, write: if isAdvisor(request.auth)
+        && isPrivilegedAdvisor(request.auth.token.email);
     }
 
     match /advisors/{username} {
-      // Any active advisor can read the advisors list
-      allow read: if isActiveAdvisor(request.auth);
+      // Advisors can read their own directory entry (google-auth.js uses this
+      // to verify portal access at sign-in), and any active advisor can read
+      // the whole list. For everyone else the read is denied, which the
+      // client treats the same as "not an advisor".
+      allow read: if isActiveAdvisor(request.auth)
+        || (isAdvisor(request.auth) && username == getUsername(request.auth.token.email));
 
       // Only privileged advisors can create, update, or delete advisor records
-      allow write: if request.auth != null
+      allow write: if isAdvisor(request.auth)
         && isPrivilegedAdvisor(request.auth.token.email);
     }
 
@@ -69,7 +72,7 @@ service cloud.firestore {
       // Published from the admin Advisors tab; the student site falls back to
       // the static list in src/advisor-directory.js when this doc is absent.
       allow read: if true;
-      allow write: if request.auth != null
+      allow write: if isAdvisor(request.auth)
         && isPrivilegedAdvisor(request.auth.token.email)
         && request.resource.data.advisors is list
         && request.resource.data.advisors.size() <= 50;
@@ -95,9 +98,13 @@ service cloud.firestore {
       return email.split('@')[0];
     }
 
+    // email_verified blocks self-registered email/password accounts that
+    // claim an @ebhcs.org address without proving it. Google Workspace
+    // sign-in (the only supported login) always sets it to true.
     function isAdvisor(authInfo) {
       return authInfo != null
-        && authInfo.token.email.matches('.*@ebhcs\\.org');
+        && authInfo.token.email.matches('.*@ebhcs\\.org')
+        && authInfo.token.email_verified == true;
     }
 
     // An advisor is "active" only while their advisors/{username} doc exists.
@@ -112,7 +119,7 @@ service cloud.firestore {
     }
 
     function isPrivilegedAdvisor(email) {
-      return email == 'admin@ebhcs.org' || email == 'leah@ebhcs.org';
+      return email == 'mcreed@ebhcs.org' || email == 'lgregory@ebhcs.org';
     }
 
     function validActionLinkItem(item) {

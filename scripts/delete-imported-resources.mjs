@@ -83,11 +83,11 @@ async function initClientDb() {
     appId: '1:556649154585:web:3a3f49d2056aa507088288',
   };
 
-  const password = await prompt('Password for admin@ebhcs.org: ', { hidden: true });
+  const password = await prompt('Password for mcreed@ebhcs.org: ', { hidden: true });
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
-  await signInWithEmailAndPassword(auth, 'admin@ebhcs.org', password);
-  console.log('Signed in as admin@ebhcs.org (client SDK)');
+  await signInWithEmailAndPassword(auth, 'mcreed@ebhcs.org', password);
+  console.log('Signed in as mcreed@ebhcs.org (client SDK)');
   return getFirestore(app);
 }
 

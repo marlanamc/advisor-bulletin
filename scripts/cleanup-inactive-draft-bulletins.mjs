@@ -43,7 +43,7 @@ const FIREBASE_CONFIG = {
 };
 
 function parseArgs(argv) {
-  const args = { confirm: false, credentials: null, postedBy: null, email: 'admin@ebhcs.org' };
+  const args = { confirm: false, credentials: null, postedBy: null, email: 'mcreed@ebhcs.org' };
   for (const arg of argv) {
     if (arg === '--confirm') args.confirm = true;
     else if (arg.startsWith('--credentials=')) args.credentials = arg.slice('--credentials='.length);
@@ -55,7 +55,7 @@ function parseArgs(argv) {
 Options:
   --confirm           Permanently delete matched orphan post drafts (default: dry-run list only)
   --posted-by=USER    Only consider bulletins postedBy this username
-  --email=ADDR        Admin email to sign in with (default: admin@ebhcs.org)
+  --email=ADDR        Admin email to sign in with (default: mcreed@ebhcs.org)
   --credentials=PATH  Optional service account JSON (skips password prompt)
 `);
       process.exit(0);

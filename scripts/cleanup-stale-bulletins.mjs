@@ -36,7 +36,7 @@ const FIREBASE_CONFIG = {
 };
 
 function parseArgs(argv) {
-  const args = { confirm: false, credentials: null, days: STALE_DAYS, email: 'admin@ebhcs.org' };
+  const args = { confirm: false, credentials: null, days: STALE_DAYS, email: 'mcreed@ebhcs.org' };
   for (const arg of argv) {
     if (arg === '--confirm') args.confirm = true;
     else if (arg.startsWith('--credentials=')) args.credentials = arg.slice('--credentials='.length);
@@ -51,7 +51,7 @@ function parseArgs(argv) {
 Options:
   --confirm           Permanently delete matched stale inactive bulletins (default: dry-run)
   --days=N            Inactive for at least N days (default: ${STALE_DAYS})
-  --email=ADDR        Admin email to sign in with when no service account (default: admin@ebhcs.org)
+  --email=ADDR        Admin email to sign in with when no service account (default: mcreed@ebhcs.org)
   --credentials=PATH  Optional service account JSON (skips password prompt)
 `);
       process.exit(0);
