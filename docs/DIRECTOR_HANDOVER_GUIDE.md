@@ -48,7 +48,7 @@ Once a month, the Firebase keyholder should:
 3. If new errors appear, note the `message`, `page`, and `source` fields (`student` = public site, `admin` = advisor portal).
 4. Contact the technical fallback if errors are recurring or students report broken pages.
 5. **Prune old error logs** (optional, keeps Firestore tidy): from the repo root, run `npm run prune:errors` (dry-run), then `npm run prune:errors:confirm` if the count looks right. Requires a service account key — see [DEPLOYMENT.md](DEPLOYMENT.md).
-6. **Check the student feed cap**: in the admin portal dashboard, watch for the yellow/red warning about approaching the 200-active-item limit. If it appears, archive old posts in **Manage Posts**.
+6. **Keep the archive tidy**: the student site only loads the 500 most recently posted active items (posts, events, and resources combined). That is far more than the site normally carries, but if the total ever gets close, archive old posts in **Manage Posts** so nothing silently drops off the student site.
 
 Student and admin pages automatically log JavaScript errors here. No developer action is needed day-to-day unless errors show up.
 

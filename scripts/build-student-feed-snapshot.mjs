@@ -6,7 +6,9 @@ import { resolve } from 'node:path';
 const PROJECT_ID = 'ebhcs-bulletin-board';
 const COLLECTION = 'bulletins';
 const OUT_PATH = resolve(process.cwd(), 'public/student-feed-snapshot.json');
-// Keep in sync with the student listener limit in src/firebase-config.js (limit(200)).
+// Must not exceed the student listener limit in src/firebase-config.js (limit(500)),
+// or snapshot items would flash and vanish on hydration. Kept smaller on purpose to
+// bound the first-paint payload; the live query fills in the rest.
 const MAX_ITEMS = 200;
 const MAX_POST_ITEMS = 120;
 // Pre-hydration snapshot cap for resources. Keep this comfortably above the real
