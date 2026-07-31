@@ -44,8 +44,9 @@ export class BoardDetailMethods {
         const currentLang = document.body.getAttribute('data-lang') || 'EN';
         const displayImage = (currentLang === 'ES' && bulletin.imageEs) ? bulletin.imageEs : bulletin.image;
 
+        const heroAlt = this.getPostTitle(bulletin) || 'Flyer';
         const heroContent = displayImage
-            ? `<button type="button" class="post-detail-hero-zoom lightbox-trigger" data-lightbox-src="${this.escapeAttribute(displayImage)}" aria-label="View full size flyer">
+            ? `<button type="button" class="post-detail-hero-zoom lightbox-trigger" data-lightbox-src="${this.escapeAttribute(displayImage)}" data-lightbox-alt="${this.escapeAttribute(heroAlt)}" aria-label="View full size flyer">
                 <img class="post-detail-hero-image" src="${this.escapeAttribute(displayImage)}" alt="">
                 <span class="post-detail-hero-zoom-hint">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3M11 8v6M8 11h6"/></svg>

@@ -184,7 +184,7 @@ const BLOCK_DEFS = {
         html(slot = 1) {
             return `
 <p class="cx-help" style="margin:0 0 10px">Adds a button to the card — point it at a page <em>or</em> attach a PDF.</p>
-<input class="cx-input" data-cx-mirror="resourceActionLink${slot}LabelEn" placeholder="Button label (e.g. Steps to apply)" style="margin-bottom:10px">
+<input class="cx-input" data-cx-mirror="resourceActionLink${slot}LabelEn" placeholder="Button label (e.g. Steps to apply)" aria-label="Button label" style="margin-bottom:10px">
 <div class="cx-seg" data-cx-toggle-pdf style="margin-bottom:10px">
   <label class="on"><input type="radio" name="cxExtKind${slot}" value="url" checked> 🔗 Link</label>
   <label><input type="radio" name="cxExtKind${slot}" value="pdf"> 📄 PDF</label>
@@ -402,6 +402,25 @@ function ensureMetaFields() {
     }
 }
 
+// Keeps the visual state and the accessible pressed-state of the type/
+// sub-kind toggle buttons in sync — screen readers need aria-pressed to
+// know which post type or resource kind is currently selected.
+function setActiveTypeButtons(type) {
+    document.querySelectorAll('[data-cx-type]').forEach(b => {
+        const isActive = b.getAttribute('data-cx-type') === type
+        b.classList.toggle('active', isActive)
+        b.setAttribute('aria-pressed', isActive ? 'true' : 'false')
+    })
+}
+
+function setActiveResKindButtons(kind) {
+    document.querySelectorAll('[data-cx-reskind]').forEach(b => {
+        const isActive = b.getAttribute('data-cx-reskind') === kind
+        b.classList.toggle('sel', isActive)
+        b.setAttribute('aria-pressed', isActive ? 'true' : 'false')
+    })
+}
+
 /** Switch composer type without clearing blocks (edit-prefill) */
 export function selectComposerType(type, options = {}) {
     if (options.resetFields) {
@@ -411,9 +430,7 @@ export function selectComposerType(type, options = {}) {
     if (type === 'resource' && options.resourceKind) {
         state.resKind = options.resourceKind
         mirror('resourceKind', options.resourceKind)
-        document.querySelectorAll('[data-cx-reskind]').forEach(b => {
-            b.classList.toggle('sel', b.getAttribute('data-cx-reskind') === options.resourceKind)
-        })
+        setActiveResKindButtons(options.resourceKind)
     }
     if (type === 'resource' && options.resourceHighlights) {
         state.helpTags = String(options.resourceHighlights)
@@ -426,13 +443,9 @@ export function selectComposerType(type, options = {}) {
         state.helpTags = []
         mirror('resourceKind', 'organization')
         mirror('resourceHighlights', '')
-        document.querySelectorAll('[data-cx-reskind]').forEach(b => {
-            b.classList.toggle('sel', b.getAttribute('data-cx-reskind') === 'organization')
-        })
+        setActiveResKindButtons('organization')
     }
-    document.querySelectorAll('[data-cx-type]').forEach(b => {
-        b.classList.toggle('active', b.getAttribute('data-cx-type') === type)
-    })
+    setActiveTypeButtons(type)
     applyMode({ syncPreview: options.syncPreview !== false })
     if (type === 'resource' && options.resourceHighlights) {
         renderHelpTags()
@@ -445,12 +458,8 @@ export function resetComposer() {
     state.category = null
     state.insertedBlocks = []
 
-    document.querySelectorAll('[data-cx-type]').forEach(b => {
-        b.classList.toggle('active', b.getAttribute('data-cx-type') === 'bulletin')
-    })
-    document.querySelectorAll('[data-cx-reskind]').forEach(b => {
-        b.classList.toggle('sel', b.getAttribute('data-cx-reskind') === 'organization')
-    })
+    setActiveTypeButtons('bulletin')
+    setActiveResKindButtons('organization')
 
     clearComposerForNewPost()
     applyMode()
@@ -551,9 +560,18 @@ function positionFixedPopover(pop, anchor, gap = 6) {
 function buildCatPopover() {
     const pop = document.getElementById('cxCatPop')
     const host = document.getElementById('cxCatPopCats')
+    const catBtn = document.getElementById('cxCatBtn')
     if (!pop || !host) return
 
     let showAll = false
+
+    function closeCatPopover({ restoreFocus = false } = {}) {
+        pop.classList.remove('open')
+        if (catBtn) {
+            catBtn.setAttribute('aria-expanded', 'false')
+            if (restoreFocus) catBtn.focus()
+        }
+    }
 
     function render() {
         host.innerHTML = ''
@@ -570,7 +588,10 @@ function buildCatPopover() {
                 btn.style.background = c.bg
             }
             btn.innerHTML = `<span class="cx-cat-em">${c.em}</span>${c.chip}`
-            btn.addEventListener('click', () => pickCategory(k))
+            btn.addEventListener('click', () => {
+                pickCategory(k)
+                closeCatPopover({ restoreFocus: true })
+            })
             host.appendChild(btn)
         })
 
@@ -587,21 +608,30 @@ function buildCatPopover() {
 
     render()
 
-    const catBtn = document.getElementById('cxCatBtn')
     if (catBtn && catBtn.dataset.cxCatPopBound !== '1') {
         catBtn.dataset.cxCatPopBound = '1'
         catBtn.addEventListener('click', e => {
             e.stopPropagation()
             if (!pop.classList.contains('open')) {
                 positionFixedPopover(pop, catBtn)
+                pop.classList.add('open')
+                catBtn.setAttribute('aria-expanded', 'true')
+                requestAnimationFrame(() => host.querySelector('.cx-cat')?.focus())
+            } else {
+                closeCatPopover()
             }
-            pop.classList.toggle('open')
+        })
+        pop.addEventListener('keydown', e => {
+            if (e.key === 'Escape') {
+                e.preventDefault()
+                closeCatPopover({ restoreFocus: true })
+            }
         })
     }
 
     if (!document.documentElement.dataset.cxCatPopDismissBound) {
         document.documentElement.dataset.cxCatPopDismissBound = '1'
-        document.addEventListener('click', () => pop.classList.remove('open'))
+        document.addEventListener('click', () => closeCatPopover())
         pop.addEventListener('click', e => e.stopPropagation())
     }
 }
@@ -680,6 +710,25 @@ function buildInsertMenu() {
     syncExtrasMenuState()
 }
 
+// Associates each .cx-label with the field it labels (id/for), so screen
+// readers announce a real field name instead of nothing. Skips labels that
+// already wrap a radio/checkbox (self-associating, no id needed).
+function wireBlockFieldLabels(block, blockKey) {
+    let index = 0
+    block.querySelectorAll('label.cx-label').forEach((label) => {
+        if (label.hasAttribute('for')) return
+        const field = label.parentElement
+            ? label.parentElement.querySelector('input, select, textarea')
+            : null
+        if (!field) return
+        if (!field.id) {
+            index += 1
+            field.id = `cx-${blockKey}-field-${index}`
+        }
+        label.setAttribute('for', field.id)
+    })
+}
+
 function insertBlock(key, options = {}) {
     const def = BLOCK_DEFS[key]
     if (!def) return
@@ -710,10 +759,11 @@ function insertBlock(key, options = {}) {
     block.innerHTML = `
 <div class="cx-block-head">
   <b><span>${def.icon}</span> ${blockTitle}</b>
-  <button type="button" class="cx-block-x" title="Remove">×</button>
+  <button type="button" class="cx-block-x" title="Remove" aria-label="Remove ${blockTitle} block">×</button>
 </div>
 ${htmlContent}`
     blocksEl.appendChild(block)
+    wireBlockFieldLabels(block, blockKey)
 
     // Wire remove button
     block.querySelector('.cx-block-x').addEventListener('click', () => removeBlock(blockKey, block))
@@ -1024,8 +1074,7 @@ function clearOptionalDetailMirrors() {
 function bindTypeTabs() {
     document.querySelectorAll('[data-cx-type]').forEach(btn => {
         btn.addEventListener('click', () => {
-            document.querySelectorAll('[data-cx-type]').forEach(b => b.classList.remove('active'))
-            btn.classList.add('active')
+            setActiveTypeButtons(btn.getAttribute('data-cx-type'))
             state.type = btn.getAttribute('data-cx-type')
             state.category = null
             resetCategoryPill()
@@ -1402,22 +1451,14 @@ export function hydrateFromForm() {
         state.type    = 'resource'
         state.resKind = resKind
         mirror('resourceKind', resKind)
-        document.querySelectorAll('[data-cx-type]').forEach(b => {
-            b.classList.toggle('active', b.getAttribute('data-cx-type') === 'resource')
-        })
-        document.querySelectorAll('[data-cx-reskind]').forEach(b => {
-            b.classList.toggle('sel', b.getAttribute('data-cx-reskind') === resKind)
-        })
+        setActiveTypeButtons('resource')
+        setActiveResKindButtons(resKind)
     } else if (adminMode === 'event') {
         state.type = 'event'
-        document.querySelectorAll('[data-cx-type]').forEach(b => {
-            b.classList.toggle('active', b.getAttribute('data-cx-type') === 'event')
-        })
+        setActiveTypeButtons('event')
     } else {
         state.type = 'bulletin'
-        document.querySelectorAll('[data-cx-type]').forEach(b => {
-            b.classList.toggle('active', b.getAttribute('data-cx-type') === 'bulletin')
-        })
+        setActiveTypeButtons('bulletin')
     }
 
     applyMode({ syncPreview: false })
@@ -1565,10 +1606,10 @@ function buildSessionRow(date = '', startTime = '', endTime = '', onSync = null)
     row.className = 'cx-evmore-row'
     row.style.cssText = 'display:flex;gap:8px;align-items:center;margin-bottom:8px'
     row.innerHTML = `
-<input type="date" class="cx-input" style="flex:1" value="${date}">
-<input type="time" class="cx-input" style="max-width:120px" placeholder="Start" value="${startTime}">
-<input type="time" class="cx-input" style="max-width:120px" placeholder="End" value="${endTime}">
-<button type="button" class="cx-block-x" title="Remove">×</button>`
+<input type="date" class="cx-input" style="flex:1" aria-label="Session date" value="${date}">
+<input type="time" class="cx-input" style="max-width:120px" placeholder="Start" aria-label="Session start time" value="${startTime}">
+<input type="time" class="cx-input" style="max-width:120px" placeholder="End" aria-label="Session end time" value="${endTime}">
+<button type="button" class="cx-block-x" title="Remove" aria-label="Remove session date">×</button>`
     row.querySelector('.cx-block-x').addEventListener('click', () => {
         row.remove()
         syncFn()

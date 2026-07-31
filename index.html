@@ -93,7 +93,7 @@
                     <circle cx="11" cy="11" r="7"></circle>
                     <path d="m17 17 4 4"></path>
                 </svg>
-                <input id="desktopTopbarSearchInput" type="text" class="desktop-topbar-search-input" placeholder="Search for help, announcements, and events..." autocomplete="off" spellcheck="false">
+                <input id="desktopTopbarSearchInput" type="text" class="desktop-topbar-search-input" placeholder="Search for help, announcements, and events..." aria-label="Search for help, announcements, and events..." autocomplete="off" spellcheck="false">
                 <button id="desktopTopbarSearchBtn" class="desktop-topbar-search-btn" type="button">
                     <span class="en-text">Search</span>
                     <span class="es-text">Buscar</span>
@@ -107,8 +107,8 @@
                     </svg>
                 </button>
                 <div class="lang-pill" aria-label="Language selector">
-                    <button class="lang-btn active" data-lang-switch="EN" type="button">EN</button>
-                    <button class="lang-btn" data-lang-switch="ES" type="button">ES</button>
+                    <button class="lang-btn active" data-lang-switch="EN" type="button" aria-pressed="true">EN</button>
+                    <button class="lang-btn" data-lang-switch="ES" type="button" aria-pressed="false">ES</button>
                 </div>
             </div>
             </div>
@@ -140,7 +140,7 @@
             </div>
             <div class="filter-section">
                 <div class="search-bar">
-                    <input type="text" id="searchInput" placeholder="What do you need help with?" class="search-input">
+                    <input type="text" id="searchInput" placeholder="What do you need help with?" aria-label="What do you need help with?" class="search-input">
                     <button id="searchBtn" class="search-btn" type="button" aria-label="Search the feed">
                         <svg class="search-btn-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                             <circle cx="11" cy="11" r="7"></circle>
@@ -442,7 +442,7 @@
                         <div class="feed-category-icon" id="feedCategoryIcon" aria-hidden="true">🏠</div>
                         <div class="feed-category-copy">
                             <p class="feed-category-kicker" id="feedCategoryKicker">Showing posts</p>
-                            <h2 id="feedCategoryTitle">Housing Help</h2>
+                            <h3 id="feedCategoryTitle">Housing Help</h3>
                             <p id="feedCategoryDescription">Find apartments, shelters, rent help, and housing support.</p>
                             <div class="feed-category-chips" id="feedCategoryChips" aria-label="Helpful topics"></div>
                             <div class="feed-category-resources" id="feedCategoryResources" aria-hidden="true" hidden></div>
@@ -540,7 +540,7 @@
                         <line x1="16" y1="17" x2="8" y2="17"></line>
                     </svg>
                 </div>
-                <h3>No bulletins yet</h3>
+                <h2>No bulletins yet</h2>
                 <p>Check back soon for job opportunities, training sessions, and announcements.</p>
                 <p class="empty-state-bilingual">Vuelve pronto para ver oportunidades de trabajo y anuncios.</p>
             </div>
@@ -598,7 +598,7 @@
                         <line x1="3" y1="10" x2="21" y2="10"></line>
                     </svg>
                 </div>
-                <h3>No upcoming events</h3>
+                <h2>No upcoming events</h2>
                 <p>Events and deadlines will appear here when posted.</p>
                 <p class="empty-state-bilingual">Los eventos y fechas importantes aparecerán aquí.</p>
             </div>
@@ -681,7 +681,7 @@
                             <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
                         </svg>
                     </div>
-                    <h3>No help links yet</h3>
+                    <h2>No help links yet</h2>
                     <p>Helpful links for immigration, housing, jobs, and health will appear here.</p>
                     <p class="empty-state-bilingual">Enlaces útiles para inmigración, vivienda, empleos y salud aparecerán aquí.</p>
                 </div>
@@ -946,7 +946,7 @@
     </button>
 
     <!-- Bulletin detail modal -->
-    <div id="bulletinDetailModal" class="modal bulletin-detail-modal" aria-hidden="true">
+    <div id="bulletinDetailModal" class="modal bulletin-detail-modal" role="dialog" aria-modal="true" aria-label="Bulletin detail" aria-hidden="true">
         <div class="modal-content bulletin-detail-content">
             <button id="closeBulletinDetail" class="close-detail" aria-label="Close bulletin detail">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -1023,7 +1023,7 @@
 
     <!-- ═══ CATEGORY DETAIL SHEET ══════════════════════════════════ -->
     <div class="cat-detail-backdrop" id="catDetailBackdrop" aria-hidden="true" onclick="window.bulletinBoard && window.bulletinBoard.closeResourceDetailSheet && window.bulletinBoard.closeResourceDetailSheet()"></div>
-    <div class="cat-detail-sheet" id="catDetailSheet" aria-hidden="true">
+    <div class="cat-detail-sheet" id="catDetailSheet" role="dialog" aria-modal="true" aria-label="Help details" aria-hidden="true">
         <!-- Topbar -->
         <div class="cat-detail-topbar">
             <div class="cat-detail-grabber" aria-hidden="true"></div>

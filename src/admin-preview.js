@@ -178,14 +178,6 @@ document.addEventListener('DOMContentLoaded', function() {
     window.apSelectType = function(type) {
         var map = typeMap[type];
         if (!map) return;
-        // Update type cards
-        ['bulletin','resource','event'].forEach(function(t) {
-            var card = document.getElementById('apType' + t.charAt(0).toUpperCase() + t.slice(1));
-            if (!card) return;
-            card.classList.remove('selected','selected-bulletin','selected-resource','selected-event');
-            card.setAttribute('aria-pressed', t === type ? 'true' : 'false');
-            if (t === type) card.classList.add('selected', map.cls);
-        });
         // Update live preview chip
         var chip = document.getElementById('previewChip');
         if (chip) {
@@ -679,6 +671,12 @@ document.addEventListener('DOMContentLoaded', function() {
             '</article>';
     }
 
+    var _syncPreviewDebounceTimer = null;
+    function syncPreviewDebounced() {
+        if (_syncPreviewDebounceTimer) clearTimeout(_syncPreviewDebounceTimer);
+        _syncPreviewDebounceTimer = setTimeout(syncPreview, 200);
+    }
+
     function syncPreview() {
         var mode = getPreviewMode();
         markPhonePreviewMode(mode);
@@ -965,14 +963,14 @@ document.addEventListener('DOMContentLoaded', function() {
         ['cxTitle', 'cxDesc'].forEach(function(id) {
             var el = document.getElementById(id);
             if (!el) return;
-            el.addEventListener('input', syncPreview);
+            el.addEventListener('input', syncPreviewDebounced);
             el.addEventListener('change', syncPreview);
         });
         var bulletinForm = document.getElementById('bulletinForm');
         if (bulletinForm) {
             bulletinForm.addEventListener('input', function(e) {
                 if (!e.target || !e.target.name || e.target.type === 'file') return;
-                syncPreview();
+                syncPreviewDebounced();
             });
             bulletinForm.addEventListener('change', function(e) {
                 if (!e.target || !e.target.name || e.target.type === 'file') return;
@@ -982,7 +980,7 @@ document.addEventListener('DOMContentLoaded', function() {
         ['title','category','resourceTitleEn','resourceTitleEs','description','summaryEs','resourceDescription','resourceSummaryEs','advisorName','resourceAdvisorName','resourceCategory','resourceUrl','resourceHighlights','resourcePhone','resourceAddress','resourceHours','resourcePublished','resourceKind','dateType','eventDate','startDate','endDate','startTime','endTime','location','eventLink','eventLocation'].forEach(function(id) {
             var el = document.getElementById(id);
             if (!el) return;
-            el.addEventListener('input', syncPreview);
+            el.addEventListener('input', syncPreviewDebounced);
             el.addEventListener('change', syncPreview);
         });
         var imgEl = document.getElementById('image') || document.getElementById('_cxUploadEn');

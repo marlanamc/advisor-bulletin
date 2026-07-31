@@ -54,6 +54,21 @@ function emitAssetManifest() {
   }
 }
 
+// Dev-only CSP allowance so Impeccable's live design-iteration picker
+// (served from http://localhost:8400) can load. Only runs under `vite dev`
+// (apply: 'serve'); never touches the static HTML source or the prod build.
+function injectImpeccableLiveDevCsp() {
+  return {
+    name: 'inject-impeccable-live-dev-csp',
+    apply: 'serve',
+    transformIndexHtml(html) {
+      return html
+        .replace(/(script-src [^;"]*)(;|")/, '$1 http://localhost:8400$2')
+        .replace(/(connect-src [^;"]*)(;|")/, '$1 http://localhost:8400$2')
+    },
+  }
+}
+
 export default defineConfig({
   build: {
     modulePreload: {
@@ -79,5 +94,5 @@ export default defineConfig({
       },
     },
   },
-  plugins: [emitDeployVersionFile(), emitAssetManifest()],
+  plugins: [emitDeployVersionFile(), emitAssetManifest(), injectImpeccableLiveDevCsp()],
 })

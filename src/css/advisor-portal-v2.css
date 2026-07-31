@@ -216,7 +216,7 @@ body.ap-portal-active .main-content {
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: rgba(255,255,255,.42);
+  color: rgba(255,255,255,.65);
   padding-left: 2px;
 }
 
@@ -273,7 +273,7 @@ body.ap-portal-active .main-content {
   font-weight: 700;
   letter-spacing: .1em;
   text-transform: uppercase;
-  color: rgba(255,255,255,.3);
+  color: rgba(255,255,255,.65);
   padding: 12px 8px 6px;
   margin-top: 6px;
 }
@@ -395,7 +395,7 @@ body.ap-portal-active .main-content {
 
 .ap-advisor-role {
   font-size: 0.72rem;
-  color: rgba(255,255,255,.4);
+  color: rgba(255,255,255,.65);
 }
 
 .ap-advisor-card:hover {
@@ -2659,6 +2659,9 @@ body.ap-portal-active .main-content {
 
 .ap-filter-pill {
   padding: 7px 14px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
   border-radius: var(--ap-r-pill);
   border: 1.5px solid var(--ap-border);
   background: var(--ap-surface);
@@ -3469,11 +3472,13 @@ body.ap-portal-active .main-content {
 .cx-doc { padding: 26px 30px 30px; }
 .cx-doc-title { width: 100%; border: none; outline: none; font-family: var(--ap-font-head); font-weight: 800; font-size: 1.7rem; letter-spacing: -.02em; color: var(--ap-text); padding: 4px 0; background: transparent; }
 .cx-doc-title::placeholder { color: #c2cedd; }
+.cx-doc-title:focus-visible { outline: 2px solid var(--ap-blue); outline-offset: 3px; border-radius: 8px; }
 .cx-doc-tagrow { display: flex; align-items: center; gap: 9px; margin: 8px 0 16px; flex-wrap: wrap; }
-.cx-doc-cat { display: inline-flex; align-items: center; gap: 7px; padding: 6px 13px; border-radius: var(--ap-r-pill); border: 1.5px dashed var(--ap-border-mid); background: var(--ap-surface); color: var(--ap-text-3); font-weight: 600; font-size: .82rem; cursor: pointer; }
+.cx-doc-cat { display: inline-flex; align-items: center; gap: 7px; padding: 6px 13px; min-height: 44px; border-radius: var(--ap-r-pill); border: 1.5px dashed var(--ap-border-mid); background: var(--ap-surface); color: var(--ap-text-3); font-weight: 600; font-size: .82rem; cursor: pointer; }
 .cx-doc-cat.set { border-style: solid; }
 .cx-doc-body { width: 100%; border: none; outline: none; resize: none; font-family: var(--ap-font-body); font-size: 1rem; line-height: 1.65; color: var(--ap-text-2); min-height: 90px; padding: 0; background: transparent; }
 .cx-doc-body::placeholder { color: #c2cedd; }
+.cx-doc-body:focus-visible { outline: 2px solid var(--ap-blue); outline-offset: 3px; border-radius: 8px; }
 .cx-doc-divider { height: 1px; background: var(--ap-border); margin: 18px 0; }
 
 /* Inserted detail blocks */
@@ -3636,6 +3641,9 @@ body.ap-portal-active .main-content {
 }
 .cx-chip-browse-btn {
   padding: 5px 10px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
   border-radius: var(--ap-r-pill);
   border: 1px solid var(--ap-border);
   background: #fff;

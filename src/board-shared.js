@@ -1,6 +1,43 @@
 // Shared module-level helpers and content config for the student board,
 // used by firebase-config.js and the src/board-*.js method modules.
 
+const FOCUSABLE_SELECTOR = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+// Keeps Tab/Shift+Tab cycling inside an open dialog instead of escaping to the page behind it.
+export function trapTabFocus(container, event) {
+    const focusable = Array.from(container.querySelectorAll(FOCUSABLE_SELECTOR))
+        .filter((el) => el.offsetParent !== null);
+    if (!focusable.length) return;
+
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+
+    if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+    }
+}
+
+// Moves focus into a just-opened dialog and returns the element that was
+// focused beforehand, so it can be restored once the dialog closes.
+export function focusDialogOpen(container) {
+    const lastFocused = document.activeElement;
+    const target = container.querySelector(FOCUSABLE_SELECTOR) || container;
+    if (target && typeof target.focus === 'function') {
+        target.focus();
+    }
+    return lastFocused;
+}
+
+export function focusDialogClose(lastFocused) {
+    if (lastFocused && typeof lastFocused.focus === 'function' && document.contains(lastFocused)) {
+        lastFocused.focus();
+    }
+}
+
 export function recordStudentPerf(name, detail) {
     try {
         performance.mark(name, detail ? { detail } : undefined);

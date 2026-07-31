@@ -251,8 +251,13 @@ class FirebaseAdminPanel {
         const manageSort = document.getElementById('manageSortSelect');
         const manageFilter = document.getElementById('manageFilterSelect');
         const rerender = () => this.loadManageBulletins();
+        let manageSearchDebounceTimer = null;
+        const rerenderDebounced = () => {
+            if (manageSearchDebounceTimer) clearTimeout(manageSearchDebounceTimer);
+            manageSearchDebounceTimer = setTimeout(rerender, 200);
+        };
         const manageContentType = document.getElementById('manageContentTypeSelect');
-        if (manageSearch) manageSearch.addEventListener('input', rerender);
+        if (manageSearch) manageSearch.addEventListener('input', rerenderDebounced);
         if (manageSort) manageSort.addEventListener('change', rerender);
         if (manageFilter) manageFilter.addEventListener('change', rerender);
         if (manageContentType) manageContentType.addEventListener('change', () => {
@@ -1150,6 +1155,9 @@ class FirebaseAdminPanel {
 
         const dialog = document.createElement('div');
         dialog.id = 'inlineConfirmDialog';
+        dialog.setAttribute('role', 'alertdialog');
+        dialog.setAttribute('aria-modal', 'true');
+        dialog.setAttribute('aria-label', title);
         dialog.style.cssText = `
             position: fixed; inset: 0; z-index: 2000;
             display: flex; align-items: center; justify-content: center;
@@ -1170,9 +1178,35 @@ class FirebaseAdminPanel {
 
         document.body.appendChild(dialog);
 
-        const close = () => dialog.remove();
-        dialog.querySelector('#confirmDialogCancel').addEventListener('click', close);
-        dialog.querySelector('#confirmDialogOk').addEventListener('click', () => { close(); onConfirm(); });
+        const lastFocused = document.activeElement;
+        const cancelBtn = dialog.querySelector('#confirmDialogCancel');
+        const okBtn = dialog.querySelector('#confirmDialogOk');
+        cancelBtn.focus();
+
+        const onKeydown = (e) => {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                close();
+            } else if (e.key === 'Tab') {
+                if (e.shiftKey && document.activeElement === cancelBtn) {
+                    e.preventDefault();
+                    okBtn.focus();
+                } else if (!e.shiftKey && document.activeElement === okBtn) {
+                    e.preventDefault();
+                    cancelBtn.focus();
+                }
+            }
+        };
+        dialog.addEventListener('keydown', onKeydown);
+
+        const close = () => {
+            dialog.remove();
+            if (lastFocused && typeof lastFocused.focus === 'function' && document.contains(lastFocused)) {
+                lastFocused.focus();
+            }
+        };
+        cancelBtn.addEventListener('click', close);
+        okBtn.addEventListener('click', () => { close(); onConfirm(); });
         dialog.addEventListener('click', (e) => { if (e.target === dialog) close(); });
     }
 
@@ -1591,6 +1625,8 @@ class FirebaseAdminPanel {
 
         const messageDiv = document.createElement('div');
         messageDiv.className = 'toast-message';
+        messageDiv.setAttribute('role', 'status');
+        messageDiv.setAttribute('aria-live', type === 'error' ? 'assertive' : 'polite');
 
         const icons = {
             success: '✅',

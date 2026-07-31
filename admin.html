@@ -368,15 +368,15 @@
                         <div class="ap-cx-col" id="apCxCol">
                             <!-- type tabs -->
                             <div class="cx-types" id="cxTypes">
-                                <button type="button" class="cx-type active" data-cx-type="bulletin">
+                                <button type="button" class="cx-type active" data-cx-type="bulletin" aria-pressed="true">
                                     <span class="cx-type-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
                                     <span><b>Bulletin</b><span>Shows on the home feed</span></span>
                                 </button>
-                                <button type="button" class="cx-type" data-cx-type="resource">
+                                <button type="button" class="cx-type" data-cx-type="resource" aria-pressed="false">
                                     <span class="cx-type-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></span>
                                     <span><b>Resource</b><span>Saved in Find Help</span></span>
                                 </button>
-                                <button type="button" class="cx-type" data-cx-type="event">
+                                <button type="button" class="cx-type" data-cx-type="event" aria-pressed="false">
                                     <span class="cx-type-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
                                     <span><b>Calendar Event</b><span>Adds dates to the calendar</span></span>
                                 </button>
@@ -386,11 +386,11 @@
                             <div class="cx-reskind cx-hidden" id="cxResKind" role="group" aria-labelledby="cxResKindLabel">
                                 <p class="cx-reskind-label" id="cxResKindLabel">What kind of resource?</p>
                                 <div class="cx-reskind-track">
-                                <button type="button" data-cx-reskind="organization" class="sel">
+                                <button type="button" data-cx-reskind="organization" class="sel" aria-pressed="true">
                                     <span class="rk-ic">🏢</span>
                                     <span><b>A place or organization</b><span>Students can call, visit, or browse it online</span></span>
                                 </button>
-                                <button type="button" data-cx-reskind="document">
+                                <button type="button" data-cx-reskind="document" aria-pressed="false">
                                     <span class="rk-ic">📄</span>
                                     <span><b>A document or form</b><span>A PDF students open, print, or fill out</span></span>
                                 </button>
@@ -473,7 +473,7 @@
                                 <div class="cx-doc">
                                     <input class="cx-doc-title" id="cxTitle" placeholder="Untitled post — type a title" maxlength="200">
                                     <div class="cx-doc-tagrow">
-                                        <button type="button" class="cx-doc-cat" id="cxCatBtn">
+                                        <button type="button" class="cx-doc-cat" id="cxCatBtn" aria-haspopup="dialog" aria-expanded="false">
                                             <span id="cxCatEm">🏷️</span> <span id="cxCatLabel">Add a category</span>
                                         </button>
                                     </div>
@@ -862,7 +862,7 @@
             </div><!-- /ap-main -->
 
             <!-- Edit Advisor Modal (unchanged for JS compat) -->
-            <div id="editAdvisorModal" class="img-lightbox" role="dialog" aria-label="Edit advisor" aria-hidden="true" style="display:none; align-items:center; justify-content:center;">
+            <div id="editAdvisorModal" class="img-lightbox" role="dialog" aria-modal="true" aria-label="Edit advisor" aria-hidden="true" style="display:none; align-items:center; justify-content:center;">
                 <div class="img-lightbox-backdrop" onclick="adminPanel.closeEditAdvisor()"></div>
                 <div class="advisor-edit-modal-inner" style="position:relative;z-index:1;background:#fff;border-radius:16px;padding:28px;width:min(480px,92vw);box-shadow:0 24px 60px rgba(10,29,58,0.18);">
                     <h4 style="margin:0 0 18px;font-family:var(--ap-font-head);font-size:1rem;font-weight:800;color:#0a1d3a;">Edit Advisor</h4>
@@ -938,7 +938,7 @@
     <script type="module" src="/src/admin-preview.js"></script>
 
     <!-- Category popover for the streamlined composer (fixed/absolute, shared) -->
-    <div class="cx-catpop" id="cxCatPop" style="position:fixed">
+    <div class="cx-catpop" id="cxCatPop" role="dialog" aria-label="Choose a category" style="position:fixed">
         <div class="cx-cats" id="cxCatPopCats"></div>
     </div>
 

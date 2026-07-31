@@ -54,12 +54,14 @@ import {
     RESOURCE_CATEGORY_CONFIG,
     FEED_CATEGORY_CONTENT,
     RESOURCE_ICON_SVGS,
+    trapTabFocus,
+    focusDialogOpen,
+    focusDialogClose,
 } from './board-shared.js'
 import { BoardCalendarMethods } from './board-calendar.js'
 import { BoardResourcesMethods } from './board-resources.js'
 import { BoardDetailMethods } from './board-detail.js'
 import { storeServerSnapshot } from './student-snapshot.js'
-
 
 // Firebase-enabled Bulletin Board System
 class FirebaseBulletinBoard {
@@ -760,6 +762,17 @@ class FirebaseBulletinBoard {
                 if (detailModalEl && detailModalEl.style.display === 'flex') {
                     this.closeBulletinDetail();
                 }
+                return;
+            }
+
+            if (event.key === 'Tab') {
+                const resourceSheet = document.getElementById('catDetailSheet');
+                const detailModalEl = document.getElementById('bulletinDetailModal');
+                const openDialog = (resourceSheet && resourceSheet.classList.contains('open') && resourceSheet)
+                    || (detailModalEl && detailModalEl.style.display === 'flex' && detailModalEl);
+                if (openDialog) {
+                    trapTabFocus(openDialog, event);
+                }
             }
         });
 
@@ -1413,7 +1426,9 @@ class FirebaseBulletinBoard {
         document.documentElement.setAttribute('data-lang', normalized);
 
         document.querySelectorAll('[data-lang-switch]').forEach((button) => {
-            button.classList.toggle('active', button.getAttribute('data-lang-switch') === normalized);
+            const isActive = button.getAttribute('data-lang-switch') === normalized;
+            button.classList.toggle('active', isActive);
+            button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
         });
 
         this.updateSearchPlaceholder();
@@ -1450,10 +1465,12 @@ class FirebaseBulletinBoard {
 
         if (desktopSearchInput) {
             desktopSearchInput.placeholder = desktopPlaceholder;
+            desktopSearchInput.setAttribute('aria-label', desktopPlaceholder);
         }
 
         [searchInput, mobileInlineSearchInput].filter(Boolean).forEach((input) => {
             input.placeholder = mobilePlaceholder;
+            input.setAttribute('aria-label', mobilePlaceholder);
         });
     }
 
@@ -1773,6 +1790,7 @@ class FirebaseBulletinBoard {
         modal.style.display = 'flex';
         modal.setAttribute('aria-hidden', 'false');
         document.body.classList.add('modal-open');
+        this._lastFocusedBeforeDetailModal = focusDialogOpen(modal);
     }
 
     closeBulletinDetail(updateHash = true) {
@@ -1786,6 +1804,8 @@ class FirebaseBulletinBoard {
         modal.setAttribute('aria-hidden', 'true');
         document.body.classList.remove('modal-open');
         document.body.style.overflow = '';
+        focusDialogClose(this._lastFocusedBeforeDetailModal);
+        this._lastFocusedBeforeDetailModal = null;
 
         if (updateHash && window.location.hash.startsWith('#bulletin-')) {
             history.replaceState(null, '', window.location.pathname + window.location.search);
@@ -1803,7 +1823,7 @@ class FirebaseBulletinBoard {
         const bulletinsList = bulletins.map(bulletin => {
             const isExpired = this.isBulletinExpired(bulletin);
             return `
-                <div class="day-event-item ${isExpired ? 'expired' : ''}" onclick="event.stopPropagation(); bulletinBoard.showBulletinDetail('${this.escapeAttribute(bulletin.id)}')">
+                <div class="day-event-item ${isExpired ? 'expired' : ''}" role="button" tabindex="0" onclick="event.stopPropagation(); bulletinBoard.showBulletinDetail('${this.escapeAttribute(bulletin.id)}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();bulletinBoard.showBulletinDetail('${this.escapeAttribute(bulletin.id)}')}">
                     <div class="day-event-header">
                         <h3 class="day-event-title">${this.escapeHtml(this.getPostTitle(bulletin))}</h3>
                         <span class="category-badge category-${bulletin.category}">${this.getCategoryDisplay(bulletin.category)}</span>

@@ -62,11 +62,48 @@ export class AdminManageMethods {
         document.getElementById('editAdvisorIsAdmin').checked = advisor.isAdmin || false;
         document.getElementById('editAdvisorPublicRole').value = advisor.publicRole || 'Advisor';
         document.getElementById('editAdvisorShowInDirectory').checked = advisor.showInDirectory !== false;
-        document.getElementById('editAdvisorModal').style.display = 'flex';
+        const modal = document.getElementById('editAdvisorModal');
+        modal.style.display = 'flex';
+        modal.setAttribute('aria-hidden', 'false');
+        this._lastFocusedBeforeEditAdvisor = document.activeElement;
+        document.getElementById('editAdvisorDisplayName').focus();
+
+        this._editAdvisorKeydown = (e) => {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                this.closeEditAdvisor();
+                return;
+            }
+            if (e.key !== 'Tab') return;
+            const focusable = Array.from(modal.querySelectorAll('input, select, button'))
+                .filter((el) => el.offsetParent !== null);
+            if (!focusable.length) return;
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
+            if (e.shiftKey && document.activeElement === first) {
+                e.preventDefault();
+                last.focus();
+            } else if (!e.shiftKey && document.activeElement === last) {
+                e.preventDefault();
+                first.focus();
+            }
+        };
+        modal.addEventListener('keydown', this._editAdvisorKeydown);
     }
 
     closeEditAdvisor() {
-        document.getElementById('editAdvisorModal').style.display = 'none';
+        const modal = document.getElementById('editAdvisorModal');
+        modal.style.display = 'none';
+        modal.setAttribute('aria-hidden', 'true');
+        if (this._editAdvisorKeydown) {
+            modal.removeEventListener('keydown', this._editAdvisorKeydown);
+            this._editAdvisorKeydown = null;
+        }
+        const lastFocused = this._lastFocusedBeforeEditAdvisor;
+        if (lastFocused && typeof lastFocused.focus === 'function' && document.contains(lastFocused)) {
+            lastFocused.focus();
+        }
+        this._lastFocusedBeforeEditAdvisor = null;
     }
 
     async saveEditAdvisor() {
@@ -165,16 +202,21 @@ export class AdminManageMethods {
     async deleteAdvisor(username) {
         const advisor = this.advisors.find(a => a.username === username);
         if (!advisor) return;
-        if (!confirm(`Remove ${advisor.displayName} as an advisor?\n\nThis immediately locks them out of the portal — even if they sign in with Google, they will be turned away.`)) return;
-        try {
-            await deleteDoc(doc(db, 'advisors', username));
-            this.advisors = this.advisors.filter(a => a.username !== username);
-            await this.publishStudentDirectory();
-            this.loadAdvisors();
-            this.showToast(`${advisor.displayName} removed. They can no longer sign in to the portal.`, 'success');
-        } catch (e) {
-            this.showToast('Error removing advisor: ' + e.message, 'error');
-        }
+        this.showConfirmDialog(
+            `Remove ${advisor.displayName} as an advisor?`,
+            'This immediately locks them out of the portal — even if they sign in with Google, they will be turned away.',
+            async () => {
+                try {
+                    await deleteDoc(doc(db, 'advisors', username));
+                    this.advisors = this.advisors.filter(a => a.username !== username);
+                    await this.publishStudentDirectory();
+                    this.loadAdvisors();
+                    this.showToast(`${advisor.displayName} removed. They can no longer sign in to the portal.`, 'success');
+                } catch (e) {
+                    this.showToast('Error removing advisor: ' + e.message, 'error');
+                }
+            }
+        );
     }
 
     /**
@@ -439,7 +481,7 @@ export class AdminManageMethods {
                 const title = r.titleEn || r.title || 'Untitled resource';
                 return `
                 <div class="reorder-card" draggable="true" data-bulletin-id="${r.id}" data-category="${this.escapeAttribute(cat)}">
-                    <button type="button" class="reorder-handle" aria-label="Drag ${this.escapeAttribute(title)}">${handleSvg}</button>
+                    <button type="button" class="reorder-handle" aria-label="Reorder ${this.escapeAttribute(title)} — drag, or use up and down arrow keys">${handleSvg}</button>
                     <div class="reorder-card-body">
                         <div class="reorder-card-title">${this.escapeHtml(title)}</div>
                         <div class="reorder-card-meta">
@@ -557,7 +599,46 @@ export class AdminManageMethods {
             });
         });
 
+        this.attachReorderKeyboardHandlers(container);
         this.attachReorderPointerHandlers(container);
+    }
+
+    // Arrow-key alternative to drag-and-drop reordering, since a keyboard-only
+    // advisor has no other way to reorder resource cards.
+    attachReorderKeyboardHandlers(container) {
+        if (container._resourceReorderKeyboardBound) return;
+        container._resourceReorderKeyboardBound = true;
+
+        container.addEventListener('keydown', async (e) => {
+            if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+            const handle = e.target.closest('.reorder-handle');
+            if (!handle) return;
+            const card = handle.closest('.reorder-card');
+            const list = handle.closest('.reorder-list');
+            if (!card || !list) return;
+
+            const sibling = e.key === 'ArrowUp' ? card.previousElementSibling : card.nextElementSibling;
+            if (!sibling || !sibling.classList.contains('reorder-card')) return;
+
+            e.preventDefault();
+            if (e.key === 'ArrowUp') {
+                list.insertBefore(card, sibling);
+            } else {
+                list.insertBefore(sibling, card);
+            }
+            handle.focus();
+
+            const category = list.dataset.category;
+            const orderedIds = Array.from(list.querySelectorAll('.reorder-card')).map(c => c.dataset.bulletinId);
+            try {
+                await this.reorderResourcesInCategory(category, orderedIds);
+                this.showTemporaryMessage('Order saved.', 'success');
+            } catch (err) {
+                console.error('Reorder failed', err);
+                this.showTemporaryMessage('Could not save the new order. Please try again.', 'error');
+                this.loadManageBulletins();
+            }
+        });
     }
 
     attachReorderPointerHandlers(container) {

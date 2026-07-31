@@ -606,7 +606,7 @@ header h2 {
     color: #0284c7;
 }
 
-.empty-state h3 {
+.empty-state h2 {
     font-size: 1.4rem;
     font-weight: 700;
     color: #0f172a;
@@ -639,7 +639,7 @@ header h2 {
         border-radius: 16px;
     }
 
-    .empty-state h3 {
+    .empty-state h2 {
         font-size: 1.2rem;
     }
 
@@ -2517,6 +2517,12 @@ a {
     display: block;
     pointer-events: auto;
     animation: viewFade 0.24s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .page-view.active {
+        animation: none;
+    }
 }
 
 @keyframes viewFade {

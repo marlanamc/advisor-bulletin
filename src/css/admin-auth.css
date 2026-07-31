@@ -301,6 +301,7 @@
     color: white;
     border: none;
     padding: 8px 16px;
+    min-height: 44px;
     border-radius: 8px;
     cursor: pointer;
     font-size: 13px;
@@ -320,6 +321,7 @@
     color: white;
     border: none;
     padding: 8px 16px;
+    min-height: 44px;
     border-radius: 8px;
     cursor: pointer;
     font-size: 13px;

@@ -46,21 +46,29 @@ export class BoardCalendarMethods {
     }
 
     bindCalendarDayScroll(gridEl) {
-        // Clicking a day with events scrolls the list to that date's card.
+        // Clicking (or activating via keyboard) a day with events scrolls the list to that date's card.
+        const activate = (dayEl) => {
+            const iso = dayEl.getAttribute('data-calendar-day');
+            if (!iso) return;
+            const target = document.querySelector(`[data-list-date="${iso}"]`);
+            if (!target) return;
+            const headerOffset = parseInt(
+                getComputedStyle(document.documentElement)
+                    .getPropertyValue('--app-header-offset') || '70', 10
+            );
+            const top = window.scrollY + target.getBoundingClientRect().top - headerOffset - 16;
+            scrollWindowTo(top);
+            target.classList.add('list-card-pulse');
+            setTimeout(() => target.classList.remove('list-card-pulse'), 1400);
+        };
+
         gridEl.querySelectorAll('[data-calendar-day]').forEach((dayEl) => {
-            dayEl.addEventListener('click', () => {
-                const iso = dayEl.getAttribute('data-calendar-day');
-                if (!iso) return;
-                const target = document.querySelector(`[data-list-date="${iso}"]`);
-                if (!target) return;
-                const headerOffset = parseInt(
-                    getComputedStyle(document.documentElement)
-                        .getPropertyValue('--app-header-offset') || '70', 10
-                );
-                const top = window.scrollY + target.getBoundingClientRect().top - headerOffset - 16;
-                scrollWindowTo(top);
-                target.classList.add('list-card-pulse');
-                setTimeout(() => target.classList.remove('list-card-pulse'), 1400);
+            dayEl.addEventListener('click', () => activate(dayEl));
+            dayEl.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    activate(dayEl);
+                }
             });
         });
     }
@@ -499,14 +507,16 @@ export class BoardCalendarMethods {
         // In navigator mode (desktop split), click scrolls the list (bound separately).
         // In popup mode (mobile), click opens the day's events.
         const clickHandler = hasBulletins && !navigatorMode
-            ? `onclick='window.bulletinBoard && window.bulletinBoard.showDayEventsByIds(${JSON.stringify(bulletins.map(b => b.id))})'`
+            ? `onclick='window.bulletinBoard && window.bulletinBoard.showDayEventsByIds(${JSON.stringify(bulletins.map(b => b.id))})' onkeydown='if(event.key==="Enter"||event.key===" "){event.preventDefault();window.bulletinBoard && window.bulletinBoard.showDayEventsByIds(${JSON.stringify(bulletins.map(b => b.id))})}'`
             : '';
         const dayAttr = hasBulletins && navigatorMode ? `data-calendar-day="${isoDate}"` : '';
+        const interactiveAttrs = hasBulletins ? 'role="button" tabindex="0"' : '';
 
         return `
             <div class="calendar-day ${isToday ? 'today' : ''} ${hasBulletins ? 'has-bulletins' : ''}"
                  data-bulletin-count="${bulletinCount}"
                  ${dayAttr}
+                 ${interactiveAttrs}
                  ${clickHandler}
                  style="${hasBulletins ? 'cursor: pointer;' : ''}">
                 <div class="calendar-day-number">
@@ -557,7 +567,7 @@ export class BoardCalendarMethods {
         }
         
         return `
-            <div class="monthly-bulletin-item" onclick="bulletinBoard.showBulletinDetail('${this.escapeAttribute(bulletin.id)}')">
+            <div class="monthly-bulletin-item" role="button" tabindex="0" onclick="bulletinBoard.showBulletinDetail('${this.escapeAttribute(bulletin.id)}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();bulletinBoard.showBulletinDetail('${this.escapeAttribute(bulletin.id)}')}">
                 <div class="monthly-bulletin-category category-${bulletin.category}"></div>
                 <div class="monthly-bulletin-title">${this.escapeHtml(this.getPostTitle(bulletin))}</div>
                 ${displayDate ? `

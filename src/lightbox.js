@@ -19,7 +19,7 @@ export function isImageLightboxOpen() {
     return Boolean(lightbox && lightbox.classList.contains('open'));
 }
 
-export function openImageLightbox(src) {
+export function openImageLightbox(src, alt) {
     const { lightbox, lightboxImg, openBtn } = getLightboxElements();
     if (!lightbox || !lightboxImg || !src) {
         return;
@@ -27,6 +27,7 @@ export function openImageLightbox(src) {
 
     lightboxImg.classList.remove('is-tall');
     lightboxImg.src = src;
+    lightboxImg.alt = alt || 'Full size flyer';
     if (openBtn) {
         openBtn.href = src;
     }
@@ -77,7 +78,7 @@ export function initImageLightbox() {
 
         event.preventDefault();
         event.stopPropagation();
-        openImageLightbox(trigger.dataset.lightboxSrc);
+        openImageLightbox(trigger.dataset.lightboxSrc, trigger.dataset.lightboxAlt);
     });
 
     closeBtn && closeBtn.addEventListener('click', closeImageLightbox);

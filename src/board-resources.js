@@ -6,6 +6,8 @@ import {
     RESOURCE_CATEGORY_CONFIG,
     STORY_BUBBLE_PREVIEW_CATEGORIES,
     RESOURCE_ICON_SVGS,
+    focusDialogOpen,
+    focusDialogClose,
 } from './board-shared.js'
 import { normalizePostCategory } from './feed-categories.js'
 import { RESOURCE_TILE_CATEGORIES } from './resource-categories.js'
@@ -1143,6 +1145,7 @@ export class BoardResourcesMethods {
         document.body.classList.add('resource-sheet-open');
         const scroll = sheet.querySelector('.cat-detail-scroll');
         if (scroll) scroll.scrollTop = 0;
+        this._lastFocusedBeforeCatSheet = focusDialogOpen(sheet);
     }
 
     closeResourceDetailSheet() {
@@ -1153,6 +1156,8 @@ export class BoardResourcesMethods {
             sheet.classList.remove('open', 'is-dragging');
             sheet.setAttribute('aria-hidden', 'true');
             sheet.style.removeProperty('--cat-sheet-drag-y');
+            focusDialogClose(this._lastFocusedBeforeCatSheet);
+            this._lastFocusedBeforeCatSheet = null;
 
             if (wasBottomSheet || wasDesktopSheet) {
                 if (this.resourceSheetCloseTimer) {
@@ -1317,7 +1322,7 @@ export class BoardResourcesMethods {
 
         const logo = resource.resourceLogo || '';
         const storyInnerHtml = logo
-            ? `<img src="${this.escapeAttribute(logo)}" alt="" class="resource-story-logo" loading="lazy">`
+            ? `<img src="${this.escapeAttribute(logo)}" alt="${this.escapeAttribute(titleEn)} logo" class="resource-story-logo" loading="lazy">`
             : `<span class="resource-story-icon" aria-hidden="true">${this.getResourceIconSvg(resource)}</span>`;
         const ringClass = logo ? 'resource-story-ring resource-story-ring--logo' : 'resource-story-ring';
 
@@ -1358,7 +1363,7 @@ export class BoardResourcesMethods {
                </span>`
             : '';
         const iconContents = logo
-            ? `<img src="${this.escapeAttribute(logo)}" alt="" class="resource-card-logo" loading="lazy">`
+            ? `<img src="${this.escapeAttribute(logo)}" alt="${this.escapeAttribute(titleEn)} logo" class="resource-card-logo" loading="lazy">`
             : this.getResourceIconSvg(resource);
         const iconClass = logo ? 'resource-card-icon resource-card-icon--logo' : 'resource-card-icon';
 
@@ -1432,7 +1437,7 @@ export class BoardResourcesMethods {
 
         const logo = resource.resourceLogo || '';
         const markHtml = logo
-            ? `<img src="${this.escapeAttribute(logo)}" alt="" loading="lazy">`
+            ? `<img src="${this.escapeAttribute(logo)}" alt="${this.escapeAttribute(titleEn)} logo" loading="lazy">`
             : `<span class="help-sheet-row__icon-fallback" style="background:${accent}" aria-hidden="true">${this.getResourceIconSvg(resource)}</span>`;
 
         return `
@@ -1473,7 +1478,7 @@ export class BoardResourcesMethods {
 
         const logo = resource.resourceLogo || '';
         const logoTile = logo
-            ? `<img src="${this.escapeAttribute(logo)}" alt="" loading="lazy" decoding="async" onload="window.applyResourceLogoTileLayout&&window.applyResourceLogoTileLayout(this)">`
+            ? `<img src="${this.escapeAttribute(logo)}" alt="${this.escapeAttribute(titleEn)} logo" loading="lazy" decoding="async" onload="window.applyResourceLogoTileLayout&&window.applyResourceLogoTileLayout(this)">`
             : `<span class="mobile-resource-card__icon-fallback" style="background:${accent}" aria-hidden="true">${this.getResourceIconSvg(resource)}</span>`;
 
         const postDescription = this.getPostDescription(resource);
