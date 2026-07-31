@@ -403,6 +403,16 @@ body.ap-portal-active .main-content {
   border-radius: 10px;
 }
 
+.ap-advisor-card--loading .ap-advisor-avatar,
+.ap-advisor-card--loading .ap-advisor-name {
+  animation: apAdvisorPulse 1.3s ease-in-out infinite;
+}
+
+@keyframes apAdvisorPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .45; }
+}
+
 .ap-user-menu {
   margin-top: 6px;
   background: rgba(255,255,255,.07);

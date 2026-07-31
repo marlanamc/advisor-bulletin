@@ -512,6 +512,11 @@ class FirebaseAdminPanel {
             this.setupRealtimeListener();
             this.loadManageBulletins();
 
+            // The name shown so far is just the email username — pulse the
+            // advisor card so it's clear the real display name is still loading.
+            const advisorCard = document.getElementById('apAdvisorCard');
+            if (advisorCard) advisorCard.classList.add('ap-advisor-card--loading');
+
             // Load full advisor metadata in the background and patch the live UI.
             this.loadAdvisorsFromFirestore().then(() => {
                 const advisor = this.advisors.find(a => a.username === username);
@@ -528,7 +533,10 @@ class FirebaseAdminPanel {
                     const advisorsRailBtn = document.getElementById('advisorsRailBtn');
                     if (advisorsRailBtn) advisorsRailBtn.style.display = this.currentUser.isAdmin ? '' : 'none';
                 }
-            }).catch(err => console.error('Error loading advisor metadata:', err));
+            }).catch(err => console.error('Error loading advisor metadata:', err))
+            .finally(() => {
+                if (advisorCard) advisorCard.classList.remove('ap-advisor-card--loading');
+            });
         } catch (error) {
             console.error('Error signing in to advisor portal:', error);
             this.currentUser = null;
