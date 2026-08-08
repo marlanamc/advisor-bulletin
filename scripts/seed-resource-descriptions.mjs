@@ -34,8 +34,8 @@ export const COPY = {
     "es": "Consiga frutas, verduras y bolsas de comida gratis los lunes. También puede hacer una cita para recibir ayuda de comida de emergencia."
   },
   "Crossroads Family Center - Our Daily Bread Pantry::food": {
-    "en": "Get free emergency food on Sundays and Wednesdays, 3pm to 4pm. Go to the white door on the side of the building.",
-    "es": "Consiga comida de emergencia gratis los domingos y miércoles, de 3pm a 4pm. Vaya a la puerta blanca al lado del edificio."
+    "en": "Get free emergency food on Sundays and Wednesdays, 3pm to 4pm. Go to the white door on the side of the building. The first time, bring an ID for each person in your home and something with your address. A license, school ID, passport, birth certificate, or medical card all work, and a photo on your phone is fine. If you do not have them, they will still give you food this time.",
+    "es": "Consiga comida de emergencia gratis los domingos y miércoles, de 3pm a 4pm. Vaya a la puerta blanca al lado del edificio. La primera vez, traiga una identificación para cada persona de su casa y algo con su dirección. Sirve una licencia, identificación escolar, pasaporte, acta de nacimiento o tarjeta médica, y una foto en su teléfono está bien. Si no las tiene, igual le dan comida esta vez."
   },
   "East Boston ABCD (SNAP Assistance)::food": {
     "en": "Get help applying for SNAP food benefits. Staff will help you fill out the application. Please bring your ID and income papers to your appointment.",
@@ -82,8 +82,8 @@ export const COPY = {
     "es": "Llame al 1-800-645-8333 para recibir ayuda de comida gratuita y confidencial. Le ayudan a solicitar SNAP en muchos idiomas."
   },
   "Salvation Army of Chelsea/East Boston::family": {
-    "en": "Get free groceries, baby supplies, and holiday help. They also offer a safe after-school program for kids ages 5 to 12.",
-    "es": "Consiga comestibles, artículos para bebé y ayuda navideña gratis. También ofrecen un programa extracurricular seguro para niños de 5 a 12 años."
+    "en": "Get free groceries, baby supplies, and holiday help. They also have a safe after-school program for children from kindergarten to age 13.",
+    "es": "Consiga comida, artículos para bebé y ayuda navideña gratis. También tienen un programa seguro después de la escuela para niños desde kínder hasta los 13 años."
   },
   "The Home for Little Wanderers – Family Resource Centers::family": {
     "en": "Get free parenting classes, English classes, and programs for children. You can also get free diapers, baby formula, and soap once a month.",
@@ -118,8 +118,8 @@ export const COPY = {
     "es": "Reciba ayuda con inmigración, comida, vivienda y derechos de los trabajadores. También ofrecen consejería de salud mental para familias latinas."
   },
   "La Comunidad::immigration": {
-    "en": "Get help with your green card, citizenship, taxes, and translating documents. They also have English classes and youth programs. Ask about the cost when you call.",
-    "es": "Reciba ayuda con su green card, la ciudadanía, los impuestos y la traducción de documentos. También tienen clases de inglés y programas para jóvenes. Pregunte por el costo cuando llame."
+    "en": "Get help with your green card, citizenship, taxes, and translating documents. Immigration help is free or low cost. They also have English classes and youth programs.",
+    "es": "Reciba ayuda con su green card, la ciudadanía, los impuestos y la traducción de documentos. La ayuda de inmigración es gratis o de bajo costo. También tienen clases de inglés y programas para jóvenes."
   },
   "Lawyers for Civil Rights::legal-aid": {
     "en": "Get free legal help if you face discrimination at work or housing. They also offer free workshops for small businesses.",
