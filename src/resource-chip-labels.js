@@ -182,7 +182,14 @@ const RESOURCE_CHIP_ES = {
     'get a referral': 'Obtener recomendación',
     'get safety support': 'Obtener apoyo de seguridad',
     'get mental health support': 'Apoyo de salud mental',
-    'get a hot meal': 'Conseguir comida caliente'
+    'get a hot meal': 'Conseguir comida caliente',
+    'sign up for hiset': 'Inscribirse en HiSET',
+    'schedule hse test': 'Programar el examen HSE',
+    'learn about the hse test': 'Conocer el examen HSE',
+    'take classes online': 'Tomar clases en línea',
+    'get help paying for college': 'Ayuda para pagar el college',
+    'use free computers': 'Usar computadoras gratis',
+    'find help near you': 'Buscar ayuda cerca de usted'
 };
 
 export const SUGGESTED_RESOURCE_CHIPS_BY_CATEGORY = {

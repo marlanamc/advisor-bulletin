@@ -62,6 +62,7 @@ import { BoardCalendarMethods } from './board-calendar.js'
 import { BoardResourcesMethods } from './board-resources.js'
 import { BoardDetailMethods } from './board-detail.js'
 import { storeServerSnapshot } from './student-snapshot.js'
+import { normalizeSearchText, searchTextIncludes } from './search-normalize.js'
 
 // Firebase-enabled Bulletin Board System
 class FirebaseBulletinBoard {
@@ -2088,22 +2089,17 @@ class FirebaseBulletinBoard {
         }
 
         if (searchTerm) {
+            const normalizedSearch = normalizeSearchText(searchTerm);
             filteredBulletins = filteredBulletins.filter(b => {
-                const description = (b.description || '').toLowerCase();
-                const company = (b.company || '').toLowerCase();
-                const contact = (b.contact || '').toLowerCase();
-                const eventLink = (b.eventLink || '').toLowerCase();
-                const advisorName = (b.advisorName || '').toLowerCase();
-                const title = (b.title || '').toLowerCase();
-                const titleEs = (b.titleEs || '').toLowerCase();
                 return (
-                    title.includes(searchTerm) ||
-                    titleEs.includes(searchTerm) ||
-                    description.includes(searchTerm) ||
-                    company.includes(searchTerm) ||
-                    contact.includes(searchTerm) ||
-                    eventLink.includes(searchTerm) ||
-                    advisorName.includes(searchTerm)
+                    searchTextIncludes(b.title, normalizedSearch) ||
+                    searchTextIncludes(b.titleEs, normalizedSearch) ||
+                    searchTextIncludes(b.description, normalizedSearch) ||
+                    searchTextIncludes(b.summaryEs, normalizedSearch) ||
+                    searchTextIncludes(b.company, normalizedSearch) ||
+                    searchTextIncludes(b.contact, normalizedSearch) ||
+                    searchTextIncludes(b.eventLink, normalizedSearch) ||
+                    searchTextIncludes(b.advisorName, normalizedSearch)
                 );
             });
         }

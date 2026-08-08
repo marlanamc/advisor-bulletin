@@ -26,52 +26,52 @@ export const COPY = {
     "es": "Consiga bolsas de comida gratis en este centro comunitario. No necesita hacer una cita. Traiga sus propias bolsas si las tiene."
   },
   "Central Community Church (Clothing)::family": {
-    "en": "Get free clothes here. The clothing rack is open every Friday. You do not need an appointment or proof of income.",
-    "es": "Consiga ropa gratis aquí. El perchero de ropa está abierto todos los viernes. No necesita cita ni prueba de ingresos."
+    "en": "Get free clothes here every Friday from 11am to 2pm. You do not need an appointment or proof of income.",
+    "es": "Consiga ropa gratis aquí todos los viernes de 11am a 2pm. No necesita cita ni prueba de ingresos."
   },
   "Central Community Church (Food Pantry)::food": {
     "en": "Get free fresh produce and food bags on Mondays. You can also make an appointment for emergency food help.",
     "es": "Consiga frutas, verduras y bolsas de comida gratis los lunes. También puede hacer una cita para recibir ayuda de comida de emergencia."
   },
   "Crossroads Family Center - Our Daily Bread Pantry::food": {
-    "en": "Get free emergency food on Wednesdays. Please bring a photo ID and a piece of mail showing you live in East Boston.",
-    "es": "Consiga comida de emergencia gratis los miércoles. Traiga una identificación con foto y una carta que muestre que vive en East Boston."
+    "en": "Get free emergency food on Sundays and Wednesdays, 3pm to 4pm. Go to the white door on the side of the building.",
+    "es": "Consiga comida de emergencia gratis los domingos y miércoles, de 3pm a 4pm. Vaya a la puerta blanca al lado del edificio."
   },
   "East Boston ABCD (SNAP Assistance)::food": {
     "en": "Get help applying for SNAP food benefits. Staff will help you fill out the application. Please bring your ID and income papers to your appointment.",
     "es": "Reciba ayuda para solicitar los beneficios de SNAP. El personal le ayudará a llenar la solicitud. Traiga su identificación y papeles de ingresos a su cita."
   },
   "East Boston ABCD APAC::money": {
-    "en": "Get help with heating bills, food benefits, tax prep, and citizenship applications. They also help you apply for cheaper MBTA transit passes.",
-    "es": "Reciba ayuda con facturas de calefacción, beneficios de comida, impuestos y ciudadanía. También le ayudan a solicitar pases de transporte baratos de la MBTA."
+    "en": "Get help with heating bills, food benefits, taxes, and citizenship papers. They also help you get a cheaper MBTA pass. Heating help runs from November to April.",
+    "es": "Reciba ayuda con facturas de calefacción, beneficios de comida, impuestos y papeles de ciudadanía. También le ayudan a conseguir un pase de MBTA más barato. La ayuda con calefacción es de noviembre a abril."
   },
   "East Boston ABCD Clothing & Essentials::family": {
     "en": "Get free clothes and household basics like soap and shoes. Anyone can visit, and no proof of income is needed.",
     "es": "Consiga ropa y artículos básicos gratis como jabón y zapatos. Cualquiera puede ir y no se requiere prueba de ingresos."
   },
   "East Boston ABCD Mobile Food Pop‑Ups::food": {
-    "en": "Get free groceries from a mobile food truck at different locations. You must register first, but anyone can get food.",
-    "es": "Consiga comestibles gratis de un camión de comida móvil en diferentes lugares. Debe registrarse primero, pero cualquiera puede recibir comida."
+    "en": "Get free groceries from a truck that goes to a different place each month. Call 617-208-8677 to find this month's date and place. There is an income limit, so ask when you call.",
+    "es": "Consiga comida gratis de un camión que reparte comida en un lugar diferente cada mes. Llame al 617-208-8677 para saber la fecha y el lugar de este mes. Hay un límite de ingresos. Pregunte cuando llame."
   },
   "East Boston Soup Kitchen::food": {
-    "en": "Get free ready‑to‑eat hot meals and groceries every Tuesday. You do not need an appointment or proof of income.",
-    "es": "Reciba comida caliente y comestibles gratis todos los martes. No necesita cita ni prueba de ingresos."
+    "en": "Get a free hot meal and bags of food every Tuesday. You do not need an appointment or proof of income.",
+    "es": "Reciba una comida caliente gratis y bolsas de comida todos los martes. No necesita cita ni prueba de ingresos."
   },
   "Eastie Farm::food": {
     "en": "Get free or low-cost fruits and vegetables. Bring your own bags if you can. They accept SNAP and HIP benefits.",
     "es": "Consiga frutas y verduras gratis o a bajo costo. Traiga sus propias bolsas si puede. Aceptan beneficios de SNAP y HIP."
   },
   "EBNHC Women, Infants & Children (WIC)::family": {
-    "en": "Get free healthy food and nutrition support for pregnant women, new mothers, and children under age 5. You qualify automatically if you have MassHealth or SNAP.",
-    "es": "Consiga alimentos saludables y ayuda de nutrición gratis para mujeres embarazadas, madres nuevas y niños menores de 5 años. Califica automáticamente si tiene MassHealth o SNAP."
+    "en": "Get free healthy food and help feeding your family. It is for pregnant women, women who just had a baby, and children under 5. If you have MassHealth or SNAP, you already meet the money rules.",
+    "es": "Consiga comida saludable gratis y ayuda para alimentar a su familia. Es para mujeres embarazadas, mujeres que acaban de tener un bebé y niños menores de 5 años. Si tiene MassHealth o SNAP, ya cumple con las reglas de ingresos."
   },
   "Family Nurturing Center::family": {
     "en": "Get free programs and support for parents raising young children. They offer playgroups, home visits, and classes to help your family.",
     "es": "Reciba programas y apoyo gratis para padres que crían niños pequeños. Ofrecen grupos de juego, visitas a casa y clases para ayudar a su familia."
   },
   "Ollie Diaper Depot::family": {
-    "en": "Get free diapers and wipes once a month. You must sign up online each month to save your spot.",
-    "es": "Consiga pañales y toallitas gratis una vez al mes. Debe registrarse en línea cada mes para guardar su lugar."
+    "en": "Get free diapers and wipes once a month. You must sign up online each month to save your spot. Sign-up opens the last week of the month before.",
+    "es": "Consiga pañales y toallitas gratis una vez al mes. Debe registrarse en línea cada mes para guardar su lugar. El registro abre la última semana del mes anterior."
   },
   "Project Bread::food": {
     "en": "This group helps people find food resources and sign up for benefits. They do not run a food pantry, but they can help you find one near you.",
@@ -86,48 +86,48 @@ export const COPY = {
     "es": "Consiga comestibles, artículos para bebé y ayuda navideña gratis. También ofrecen un programa extracurricular seguro para niños de 5 a 12 años."
   },
   "The Home for Little Wanderers – Family Resource Centers::family": {
-    "en": "Get free help with parenting classes, English classes, and children's programs. You can also get free diapers, formula, and hygiene supplies once a month.",
-    "es": "Reciba ayuda gratuita con clases de crianza, clases de inglés y programas infantiles. También puede recibir pañales, fórmula y artículos de higiene gratis una vez al mes."
+    "en": "Get free parenting classes, English classes, and programs for children. You can also get free diapers, baby formula, and soap once a month.",
+    "es": "Reciba clases de crianza, clases de inglés y programas para niños, todo gratis. También puede recibir pañales, leche de fórmula y jabón gratis una vez al mes."
   },
   "MA Department of Transitional Assistance (DTA)::money": {
-    "en": "This state office helps you apply for SNAP food benefits, cash help, and job training. Call 877-382-2363 to apply.",
-    "es": "Esta oficina del estado le ayuda a solicitar beneficios de comida de SNAP, ayuda en efectivo y capacitación de trabajo. Llame al 877-382-2363 para solicitar."
+    "en": "This state office helps you apply for SNAP food benefits, cash help, and job training. Call or apply online at DTAConnect.com.",
+    "es": "Esta oficina del estado le ayuda a solicitar beneficios de comida (SNAP), ayuda en efectivo y capacitación laboral. Llame o solicite en línea en DTAConnect.com."
   },
   "Find Your Funds (Tax Help)::money": {
-    "en": "Get free help to file your taxes. They help you get tax credits and refunds back. Services are in English and Spanish.",
-    "es": "Reciba ayuda gratuita para declarar sus impuestos. Le ayudan a recibir créditos fiscales y devoluciones de dinero. El servicio es en inglés y español."
+    "en": "Get free help to file your taxes and get money back. They show you which tax credits you can get. Help is in English and Spanish.",
+    "es": "Reciba ayuda gratis para declarar sus impuestos y recuperar dinero. Le muestran qué créditos de impuestos puede recibir. La ayuda es en inglés y español."
   },
   "MA Department of Unemployment Assistance::jobs": {
-    "en": "Get temporary money if you lost your job. You can apply online to see if you qualify.",
-    "es": "Reciba dinero temporal si perdió su trabajo. Puede solicitar en línea para ver si califica."
+    "en": "Get money for a short time if you lost your job. You need a work permit to qualify. Apply online.",
+    "es": "Reciba dinero por un tiempo corto si perdió su trabajo. Necesita permiso de trabajo para calificar. Solicite en línea."
   },
   "East Boston Community Council::immigration": {
-    "en": "Get local help with green cards, citizenship, and immigration papers. They also offer English classes and youth programs.",
-    "es": "Reciba ayuda local con tarjetas verdes, ciudadanía y papeles de inmigración. También ofrecen clases de inglés y programas para jóvenes."
+    "en": "Get local help with your green card, citizenship, and immigration papers. They also have English classes and GED classes in Spanish.",
+    "es": "Reciba ayuda local con su green card, la ciudadanía y papeles de inmigración. También tienen clases de inglés y clases de GED en español."
   },
   "Agencia ALPHA::immigration": {
-    "en": "Get help with immigration papers, citizenship classes, and health insurance. They also run free legal clinics.",
-    "es": "Reciba ayuda con papeles de inmigración, clases de ciudadanía y seguro de salud. También ofrecen clínicas legales gratuitas."
+    "en": "Get help with immigration papers, citizenship classes, and health insurance. They also have an East Boston office at 70 White St, open Thursdays and Saturdays.",
+    "es": "Reciba ayuda con papeles de inmigración, clases de ciudadanía y seguro de salud. También tienen una oficina en East Boston, en 70 White St, abierta jueves y sábados."
   },
   "Greater Boston Legal Services::legal-aid": {
-    "en": "Get free lawyers to help with housing, work, family, and immigration problems. This service is for low-income families.",
-    "es": "Consiga abogados gratis para ayudar con problemas de vivienda, trabajo, familia e inmigración. Este servicio es para familias de bajos ingresos."
+    "en": "Free lawyers for problems with housing, work, family, and immigration. This is for low-income families. Call between 9:30am and 12:30pm. They cannot take every case.",
+    "es": "Abogados gratis para problemas de vivienda, trabajo, familia e inmigración. Es para familias de bajos ingresos. Llame entre las 9:30am y las 12:30pm. No pueden tomar todos los casos."
   },
   "La Colaborativa::immigration": {
     "en": "Get help with immigration, food, housing, and workers' rights. They also offer mental health counseling for Latino families.",
     "es": "Reciba ayuda con inmigración, comida, vivienda y derechos de los trabajadores. También ofrecen consejería de salud mental para familias latinas."
   },
   "La Comunidad::immigration": {
-    "en": "Get help with green cards, citizenship, tax filing, and document translation. They also offer English classes and youth programs.",
-    "es": "Reciba ayuda con tarjetas verdes, ciudadanía, declaración de impuestos y traducción de documentos. También ofrecen clases de inglés y programas para jóvenes."
+    "en": "Get help with your green card, citizenship, taxes, and translating documents. They also have English classes and youth programs. Ask about the cost when you call.",
+    "es": "Reciba ayuda con su green card, la ciudadanía, los impuestos y la traducción de documentos. También tienen clases de inglés y programas para jóvenes. Pregunte por el costo cuando llame."
   },
   "Lawyers for Civil Rights::legal-aid": {
     "en": "Get free legal help if you face discrimination at work or housing. They also offer free workshops for small businesses.",
     "es": "Reciba ayuda legal gratuita si enfrenta discriminación en el trabajo o la vivienda. También ofrecen talleres gratuitos para pequeños negocios."
   },
   "MassLegalHelp::legal-aid": {
-    "en": "Read easy guides to learn your rights about housing, family law, and public benefits. This website does not give you a lawyer.",
-    "es": "Lea guías fáciles para conocer sus derechos sobre vivienda, leyes familiares y beneficios públicos. Este sitio web no le da un abogado."
+    "en": "Read easy guides about your rights on housing, family, and help from the government. This website does not give you a lawyer.",
+    "es": "Lea guías fáciles sobre sus derechos de vivienda, familia y ayuda del gobierno. Este sitio web no le da un abogado."
   },
   "Mass Legal Resource Finder::legal-aid": {
     "en": "Use this free online tool to find free or cheap legal help in Massachusetts. Enter your location and problem to get matches.",
@@ -138,88 +138,152 @@ export const COPY = {
     "es": "Reciba asesoría legal gratuita de abogados de inmigración por teléfono. También le ayudan a solicitar la ciudadanía estadounidense."
   },
   "MIRA Coalition::immigration": {
-    "en": "Call the free helpline for advice about immigration. They also host free workshops to help you fill out citizenship forms.",
-    "es": "Llame a la línea de ayuda gratuita para consejos sobre inmigración. También organizan talleres gratuitos para ayudarle a llenar formularios de ciudadanía."
+    "en": "Call the free helpline for information about immigration. They also hold free workshops to help you fill out citizenship forms.",
+    "es": "Llame a la línea de ayuda gratuita para recibir orientación sobre inmigración. También organizan talleres gratuitos para ayudarle a llenar formularios de ciudadanía."
   },
   "Project Citizenship::immigration": {
-    "en": "Get free help to apply for U.S. citizenship. They help you fill out forms, practice for the test, and offer free English classes. Staff speak Spanish, French, and other languages.",
-    "es": "Reciba ayuda gratuita para solicitar la ciudadanía estadounidense. Le ayudan a llenar formularios, practicar para el examen y ofrecen clases de inglés gratis. El personal habla español, francés y otros idiomas."
+    "en": "Get free help to apply for U.S. citizenship. They help you fill out the forms and practice for the test, and they work with groups that offer free English classes. Staff speak Spanish and other languages.",
+    "es": "Reciba ayuda gratuita para solicitar la ciudadanía estadounidense. Le ayudan a llenar los formularios y a practicar para el examen, y trabajan con grupos que ofrecen clases de inglés gratis. El personal habla español y otros idiomas."
   },
   "Massachusetts Attorney General’s Office::legal-aid": {
-    "en": "Report problems with landlords, boss issues, or consumer scams. They protect your rights but do not give you a personal lawyer.",
-    "es": "Reporte problemas con propietarios, problemas de trabajo o estafas. Protegen sus derechos pero no le dan un abogado personal."
+    "en": "Report problems with the owner of your apartment, your boss, or a company that cheated you. They protect your rights, but they do not give you your own lawyer.",
+    "es": "Reporte problemas con el dueño de su apartamento, su jefe o una compañía que lo engañó. Protegen sus derechos, pero no le dan un abogado propio."
   },
   "City Life/Vida Urbana::housing": {
-    "en": "Join other renters to fight eviction and rent increases. They host weekly bilingual meetings in English and Spanish.",
-    "es": "Únase a otros inquilinos para luchar contra el desalojo y los aumentos de renta. Tienen reuniones bilingües semanales en inglés y español."
+    "en": "Join other renters to fight eviction and rent increases. They meet every week in East Boston on Wednesdays and in Jamaica Plain on Tuesdays, in English and Spanish.",
+    "es": "Únase a otros inquilinos para luchar contra el desalojo y los aumentos de renta. Se reúnen cada semana en East Boston los miércoles y en Jamaica Plain los martes, en inglés y español."
   },
   "East Boston Adult Family Shelter (formerly Crossroads Family Center)::housing": {
-    "en": "This is a family shelter that helps families experiencing homelessness find housing. They also offer parenting classes, job help, and a food pantry.",
-    "es": "Este es un refugio familiar que ayuda a familias sin hogar a encontrar vivienda. También ofrecen clases de crianza, ayuda de trabajo y una despensa de alimentos."
+    "en": "A shelter for families with no home. You cannot go there without a referral, because the state has to send you. Call 2-1-1 to start. Their food pantry is open to everyone.",
+    "es": "Un refugio para familias sin hogar. No puede ir sin una referencia, porque el estado tiene que enviarlo. Llame al 2-1-1 para empezar. Su despensa de comida está abierta para todos."
   },
   "RAFT (Residential Assistance for Families in Transition)::housing": {
-    "en": "Get up to $7,000 to help pay for back rent, moving costs, or utilities to avoid eviction. Apply online or call 2-1-1.",
-    "es": "Reciba hasta $7,000 para ayudar a pagar renta atrasada, costos de mudanza o facturas de servicios para evitar el desalojo. Solicite en línea o llame al 2-1-1."
+    "en": "Get up to $7,000 to pay rent you owe, moving costs, or light and gas bills, so you do not lose your home. Apply online or call 2-1-1.",
+    "es": "Reciba hasta $7,000 para pagar renta atrasada, costos de mudanza o facturas de luz y gas, para no perder su casa. Solicite en línea o llame al 2-1-1."
   },
   "MA State Public Housing::housing": {
-    "en": "Apply for low-cost apartments for families, seniors, and people with disabilities. Rent is based on your income.",
-    "es": "Solicite apartamentos de bajo costo para familias, personas mayores y personas con discapacidades. La renta se basa en sus ingresos."
+    "en": "Apply for low-cost apartments for families, older adults, and people with disabilities. Rent is based on what you earn. One form (CHAMP) covers the whole state. The wait can be long.",
+    "es": "Solicite apartamentos de bajo costo para familias, personas mayores y personas con discapacidad. La renta depende de lo que usted gana. Una sola solicitud (CHAMP) sirve para todo el estado. La espera puede ser larga."
   },
   "Mayor’s Office of Housing – Office of Housing Stability::housing": {
-    "en": "Get help to stop an eviction and stay in your home. They offer free legal clinics and connect you with volunteer lawyers.",
-    "es": "Reciba ayuda para detener un desalojo y quedarse en su casa. Ofrecen clínicas legales gratuitas y lo conectan con abogados voluntarios."
+    "en": "Get help to stop an eviction and stay in your home. They have free legal clinics most Tuesdays and can connect you with a volunteer lawyer.",
+    "es": "Reciba ayuda para detener un desalojo y quedarse en su casa. Tienen consultas legales gratuitas casi todos los martes y lo conectan con un abogado voluntario."
   },
   "Neighborhood of Affordable Housing (NOAH)::housing": {
-    "en": "Get help finding affordable housing and buying a home. They also offer free evening English classes and youth programs.",
-    "es": "Reciba ayuda para encontrar vivienda asequible y comprar una casa. También ofrecen clases gratuitas de inglés por la noche y programas juveniles."
+    "en": "Get help finding low-cost housing and buying a home. They also have free English classes at night and programs for young people.",
+    "es": "Reciba ayuda para encontrar vivienda de bajo costo y comprar una casa. También tienen clases de inglés gratis por la noche y programas para jóvenes."
   },
   "Maverick Landing Community Services::housing": {
-    "en": "Get free groceries, English classes, and job training. They also offer youth programs and help with housing.",
-    "es": "Consiga comestibles, clases de inglés y capacitación laboral gratis. También ofrecen programas para jóvenes y ayuda con la vivienda."
+    "en": "Get free food, English classes, and job training. They give out fresh food every Wednesday and also help with housing and youth programs.",
+    "es": "Consiga comida, clases de inglés y capacitación laboral gratis. Reparten comida fresca todos los miércoles y también ayudan con la vivienda y programas para jóvenes."
   },
   "Asian American Civic Association (AACA)::jobs": {
     "en": "Take job training courses and English classes. They also help you with career coaching and finding a job.",
     "es": "Tome cursos de capacitación laboral y clases de inglés. También le ofrecen asesoramiento de carrera y ayuda para buscar trabajo."
   },
   "BEST Hospitality Training::jobs": {
-    "en": "Take free training for hotel and restaurant jobs. They help you get union jobs and practice your work skills.",
-    "es": "Tome capacitación gratuita para trabajos en hoteles y restaurantes. Le ayudan a conseguir trabajos del sindicato y practicar sus habilidades de trabajo."
+    "en": "Take free training for hotel and restaurant jobs. They also have free English, HSE, citizenship, and computer classes.",
+    "es": "Tome capacitación gratuita para trabajos en hoteles y restaurantes. También tienen clases gratis de inglés, HSE, ciudadanía y computación."
   },
   "JVS Boston::jobs": {
-    "en": "Get help with job training, career coaching, and English classes. They help you find a job, especially in healthcare.",
-    "es": "Reciba ayuda con capacitación laboral, asesoramiento de carrera y clases de inglés. Le ayudan a buscar trabajo, especialmente en el área de salud."
+    "en": "Get job training, career coaching, and English classes. Their English program meets 4 mornings a week, unless you already work 20 hours or more.",
+    "es": "Reciba capacitación laboral, asesoramiento de carrera y clases de inglés. Su programa de inglés es 4 mañanas por semana, a menos que ya trabaje 20 horas o más."
   },
   "Bunker Hill Community College::college": {
     "en": "Go to college to earn a degree or a short certificate. They offer English support, financial aid, and career advisors.",
     "es": "Vaya al college para obtener un título o un certificado corto. Ofrecen apoyo en inglés, ayuda financiera y asesores de carrera."
   },
   "Center for Educational Documentation::college": {
-    "en": "Get your school diploma or transcripts from another country evaluated for work or college. They also translate school documents.",
-    "es": "Obtenga una evaluación de su diploma escolar o notas de otro país para trabajar o ir al college. También traducen documentos escolares."
+    "en": "They check your school papers from another country for work or college. It costs $80 to $130, less than most services. They can read Spanish and Portuguese papers for $50 more.",
+    "es": "Revisan sus papeles escolares de otro país para trabajar o ir al college. Cuesta entre $80 y $130, menos que otros servicios. Pueden leer papeles en español y portugués por $50 más."
   },
   "East Boston Head Start::family": {
-    "en": "Get free preschool and childcare for children ages 3 to 5. They also provide free meals and family support.",
-    "es": "Consiga preescolar y cuidado infantil gratis para niños de 3 a 5 años. También ofrecen comidas gratuitas y apoyo familiar."
+    "en": "Get free preschool and childcare for children ages 3 to 5. They also give free meals and help for parents. It is free for families who qualify, so call to check.",
+    "es": "Consiga preescolar y cuidado de niños gratis para niños de 3 a 5 años. También dan comidas gratis y ayuda para los padres. Es gratis para las familias que califican, llame para preguntar."
   },
   "Community Healing Response Network::health": {
-    "en": "Get free, private support if you or your family have been hurt by community violence.",
-    "es": "Reciba apoyo privado y gratuito si usted o su familia han sufrido por la violencia comunitaria."
+    "en": "Get free, private support if you or your family have been hurt by community violence. Someone answers the line every day of the year.",
+    "es": "Reciba apoyo privado y gratuito si usted o su familia han sufrido por la violencia comunitaria. Contestan la línea todos los días del año."
   },
   "NeighborHealth (formerly East Boston Neighborhood Health Center)::health": {
-    "en": "Go to the doctor, dentist, or eye doctor. They treat all patients regardless of insurance or immigration status.",
-    "es": "Vaya al médico, dentista u oftalmólogo. Atienden a todos los pacientes sin importar su seguro o estado migratorio."
+    "en": "Go to the doctor, dentist, or eye doctor. They see everyone, even if you have no insurance and no papers.",
+    "es": "Vaya al médico, al dentista o al doctor de los ojos. Atienden a todos, aunque no tenga seguro ni papeles."
   },
   "Health Care For All Massachusetts::health": {
-    "en": "Call the free hotline to get help signing up for health insurance. They help you keep your MassHealth coverage.",
-    "es": "Llame a la línea de ayuda gratuita para recibir ayuda al inscribirse en un seguro de salud. Le ayudan a mantener su cobertura de MassHealth."
+    "en": "Call the free hotline for help signing up for health insurance. They also help you keep your MassHealth. Help is in English, Spanish, and Portuguese.",
+    "es": "Llame a la línea gratuita para que le ayuden a inscribirse en un seguro de salud. También le ayudan a mantener su MassHealth. Hay ayuda en inglés, español y portugués."
   },
   "Mayor’s Health Line::health": {
     "en": "Call for free help in many languages to sign up for health insurance or find a doctor near you.",
     "es": "Llame para recibir ayuda gratuita en muchos idiomas para inscribirse en un seguro de salud o buscar un médico cercano."
   },
   "988 Suicide & Crisis Lifeline::health": {
-    "en": "Call or text 988 anytime for free, private support if you are feeling sad, stressed, or in crisis.",
-    "es": "Llame o envíe un texto al 988 en cualquier momento para apoyo confidencial y gratuito si se siente triste, estresado o en crisis."
+    "en": "Call or text 988 anytime for free, private support if you feel sad, stressed, or in crisis. You can get help in Spanish.",
+    "es": "Llame o envíe un texto al 988 en cualquier momento para recibir apoyo gratis y confidencial si se siente triste, estresado o en crisis. Puede recibir ayuda en español."
+  },
+  "World Education Services (WES)::college": {
+    "en": "They check your diploma or grades from another country so U.S. schools and jobs will accept them. This costs money, about $118 to $214. Ask your advisor before you pay.",
+    "es": "Revisan su diploma o calificaciones de otro país para que las escuelas y los trabajos de EE.UU. los acepten. Esto cuesta dinero, entre $118 y $214. Pregunte a su consejero antes de pagar."
+  },
+  "Roxbury Community College::college": {
+    "en": "Go to college for a 2-year degree or a short certificate. They have classes in health, business, and technology, plus money help and advisors. The campus is at the Roxbury Crossing T stop.",
+    "es": "Vaya al college para un título de 2 años o un certificado corto. Tienen clases de salud, negocios y tecnología, más ayuda con el dinero y asesores. El campus está en la estación Roxbury Crossing del T."
+  },
+  "Permission to Share Your Case Info (ICE/DHS)::immigration": {
+    "en": "Sign this form so your family or a lawyer can ask the government about your immigration case. You choose to sign, you do not have to. It lasts 90 days and you can cancel it.",
+    "es": "Firme este formulario para que su familia o un abogado pueda preguntar al gobierno sobre su caso de inmigración. Usted decide si lo firma, no está obligado. Dura 90 días y puede cancelarlo."
+  },
+  "Massachusetts HiSET::hse": {
+    "en": "Make an account to sign up for the HiSET test. Pick where and when you want to test. You can change the date later and see your scores here.",
+    "es": "Cree una cuenta para inscribirse en el examen HiSET. Elija dónde y cuándo quiere tomar el examen. Puede cambiar la fecha después y ver sus resultados aquí."
+  },
+  "Massachusetts Behavioral Health Help Line::health": {
+    "en": "Call or text anytime to talk to someone about stress, sadness, worry, or drinking and drugs. It is free, private, and you do not need insurance. They speak your language.",
+    "es": "Llame o envíe un texto en cualquier momento para hablar con alguien sobre estrés, tristeza, preocupación o el alcohol y las drogas. Es gratis, privado y no necesita seguro. Hablan su idioma."
+  },
+  "SafeLink Domestic Violence Hotline::family": {
+    "en": "Call anytime if someone at home hurts you or scares you. It is free and private, and you do not have to give your name. They speak Spanish and many other languages.",
+    "es": "Llame en cualquier momento si alguien en su casa le hace daño o le da miedo. Es gratis y privado, y no tiene que dar su nombre. Hablan español y muchos otros idiomas."
+  },
+  "Learn About the HSE Test (GED or HiSET)::hse": {
+    "en": "Learn how to get your high school credential in Massachusetts. This page explains the two tests, GED and HiSET, and where you can take them. You can mix parts of both tests.",
+    "es": "Aprenda cómo obtener su credencial de escuela secundaria en Massachusetts. Esta página explica los dos exámenes, GED y HiSET, y dónde puede tomarlos. Puede combinar partes de los dos exámenes."
+  },
+  "MassLINKS Free Online Classes::hse": {
+    "en": "Take free classes online to study English or get ready for the HSE test. You can study at home and at your own speed.",
+    "es": "Tome clases gratis en línea para estudiar inglés o prepararse para el examen HSE. Puede estudiar en casa y a su propio ritmo."
+  },
+  "Help Paying for College::college": {
+    "en": "Community college is now free for Massachusetts residents, and there is money to help pay for other colleges. If you finish high school or your HSE in Massachusetts, you can get in-state prices and state money no matter your immigration status.",
+    "es": "El community college ahora es gratis para residentes de Massachusetts, y hay dinero para ayudar a pagar otros colleges. Si termina la secundaria o su HSE en Massachusetts, puede pagar el precio del estado y recibir ayuda estatal sin importar su estado migratorio."
+  },
+  "MBTA Reduced Fare (Income-Eligible)::money": {
+    "en": "Pay about half price on the T and the bus. You can get this if you are 18 to 64 and have SNAP, MassHealth, or other state help. ABCD can help you sign up.",
+    "es": "Pague casi la mitad del precio en el T y el autobús. Puede recibirlo si tiene entre 18 y 64 años y tiene SNAP, MassHealth u otra ayuda del estado. ABCD le puede ayudar a inscribirse."
+  },
+  "MassHire Metro North Career Center (Chelsea)::jobs": {
+    "en": "Get free help looking for a job. You can use computers, printers, and phones there for free, and talk to a job counselor. Just walk in.",
+    "es": "Reciba ayuda gratis para buscar trabajo. Puede usar computadoras, impresoras y teléfonos gratis, y hablar con un consejero de empleo. Puede llegar sin cita."
+  },
+  "Agencia ALPHA - East Boston Office::immigration": {
+    "en": "Get help with immigration papers and citizenship right here in East Boston. This office is open Thursdays and Saturdays.",
+    "es": "Reciba ayuda con papeles de inmigración y ciudadanía aquí mismo en East Boston. Esta oficina abre los jueves y sábados."
+  },
+  "Boston Public Library - East Boston::college": {
+    "en": "Use computers, wifi, and printing for free. They also have free English conversation groups where you can practice speaking. You do not need papers or money to join.",
+    "es": "Use computadoras, wifi e impresión gratis. También tienen grupos gratuitos de conversación en inglés donde puede practicar. No necesita papeles ni dinero para participar."
+  },
+  "Rian Immigrant Center::immigration": {
+    "en": "Get free help with citizenship and immigration papers. They have a free citizenship clinic every Wednesday morning. They help people from every country, not only Ireland.",
+    "es": "Reciba ayuda gratuita con la ciudadanía y papeles de inmigración. Tienen una clínica de ciudadanía gratis todos los miércoles por la mañana. Ayudan a personas de todos los países, no solo de Irlanda."
+  },
+  "Mass 211::money": {
+    "en": "Call 2-1-1 anytime if you need help but do not know where to start. They listen to your problem and tell you where to go. Free and in many languages.",
+    "es": "Llame al 2-1-1 en cualquier momento si necesita ayuda pero no sabe por dónde empezar. Escuchan su problema y le dicen adónde ir. Es gratis y en muchos idiomas."
+  },
+  "Metro Housing Boston::housing": {
+    "en": "This is the office that handles rent help (RAFT) for East Boston. Call them if you owe rent or are afraid of losing your home.",
+    "es": "Esta es la oficina que maneja la ayuda con la renta (RAFT) para East Boston. Llame si debe renta o tiene miedo de perder su casa."
   }
 };;;;
 
@@ -268,6 +332,15 @@ function parseCsv(text) {
   return rows;
 }
 
+// The COPY entries already end in a period. Blindly appending another one
+// produced "…if you have them.. Español: …" in the CSV, so only add terminal
+// punctuation when it is actually missing.
+function endPunctuated(text) {
+  const trimmed = String(text ?? '').trim();
+  if (!trimmed) return '';
+  return /[.!?]$/.test(trimmed) ? trimmed : `${trimmed}.`;
+}
+
 function csvEscape(value) {
   const text = String(value ?? '');
   if (text === '') return '';
@@ -299,7 +372,7 @@ function main() {
       missing.push(key);
       continue;
     }
-    const newDesc = `${copy.en}. Español: ${copy.es}.`;
+    const newDesc = `${endPunctuated(copy.en)} Español: ${endPunctuated(copy.es)}`;
     if (row[descIdx] !== newDesc) {
       row[descIdx] = newDesc;
       updated += 1;

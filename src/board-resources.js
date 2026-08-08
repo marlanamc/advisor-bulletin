@@ -15,6 +15,7 @@ import { getActionResourceChipLabel, MAX_RESOURCE_SERVICE_CHIPS, parseResourceSe
 import { toRichTextPlainText } from './rich-text.js'
 import { formatResourceHoursHtml } from './resource-hours.js'
 import { normalizeResourceActionLinks, RESOURCE_ACTION_LINK_ICON_SVG, RESOURCE_ACTION_LINK_PDF_ICON_SVG } from './resource-action-links.js'
+import { normalizeSearchText, searchTextIncludes } from './search-normalize.js'
 import { DOCUMENT_TILE_ICON_SVG, isDocumentResource, OPEN_FORM_ICON_SVG } from './resource-kinds.js'
 import { initResourceLogoTiles } from './resource-logo-tile.js'
 
@@ -583,20 +584,22 @@ export class BoardResourcesMethods {
             return resources;
         }
 
-        const normalizedQuery = query.toLowerCase().trim();
+        const normalizedQuery = normalizeSearchText(query.trim());
 
         return resources.filter((resource) => {
             const { titleEn, titleEs } = this.getResourceTitles(resource);
             const description = resource.description || '';
+            const summaryEs = resource.summaryEs || '';
             const category = this.getResourceCategoryKey(resource);
             const services = this.getResourceServices(resource).join(' ');
 
             return (
-                titleEn.toLowerCase().includes(normalizedQuery) ||
-                titleEs.toLowerCase().includes(normalizedQuery) ||
-                description.toLowerCase().includes(normalizedQuery) ||
-                services.toLowerCase().includes(normalizedQuery) ||
-                category.toLowerCase().includes(normalizedQuery)
+                searchTextIncludes(titleEn, normalizedQuery) ||
+                searchTextIncludes(titleEs, normalizedQuery) ||
+                searchTextIncludes(description, normalizedQuery) ||
+                searchTextIncludes(summaryEs, normalizedQuery) ||
+                searchTextIncludes(services, normalizedQuery) ||
+                searchTextIncludes(category, normalizedQuery)
             );
         });
     }

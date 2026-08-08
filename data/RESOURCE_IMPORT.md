@@ -88,9 +88,34 @@ GOOGLE_APPLICATION_CREDENTIALS=./service-account.json \
   node scripts/import-resources.mjs data/your-export.csv
 ```
 
+> **The import always creates new documents.** It has no dedupe step — every
+> `include=Y` row becomes a fresh Firestore doc. Re-running it over the full
+> template would duplicate everything already imported. To add resources
+> incrementally, put only the new rows in their own batch file and import that:
+>
+> ```bash
+> node scripts/import-resources.mjs data/resource-additions-2026-08.csv --dry-run
+> ```
+>
+> `data/resource-additions-2026-08.csv` is the August 2026 audit batch (12 rows).
+> Its rows are also appended to the template above so the template stays the
+> canonical full set and `seed-resource-descriptions.mjs` manages their copy.
+
 Without a service account, the script falls back to Firebase client auth (prompts for admin password).
 
 Imported resources default to **`isPublished: false`**.
+
+## Resources added through the portal
+
+Four live resources were created in the Advisor Portal rather than imported, so
+they have no `importSource: csv-import` field and are not in the CSV:
+**World Education Services (WES)**, **Roxbury Community College**,
+**Permission to Share Your Case Info (ICE/DHS)** and **Massachusetts HiSET**.
+
+`update-imported-summaries.mjs` skips them (it filters on `importSource`), and
+adding them to the CSV would create duplicates on the next import. Their wording
+still lives in the `COPY` map in `seed-resource-descriptions.mjs` so there is one
+source of truth — but reaching Firestore means pasting it in the portal by hand.
 
 ## Advisor review (portal)
 
