@@ -11,7 +11,7 @@
     "deploy": "npm run build && firebase deploy",
     "preview": "vite preview",
     "test": "playwright test",
-    "test:unit": "node --test 'tests/unit/**/*.test.mjs'",
+    "test:unit": "node --test tests/unit/*.test.mjs",
     "test:mobile": "playwright test --project=mobile",
     "test:ui": "playwright test --ui",
     "test:headed": "playwright test --headed",
