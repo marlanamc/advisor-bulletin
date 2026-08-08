@@ -1,5 +1,38 @@
 const { test, expect } = require('@playwright/test');
 
+/**
+ * The student app deliberately rejects a snapshot older than its network TTL,
+ * so a stale artifact never flashes posts that have since been deleted. In
+ * production that is fine: refresh-snapshot.yml rebuilds and redeploys daily.
+ *
+ * The copy committed to the repo, though, is a build artifact that goes stale
+ * the moment it is written. Serving it as-is made these tests pass on the day
+ * it was generated and fail forever after — which is what silently broke the
+ * deploy pipeline, since the deploy job only runs when `npm test` is green.
+ *
+ * Stamping the fixture with the current time keeps these tests measuring what
+ * they are meant to measure — how fast the snapshot path paints — instead of
+ * how recently someone regenerated a JSON file.
+ */
+async function serveFreshSnapshot(context) {
+  await context.route('**/student-feed-snapshot.json', async (route) => {
+    const response = await route.fetch();
+    let snapshot;
+    try {
+      snapshot = await response.json();
+    } catch {
+      await route.fulfill({ response });
+      return;
+    }
+    snapshot.generatedAt = new Date().toISOString();
+    await route.fulfill({
+      response,
+      contentType: 'application/json',
+      body: JSON.stringify(snapshot),
+    });
+  });
+}
+
 async function resetStudentState(page) {
   await page.goto('/googlecb709123fbf8d92e.html');
   await page.evaluate(async () => {
@@ -33,6 +66,7 @@ test.describe('student fast-load path', () => {
       baseURL,
       serviceWorkers: 'block',
     });
+    await serveFreshSnapshot(context);
     const page = await context.newPage();
     await resetStudentState(page);
 
@@ -50,6 +84,7 @@ test.describe('student fast-load path', () => {
       baseURL,
       serviceWorkers: 'allow',
     });
+    await serveFreshSnapshot(context);
     const page = await context.newPage();
     await resetStudentState(page);
 
@@ -74,6 +109,7 @@ test.describe('student fast-load path', () => {
       isMobile: true,
       hasTouch: true,
     });
+    await serveFreshSnapshot(context);
     const page = await context.newPage();
     const cdp = await context.newCDPSession(page);
     await cdp.send('Network.enable');
