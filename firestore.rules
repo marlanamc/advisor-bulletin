@@ -200,6 +200,7 @@ service cloud.firestore {
         && (!('phone' in data) || data.phone is string)
         && (!('phoneMode' in data) || data.phoneMode is string)
         && (!('hours' in data) || data.hours is string)
+        && (!('lastVerified' in data) || (data.lastVerified is string && data.lastVerified.size() <= 20))
         && (!('languages' in data) || data.languages is list)
         && (!('highlights' in data) || data.highlights is string)
         && (!('services' in data) || data.services is list)

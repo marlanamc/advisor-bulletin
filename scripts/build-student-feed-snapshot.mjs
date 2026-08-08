@@ -100,6 +100,11 @@ function normalizeItem(id, data) {
     item.address = data.address || '';
     item.mapUrl = compactUrl(data.mapUrl);
     item.resourceLogo = '';
+    // Hours drive the "Open now / Closed" badge and the Hours block on the
+    // detail view. Omitting them here meant neither ever appeared on the
+    // snapshot-first render, however carefully an advisor filled them in.
+    item.hours = compactString(data.hours || '', 300);
+    item.lastVerified = data.lastVerified || '';
     item.highlights = data.highlights || '';
     item.actionLinks = Array.isArray(data.actionLinks) ? data.actionLinks.slice(0, 3) : [];
   }

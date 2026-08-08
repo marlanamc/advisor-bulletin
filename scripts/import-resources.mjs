@@ -224,6 +224,7 @@ function mergeResources(map, row) {
   const address = (row.address || '').trim();
   const phone = (row.phone || '').trim();
   const hours = (row.hours || '').trim();
+  const lastVerified = (row.lastVerified || '').trim();
   const { en: description, es: summaryEs } = splitBilingualDescription(row.description);
   const advisorName = (row.advisorName || '').trim() || 'Import';
 
@@ -245,6 +246,7 @@ function mergeResources(map, row) {
       address,
       phone,
       hours,
+      lastVerified,
       description,
       summaryEs,
       advisorName,
@@ -258,6 +260,7 @@ function mergeResources(map, row) {
   const mergedChips = [...new Set([...existing.services, ...chips])].slice(0, MAX_CHIPS);
   existing.services = mergedChips;
   if (!existing.url && url) existing.url = url;
+  if (!existing.lastVerified && lastVerified) existing.lastVerified = lastVerified;
   if (!existing.address && address) existing.address = address;
   if (!existing.phone && phone) existing.phone = phone;
   if (!existing.hours && hours) existing.hours = hours;
@@ -298,6 +301,7 @@ function buildFirestoreDoc(resource) {
     phone: resource.phone || '',
     phoneMode: 'call',
     hours: resource.hours || '',
+    lastVerified: resource.lastVerified || '',
     isActive: true,
     isPublished: true,
     isPinned: false,

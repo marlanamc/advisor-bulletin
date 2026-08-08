@@ -13,7 +13,7 @@ import { normalizePostCategory } from './feed-categories.js'
 import { RESOURCE_TILE_CATEGORIES } from './resource-categories.js'
 import { getActionResourceChipLabel, MAX_RESOURCE_SERVICE_CHIPS, parseResourceServiceChips, translateResourceChipEs } from './resource-chip-labels.js'
 import { toRichTextPlainText } from './rich-text.js'
-import { formatResourceHoursHtml } from './resource-hours.js'
+import { formatResourceHoursHtml, isOpenNow } from './resource-hours.js'
 import { normalizeResourceActionLinks, RESOURCE_ACTION_LINK_ICON_SVG, RESOURCE_ACTION_LINK_PDF_ICON_SVG } from './resource-action-links.js'
 import { DOCUMENT_TILE_ICON_SVG, isDocumentResource, OPEN_FORM_ICON_SVG } from './resource-kinds.js'
 import { initResourceLogoTiles } from './resource-logo-tile.js'
@@ -600,66 +600,12 @@ export class BoardResourcesMethods {
     }
 
     // Returns true if open now, false if a schedule was parsed and we are
-    // outside it, or undefined if the hours text was empty/unparseable. The
-    // tri-state lets callers distinguish "currently closed" from "unknown".
+    // outside it, or undefined if the hours text was empty or unparseable. The
+    // tri-state lets callers distinguish "currently closed" from "unknown", so
+    // an unreadable schedule shows no badge rather than a wrong one.
     isResourceOpenNow(resource) {
-        const hoursText = (
-            resource.hours || resource.hoursOfOperation || resource.schedule || ''
-        ).toLowerCase().trim();
-        if (!hoursText) return undefined;
-        if (/24\s*\/\s*7|24\s*hours|open\s*24|any\s*time|anytime|always\s*open|24\s*hr/.test(hoursText)) return true;
-
-        const now = new Date();
-        const dayIndex = now.getDay(); // 0=Sun..6=Sat
-        const currentMinutes = now.getHours() * 60 + now.getMinutes();
-
-        const DAY_ALIASES = {
-            sun: 0, sunday: 0,
-            mon: 1, monday: 1,
-            tue: 2, tues: 2, tuesday: 2,
-            wed: 3, wednesday: 3,
-            thu: 4, thur: 4, thurs: 4, thursday: 4,
-            fri: 5, friday: 5,
-            sat: 6, saturday: 6
-        };
-
-        const parseTime12 = (s) => {
-            const m = s.trim().match(/^(\d{1,2})(?::(\d{2}))?\s*(am|pm)?$/i);
-            if (!m) return null;
-            let h = parseInt(m[1], 10);
-            const min = parseInt(m[2] || '0', 10);
-            const period = (m[3] || '').toLowerCase();
-            if (period === 'pm' && h !== 12) h += 12;
-            if (period === 'am' && h === 12) h = 0;
-            return h * 60 + min;
-        };
-
-        let parsedAnySegment = false;
-        const segments = hoursText.split(/[,;|]/);
-        for (const segment of segments) {
-            const rangeParts = segment.match(
-                /([a-z]+(?:[\s-][a-z]+)?)[:\s]*([\d:]+\s*(?:am|pm)?)\s*[-–]\s*([\d:]+\s*(?:am|pm)?)/i
-            );
-            if (!rangeParts) continue;
-            const dayPart = rangeParts[1].trim().toLowerCase();
-            const openMin = parseTime12(rangeParts[2]);
-            const closeMin = parseTime12(rangeParts[3]);
-            if (openMin === null || closeMin === null) continue;
-
-            const dayRange = dayPart.split(/[-–]/).map(d => DAY_ALIASES[d.trim()]);
-            const startDay = dayRange[0] ?? -1;
-            const endDay = dayRange[1] ?? startDay;
-            if (startDay === -1) continue;
-            parsedAnySegment = true;
-            if (dayIndex < startDay || dayIndex > endDay) continue;
-
-            if (closeMin > openMin) {
-                if (currentMinutes >= openMin && currentMinutes < closeMin) return true;
-            } else {
-                if (currentMinutes >= openMin || currentMinutes < closeMin) return true;
-            }
-        }
-        return parsedAnySegment ? false : undefined;
+        const hoursText = resource.hours || resource.hoursOfOperation || resource.schedule || '';
+        return isOpenNow(hoursText);
     }
 
     getResourceBadgesHtml(resource) {
