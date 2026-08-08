@@ -60,6 +60,20 @@ function readStoredSnapshotRaw() {
     }
 }
 
+/**
+ * Cached snapshot items, for consumers that need data before Firestore has
+ * connected. Search uses this so a query typed during the snapshot-first
+ * window returns the same posts the student can already see, instead of a
+ * misleading "no results". Freshness-checked, so it never surfaces a post that
+ * is too old to be rendered.
+ *
+ * @returns {Array<Record<string, any>>}
+ */
+export function getCachedSnapshotItems() {
+    const snapshot = readStoredSnapshot();
+    return Array.isArray(snapshot?.items) ? snapshot.items : [];
+}
+
 function readStoredSnapshot() {
     const parsed = readStoredSnapshotRaw();
     if (!Array.isArray(parsed?.items) || parsed.items.length === 0) return null;

@@ -15,7 +15,6 @@ import { getActionResourceChipLabel, MAX_RESOURCE_SERVICE_CHIPS, parseResourceSe
 import { toRichTextPlainText } from './rich-text.js'
 import { formatResourceHoursHtml } from './resource-hours.js'
 import { normalizeResourceActionLinks, RESOURCE_ACTION_LINK_ICON_SVG, RESOURCE_ACTION_LINK_PDF_ICON_SVG } from './resource-action-links.js'
-import { normalizeSearchText, searchTextIncludes } from './search-normalize.js'
 import { DOCUMENT_TILE_ICON_SVG, isDocumentResource, OPEN_FORM_ICON_SVG } from './resource-kinds.js'
 import { initResourceLogoTiles } from './resource-logo-tile.js'
 
@@ -500,7 +499,6 @@ export class BoardResourcesMethods {
         // searching or when a category shortcut lands here with an active filter.
         const exploring =
             (this.currentResourceCategory && this.currentResourceCategory !== 'all') ||
-            (this.resourceSearchQuery && this.resourceSearchQuery.trim() !== '') ||
             !!this.currentResourceNeedChip;
 
         // Drive the mobile in-page category view (header + back button, hides tiles).
@@ -536,19 +534,13 @@ export class BoardResourcesMethods {
             visibleResources = visibleResources.filter((resource) => this.resourceMatchesNeedChip(resource, this.currentResourceNeedChip));
         }
 
-        // Apply search filter
-        visibleResources = this.filterResourcesBySearch(visibleResources, this.resourceSearchQuery);
-
         // Apply sort
         visibleResources = this.sortResources(visibleResources, this.resourceSortMode);
 
         if (visibleResources.length === 0) {
             container.innerHTML = '';
             container.style.display = 'none';
-            const isSearching = this.resourceSearchQuery && this.resourceSearchQuery.trim() !== '';
-            emptyState.innerHTML = isSearching
-                ? '<h3>No results found</h3><p>Try a different search term or clear filters.</p><p class="empty-state-bilingual">No se encontraron resultados. Pruebe un término diferente o borre los filtros.</p>'
-                : resources.length === 0
+            emptyState.innerHTML = resources.length === 0
                     ? '<h3>No help links published yet</h3><p>Advisors can add quick links in the admin portal so they appear here for students.</p>'
                     : this.currentResourceNeedChip
                         ? '<h3>No help links for this need</h3><p>Try another need or browse by topic.</p><p class="empty-state-bilingual">No hay enlaces para esta necesidad. Pruebe otra necesidad o busque por tema.</p>'
@@ -577,31 +569,6 @@ export class BoardResourcesMethods {
             })
             .join('');
         initResourceLogoTiles(container);
-    }
-
-    filterResourcesBySearch(resources, query) {
-        if (!query || query.trim() === '') {
-            return resources;
-        }
-
-        const normalizedQuery = normalizeSearchText(query.trim());
-
-        return resources.filter((resource) => {
-            const { titleEn, titleEs } = this.getResourceTitles(resource);
-            const description = resource.description || '';
-            const summaryEs = resource.summaryEs || '';
-            const category = this.getResourceCategoryKey(resource);
-            const services = this.getResourceServices(resource).join(' ');
-
-            return (
-                searchTextIncludes(titleEn, normalizedQuery) ||
-                searchTextIncludes(titleEs, normalizedQuery) ||
-                searchTextIncludes(description, normalizedQuery) ||
-                searchTextIncludes(summaryEs, normalizedQuery) ||
-                searchTextIncludes(services, normalizedQuery) ||
-                searchTextIncludes(category, normalizedQuery)
-            );
-        });
     }
 
     // ─── Quick-Filter helpers ────────────────────────────────────────
@@ -770,10 +737,7 @@ export class BoardResourcesMethods {
         const emptyEl = document.getElementById('resourceDesktopEmptyState');
         if (!navContainer || !sectionsContainer) return;
 
-        // Apply search query
-        const searchQuery = document.getElementById('searchInput')?.value ||
-                            document.getElementById('desktopTopbarSearchInput')?.value || '';
-        let filtered = this.filterResourcesBySearch(allResources, searchQuery);
+        let filtered = allResources;
 
         // Apply need-chip filter (search by need)
         if (this.currentResourceNeedChip) {

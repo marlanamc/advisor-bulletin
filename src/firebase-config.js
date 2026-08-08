@@ -62,7 +62,7 @@ import { BoardCalendarMethods } from './board-calendar.js'
 import { BoardResourcesMethods } from './board-resources.js'
 import { BoardDetailMethods } from './board-detail.js'
 import { storeServerSnapshot } from './student-snapshot.js'
-import { normalizeSearchText, searchTextIncludes } from './search-normalize.js'
+import { BoardSearchMethods } from './board-search.js'
 
 // Firebase-enabled Bulletin Board System
 class FirebaseBulletinBoard {
@@ -77,7 +77,7 @@ class FirebaseBulletinBoard {
         this.currentDesktopResourceTopic = 'all';
         this.expandedDesktopResourceSections = new Set();
         this.mobileResourceCategoryReturnView = 'categories';
-        this.resourceSearchQuery = '';
+        this.searchQuery = '';
         this.currentResourceNeedChip = '';
         this.resourceNeedExpanded = false;
         this.resourceSortMode = 'default';
@@ -549,42 +549,12 @@ class FirebaseBulletinBoard {
             });
         }
 
-        const searchInput = document.getElementById('searchInput');
-        const searchBtn = document.getElementById('searchBtn');
         const clearFilters = document.getElementById('clearFilters');
-
-        if (searchInput) searchInput.addEventListener('input', () => this.applyFilters());
-        if (searchBtn) searchBtn.addEventListener('click', () => this.applyFilters());
         if (clearFilters) clearFilters.addEventListener('click', () => this.clearFilters());
 
-        // Hero search bar
-        const heroInput = document.getElementById('heroSearchInput');
-        const heroBtn = document.getElementById('heroSearchBtn');
-        const syncHero = () => {
-            if (searchInput && heroInput) searchInput.value = heroInput.value;
-            this.applyFilters();
-        };
-        if (heroInput) {
-            heroInput.addEventListener('input', syncHero);
-            heroInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') syncHero(); });
-        }
-        if (heroBtn) heroBtn.addEventListener('click', syncHero);
-
-        // Desktop header search bar
-        const desktopSearchInput = document.getElementById('desktopTopbarSearchInput');
-        const desktopSearchBtn = document.getElementById('desktopTopbarSearchBtn');
-        const syncDesktopSearch = () => {
-            if (searchInput && desktopSearchInput) searchInput.value = desktopSearchInput.value;
-            if (heroInput && desktopSearchInput) heroInput.value = desktopSearchInput.value;
-            this.applyFilters();
-        };
-        if (desktopSearchInput) {
-            desktopSearchInput.addEventListener('input', syncDesktopSearch);
-            desktopSearchInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') syncDesktopSearch();
-            });
-        }
-        if (desktopSearchBtn) desktopSearchBtn.addEventListener('click', syncDesktopSearch);
+        // Every search box — overlay, hero and desktop topbar — drives one
+        // unified result panel. See board-search.js.
+        this.initUnifiedSearch();
 
         document.querySelectorAll('[data-lang-switch]').forEach((button) => {
             button.addEventListener('click', () => {
@@ -597,10 +567,10 @@ class FirebaseBulletinBoard {
         document.querySelectorAll('.feed-popular-chip').forEach(chip => {
             chip.addEventListener('click', () => {
                 const term = chip.getAttribute('data-search-term') || '';
-                if (heroInput) heroInput.value = term;
-                if (searchInput) searchInput.value = term;
-                if (desktopSearchInput) desktopSearchInput.value = term;
-                this.applyFilters();
+                this.searchQuery = term;
+                this.syncSearchInputs(null);
+                if (!this.isSearchLayerOpen) this.openSearchLayer({ focusInput: false });
+                this.renderUnifiedSearchResults();
             });
         });
 
@@ -1231,10 +1201,7 @@ class FirebaseBulletinBoard {
             return;
         }
 
-        const searchInput = document.getElementById('searchInput');
-        const searchTerm = searchInput ? searchInput.value.trim() : '';
         const categoryOnly = (this.currentFeedCategory || 'all') !== 'all'
-            && !searchTerm
             && this.selectedPostedDates.length === 0
             && this.selectedDeadlines.length === 0
             && this.selectedClassTypes.length === 0
@@ -1367,11 +1334,9 @@ class FirebaseBulletinBoard {
         }
     }
 
-    openSearchLayer() {
-        if (this.currentView !== 'feed') {
-            this.switchView('feed', { skipRender: true, preserveDetail: true });
-        }
-
+    openSearchLayer(options = {}) {
+        // Search spans every view now, so opening it no longer drags the
+        // student off Help or the calendar and back to the feed.
         this.isSearchLayerOpen = true;
         const searchLayer = document.getElementById('searchLayer');
         if (searchLayer) {
@@ -1380,9 +1345,10 @@ class FirebaseBulletinBoard {
         }
 
         document.body.classList.add('search-layer-open');
+        this.renderUnifiedSearchResults();
         this.syncHeaderSearchButton();
 
-        if (window.matchMedia('(max-width: 768px)').matches) {
+        if (options.focusInput !== false) {
             window.setTimeout(() => {
                 document.getElementById('searchInput')?.focus();
             }, 180);
@@ -1398,6 +1364,13 @@ class FirebaseBulletinBoard {
         }
 
         document.body.classList.remove('search-layer-open');
+
+        // Leave browsing exactly as it was: the query lives with the overlay,
+        // so closing it must not leave the feed or Help silently filtered.
+        if (!options.preserveQuery) {
+            this.clearUnifiedSearch();
+        }
+
         if (!options.silent) {
             this.syncHeaderSearchButton();
         }
@@ -1414,8 +1387,8 @@ class FirebaseBulletinBoard {
         trigger.hidden = !shouldShow;
 
         const hasActiveSearch = this.currentView === 'resources'
-            ? this.resourceSearchQuery && this.resourceSearchQuery.trim() !== ''
-            : this.areFiltersApplied();
+            ? Boolean((this.searchQuery || '').trim())
+            : Boolean((this.searchQuery || '').trim()) || this.areFiltersApplied();
 
         trigger.classList.toggle('active', shouldShow && (this.isSearchLayerOpen || hasActiveSearch));
         trigger.setAttribute('aria-expanded', shouldShow && this.isSearchLayerOpen ? 'true' : 'false');
@@ -1452,17 +1425,15 @@ class FirebaseBulletinBoard {
         const mobileInlineSearchInput = document.getElementById('mobileInlineSearchInput');
 
         const isSpanish = document.body.getAttribute('data-lang') === 'ES';
-        const isResourcesView = this.currentView === 'resources';
-        const desktopPlaceholder = isResourcesView
-            ? (isSpanish ? 'Busca ayuda...' : 'Search help...')
-            : (isSpanish
-                ? 'Busca ayuda, anuncios y eventos...'
-                : 'Search for help, announcements, and events...');
-        const mobilePlaceholder = isResourcesView
-            ? (isSpanish ? 'Busca ayuda...' : 'Search help...')
-            : (isSpanish
-                ? '¿Con qué necesitas ayuda?'
-                : 'What do you need help with?');
+
+        // One search covers help, posts and events from every view, so the
+        // placeholder no longer changes depending on which tab you are on.
+        const desktopPlaceholder = isSpanish
+            ? 'Busca ayuda, anuncios y eventos...'
+            : 'Search for help, announcements, and events...';
+        const mobilePlaceholder = isSpanish
+            ? '¿Con qué necesitas ayuda?'
+            : 'What do you need help with?';
 
         if (desktopSearchInput) {
             desktopSearchInput.placeholder = desktopPlaceholder;
@@ -1996,14 +1967,14 @@ class FirebaseBulletinBoard {
         `;
     }
 
-    // Filter and Search Methods
+    // Filter Methods
+    //
+    // Free-text search is no longer part of this path. It lives in the search
+    // overlay (board-search.js) and spans posts and resources together, so the
+    // feed and Help views are only ever narrowed by the explicit chip filters
+    // a student can see and clear.
     applyFilters() {
-        const searchInput = document.getElementById('searchInput');
-        const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
-
-        // If on resources view, use context-aware search for resources
         if (this.currentView === 'resources') {
-            this.resourceSearchQuery = searchTerm;
             this.renderResourcesSections(this.getPublishedResources());
             this.syncHeaderSearchButton();
             return;
@@ -2088,22 +2059,6 @@ class FirebaseBulletinBoard {
             });
         }
 
-        if (searchTerm) {
-            const normalizedSearch = normalizeSearchText(searchTerm);
-            filteredBulletins = filteredBulletins.filter(b => {
-                return (
-                    searchTextIncludes(b.title, normalizedSearch) ||
-                    searchTextIncludes(b.titleEs, normalizedSearch) ||
-                    searchTextIncludes(b.description, normalizedSearch) ||
-                    searchTextIncludes(b.summaryEs, normalizedSearch) ||
-                    searchTextIncludes(b.company, normalizedSearch) ||
-                    searchTextIncludes(b.contact, normalizedSearch) ||
-                    searchTextIncludes(b.eventLink, normalizedSearch) ||
-                    searchTextIncludes(b.advisorName, normalizedSearch)
-                );
-            });
-        }
-
         const showExpiredToggle = document.getElementById('showExpiredToggle');
 
         const shouldShowExpired = showExpiredToggle && showExpiredToggle.checked;
@@ -2117,16 +2072,10 @@ class FirebaseBulletinBoard {
     }
 
     clearFilters() {
-        const searchInput = document.getElementById('searchInput');
-        const heroInput = document.getElementById('heroSearchInput');
-        const desktopSearchInput = document.getElementById('desktopTopbarSearchInput');
-        if (searchInput) searchInput.value = '';
-        if (heroInput) heroInput.value = '';
-        if (desktopSearchInput) desktopSearchInput.value = '';
+        this.clearUnifiedSearch();
 
-        // If on resources view, clear resource search
+        // If on resources view, re-render the browse state
         if (this.currentView === 'resources') {
-            this.resourceSearchQuery = '';
             this.renderResourceList(this.getPublishedResources());
             this.syncHeaderSearchButton();
             return;
@@ -2269,14 +2218,13 @@ class FirebaseBulletinBoard {
         const hasDeadlineFilters = this.selectedDeadlines.length > 0;
         const hasClassTypeFilters = this.selectedClassTypes.length > 0;
         const hasPostedByFilters = this.selectedPostedBy.length > 0;
-        const hasSearchTerm = document.getElementById('searchInput').value.trim() !== '';
         const showExpiredToggle = document.getElementById('showExpiredToggle');
         // Only consider expired toggle as a filter when it's turned ON (showing expired items)
         // When OFF (default), it's the normal behavior, not a filter
         const hasExpiredFilter = showExpiredToggle && showExpiredToggle.checked;
 
 
-        return hasCategoryFilters || hasPostedDateFilters || hasDeadlineFilters || hasClassTypeFilters || hasPostedByFilters || hasSearchTerm || hasExpiredFilter;
+        return hasCategoryFilters || hasPostedDateFilters || hasDeadlineFilters || hasClassTypeFilters || hasPostedByFilters || hasExpiredFilter;
     }
 
     loadBulletins() {
@@ -2753,6 +2701,7 @@ class FirebaseBulletinBoard {
 applyMethods(FirebaseBulletinBoard, BoardCalendarMethods)
 applyMethods(FirebaseBulletinBoard, BoardResourcesMethods)
 applyMethods(FirebaseBulletinBoard, BoardDetailMethods)
+applyMethods(FirebaseBulletinBoard, BoardSearchMethods)
 
 // Share functionality
 function shareBulletin(bulletinId, bulletinTitle) {

@@ -148,6 +148,11 @@
                         </svg>
                     </button>
                 </div>
+                <!-- Unified results: help resources + posts/events, populated by board-search.js.
+                     The count sits above the list so it is readable without scrolling. -->
+                <p class="search-results-status" id="searchResultsStatus" role="status" aria-live="polite" hidden></p>
+                <div class="search-results" id="searchResults" hidden></div>
+
                 <div class="search-layer-cats" id="searchLayerCats">
                     <p class="search-layer-cats-label"><span class="en-text">Or filter posts by topic:</span><span class="es-text">O filtra publicaciones por tema:</span></p>
                     <div class="search-layer-cat-grid">
