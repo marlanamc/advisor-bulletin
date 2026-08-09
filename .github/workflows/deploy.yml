@@ -17,8 +17,19 @@ jobs:
           node-version: 20
           cache: npm
 
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
       - name: Install dependencies
         run: npm ci
+
+      - name: Cache Firebase emulator binaries
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/firebase/emulators
+          key: firebase-emulators-${{ runner.os }}
 
       - name: Run unit tests
         run: npm run test:unit
@@ -26,6 +37,11 @@ jobs:
       - name: Install Playwright browser
         run: npx playwright install --with-deps chromium
 
+      # Runs against a local Firebase emulator (see scripts/run-with-emulator.mjs)
+      # so this job never touches production Firestore — CI hitting real
+      # Firestore across every test/browser project was burning most of the
+      # daily read quota on a single push. See "Never audit against the
+      # snapshot" in docs/DEPLOYMENT.md for the full story.
       - name: Run Playwright tests
         run: npm test -- --project=desktop --project=mobile
 

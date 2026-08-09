@@ -8,7 +8,7 @@ How the EBHCS Advisor Bulletin Board gets from this repository to the live site,
 
 The GitHub Action (`.github/workflows/deploy.yml`) does this on each push:
 
-1. **Test job** — installs dependencies and runs the full Playwright suite (`npm test`) against a local dev server. If any test fails, **the deploy is blocked** and the live site stays on its previous version. A failure report is attached to the workflow run as an artifact.
+1. **Test job** — installs dependencies and runs the full Playwright suite (`npm test`) against a local dev server **and a local Firebase emulator** (see "Tests run against an emulator, not production" below). If any test fails, **the deploy is blocked** and the live site stays on its previous version. A failure report is attached to the workflow run as an artifact.
 2. **Deploy job** — runs `npm run build`, publishes `dist/` to Firebase Hosting, and deploys `firestore.rules` and `storage.rules` using the `FIREBASE_SERVICE_ACCOUNT` repository secret.
 
 `npm run build` automatically runs two pre-steps (`prebuild` in package.json):
@@ -59,11 +59,23 @@ Some scripts in `scripts/` write to Firestore and need admin credentials:
 
 See [scripts/README.md](../scripts/README.md) for what each script does.
 
+## Tests run against an emulator, not production
+
+**`npm test` (and `test:mobile`/`test:ui`/`test:headed`) boot a local Firebase emulator first** — the test suite never touches real Firestore. This was added in August 2026 after discovering the test suite was the single biggest driver of the project's Firestore read quota: every `page.goto()` fires a real `onSnapshot` listener capped at `limit(500)`, and each fire re-counts every document in the result as a read. 63 tests × 2 browser projects on every push could burn 60,000+ reads — the entire daily Spark-plan budget — from one `git push`.
+
+How it works:
+- `scripts/run-with-emulator.mjs` wraps the Playwright command in `firebase emulators:exec`, setting `VITE_USE_FIREBASE_EMULATOR=true` for the duration of the run.
+- `src/firebase.js` and `src/firebase-student.js` (the two independent Firebase SDK initializations — one for the admin portal, one for the lean student site) check that env var and call `connectFirestoreEmulator`/`connectAuthEmulator`/`connectStorageEmulator` when it's set. Production behavior is unchanged — this only activates under the explicit flag.
+- Emulator ports and config live in `firebase.json`'s `emulators` block (Firestore 8080, Auth 9099, Storage 9199, UI 4000).
+- Tests don't need real-looking seed data: nearly every spec overwrites `window.bulletinBoard.bulletins` with an inline fixture via `page.evaluate` before asserting, so the emulator just needs to be reachable and return fast (mostly empty) responses for that first real-data page load.
+
+**Requires Java** (the Firestore emulator is JVM-based). GitHub's `ubuntu-latest` runners get it via an explicit `actions/setup-java@v4` step in both `deploy.yml` and `full-test-matrix.yml`. To run tests locally: `brew install openjdk` (macOS, keg-only — add `/opt/homebrew/opt/openjdk/bin` to your `PATH`), or your OS's equivalent.
+
 ## Billing and usage
 
 The project uses four Firebase products: **Firestore** (post data), **Authentication** (advisor logins), **Storage** (uploaded images/PDFs), and **Hosting** (the site itself).
 
-- On the free **Spark** plan the relevant limits are roughly: 50K Firestore reads/day, 20K writes/day, 1 GB Firestore storage, 5 GB file storage, 10 GB hosting transfer/month. A single school's bulletin board sits comfortably inside these.
+- On the free **Spark** plan the relevant limits are roughly: 50K Firestore reads/day, 20K writes/day, 1 GB Firestore storage, 5 GB file storage, 10 GB hosting transfer/month. A single school's bulletin board sits comfortably inside these — now that CI runs against the emulator instead of production (see above), real usage should mostly come from actual site visitors and admin activity, not test runs.
 - Check usage: Firebase Console → the **Usage and billing** page (gear icon). If students ever see "quota exceeded" errors late in the day, that's the daily read limit — the snapshot-first loading was designed specifically to keep reads low, so investigate before paying for anything.
 - If the project is ever moved to the pay-as-you-go **Blaze** plan, set a budget alert in the same screen.
 

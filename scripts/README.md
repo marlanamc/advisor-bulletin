@@ -11,6 +11,10 @@ One-off and recurring maintenance tools. Run them from the repository root with 
 - **build-student-feed-snapshot.mjs** — regenerates `public/student-feed-snapshot.json` (the instant-loading static feed). Runs in `prebuild`. Uses a service account if available, otherwise falls back to the public client SDK; if Firestore is unreachable it keeps the existing snapshot so the build never breaks. Flags: `--credentials=…`, `--no-client`.
 - **check-resource-categories-sync.mjs** — fails the build if the resource category list in `src/resource-categories.js` drifts from the whitelist in `firestore.rules`. No credentials. If it fails, make the two lists match.
 
+## Used automatically by tests
+
+- **run-with-emulator.mjs** — wraps a test command in `firebase emulators:exec`, setting `VITE_USE_FIREBASE_EMULATOR=true` so the app connects to a local Firestore/Auth/Storage emulator instead of production. This is what `npm test`/`test:mobile`/`test:ui`/`test:headed` actually run under the hood (see `package.json`) — you shouldn't need to call it directly. Requires Java locally (`brew install openjdk` on macOS); see "Tests run against an emulator, not production" in [DEPLOYMENT.md](../docs/DEPLOYMENT.md) for why this exists.
+
 ## Auditing
 
 - **dump-live-resources.mjs** 🔑 — read-only dump of all `type: 'resource'` bulletins straight from Firestore (title, url, actionLinks, category). Use this instead of `public/student-feed-snapshot.json` for anything that needs current data — the snapshot only refreshes on a push to `main` or the daily cron, so it can be stale by days or weeks relative to portal edits. Usage: `node scripts/dump-live-resources.mjs [--category=housing] [--json]`. See "Never audit against the snapshot" in [DEPLOYMENT.md](../docs/DEPLOYMENT.md).
