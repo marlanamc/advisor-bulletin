@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FY26 Industry &amp; Interest Report · EBHCS Advisor Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&family=Source+Sans+3:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    /*
+      Uses the EBHCS advisor-portal design tokens (see src/css/advisor-portal-v2.css)
+      so this report can drop into admin.html as an ap-page with minimal rework.
+    */
+    :root {
+      color-scheme: light;
+      --ap-navy:        #0a1f44;
+      --ap-navy-mid:    #12306b;
+      --ap-navy-light:  #1e4db7;
+
+      --ap-sky:         #e8f0fe;
+      --ap-sky-mid:     #c7d9fd;
+      --ap-mint:        #e6f7f0;
+      --ap-mint-mid:    #a7e8cc;
+      --ap-coral:       #fff1ec;
+      --ap-coral-mid:   #ffc9b0;
+      --ap-lavender:    #f0eeff;
+      --ap-lavender-mid:#c8bcf8;
+      --ap-gold:        #fffbea;
+      --ap-gold-mid:    #fde68a;
+      --ap-gold-accent: #f59e0b;
+
+      --ap-bg:          #f5f7fb;
+      --ap-surface:     #ffffff;
+      --ap-surface-2:   #f0f4f9;
+      --ap-border:      #e2e8f2;
+      --ap-border-mid:  #c8d4e8;
+
+      --ap-text:        #0d1b35;
+      --ap-text-2:      #3d5a80;
+      --ap-text-3:      #4d6d90;
+
+      --ap-blue:        #1a56db;
+      --ap-blue-dim:    rgba(26,86,219,.1);
+      --ap-green:       #059669;
+      --ap-green-dim:   rgba(5,150,105,.1);
+      --ap-amber:       #d97706;
+      --ap-amber-dim:   rgba(217,119,6,.1);
+      --ap-purple:      #7c3aed;
+      --ap-red:         #dc2626;
+
+      --ap-font-head:   'Lexend', -apple-system, BlinkMacSystemFont, sans-serif;
+      --ap-font-body:   'Source Sans 3', -apple-system, BlinkMacSystemFont, sans-serif;
+
+      --ap-r-sm:   8px;
+      --ap-r-md:   12px;
+      --ap-r-lg:   16px;
+      --ap-r-xl:   20px;
+      --ap-r-pill: 999px;
+
+      --ap-shadow-xs:  0 1px 3px rgba(10,31,68,.06);
+      --ap-shadow-sm:  0 2px 8px rgba(10,31,68,.08);
+      --ap-shadow-md:  0 4px 16px rgba(10,31,68,.1);
+      --ap-shadow-lg:  0 8px 32px rgba(10,31,68,.14);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--ap-bg);
+      color: var(--ap-text);
+      font: 400 15px/1.6 var(--ap-font-body);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page { max-width: 1040px; margin: 0 auto; padding: 28px 24px 64px; }
+
+    /* ---------- Welcome banner (mirrors .ap-welcome-banner) ---------- */
+    .report-banner {
+      background: linear-gradient(135deg, var(--ap-navy), var(--ap-navy-mid));
+      border-radius: var(--ap-r-xl);
+      padding: 26px 30px;
+      margin-bottom: 20px;
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+    }
+    .report-banner::before {
+      content: ''; position: absolute; top: -20px; right: 60px;
+      width: 160px; height: 160px; border-radius: 50%;
+      background: rgba(255,213,93,.06);
+    }
+    .report-banner::after {
+      content: ''; position: absolute; bottom: -40px; right: -10px;
+      width: 100px; height: 100px; border-radius: 50%;
+      background: rgba(26,86,219,.15);
+    }
+    .report-eyebrow {
+      font-family: var(--ap-font-head);
+      font-size: .68rem; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: rgba(255,213,93,.85);
+      margin-bottom: 8px; position: relative; z-index: 1;
+    }
+    .report-title {
+      font-family: var(--ap-font-head);
+      font-size: 1.7rem; font-weight: 800; letter-spacing: -0.02em;
+      margin: 0 0 8px; line-height: 1.2; position: relative; z-index: 1;
+      max-width: 640px; color: #fff;
+    }
+    .report-sub {
+      margin: 0 0 4px; font-size: .92rem; color: rgba(255,255,255,.75);
+      max-width: 620px; position: relative; z-index: 1;
+    }
+    .report-meta {
+      margin-top: 10px; font-size: .78rem; color: rgba(255,255,255,.5);
+      font-family: var(--ap-font-head); position: relative; z-index: 1;
+    }
+
+    /* ---------- Page tabs (link between the two report pages) ---------- */
+    .page-tabs {
+      display: flex; gap: 6px; margin: 0 0 20px;
+    }
+    .page-tab {
+      padding: 9px 16px; min-height: 44px; display: inline-flex; align-items: center;
+      border-radius: var(--ap-r-pill);
+      border: 1.5px solid var(--ap-border); background: var(--ap-surface);
+      font-family: var(--ap-font-head); font-size: .82rem; font-weight: 600;
+      color: var(--ap-text-2); text-decoration: none; transition: all .15s;
+    }
+    .page-tab:hover { border-color: var(--ap-blue); color: var(--ap-blue); }
+    .page-tab:focus-visible { outline: 2px solid var(--ap-blue); outline-offset: 2px; }
+    .page-tab.active { background: var(--ap-navy); border-color: var(--ap-navy); color: #fff; }
+
+    /* ---------- Stat cards (mirrors .ap-stat-card) ---------- */
+    .ap-stats-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;
+      margin-bottom: 24px;
+    }
+    .ap-stat-card {
+      background: var(--ap-surface); border-radius: var(--ap-r-xl);
+      padding: 16px 18px; box-shadow: var(--ap-shadow-sm);
+      border: 1px solid var(--ap-border); position: relative;
+    }
+    .ap-stat-value {
+      font-family: var(--ap-font-head); font-size: 1.7rem; font-weight: 800;
+      color: var(--ap-text); font-variant-numeric: tabular-nums; line-height: 1.1;
+    }
+    .ap-stat-label {
+      font-size: .74rem; color: var(--ap-text-3); font-family: var(--ap-font-head);
+      font-weight: 600; letter-spacing: .01em; margin-top: 4px;
+    }
+    .ap-stat-blue::after, .ap-stat-green::after, .ap-stat-amber::after, .ap-stat-purple::after {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      border-radius: var(--ap-r-xl) var(--ap-r-xl) 0 0;
+    }
+    .ap-stat-blue::after   { background: var(--ap-blue); }
+    .ap-stat-green::after  { background: var(--ap-green); }
+    .ap-stat-amber::after  { background: var(--ap-amber); }
+    .ap-stat-purple::after { background: var(--ap-purple); }
+
+    /* ---------- Section cards (mirrors .ap-section-card) ---------- */
+    .ap-section-card {
+      background: var(--ap-surface); border-radius: var(--ap-r-xl);
+      border: 1px solid var(--ap-border); box-shadow: var(--ap-shadow-sm);
+      margin-bottom: 20px; overflow: hidden;
+    }
+    .ap-section-header {
+      padding: 18px 22px 14px; border-bottom: 1px solid var(--ap-border);
+    }
+    .ap-section-title {
+      font-family: var(--ap-font-head); font-size: 1.05rem; font-weight: 700;
+      color: var(--ap-text); margin: 0;
+    }
+    .ap-section-desc {
+      color: var(--ap-text-2); font-size: .86rem; max-width: 68ch; margin: 6px 0 0;
+    }
+    .ap-section-body { padding: 20px 22px 22px; }
+
+    /* ---------- Callout ---------- */
+    .callout {
+      padding: 14px 16px; border-left: 4px solid var(--ap-green);
+      background: var(--ap-mint); border-radius: var(--ap-r-md);
+    }
+    .callout ul { margin: 0; padding-left: 1.2rem; }
+    .callout li { margin: 6px 0; font-size: .92rem; }
+    .callout strong { color: var(--ap-text); }
+
+    h1, h2, h3, strong { color: var(--ap-text); }
+    p { margin: 0 0 10px; }
+    ul, ol { margin: 6px 0 14px 1.3rem; padding: 0; }
+    li { margin: 4px 0; }
+    code { background: var(--ap-surface-2); padding: 1px 5px; border-radius: 4px; font-size: .88em; }
+    a { color: var(--ap-blue); font-weight: 600; }
+
+    /* ---------- Filter pills (mirrors .ap-filter-pill) ---------- */
+    .ap-filter-pills { display: flex; gap: 6px; flex-wrap: wrap; margin: 0 0 16px; }
+    .ap-filter-pill {
+      padding: 7px 14px; min-height: 44px; display: inline-flex; align-items: center;
+      border-radius: var(--ap-r-pill); border: 1.5px solid var(--ap-border);
+      background: var(--ap-surface); font-size: .8rem; font-weight: 600;
+      font-family: var(--ap-font-head); color: var(--ap-text-2); cursor: pointer;
+      transition: all .15s; appearance: none;
+    }
+    .ap-filter-pill:hover { border-color: var(--ap-blue); color: var(--ap-blue); }
+    .ap-filter-pill:focus-visible { outline: 2px solid var(--ap-blue); outline-offset: 2px; }
+    .ap-filter-pill[aria-pressed="true"] { background: var(--ap-blue); border-color: var(--ap-blue); color: #fff; }
+
+    /* ---------- Bar charts ---------- */
+    .barchart { display: flex; flex-direction: column; gap: 8px; }
+    .barrow { display: grid; grid-template-columns: 180px 1fr 40px; align-items: center; gap: 10px; }
+    .barrow .label { font-size: .84rem; color: var(--ap-text-2); }
+    .barrow .track {
+      position: relative; height: 12px; background: var(--ap-surface-2);
+      border: 1px solid var(--ap-border); border-radius: 4px; overflow: hidden;
+    }
+    .barrow .fill {
+      position: absolute; inset: 0; width: 100%; background: var(--ap-blue);
+      border-radius: 3px; transform-origin: left center;
+      transition: transform .35s cubic-bezier(.4,0,.2,1);
+    }
+    .barrow .val { font-size: .8rem; color: var(--ap-text-3); text-align: right; font-variant-numeric: tabular-nums; }
+    .empty-note { color: var(--ap-text-3); font-size: .8rem; font-style: italic; padding: 6px 0 0; }
+
+    .group-legend { display: flex; gap: 20px; margin-bottom: 12px; font-size: .82rem; color: var(--ap-text-2); }
+    .group-legend .sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+    .grouprow { display: grid; grid-template-columns: 180px 1fr; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .grouprow .label { font-size: .84rem; color: var(--ap-text-2); }
+    .grouprow .tracks { display: flex; flex-direction: column; gap: 3px; }
+    .grouprow .track {
+      position: relative; height: 9px; background: var(--ap-surface-2);
+      border: 1px solid var(--ap-border); border-radius: 3px; overflow: hidden;
+    }
+    .grouprow .fill { position: absolute; inset: 0; width: 100%; border-radius: 3px; transform-origin: left center; }
+    .grouprow .fill.current { background: #9aa7b8; }
+    .grouprow .fill.desired { background: var(--ap-green); }
+
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+    .print-note { margin-top: 8px; color: var(--ap-text-3); font-size: .84rem; }
+
+    @media print {
+      .ap-filter-pills { display: none; }
+      body { background: #fff; font-size: 11pt; }
+      .page { margin: 0; max-width: none; padding: 0 20pt 24pt; }
+      .ap-section-card, .ap-stat-card { box-shadow: none; }
+      .print-note { display: none; }
+    }
+
+    @media (max-width: 760px) {
+      .page { padding: 20px 16px 48px; }
+      .two-col { grid-template-columns: 1fr; }
+      .ap-stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .barrow, .grouprow { grid-template-columns: 120px 1fr 34px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="report-banner">
+      <div class="report-eyebrow">Advisor Portal · EBHCS · Data &amp; Planning</div>
+      <h1 class="report-title">FY26 Industry &amp; Interest Report</h1>
+      <p class="report-sub">What 179 advising students want to work in, where they already work, and what their education goals are.</p>
+      <div class="report-meta">Based on FY26 advising forms (English + Spanish) &middot; aggregate data only, no student names</div>
+    </header>
+
+    <div class="page-tabs">
+      <a class="page-tab active" href="fy26-industry-report.html">Summary &amp; Analysis</a>
+      <a class="page-tab" href="fy27-program-fit.html">FY27 Program Fit</a>
+    </div>
+
+    <div class="ap-stats-grid">
+      <div class="ap-stat-card ap-stat-blue"><div class="ap-stat-value">179</div><div class="ap-stat-label">Students analyzed</div></div>
+      <div class="ap-stat-card ap-stat-green"><div class="ap-stat-value">157</div><div class="ap-stat-label">Gave a career goal</div></div>
+      <div class="ap-stat-card ap-stat-purple"><div class="ap-stat-value">14</div><div class="ap-stat-label">Industries represented</div></div>
+      <div class="ap-stat-card ap-stat-amber"><div class="ap-stat-value">41%</div><div class="ap-stat-label">Share in top 3 industries</div></div>
+    </div>
+
+    <section class="ap-section-card">
+      <div class="ap-section-header"><h2 class="ap-section-title">Summary</h2></div>
+      <div class="ap-section-body">
+        <div class="callout">
+          <ul>
+            <li><strong>Healthcare, office/admin/tech, and food service</strong> are the top three industries students want to enter — 41% of all mapped career goals.</li>
+            <li>Biggest opportunity gap: <strong>healthcare and office/admin/tech</strong>. Far more students want these jobs than currently hold one; food service and cleaning show the opposite pattern.</li>
+            <li>Most students (122 of 168) said their primary education goal is simply to <strong>improve their English</strong> — career-specific goals are the minority.</li>
+            <li>See the <a href="fy27-program-fit.html">FY27 Program Fit</a> page for how these interests map against the specific training programs under consideration, including which ones are blocked or need more data.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="ap-section-card">
+      <div class="ap-section-header">
+        <h2 class="ap-section-title">Desired industries</h2>
+        <p class="ap-section-desc">What students said they want to work in. Filter by current English level to see how interest breaks down for the eight most-requested industries.</p>
+      </div>
+      <div class="ap-section-body">
+        <div class="ap-filter-pills" role="group" aria-label="Filter by ESOL level" id="levelFilter">
+          <button class="ap-filter-pill" aria-pressed="true" data-level="all" type="button">All levels</button>
+          <button class="ap-filter-pill" aria-pressed="false" data-level="1" type="button">Level 1</button>
+          <button class="ap-filter-pill" aria-pressed="false" data-level="2" type="button">Level 2</button>
+          <button class="ap-filter-pill" aria-pressed="false" data-level="3" type="button">Level 3</button>
+          <button class="ap-filter-pill" aria-pressed="false" data-level="4" type="button">Level 4</button>
+          <button class="ap-filter-pill" aria-pressed="false" data-level="unknown" type="button">Level unknown</button>
+        </div>
+        <div class="barchart" id="levelChart"></div>
+        <p class="empty-note" id="levelNote"></p>
+      </div>
+    </section>
+
+    <section class="ap-section-card">
+      <div class="ap-section-header">
+        <h2 class="ap-section-title">Current work vs. desired work</h2>
+        <p class="ap-section-desc">Where students already work heavily outpaces where they want to be — the gap between the two bars is the training opportunity.</p>
+      </div>
+      <div class="ap-section-body">
+        <div class="group-legend">
+          <span><span class="sw" style="background:#9aa7b8"></span>Currently work in</span>
+          <span><span class="sw" style="background:var(--ap-green)"></span>Want to work in</span>
+        </div>
+        <div class="barchart">
+          <div class="grouprow"><span class="label">Food Service / Culinary</span><span class="tracks"><span class="track"><span class="fill current" style="transform:scaleX(1.0)"></span></span><span class="track"><span class="fill desired" style="transform:scaleX(0.327)"></span></span></span></div>
+          <div class="grouprow"><span class="label">Cleaning / Hospitality</span><span class="tracks"><span class="track"><span class="fill current" style="transform:scaleX(0.418)"></span></span><span class="track"><span class="fill desired" style="transform:scaleX(0.145)"></span></span></span></div>
+          <div class="grouprow"><span class="label">Healthcare</span><span class="tracks"><span class="track"><span class="fill current" style="transform:scaleX(0.182)"></span></span><span class="track"><span class="fill desired" style="transform:scaleX(0.527)"></span></span></span></div>
+          <div class="grouprow"><span class="label">Construction Trades</span><span class="tracks"><span class="track"><span class="fill current" style="transform:scaleX(0.273)"></span></span><span class="track"><span class="fill desired" style="transform:scaleX(0.309)"></span></span></span></div>
+          <div class="grouprow"><span class="label">Transportation</span><span class="tracks"><span class="track"><span class="fill current" style="transform:scaleX(0.255)"></span></span><span class="track"><span class="fill desired" style="transform:scaleX(0.127)"></span></span></span></div>
+          <div class="grouprow"><span class="label">Retail / Customer Svc</span><span class="tracks"><span class="track"><span class="fill current" style="transform:scaleX(0.218)"></span></span><span class="track"><span class="fill desired" style="transform:scaleX(0.182)"></span></span></span></div>
+          <div class="grouprow"><span class="label">Manufacturing / Warehouse</span><span class="tracks"><span class="track"><span class="fill current" style="transform:scaleX(0.164)"></span></span><span class="track"><span class="fill desired" style="transform:scaleX(0.091)"></span></span></span></div>
+          <div class="grouprow"><span class="label">Office / Admin / Tech</span><span class="tracks"><span class="track"><span class="fill current" style="transform:scaleX(0.091)"></span></span><span class="track"><span class="fill desired" style="transform:scaleX(0.382)"></span></span></span></div>
+          <div class="grouprow"><span class="label">Early Childhood Ed</span><span class="tracks"><span class="track"><span class="fill current" style="transform:scaleX(0.127)"></span></span><span class="track"><span class="fill desired" style="transform:scaleX(0.255)"></span></span></span></div>
+          <div class="grouprow"><span class="label">Personal Care / Beauty</span><span class="tracks"><span class="track"><span class="fill current" style="transform:scaleX(0.127)"></span></span><span class="track"><span class="fill desired" style="transform:scaleX(0.164)"></span></span></span></div>
+          <div class="grouprow"><span class="label">Business / Entrepreneurship</span><span class="tracks"><span class="track"><span class="fill current" style="transform:scaleX(0.0)"></span></span><span class="track"><span class="fill desired" style="transform:scaleX(0.218)"></span></span></span></div>
+          <div class="grouprow"><span class="label">Education</span><span class="tracks"><span class="track"><span class="fill current" style="transform:scaleX(0.109)"></span></span><span class="track"><span class="fill desired" style="transform:scaleX(0.036)"></span></span></span></div>
+          <div class="grouprow"><span class="label">Human Services</span><span class="tracks"><span class="track"><span class="fill current" style="transform:scaleX(0.0)"></span></span><span class="track"><span class="fill desired" style="transform:scaleX(0.073)"></span></span></span></div>
+          <div class="grouprow"><span class="label">Protective Services</span><span class="tracks"><span class="track"><span class="fill current" style="transform:scaleX(0.018)"></span></span><span class="track"><span class="fill desired" style="transform:scaleX(0.018)"></span></span></span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="ap-section-card">
+      <div class="ap-section-header">
+        <h2 class="ap-section-title">Education goals</h2>
+        <p class="ap-section-desc">What students said their primary education goal is.</p>
+      </div>
+      <div class="ap-section-body">
+        <div class="barchart">
+          <div class="barrow"><span class="label">Improve English</span><span class="track"><span class="fill" style="transform:scaleX(1.0)"></span></span><span class="val">122</span></div>
+          <div class="barrow"><span class="label">Other</span><span class="track"><span class="fill" style="transform:scaleX(0.197)"></span></span><span class="val">24</span></div>
+          <div class="barrow"><span class="label">College</span><span class="track"><span class="fill" style="transform:scaleX(0.09)"></span></span><span class="val">11</span></div>
+          <div class="barrow"><span class="label">Certificate / License</span><span class="track"><span class="fill" style="transform:scaleX(0.09)"></span></span><span class="val">11</span></div>
+          <div class="barrow"><span class="label">HiSET / GED</span><span class="track"><span class="fill" style="transform:scaleX(0.082)"></span></span><span class="val">10</span></div>
+          <div class="barrow"><span class="label">Unknown</span><span class="track"><span class="fill" style="transform:scaleX(0.008)"></span></span><span class="val">1</span></div>
+        </div>
+      </div>
+    </section>
+
+    <p class="print-note">Data note: figures are aggregate counts, de-identified by construction. Education level is self-reported and not a verified US credential equivalency. Print tip: File &rarr; Print &rarr; Save as PDF for a shareable copy.</p>
+  </div>
+
+  <script>
+  (function () {
+    "use strict";
+
+    var levelData = {
+      "Healthcare":               { 1: 7, 2: 6, 3: 4, 4: 1, unknown: 11 },
+      "Office / Admin / Tech":    { 1: 5, 2: 9, 3: 3, 4: 0, unknown: 4 },
+      "Food Service / Culinary":  { 1: 7, 2: 2, 3: 3, 4: 0, unknown: 6 },
+      "Construction Trades":      { 1: 8, 2: 2, 3: 2, 4: 0, unknown: 5 },
+      "Early Childhood Ed":       { 1: 7, 2: 0, 3: 1, 4: 0, unknown: 6 },
+      "Business / Entrepreneurship": { 1: 5, 2: 1, 3: 1, 4: 0, unknown: 5 },
+      "Retail / Customer Svc":    { 1: 3, 2: 3, 3: 2, 4: 0, unknown: 2 },
+      "Personal Care / Beauty":   { 1: 4, 2: 0, 3: 0, 4: 0, unknown: 5 }
+    };
+    var allTotals = {
+      "Healthcare": 29, "Office / Admin / Tech": 21, "Food Service / Culinary": 18,
+      "Construction Trades": 17, "Early Childhood Ed": 14, "Business / Entrepreneurship": 12,
+      "Retail / Customer Svc": 10, "Personal Care / Beauty": 9, "Cleaning / Hospitality": 8,
+      "Transportation": 7, "Manufacturing / Warehouse": 5, "Human Services": 4,
+      "Education": 2, "Protective Services": 1
+    };
+
+    var levelChart = document.getElementById("levelChart");
+    var levelNote = document.getElementById("levelNote");
+
+    function renderLevelChart(level) {
+      var industries, values;
+      if (level === "all") {
+        industries = Object.keys(allTotals);
+        values = industries.map(function (k) { return allTotals[k]; });
+        levelNote.textContent = "";
+      } else {
+        industries = Object.keys(levelData);
+        values = industries.map(function (k) { return levelData[k][level]; });
+        var pairs = industries.map(function (k, i) { return [k, values[i]]; });
+        pairs.sort(function (a, b) { return b[1] - a[1]; });
+        industries = pairs.map(function (p) { return p[0]; });
+        values = pairs.map(function (p) { return p[1]; });
+        levelNote.textContent = "Level breakdown is only available for the eight most-requested industries.";
+      }
+
+      var max = Math.max.apply(null, values.concat([1]));
+      levelChart.innerHTML = industries.map(function (name, i) {
+        var v = values[i];
+        var scale = v / max;
+        return (
+          '<div class="barrow">' +
+            '<span class="label">' + name + '</span>' +
+            '<span class="track"><span class="fill" style="transform:scaleX(' + scale + ')"></span></span>' +
+            '<span class="val">' + v + '</span>' +
+          '</div>'
+        );
+      }).join("");
+    }
+
+    document.getElementById("levelFilter").addEventListener("click", function (e) {
+      var btn = e.target.closest(".ap-filter-pill");
+      if (!btn) { return; }
+      this.querySelectorAll(".ap-filter-pill").forEach(function (c) { c.setAttribute("aria-pressed", "false"); });
+      btn.setAttribute("aria-pressed", "true");
+      renderLevelChart(btn.getAttribute("data-level"));
+    });
+
+    renderLevelChart("all");
+  })();
+  </script>
+</body>
+</html>

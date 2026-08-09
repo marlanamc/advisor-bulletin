@@ -21,7 +21,8 @@ config/service-account.json
 playwright-report/
 test-results/
 tmp/
-.cursor/debug-*.log
+.cursor/
+.impeccable/
 
 # IDE
 .vscode/

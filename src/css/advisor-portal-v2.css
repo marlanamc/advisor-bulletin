@@ -49,7 +49,7 @@ body.ap-portal-active .main-content {
   /* Text */
   --ap-text:        #0d1b35;
   --ap-text-2:      #3d5a80;
-  --ap-text-3:      #7a95b5;
+  --ap-text-3:      #4d6d90;
   --ap-text-inv:    #ffffff;
 
   /* Accents */
@@ -824,11 +824,11 @@ body.ap-portal-active .main-content {
 
 .ap-badge-live    { background: #dcfce7; color: #15803d; }
 .ap-badge-draft   { background: #f1f5f9; color: #475569; }
-.ap-badge-expired { background: #fee2e2; color: #dc2626; }
+.ap-badge-expired { background: #fee2e2; color: #b91c1c; }
 .ap-badge-blue    { background: var(--ap-sky); color: var(--ap-blue); }
 .ap-badge-purple  { background: var(--ap-lavender); color: var(--ap-purple); }
-.ap-badge-amber   { background: var(--ap-gold); color: var(--ap-amber); }
-.ap-badge-green   { background: var(--ap-mint); color: var(--ap-green); }
+.ap-badge-amber   { background: var(--ap-gold); color: #a35800; }
+.ap-badge-green   { background: var(--ap-mint); color: #047857; }
 
 /* ============================================================
    UPCOMING EVENTS

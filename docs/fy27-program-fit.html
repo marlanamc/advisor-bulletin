@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FY27 Program Fit · EBHCS Advisor Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&family=Source+Sans+3:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    /*
+      Uses the EBHCS advisor-portal design tokens (see src/css/advisor-portal-v2.css)
+      so this report can drop into admin.html as an ap-page with minimal rework.
+    */
+    :root {
+      color-scheme: light;
+      --ap-navy:        #0a1f44;
+      --ap-navy-mid:    #12306b;
+      --ap-navy-light:  #1e4db7;
+
+      --ap-sky:         #e8f0fe;
+      --ap-sky-mid:     #c7d9fd;
+      --ap-mint:        #e6f7f0;
+      --ap-mint-mid:    #a7e8cc;
+      --ap-coral:       #fff1ec;
+      --ap-coral-mid:   #ffc9b0;
+      --ap-lavender:    #f0eeff;
+      --ap-lavender-mid:#c8bcf8;
+      --ap-gold:        #fffbea;
+      --ap-gold-mid:    #fde68a;
+      --ap-gold-accent: #f59e0b;
+
+      --ap-bg:          #f5f7fb;
+      --ap-surface:     #ffffff;
+      --ap-surface-2:   #f0f4f9;
+      --ap-border:      #e2e8f2;
+      --ap-border-mid:  #c8d4e8;
+
+      --ap-text:        #0d1b35;
+      --ap-text-2:      #3d5a80;
+      --ap-text-3:      #4d6d90;
+
+      --ap-blue:        #1a56db;
+      --ap-blue-dim:    rgba(26,86,219,.1);
+      --ap-green:       #059669;
+      --ap-green-dim:   rgba(5,150,105,.1);
+      --ap-amber:       #d97706;
+      --ap-amber-dim:   rgba(217,119,6,.1);
+      --ap-purple:      #7c3aed;
+      --ap-red:         #dc2626;
+
+      --ap-font-head:   'Lexend', -apple-system, BlinkMacSystemFont, sans-serif;
+      --ap-font-body:   'Source Sans 3', -apple-system, BlinkMacSystemFont, sans-serif;
+
+      --ap-r-sm:   8px;
+      --ap-r-md:   12px;
+      --ap-r-lg:   16px;
+      --ap-r-xl:   20px;
+      --ap-r-pill: 999px;
+
+      --ap-shadow-xs:  0 1px 3px rgba(10,31,68,.06);
+      --ap-shadow-sm:  0 2px 8px rgba(10,31,68,.08);
+      --ap-shadow-md:  0 4px 16px rgba(10,31,68,.1);
+      --ap-shadow-lg:  0 8px 32px rgba(10,31,68,.14);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--ap-bg);
+      color: var(--ap-text);
+      font: 400 15px/1.6 var(--ap-font-body);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page { max-width: 1040px; margin: 0 auto; padding: 28px 24px 64px; }
+
+    /* ---------- Welcome banner (mirrors .ap-welcome-banner) ---------- */
+    .report-banner {
+      background: linear-gradient(135deg, var(--ap-navy), var(--ap-navy-mid));
+      border-radius: var(--ap-r-xl);
+      padding: 26px 30px;
+      margin-bottom: 20px;
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+    }
+    .report-banner::before {
+      content: ''; position: absolute; top: -20px; right: 60px;
+      width: 160px; height: 160px; border-radius: 50%;
+      background: rgba(255,213,93,.06);
+    }
+    .report-banner::after {
+      content: ''; position: absolute; bottom: -40px; right: -10px;
+      width: 100px; height: 100px; border-radius: 50%;
+      background: rgba(26,86,219,.15);
+    }
+    .report-eyebrow {
+      font-family: var(--ap-font-head);
+      font-size: .68rem; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: rgba(255,213,93,.85);
+      margin-bottom: 8px; position: relative; z-index: 1;
+    }
+    .report-title {
+      font-family: var(--ap-font-head);
+      font-size: 1.7rem; font-weight: 800; letter-spacing: -0.02em;
+      margin: 0 0 8px; line-height: 1.2; position: relative; z-index: 1;
+      max-width: 640px; color: #fff;
+    }
+    .report-sub {
+      margin: 0 0 4px; font-size: .92rem; color: rgba(255,255,255,.75);
+      max-width: 620px; position: relative; z-index: 1;
+    }
+    .report-meta {
+      margin-top: 10px; font-size: .78rem; color: rgba(255,255,255,.5);
+      font-family: var(--ap-font-head); position: relative; z-index: 1;
+    }
+
+    /* ---------- Page tabs (link between the two report pages) ---------- */
+    .page-tabs {
+      display: flex; gap: 6px; margin: 0 0 20px;
+    }
+    .page-tab {
+      padding: 9px 16px; min-height: 44px; display: inline-flex; align-items: center;
+      border-radius: var(--ap-r-pill);
+      border: 1.5px solid var(--ap-border); background: var(--ap-surface);
+      font-family: var(--ap-font-head); font-size: .82rem; font-weight: 600;
+      color: var(--ap-text-2); text-decoration: none; transition: all .15s;
+    }
+    .page-tab:hover { border-color: var(--ap-blue); color: var(--ap-blue); }
+    .page-tab:focus-visible { outline: 2px solid var(--ap-blue); outline-offset: 2px; }
+    .page-tab.active { background: var(--ap-navy); border-color: var(--ap-navy); color: #fff; }
+
+    /* ---------- Stat cards (mirrors .ap-stat-card) ---------- */
+    .ap-stats-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;
+      margin-bottom: 24px;
+    }
+    .ap-stat-card {
+      background: var(--ap-surface); border-radius: var(--ap-r-xl);
+      padding: 16px 18px; box-shadow: var(--ap-shadow-sm);
+      border: 1px solid var(--ap-border); position: relative;
+    }
+    .ap-stat-value {
+      font-family: var(--ap-font-head); font-size: 1.7rem; font-weight: 800;
+      color: var(--ap-text); font-variant-numeric: tabular-nums; line-height: 1.1;
+    }
+    .ap-stat-label {
+      font-size: .74rem; color: var(--ap-text-3); font-family: var(--ap-font-head);
+      font-weight: 600; letter-spacing: .01em; margin-top: 4px;
+    }
+    .ap-stat-blue::after, .ap-stat-green::after, .ap-stat-amber::after, .ap-stat-red::after {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      border-radius: var(--ap-r-xl) var(--ap-r-xl) 0 0;
+    }
+    .ap-stat-blue::after  { background: var(--ap-blue); }
+    .ap-stat-green::after { background: var(--ap-green); }
+    .ap-stat-amber::after { background: var(--ap-amber); }
+    .ap-stat-red::after   { background: var(--ap-red); }
+
+    /* ---------- Section cards (mirrors .ap-section-card) ---------- */
+    .ap-section-card {
+      background: var(--ap-surface); border-radius: var(--ap-r-xl);
+      border: 1px solid var(--ap-border); box-shadow: var(--ap-shadow-sm);
+      margin-bottom: 20px; overflow: hidden;
+    }
+    .ap-section-header {
+      padding: 18px 22px 14px; border-bottom: 1px solid var(--ap-border);
+    }
+    .ap-section-title {
+      font-family: var(--ap-font-head); font-size: 1.05rem; font-weight: 700;
+      color: var(--ap-text); margin: 0;
+    }
+    .ap-section-desc {
+      color: var(--ap-text-2); font-size: .86rem; max-width: 68ch; margin: 6px 0 0;
+    }
+    .ap-section-body { padding: 20px 22px 22px; }
+
+    /* ---------- Callout ---------- */
+    .callout {
+      padding: 14px 16px; border-left: 4px solid var(--ap-amber);
+      background: var(--ap-gold); border-radius: var(--ap-r-md);
+    }
+    .callout ul { margin: 0; padding-left: 1.2rem; }
+    .callout li { margin: 6px 0; font-size: .92rem; }
+    .callout strong { color: var(--ap-text); }
+
+    h1, h2, h3, strong { color: var(--ap-text); }
+    p { margin: 0 0 10px; }
+    ul, ol { margin: 6px 0 14px 1.3rem; padding: 0; }
+    li { margin: 4px 0; }
+    code { background: var(--ap-surface-2); padding: 1px 5px; border-radius: 4px; font-size: .88em; }
+    a { color: var(--ap-blue); font-weight: 600; }
+
+    /* ---------- Filter pills (mirrors .ap-filter-pill) ---------- */
+    .ap-filter-pills { display: flex; gap: 6px; flex-wrap: wrap; margin: 0 0 16px; }
+    .ap-filter-pill {
+      padding: 7px 14px; min-height: 44px; display: inline-flex; align-items: center;
+      border-radius: var(--ap-r-pill); border: 1.5px solid var(--ap-border);
+      background: var(--ap-surface); font-size: .8rem; font-weight: 600;
+      font-family: var(--ap-font-head); color: var(--ap-text-2); cursor: pointer;
+      transition: all .15s; appearance: none;
+    }
+    .ap-filter-pill:hover { border-color: var(--ap-blue); color: var(--ap-blue); }
+    .ap-filter-pill:focus-visible { outline: 2px solid var(--ap-blue); outline-offset: 2px; }
+    .ap-filter-pill[aria-pressed="true"] { background: var(--ap-blue); border-color: var(--ap-blue); color: #fff; }
+
+    /* ---------- Table ---------- */
+    .ap-report-table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: .86rem; }
+    th, td { padding: 11px 12px; border-bottom: 1px solid var(--ap-border); text-align: left; vertical-align: top; }
+    th {
+      background: var(--ap-surface-2); font-family: var(--ap-font-head);
+      font-size: .7rem; text-transform: uppercase; letter-spacing: .04em;
+      color: var(--ap-text-3); font-weight: 700;
+    }
+    td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+    tr.is-hidden { display: none; }
+
+    /* ---------- Badges (mirrors .ap-badge) ---------- */
+    .ap-badge {
+      display: inline-flex; align-items: center; gap: 6px; padding: 4px 11px;
+      border-radius: var(--ap-r-pill); font-size: .72rem; font-weight: 700;
+      font-family: var(--ap-font-head); white-space: nowrap;
+    }
+    .ap-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+    .ap-badge-green  { background: var(--ap-mint); color: #047857; }
+    .ap-badge-amber  { background: var(--ap-gold); color: #a35800; }
+    .ap-badge-expired{ background: #fee2e2; color: #b91c1c; }
+    .note-cell { color: var(--ap-text-3); font-size: .82rem; max-width: 30ch; }
+
+    .print-note { margin-top: 8px; color: var(--ap-text-3); font-size: .84rem; }
+
+    @media print {
+      .ap-filter-pills { display: none; }
+      body { background: #fff; font-size: 11pt; }
+      .page { margin: 0; max-width: none; padding: 0 20pt 24pt; }
+      .ap-section-card, .ap-stat-card { box-shadow: none; }
+      .print-note { display: none; }
+    }
+
+    @media (max-width: 760px) {
+      .page { padding: 20px 16px 48px; }
+      .ap-stats-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="report-banner">
+      <div class="report-eyebrow">Advisor Portal · EBHCS · Data &amp; Planning</div>
+      <h1 class="report-title">FY27 Program Fit</h1>
+      <p class="report-sub">How student interest and current English levels line up against the FY27 training programs under consideration.</p>
+      <div class="report-meta">Based on FY26 advising forms (English + Spanish) &middot; aggregate data only, no student names</div>
+    </header>
+
+    <div class="page-tabs">
+      <a class="page-tab" href="fy26-industry-report.html">Summary &amp; Analysis</a>
+      <a class="page-tab active" href="fy27-program-fit.html">FY27 Program Fit</a>
+    </div>
+
+    <div class="ap-stats-grid">
+      <div class="ap-stat-card ap-stat-blue"><div class="ap-stat-value">6</div><div class="ap-stat-label">Candidate programs</div></div>
+      <div class="ap-stat-card ap-stat-green"><div class="ap-stat-value">3</div><div class="ap-stat-label">Strong fit</div></div>
+      <div class="ap-stat-card ap-stat-amber"><div class="ap-stat-value">2</div><div class="ap-stat-label">Needs attention</div></div>
+      <div class="ap-stat-card ap-stat-red"><div class="ap-stat-value">1</div><div class="ap-stat-label">Blocked</div></div>
+    </div>
+
+    <section class="ap-section-card">
+      <div class="ap-section-header"><h2 class="ap-section-title">What needs a decision</h2></div>
+      <div class="ap-section-body">
+        <div class="callout">
+          <ul>
+            <li><strong>CPR/First Aid and ServSafe</strong> are the best-fit FY27 programs right now — high interest, most candidates already meet the language-level bar.</li>
+            <li><strong>Urban College Early Ed</strong> is under review: only 1 of 16 interested students meets the required ESOL level. Considering Bunker Hill CC as an alternative.</li>
+            <li><strong>YMCA Culinary Arts</strong> requires work authorization, which is unclear or unlikely for all 18 interested students — flag before promoting further.</li>
+            <li><strong>Microsoft Office / Google Workspace</strong> has universal interest (179 of 179), but 58 students' English level is unscreened — that's the real bottleneck, not demand.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="ap-section-card">
+      <div class="ap-section-header">
+        <h2 class="ap-section-title">Program-fit matrix</h2>
+        <p class="ap-section-desc">Interested = target industry match (or, for College Prep, an education goal mentioning college). Level-ready uses each program's minimum English level. Eligible counts confirmed-SSN answers only — an ITIN is a tax ID, not work authorization. Filter by status to focus on what needs attention.</p>
+      </div>
+      <div class="ap-section-body">
+        <div class="ap-filter-pills" role="group" aria-label="Filter by fit status" id="statusFilter">
+          <button class="ap-filter-pill" aria-pressed="true" data-status="all" type="button">All programs</button>
+          <button class="ap-filter-pill" aria-pressed="false" data-status="good" type="button">Strong fit</button>
+          <button class="ap-filter-pill" aria-pressed="false" data-status="warn" type="button">Needs attention</button>
+          <button class="ap-filter-pill" aria-pressed="false" data-status="bad" type="button">Blocked</button>
+        </div>
+
+        <div class="ap-report-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Program</th>
+                <th class="num" scope="col">Interested</th>
+                <th class="num" scope="col">Level-ready</th>
+                <th class="num" scope="col">Level unknown</th>
+                <th class="num" scope="col">Ready &amp; eligible</th>
+                <th scope="col">Status</th>
+                <th scope="col">Note</th>
+              </tr>
+            </thead>
+            <tbody id="programRows">
+              <tr data-status="good">
+                <td>CPR / First Aid</td>
+                <td class="num">49</td><td class="num">30</td><td class="num">19</td><td class="num">30</td>
+                <td><span class="ap-badge ap-badge-green"><span class="dot"></span>Strong fit</span></td>
+                <td class="note-cell">Gate: level 1. Multilingual materials.</td>
+              </tr>
+              <tr data-status="warn">
+                <td>Microsoft Office / Google Workspace</td>
+                <td class="num">179</td><td class="num">22</td><td class="num">58</td><td class="num">22</td>
+                <td><span class="ap-badge ap-badge-amber"><span class="dot"></span>58 unscreened</span></td>
+                <td class="note-cell">Gate: level 3. Interest is universal — level data is the bottleneck.</td>
+              </tr>
+              <tr data-status="good">
+                <td>ServSafe Certification</td>
+                <td class="num">18</td><td class="num">12</td><td class="num">6</td><td class="num">12</td>
+                <td><span class="ap-badge ap-badge-green"><span class="dot"></span>Strong fit</span></td>
+                <td class="note-cell">Gate: level 1. Exam offered in Spanish + other languages.</td>
+              </tr>
+              <tr data-status="good">
+                <td>College Prep / NECC</td>
+                <td class="num">11</td><td class="num">4</td><td class="num">2</td><td class="num">4</td>
+                <td><span class="ap-badge ap-badge-green"><span class="dot"></span>Small, solid</span></td>
+                <td class="note-cell">Gate: level 3. Counts students whose education goal mentions college.</td>
+              </tr>
+              <tr data-status="warn">
+                <td>Urban College Early Ed</td>
+                <td class="num">16</td><td class="num">1</td><td class="num">6</td><td class="num">1</td>
+                <td><span class="ap-badge ap-badge-amber"><span class="dot"></span>Reconsidering</span></td>
+                <td class="note-cell">Gate: level 3. Only 22 students total are level 3+. Evaluating Bunker Hill as an alternative.</td>
+              </tr>
+              <tr data-status="bad">
+                <td>YMCA Culinary Arts</td>
+                <td class="num">18</td><td class="num">3</td><td class="num">6</td><td class="num">0</td>
+                <td><span class="ap-badge ap-badge-expired"><span class="dot"></span>Work-auth blocked</span></td>
+                <td class="note-cell">Requires work auth: 11 unclear (ITIN/unspecified), 7 likely ineligible.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <p class="print-note">Data note: figures are aggregate counts, de-identified by construction. Education level is self-reported and not a verified US credential equivalency. See the <a href="fy26-industry-report.html">Summary &amp; Analysis</a> page for the underlying industry-interest data. Print tip: File &rarr; Print &rarr; Save as PDF for a shareable copy.</p>
+  </div>
+
+  <script>
+  (function () {
+    "use strict";
+
+    document.getElementById("statusFilter").addEventListener("click", function (e) {
+      var btn = e.target.closest(".ap-filter-pill");
+      if (!btn) { return; }
+      this.querySelectorAll(".ap-filter-pill").forEach(function (c) { c.setAttribute("aria-pressed", "false"); });
+      btn.setAttribute("aria-pressed", "true");
+      var status = btn.getAttribute("data-status");
+      document.querySelectorAll("#programRows tr").forEach(function (row) {
+        var match = status === "all" || row.getAttribute("data-status") === status;
+        row.classList.toggle("is-hidden", !match);
+      });
+    });
+  })();
+  </script>
+</body>
+</html>
