@@ -44,6 +44,23 @@ service cloud.firestore {
             && resource.data.postedBy == getUsername(request.auth.token.email)));
     }
 
+    match /resourceLogos/{bulletinId} {
+      // Resource logos live here instead of inline on the bulletin doc so the
+      // board's single always-on query doesn't carry base64 image data for
+      // every resource on every load (see src/resource-logos.js). Logos
+      // aren't sensitive — same public-read posture as the resource cards
+      // they belong to.
+      allow read: if true;
+
+      allow create, update: if isActiveAdvisor(request.auth)
+        && request.resource.data.keys().hasOnly(['dataUrl', 'updatedAt'])
+        && request.resource.data.dataUrl is string
+        && request.resource.data.dataUrl.size() > 0
+        && request.resource.data.dataUrl.size() < 6000000;
+
+      allow delete: if isActiveAdvisor(request.auth);
+    }
+
     match /users/{username} {
       // Users can read and write their own user document
       allow read, write: if isAdvisor(request.auth)
@@ -184,6 +201,7 @@ service cloud.firestore {
         && (!('image' in data) || data.image == null || data.image is string)
         && (!('imageEs' in data) || data.imageEs == null || data.imageEs is string)
         && (!('resourceLogo' in data) || data.resourceLogo == null || data.resourceLogo is string)
+        && (!('hasResourceLogo' in data) || data.hasResourceLogo is bool)
         && (!('pdfUrl' in data) || data.pdfUrl == null || data.pdfUrl is string)
         && (!('createdAt' in data) || data.createdAt is timestamp)
         && (!('updatedAt' in data) || data.updatedAt is timestamp)

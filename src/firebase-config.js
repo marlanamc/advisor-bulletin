@@ -1,4 +1,5 @@
 import { db } from './firebase-student.js'
+import { applyResourceLogos, fetchAllResourceLogos } from './resource-logos.js'
 import { STUDENT_ADVISOR_DIRECTORY } from './advisor-directory.js'
 import { installClientErrorLogger } from './error-logger.js'
 import { normalizePostCategory, getPostCategoryDisplay } from './feed-categories.js'
@@ -206,6 +207,15 @@ class FirebaseBulletinBoard {
             // visit's first paint can't resurrect deleted posts.
             storeServerSnapshot(this.bulletins);
         }
+        // Resource logos live in a separate collection (see src/resource-logos.js)
+        // so this always-on query doesn't carry base64 image data. Apply an
+        // already-fetched map immediately; otherwise fetch once per session
+        // and re-render when it lands.
+        if (this._resourceLogoMap) {
+            applyResourceLogos(this.bulletins, this._resourceLogoMap);
+        } else {
+            this.loadResourceLogosOnce();
+        }
         this.populateAdvisorFilters();
         this.renderResourceCategoryFilters();
         this.displayBulletins();
@@ -214,6 +224,22 @@ class FirebaseBulletinBoard {
             grid.removeAttribute('data-snapshot-rendered');
         }
         recordStudentPerf('ebhcs:cards-rendered', { count: this.bulletins.length });
+    }
+
+    loadResourceLogosOnce() {
+        if (this._resourceLogoFetchPromise) return this._resourceLogoFetchPromise;
+        this._resourceLogoFetchPromise = fetchAllResourceLogos(db)
+            .then((logoMap) => {
+                this._resourceLogoMap = logoMap;
+                if (applyResourceLogos(this.bulletins, logoMap)) {
+                    this.displayBulletins();
+                }
+            })
+            .catch((error) => {
+                console.error('Error loading resource logos:', error);
+                this._resourceLogoFetchPromise = null; // allow retry on next snapshot
+            });
+        return this._resourceLogoFetchPromise;
     }
 
     isInstantSnapshotOnScreen() {

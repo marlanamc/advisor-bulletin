@@ -1,4 +1,5 @@
 import { db, auth, storage } from './firebase.js'
+import { applyResourceLogos, deleteResourceLogo, fetchAllResourceLogos, setResourceLogo } from './resource-logos.js'
 import { getPublicAdvisorEmail, STUDENT_ADVISOR_DIRECTORY } from './advisor-directory.js'
 import { isPrivilegedAdminEmail } from './admin-roles.js'
 import { installClientErrorLogger } from './error-logger.js'
@@ -101,6 +102,11 @@ class FirebaseAdminPanel {
                     ...this.normalizeBulletin(doc.data())
                 });
             });
+            if (this._resourceLogoMap) {
+                applyResourceLogos(this.bulletins, this._resourceLogoMap);
+            } else {
+                this.loadResourceLogosOnce();
+            }
             this.updateAdvisorDashboard();
             if (this.currentUser) {
                 this.loadManageBulletins();
@@ -110,6 +116,26 @@ class FirebaseAdminPanel {
             console.error('Error loading bulletins:', error);
             this.showOfflineMessage('Unable to load bulletins. Please check your internet connection.');
         });
+    }
+
+    // See src/firebase-config.js's identical method for why logos are fetched
+    // separately instead of inline on the bulletin document.
+    loadResourceLogosOnce() {
+        if (this._resourceLogoFetchPromise) return this._resourceLogoFetchPromise;
+        this._resourceLogoFetchPromise = fetchAllResourceLogos(db)
+            .then((logoMap) => {
+                this._resourceLogoMap = logoMap;
+                if (applyResourceLogos(this.bulletins, logoMap)) {
+                    if (this.currentUser) {
+                        this.loadManageBulletins();
+                    }
+                }
+            })
+            .catch((error) => {
+                console.error('Error loading resource logos:', error);
+                this._resourceLogoFetchPromise = null;
+            });
+        return this._resourceLogoFetchPromise;
     }
 
     setupOfflineHandling() {
@@ -1023,8 +1049,20 @@ class FirebaseAdminPanel {
                 throw `Optimized ${label} is still larger than 4MB. Please upload a smaller image.`;
             }
 
-            // Update the document with just the image field
-            if (editingId) {
+            if (fieldName === 'resourceLogo') {
+                // Logos live in their own collection (see src/resource-logos.js),
+                // not inline on the bulletin doc — handleImageUpload is only ever
+                // called with an editingId for resourceLogo (the doc already
+                // exists by this point in both create and update flows).
+                await setResourceLogo(db, editingId, processedImage.dataUrl);
+                await updateDoc(doc(db, 'bulletins', editingId), { hasResourceLogo: true });
+                bulletin.resourceLogo = processedImage.dataUrl;
+                bulletin.hasResourceLogo = true;
+                if (this._resourceLogoMap) {
+                    this._resourceLogoMap.set(editingId, processedImage.dataUrl);
+                }
+            } else if (editingId) {
+                // Update the document with just the image field
                 const updateData = {};
                 updateData[fieldName] = processedImage.dataUrl;
                 await updateDoc(doc(db, 'bulletins', editingId), updateData);
@@ -2009,7 +2047,7 @@ class FirebaseAdminPanel {
                 bulletin.pdfUrl = existingBulletin.pdfUrl || null;
             }
             if (this.isResourceBulletin(bulletin)) {
-                bulletin.resourceLogo = existingBulletin.resourceLogo || null;
+                bulletin.hasResourceLogo = existingBulletin.hasResourceLogo || false;
                 // If the form field is absent from the submission (hidden input missing or
                 // cleared), fall back to the existing published state rather than silently
                 // unpublishing the resource.
@@ -2032,7 +2070,9 @@ class FirebaseAdminPanel {
                 const hasNewLogo = resourceLogoFile && resourceLogoFile.size > 0;
 
                 if (!hasNewLogo && this.removeResourceLogo) {
-                    bulletin.resourceLogo = null;
+                    bulletin.hasResourceLogo = false;
+                    await deleteResourceLogo(db, bulletinId);
+                    this._resourceLogoMap?.delete(bulletinId);
                 }
 
                 const actionLinks = await this.finalizeResourceActionLinks(
@@ -2180,7 +2220,8 @@ class FirebaseAdminPanel {
                 resourceKind,
                 resourceCategory,
                 resourceIcon: suggestedIcon,
-                resourceLogo: isDocument ? null : null,
+                resourceLogo: null,
+                hasResourceLogo: false,
                 url: url || '',
                 eventLink: url || '',
                 description: resourceSummaryEn,
