@@ -311,7 +311,7 @@ body[data-current-view="feed"] #feedView > .story-row-wrap.story-row-wrap--compa
 }
 
 body[data-current-view="feed"] #feedView > .story-row-wrap.story-row-wrap--compact .story-bubble-label {
-    font-size: 10px;
+    font-size: 12px;
     max-width: 62px;
     -webkit-line-clamp: 1;
     line-clamp: 1;
@@ -338,7 +338,7 @@ body[data-lang="ES"][data-current-view="feed"] #feedView > .story-row-wrap.story
     display: -webkit-box !important;
     color: #0a1d3a;
     font-weight: 800;
-    font-size: 10px;
+    font-size: 12px;
     margin-top: 0;
 }
 
@@ -468,7 +468,7 @@ body[data-current-view="feed"] #feedView > .story-row-wrap.story-row-wrap--compa
 }
 
 .story-bubble-label {
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 700;
     color: #0a1d3a;
     font-family: 'Plus Jakarta Sans', sans-serif;
@@ -965,7 +965,7 @@ a.about-action-card {
     gap: 4px;
     padding: 8px 0 6px;
     color: #475569;
-    font-size: 11px;
+    font-size: 13px;
     font-weight: 600;
     font-family: 'Plus Jakarta Sans', sans-serif;
     cursor: pointer;
@@ -1620,7 +1620,7 @@ a.about-action-card {
         font-size: 12px !important;
         font-weight: 600 !important;
         line-height: 1.15 !important;
-        color: #94a3b8 !important;
+        color: #64748b !important;
     }
 
     .story-row-wrap--bilingual .story-bubble-label.en-text {
@@ -3010,7 +3010,7 @@ a.about-action-card {
     font-weight: 800;
     letter-spacing: 0.8px;
     text-transform: uppercase;
-    color: #94a3b8;
+    color: #64748b;
     padding: 20px 16px 10px;
 }
 
@@ -4024,7 +4024,7 @@ a.about-action-card {
     font-weight: 800;
     letter-spacing: 0.05em;
     text-transform: uppercase;
-    color: #94a3b8;
+    color: #64748b;
 }
 
 .mobile-resource-card__hours-days {
@@ -5444,7 +5444,7 @@ a.about-action-card {
         justify-content: center;
         gap: 4px;
         font-family: 'Plus Jakarta Sans', sans-serif;
-        font-size: 12px;
+        font-size: 13px;
         font-weight: 700;
         line-height: 1;
         cursor: pointer;
@@ -5510,7 +5510,7 @@ a.about-action-card {
 
     .mobile-tab {
         min-height: 52px;
-        font-size: 11px;
+        font-size: 12px;
         border-radius: 16px;
     }
 
