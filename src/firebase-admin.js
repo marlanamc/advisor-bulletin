@@ -1494,8 +1494,7 @@ class FirebaseAdminPanel {
         const allValid = resolved.every(b => b && (b.resourceCategory || 'other') === category);
         if (!allValid) {
             console.error('Reorder aborted: IDs did not match category', { category, orderedIds });
-            this.showTemporaryMessage('Could not save the new order. Please refresh and try again.', 'error');
-            return;
+            throw new Error('Reorder validation failed: one or more resources could not be confirmed against this category.');
         }
 
         const batch = writeBatch(db);

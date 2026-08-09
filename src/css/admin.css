@@ -75,9 +75,9 @@ body:has(#authLoadingScreen) {
     font-size: 16px;
 }
 
-body:has(.advisor-redesign) header,
-body:has(#loginRequired) header,
-body:has(#authLoadingScreen) header {
+body:has(.advisor-redesign) > header,
+body:has(#loginRequired) > header,
+body:has(#authLoadingScreen) > header {
     background: var(--adv-navy);
     border-bottom: 1px solid rgba(255,255,255,0.08);
     box-shadow: 0 2px 12px rgba(7,29,59,0.2);
