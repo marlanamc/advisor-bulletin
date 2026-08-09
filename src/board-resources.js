@@ -974,14 +974,37 @@ export class BoardResourcesMethods {
 
         this.navigateToResourceCategory(this.getResourceCategoryKey(resource));
 
-        requestAnimationFrame(() => {
-            const card = document.querySelector(`[data-resource-id="${CSS.escape(resourceId)}"]`);
-            if (!card) return;
+        const jumpToCard = () => {
+            requestAnimationFrame(() => {
+                const card = document.querySelector(`[data-resource-id="${CSS.escape(resourceId)}"]`);
+                if (!card) return;
 
-            this.scrollElementBelowHeader(card, { gap: 24 });
-            card.classList.add('hash-highlight');
-            setTimeout(() => card.classList.remove('hash-highlight'), 2800);
-        });
+                this.scrollElementBelowHeader(card, { gap: 24 });
+                card.classList.add('hash-highlight');
+                setTimeout(() => card.classList.remove('hash-highlight'), 2800);
+            });
+        };
+
+        // On mobile, tapping a search result closes the on-screen keyboard, but
+        // that close animation is still mid-flight when this runs — scrolling
+        // against the shrunk keyboard-open viewport lands short, landing partway
+        // down the card instead of at its top. If the keyboard looks open, wait
+        // for the viewport to actually finish resizing before measuring.
+        const viewport = window.visualViewport;
+        const keyboardLikelyOpen = viewport && viewport.height < window.innerHeight - 40;
+        if (keyboardLikelyOpen) {
+            let settled = false;
+            const settle = () => {
+                if (settled) return;
+                settled = true;
+                viewport.removeEventListener('resize', settle);
+                jumpToCard();
+            };
+            viewport.addEventListener('resize', settle);
+            setTimeout(settle, 400); // fallback if the resize event never fires
+        } else {
+            jumpToCard();
+        }
     }
 
     setFeedCategory(category = 'all') {
