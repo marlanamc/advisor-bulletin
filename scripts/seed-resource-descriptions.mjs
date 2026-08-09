@@ -218,16 +218,16 @@ export const COPY = {
     "es": "Llame o envíe un texto al 988 en cualquier momento para recibir apoyo gratis y confidencial si se siente triste, estresado o en crisis. Puede recibir ayuda en español."
   },
   "World Education Services (WES)::college": {
-    "en": "They evaluate your diploma or grades from another country so U.S. schools and jobs will accept them. Costs about $118-$214, so ask your advisor before you pay.",
-    "es": "Evalúan su diploma o calificaciones de otro país para que las escuelas y los trabajos de EE.UU. los acepten. Cuesta entre $118 y $214, así que pregunte a su consejero antes de pagar."
+    "en": "They check your diploma or grades from another country so U.S. schools and jobs will accept them. This costs money, about $118 to $214. Ask your advisor before you pay.",
+    "es": "Revisan su diploma o calificaciones de otro país para que las escuelas y los trabajos de EE.UU. los acepten. Esto cuesta dinero, entre $118 y $214. Pregunte a su consejero antes de pagar."
   },
   "Roxbury Community College::college": {
-    "en": "Get a 2-year degree or short certificate in health, business, or technology, plus financial aid and advisors. Campus is at the Roxbury Crossing T stop.",
-    "es": "Obtenga un título de 2 años o un certificado corto en salud, negocios o tecnología, más ayuda financiera y asesores. El campus está en la estación Roxbury Crossing del T."
+    "en": "Go to college for a 2-year degree or a short certificate. They have classes in health, business, and technology, plus money help and advisors. The campus is at the Roxbury Crossing T stop.",
+    "es": "Vaya al college para un título de 2 años o un certificado corto. Tienen clases de salud, negocios y tecnología, más ayuda con el dinero y asesores. El campus está en la estación Roxbury Crossing del T."
   },
   "Permission to Share Your Case Info (ICE/DHS)::immigration": {
-    "en": "Sign this form so your family or a lawyer can ask about your immigration case. It's optional, lasts 90 days, and you can cancel anytime.",
-    "es": "Firme este formulario para que su familia o un abogado pueda preguntar sobre su caso de inmigración. Es opcional, dura 90 días y puede cancelarlo cuando quiera."
+    "en": "Sign this form so your family or a lawyer can ask the government about your immigration case. You choose to sign, you do not have to. It lasts 90 days and you can cancel it.",
+    "es": "Firme este formulario para que su familia o un abogado pueda preguntar al gobierno sobre su caso de inmigración. Usted decide si lo firma, no está obligado. Dura 90 días y puede cancelarlo."
   },
   "Massachusetts HiSET::hse": {
     "en": "Make an account to sign up for the HiSET test. Pick where and when you want to test. You can change the date later and see your scores here.",
