@@ -138,6 +138,12 @@ export const RESOURCE_CATEGORY_CONFIG = {
         icon: 'money',
         color: '#1fa77e'
     },
+    general: {
+        labelEn: 'General Help',
+        labelEs: 'Ayuda general',
+        icon: 'handshake',
+        color: '#f08b1f'
+    },
     announcement: {
         labelEn: 'Announcements',
         labelEs: 'Anuncios',

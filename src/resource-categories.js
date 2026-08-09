@@ -15,6 +15,7 @@ export const RESOURCE_TILE_CATEGORIES = [
   'college',
   'legal-aid',
   'money',
+  'general',
 ];
 
 // All categories an advisor may select when authoring a resource. Includes
@@ -37,6 +38,7 @@ export const AUTHORABLE_RESOURCE_CATEGORIES = [
   'legal-aid',
   'money',
   'esol',
+  'general',
 ];
 
 export const RESOURCE_TILE_CATEGORY_SET = new Set(RESOURCE_TILE_CATEGORIES);
