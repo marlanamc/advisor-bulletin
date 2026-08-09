@@ -1257,31 +1257,15 @@ a.about-action-card {
     line-height: 1;
 }
 
-/* Force both EN and ES bubble labels to display, stacked */
-.story-row-wrap--bilingual .story-bubble-label.en-text,
-.story-row-wrap--bilingual .story-bubble-label.es-text {
-    display: -webkit-box !important;
-}
-
-.story-row-wrap--bilingual .story-bubble {
-    gap: 4px;
-}
-
-.story-row-wrap--bilingual .story-bubble-label.en-text {
-    color: #0a1d3a;
-    font-weight: 800;
-}
-
-.story-row-wrap--bilingual .story-bubble-label.es-text {
-    color: #64748b;
-    font-weight: 600;
-    font-size: 11px;
-    margin-top: -2px;
-    line-height: 1.15;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
-    max-height: 2.6em;
-    transition: opacity 0.24s ease, max-height 0.24s ease, margin 0.24s ease, font-size 0.24s ease;
+/* Show one language at a time (matching the site's global toggle) instead of
+   stacking EN + ES — the stacked version squeezed the Spanish line to 11px
+   and forced 2-line wraps ("Ayuda con / empleo"), the exact small-icon-label
+   pattern flagged as hard to read on mobile. The active language keeps the
+   label's normal size/weight since it's no longer sharing space with a
+   second line. */
+body:not([data-lang="ES"]) .story-row-wrap--bilingual .story-bubble-label.en-text,
+body[data-lang="ES"] .story-row-wrap--bilingual .story-bubble-label.es-text {
+    display: -webkit-box;
 }
 
 /* Collapse the inline desktop search into an icon trigger at all sizes.
@@ -1614,18 +1598,6 @@ a.about-action-card {
 
     body[data-current-view="feed"] #feedView > .story-row-wrap.story-row-wrap--compact.story-row-wrap--mobile .story-row {
         gap: 20px;
-    }
-
-    .story-row-wrap--bilingual .story-bubble-label.es-text {
-        font-size: 12px !important;
-        font-weight: 600 !important;
-        line-height: 1.15 !important;
-        color: #64748b !important;
-    }
-
-    .story-row-wrap--bilingual .story-bubble-label.en-text {
-        color: #0a1d3a !important;
-        font-weight: 900 !important;
     }
 
     .story-row-wrap--bilingual .story-row-kicker {
