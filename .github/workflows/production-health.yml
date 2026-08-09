@@ -1,0 +1,130 @@
+name: Production Health Check
+
+# Everything else in CI validates a build/deploy succeeding — nothing
+# actually loads the live site afterward to confirm it renders. This runs
+# a real headless-browser visit to the production URLs every few hours and
+# fails loudly (a red workflow run, which GitHub emails you for) if the
+# site doesn't load, the title is wrong, the page looks empty, or the
+# browser throws console/page errors while loading (which is also what a
+# Firestore quota-exceeded day or a broken deploy looks like).
+#
+# Also keeps a tracking issue (label: site-down) up to date so a string of
+# outages is visible as one thread instead of a wall of email.
+
+on:
+  schedule:
+    - cron: '0 */4 * * *'
+  workflow_dispatch:
+
+permissions:
+  issues: write
+
+jobs:
+  check-production:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Check production health
+        id: check
+        run: node scripts/check-production-health.mjs --json=/tmp/health-report.json
+
+      - name: Update or close the tracking issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = JSON.parse(fs.readFileSync('/tmp/health-report.json', 'utf8'));
+            const { allOk, results } = report;
+
+            const label = 'site-down';
+            try {
+              await github.rest.issues.getLabel({ owner: context.repo.owner, repo: context.repo.repo, name: label });
+            } catch {
+              await github.rest.issues.createLabel({ owner: context.repo.owner, repo: context.repo.repo, name: label, color: 'b60205', description: 'Production health check found the live site unhealthy' });
+            }
+
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: label,
+            });
+            const existing = issues.data[0];
+
+            if (allOk) {
+              console.log(`Clean run as of ${report.checkedAt} — all pages healthy.`);
+              if (existing) {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: existing.number,
+                  body: `Back to healthy as of ${report.checkedAt}. Closing.`,
+                });
+                await github.rest.issues.update({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: existing.number,
+                  state: 'closed',
+                });
+              }
+              return;
+            }
+
+            const lines = [];
+            lines.push(`**Production health check — ${report.checkedAt}**`);
+            lines.push('');
+            for (const r of results) {
+              lines.push(`### ${r.ok ? 'OK' : 'FAIL'} — ${r.name}`);
+              lines.push(r.url);
+              if (!r.ok) {
+                for (const reason of r.reasons) lines.push(`- ${reason}`);
+              }
+              lines.push('');
+            }
+            const body = lines.join('\n');
+
+            if (existing) {
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existing.number,
+                body,
+              });
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existing.number,
+                body: `Still unhealthy as of ${report.checkedAt}.`,
+              });
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: 'Production health check found the live site unhealthy',
+                body,
+                labels: [label],
+              });
+            }
+
+      - name: Fail the run if unhealthy
+        run: |
+          node -e "
+            const report = require('/tmp/health-report.json');
+            if (!report.allOk) {
+              console.error('Production health check failed — see the tracking issue.');
+              process.exit(1);
+            }
+          "

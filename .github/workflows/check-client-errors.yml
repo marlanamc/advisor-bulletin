@@ -1,0 +1,116 @@
+name: Check Client Errors
+
+# Weekly digest of src/error-logger.js's `errors` Firestore collection —
+# uncaught JS errors and unhandled rejections from the student site and
+# admin portal. Without this, that collection is write-only: nothing ever
+# surfaces what landed in it. Keeps a single tracking issue (label:
+# client-errors) up to date, same pattern as check-resource-links.yml.
+
+on:
+  schedule:
+    # Mondays at 08:30 UTC (30 min after the resource-link check).
+    - cron: '30 8 * * 1'
+  workflow_dispatch:
+
+permissions:
+  issues: write
+
+jobs:
+  check-errors:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Write service account credentials
+        run: echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > /tmp/service-account.json
+
+      - name: Check client errors
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: /tmp/service-account.json
+        run: node scripts/check-client-errors.mjs --json=/tmp/client-error-report.json --days=7
+
+      - name: Update or close the tracking issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = JSON.parse(fs.readFileSync('/tmp/client-error-report.json', 'utf8'));
+            const { groups, totalErrors, windowDays } = report;
+
+            const label = 'client-errors';
+            try {
+              await github.rest.issues.getLabel({ owner: context.repo.owner, repo: context.repo.repo, name: label });
+            } catch {
+              await github.rest.issues.createLabel({ owner: context.repo.owner, repo: context.repo.repo, name: label, color: 'fbca04', description: 'Weekly client-error digest findings' });
+            }
+
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: label,
+            });
+            const existing = issues.data[0];
+
+            if (totalErrors === 0) {
+              console.log(`Clean run: 0 client errors in the last ${windowDays} days.`);
+              if (existing) {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: existing.number,
+                  body: `All clear as of ${report.checkedAt} — 0 client errors in the last ${windowDays} days. Closing.`,
+                });
+                await github.rest.issues.update({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: existing.number,
+                  state: 'closed',
+                });
+              }
+              return;
+            }
+
+            const lines = [];
+            lines.push(`**Client-error digest — ${report.checkedAt}**`);
+            lines.push('');
+            lines.push(`${totalErrors} error event(s) across ${groups.length} distinct group(s) in the last ${windowDays} days.`);
+            lines.push('');
+            lines.push('### Groups, most frequent first');
+            for (const g of groups) {
+              const pages = g.pages.length ? ` — seen on ${g.pages.join(', ')}` : '';
+              lines.push(`- **[${g.count}x] ${g.source}** (${g.type}): ${g.message}${pages}`);
+            }
+            const body = lines.join('\n');
+
+            if (existing) {
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existing.number,
+                body,
+              });
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existing.number,
+                body: `Updated — ${totalErrors} error event(s) as of this run.`,
+              });
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: 'Weekly client-error digest found errors',
+                body,
+                labels: [label],
+              });
+            }
