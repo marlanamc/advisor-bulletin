@@ -616,9 +616,9 @@ export class BoardResourcesMethods {
         const openState = this.isResourceOpenNow(resource);
         if (openState === true) {
             badges.push('<span class="badge badge--open"><span class="en-text">Open now</span><span class="es-text">Abierto</span></span>');
-        } else if (openState === false) {
-            badges.push('<span class="badge badge--closed"><span class="en-text">Closed</span><span class="es-text">Cerrado</span></span>');
         }
+        // Deliberately no "Closed" badge for openState === false — it read as
+        // "permanently closed" rather than "outside hours right now".
         if (badges.length === 0) return '';
         return `<div class="resource-badges-container">${badges.join('')}</div>`;
     }
@@ -976,7 +976,6 @@ export class BoardResourcesMethods {
         this.selectedCategories = normalizedCategory === 'all' ? [] : [normalizedCategory];
         this.updateFeedCategoryHeader();
         this.updateActiveCategoryState();
-        this.updateSearchLayerCatState(normalizedCategory);
         this.updateFilterCount();
         this.applyFilters();
     }

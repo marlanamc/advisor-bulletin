@@ -1,0 +1,136 @@
+name: Check Resource Links
+
+# Weekly liveness check for every resource link on the student board (main
+# url + all actionLinks). Reads Firestore directly, not the (potentially
+# stale) student-feed-snapshot.json — see "Never audit against the
+# snapshot" in docs/DEPLOYMENT.md. This only flags what's dead/broken; it
+# does not judge whether a *better* page exists (see scripts/README.md).
+#
+# Keeps a single tracking issue (label: link-check) up to date instead of
+# opening a new issue every week: updates the body when problems are
+# found, closes it when everything's clean again.
+
+on:
+  schedule:
+    # Mondays at 08:00 UTC (before the daily snapshot refresh at 09:00 UTC).
+    - cron: '0 8 * * 1'
+  workflow_dispatch:
+
+permissions:
+  issues: write
+
+jobs:
+  check-links:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Write service account credentials
+        run: echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > /tmp/service-account.json
+
+      - name: Check all resource links
+        id: check
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: /tmp/service-account.json
+        run: node scripts/check-resource-links.mjs --json=/tmp/link-check-report.json
+
+      - name: Update or close the tracking issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = JSON.parse(fs.readFileSync('/tmp/link-check-report.json', 'utf8'));
+            const { broken, movedDomain, forbidden, totals } = report;
+
+            const label = 'link-check';
+            try {
+              await github.rest.issues.getLabel({ owner: context.repo.owner, repo: context.repo.repo, name: label });
+            } catch {
+              await github.rest.issues.createLabel({ owner: context.repo.owner, repo: context.repo.repo, name: label, color: 'd93f0b', description: 'Weekly resource link check findings' });
+            }
+
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: label,
+            });
+            const existing = issues.data[0];
+
+            const hasProblems = broken.length > 0;
+
+            if (!hasProblems) {
+              console.log(`Clean run: ${totals.ok} ok, ${totals.movedDomain} moved, ${totals.forbidden} forbidden, 0 broken.`);
+              if (existing) {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: existing.number,
+                  body: `All clear as of ${report.checkedAt} — checked ${totals.checked} links, 0 broken. Closing.`,
+                });
+                await github.rest.issues.update({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: existing.number,
+                  state: 'closed',
+                });
+              }
+              return;
+            }
+
+            const lines = [];
+            lines.push(`**Weekly resource-link check — ${report.checkedAt}**`);
+            lines.push('');
+            lines.push(`Checked ${totals.checked} links across all resources. ${broken.length} broken, ${movedDomain.length} domain-moved (still resolving, may want the main url updated), ${forbidden.length} forbidden/possible-bot-block.`);
+            lines.push('');
+            lines.push('### Broken — needs a look');
+            for (const b of broken) {
+              lines.push(`- **${b.resource}** (${b.kind}): ${b.url} — ${b.reason || `HTTP ${b.httpStatus}`}`);
+            }
+            if (movedDomain.length) {
+              lines.push('');
+              lines.push('### Domain moved (still resolving via redirect — safe for now, worth updating the url field)');
+              for (const m of movedDomain) {
+                lines.push(`- **${m.resource}** (${m.kind}): ${m.url} → ${m.finalUrl}`);
+              }
+            }
+            if (forbidden.length) {
+              lines.push('');
+              lines.push('### Forbidden (403) — often a bot-block, not necessarily dead; verify manually in a browser');
+              for (const f of forbidden) {
+                lines.push(`- **${f.resource}** (${f.kind}): ${f.url}`);
+              }
+            }
+            const body = lines.join('\n');
+
+            if (existing) {
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existing.number,
+                body,
+              });
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existing.number,
+                body: `Updated — ${broken.length} broken as of this run.`,
+              });
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: 'Weekly resource link check found broken links',
+                body,
+                labels: [label],
+              });
+            }

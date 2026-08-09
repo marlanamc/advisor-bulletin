@@ -297,7 +297,7 @@ export function formatResourceHoursHtml(hoursText, escapeHtml) {
 
 // ─── Open-now evaluation ─────────────────────────────────────────────
 //
-// The card badge ("Open now" / "Closed") reads real advisor-typed text, not a
+// The card badge ("Open now") reads real advisor-typed text, not a
 // structured schedule, so this parser has to cope with what people actually
 // write: "Sunday and Wednesday 3pm-4pm", "Pantry Tuesday and Thursday
 // 10am-1pm", "2nd Wednesday 10am-1pm and 4th Wednesday 3pm-6pm".

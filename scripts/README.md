@@ -11,6 +11,11 @@ One-off and recurring maintenance tools. Run them from the repository root with 
 - **build-student-feed-snapshot.mjs** — regenerates `public/student-feed-snapshot.json` (the instant-loading static feed). Runs in `prebuild`. Uses a service account if available, otherwise falls back to the public client SDK; if Firestore is unreachable it keeps the existing snapshot so the build never breaks. Flags: `--credentials=…`, `--no-client`.
 - **check-resource-categories-sync.mjs** — fails the build if the resource category list in `src/resource-categories.js` drifts from the whitelist in `firestore.rules`. No credentials. If it fails, make the two lists match.
 
+## Auditing
+
+- **dump-live-resources.mjs** 🔑 — read-only dump of all `type: 'resource'` bulletins straight from Firestore (title, url, actionLinks, category). Use this instead of `public/student-feed-snapshot.json` for anything that needs current data — the snapshot only refreshes on a push to `main` or the daily cron, so it can be stale by days or weeks relative to portal edits. Usage: `node scripts/dump-live-resources.mjs [--category=housing] [--json]`. See "Never audit against the snapshot" in [DEPLOYMENT.md](../docs/DEPLOYMENT.md).
+- **check-resource-links.mjs** 🔑 — pulls every resource's `url` and `actionLinks` from Firestore (one read) and makes a real HTTP request against each to flag anything dead, redirected to a new domain, or returning a 403 (often a bot-block, not necessarily dead — flagged separately). Runs weekly via `.github/workflows/check-resource-links.yml`, which opens/updates a single tracking GitHub Issue labeled `link-check` when it finds broken links, and closes it once everything's clean again. This only checks liveness — it does not judge whether a *better*, more specific page exists (that needs a human/AI reading the page; ask for a manual audit pass for that). Usage: `node scripts/check-resource-links.mjs [--json=report.json] [--concurrency=5]`.
+
 ## Account management
 
 - **update-roles.mjs** — interactive; signs in as an admin and writes `users/{id}` role docs (display name, email, isAdmin) for `leah`, `admin`, and `mcreed`. Edit the `TARGETS` list at the top before running if roles change.
