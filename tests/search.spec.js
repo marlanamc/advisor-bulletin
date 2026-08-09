@@ -166,11 +166,13 @@ test.describe('Unified search', () => {
     await expect(page.locator('#searchResultsStatus')).toContainText('No results');
   });
 
-  test('opening a result opens its detail and closes the overlay', async ({ page }) => {
+  test('opening a resource result jumps to its card and closes the overlay', async ({ page }) => {
     await openSearch(page, 'soup kitchen');
+    const resourceId = await page.locator('.search-result').first().getAttribute('data-search-result-id');
     await page.locator('.search-result').first().click();
     await expect(page.locator('#searchLayer')).not.toHaveClass(/open/);
-    await expect(page.locator('#bulletinDetailModal')).toBeVisible();
+    await expect(page.locator('#bulletinDetailModal')).toBeHidden();
+    await expect(page.locator(`[data-resource-id="${resourceId}"]`).first()).toBeVisible();
   });
 
   test('closing search restores browsing and clears every box', async ({ page }) => {
