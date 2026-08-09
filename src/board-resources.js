@@ -967,6 +967,23 @@ export class BoardResourcesMethods {
         this.navigateToResourceCategory(category);
     }
 
+    /** Jumps straight to a resource's own card in the Resources list instead of opening the detail modal. */
+    scrollToResourceCard(resourceId) {
+        const resource = this.getPublishedResources().find((item) => item.id === resourceId);
+        if (!resource) return;
+
+        this.navigateToResourceCategory(this.getResourceCategoryKey(resource));
+
+        requestAnimationFrame(() => {
+            const card = document.querySelector(`[data-resource-id="${CSS.escape(resourceId)}"]`);
+            if (!card) return;
+
+            this.scrollElementBelowHeader(card, { gap: 24 });
+            card.classList.add('hash-highlight');
+            setTimeout(() => card.classList.remove('hash-highlight'), 2800);
+        });
+    }
+
     setFeedCategory(category = 'all') {
         const normalizedCategory = this.normalizeFeedCategory(category);
         if (this.currentView !== 'feed') {

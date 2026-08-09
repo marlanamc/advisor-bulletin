@@ -45,6 +45,7 @@ export class BoardDetailMethods {
         const displayImage = (currentLang === 'ES' && bulletin.imageEs) ? bulletin.imageEs : bulletin.image;
 
         const heroAlt = this.getPostTitle(bulletin) || 'Flyer';
+        const resourceLogo = isResource ? (bulletin.resourceLogo || '') : '';
         const heroContent = displayImage
             ? `<button type="button" class="post-detail-hero-zoom lightbox-trigger" data-lightbox-src="${this.escapeAttribute(displayImage)}" data-lightbox-alt="${this.escapeAttribute(heroAlt)}" aria-label="View full size flyer">
                 <img class="post-detail-hero-image" src="${this.escapeAttribute(displayImage)}" alt="">
@@ -54,9 +55,13 @@ export class BoardDetailMethods {
                     <span class="es-text">Toca para ampliar</span>
                 </span>
             </button>`
-            : `<div class="post-detail-hero-art">
-                <div class="post-detail-icon">${this.getSchoolBoatIconSvg()}</div>
-            </div>`;
+            : resourceLogo
+                ? `<div class="post-detail-hero-art">
+                    <div class="post-detail-icon post-detail-icon--logo"><img src="${this.escapeAttribute(resourceLogo)}" alt="${this.escapeAttribute(heroAlt)} logo"></div>
+                </div>`
+                : `<div class="post-detail-hero-art">
+                    <div class="post-detail-icon">${this.getSchoolBoatIconSvg()}</div>
+                </div>`;
 
         return `
             <article class="post-detail-page" style="--detail-accent:${meta.accent};--detail-tint:${meta.tint}">

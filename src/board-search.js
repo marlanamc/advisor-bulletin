@@ -221,12 +221,21 @@ export class BoardSearchMethods {
     }
 
     /**
-     * Open a result and get the overlay out of the way. Resources and posts
-     * share the same detail modal, so one call covers both.
+     * Open a result and get the overlay out of the way. Posts/events open the
+     * detail modal; resources jump straight to their own card in the
+     * Resources list instead, since that card already shows everything the
+     * modal would.
      */
     openSearchResult(id) {
         if (!id) return;
         this.closeSearchLayer();
+
+        const bulletin = this.bulletins.find((b) => b.id === id);
+        if (this.isResourceBulletin(bulletin)) {
+            this.scrollToResourceCard(id);
+            return;
+        }
+
         this.showBulletinDetail(id);
     }
 }
