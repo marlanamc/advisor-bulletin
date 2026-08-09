@@ -152,60 +152,6 @@
                      The count sits above the list so it is readable without scrolling. -->
                 <p class="search-results-status" id="searchResultsStatus" role="status" aria-live="polite" hidden></p>
                 <div class="search-results" id="searchResults" hidden></div>
-
-                <div class="search-layer-cats" id="searchLayerCats">
-                    <p class="search-layer-cats-label"><span class="en-text">Or filter posts by topic:</span><span class="es-text">O filtra publicaciones por tema:</span></p>
-                    <div class="search-layer-cat-grid">
-                        <button class="sl-cat-btn sl-cat-btn--all active" data-cat-filter="all" type="button">
-                            <span class="sl-cat-icon">✨</span>
-                            <span class="en-text">All</span><span class="es-text">Todo</span>
-                        </button>
-                        <button class="sl-cat-btn" data-cat-filter="job" type="button">
-                            <span class="sl-cat-icon">💼</span>
-                            <span class="en-text">Job Help</span><span class="es-text">Ayuda con empleo</span>
-                        </button>
-                        <button class="sl-cat-btn" data-cat-filter="training" type="button">
-                            <span class="sl-cat-icon">📚</span>
-                            <span class="en-text">Training</span><span class="es-text">Capacitación</span>
-                        </button>
-                        <button class="sl-cat-btn" data-cat-filter="immigration" type="button">
-                            <span class="sl-cat-icon">🌎</span>
-                            <span class="en-text">Immigration</span><span class="es-text">Inmigración</span>
-                        </button>
-                        <button class="sl-cat-btn" data-cat-filter="housing" type="button">
-                            <span class="sl-cat-icon">🏠</span>
-                            <span class="en-text">Housing</span><span class="es-text">Vivienda</span>
-                        </button>
-                        <button class="sl-cat-btn" data-cat-filter="health" type="button">
-                            <span class="sl-cat-icon">❤️</span>
-                            <span class="en-text">Health</span><span class="es-text">Salud</span>
-                        </button>
-                        <button class="sl-cat-btn" data-cat-filter="food" type="button">
-                            <span class="sl-cat-icon">🍽️</span>
-                            <span class="en-text">Food</span><span class="es-text">Comida</span>
-                        </button>
-                        <button class="sl-cat-btn" data-cat-filter="esol" type="button">
-                            <span class="sl-cat-icon">🗣️</span>
-                            <span class="en-text">English class</span><span class="es-text">Inglés</span>
-                        </button>
-                        <button class="sl-cat-btn" data-cat-filter="college" type="button">
-                            <span class="sl-cat-icon">🎓</span>
-                            <span class="en-text">College &amp; GED</span><span class="es-text">Colegio</span>
-                        </button>
-                        <button class="sl-cat-btn" data-cat-filter="money" type="button">
-                            <span class="sl-cat-icon">💵</span>
-                            <span class="en-text">Money help</span><span class="es-text">Dinero</span>
-                        </button>
-                        <button class="sl-cat-btn" data-cat-filter="career-fair" type="button">
-                            <span class="sl-cat-icon">🤝</span>
-                            <span class="en-text">Career fair</span><span class="es-text">Feria</span>
-                        </button>
-                        <button class="sl-cat-btn" data-cat-filter="announcement" type="button">
-                            <span class="sl-cat-icon">📣</span>
-                            <span class="en-text">News</span><span class="es-text">Anuncios</span>
-                        </button>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
@@ -444,14 +390,16 @@
             <section class="desktop-home-shell" aria-label="Bulletins and support">
                 <div class="desktop-feed-column">
                     <section class="feed-category-header" id="feedCategoryHeader" hidden>
-                        <div class="feed-category-icon" id="feedCategoryIcon" aria-hidden="true">🏠</div>
-                        <div class="feed-category-copy">
-                            <p class="feed-category-kicker" id="feedCategoryKicker">Showing posts</p>
-                            <h3 id="feedCategoryTitle">Housing Help</h3>
-                            <p id="feedCategoryDescription">Find apartments, shelters, rent help, and housing support.</p>
-                            <div class="feed-category-chips" id="feedCategoryChips" aria-label="Helpful topics"></div>
-                            <div class="feed-category-resources" id="feedCategoryResources" aria-hidden="true" hidden></div>
-                        </div>
+                        <span class="feed-category-icon" id="feedCategoryIcon" aria-hidden="true">🏠</span>
+                        <p class="feed-category-copy">
+                            <span class="en-text">Showing:</span><span class="es-text">Viendo:</span>
+                            <strong id="feedCategoryTitle">Housing Help</strong>
+                        </p>
+                        <button type="button" class="feed-category-find-help" id="feedCategoryFindHelpLink" data-resource-shortcut="housing" hidden>
+                            <span class="en-text">Find Help</span>
+                            <span class="es-text">Ayuda</span>
+                            <span aria-hidden="true">&rarr;</span>
+                        </button>
                         <button class="feed-category-clear" id="feedCategoryClear" type="button">
                             <span class="en-text">Show all</span>
                             <span class="es-text">Ver todo</span>
@@ -469,13 +417,14 @@
                                 <span class="es-text">Novedades</span>
                             </h1>
                         </div>
-                        <button class="desktop-filter-open" type="button" onclick="var t=document.getElementById('mobileSearchTrigger'); if(t) t.click();">
+                        <label class="desktop-filter-open feed-category-select-wrap">
                             <svg class="desktop-filter-open-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                 <path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/>
                             </svg>
-                            <span class="en-text">Filter</span>
-                            <span class="es-text">Filtrar</span>
-                        </button>
+                            <select id="feedCategorySelect" class="feed-category-select" aria-label="Filter posts by topic">
+                                <!-- Options rendered by firebase-config.js from feed-categories.js -->
+                            </select>
+                        </label>
                     </div>
                     <!-- Bulletin grid -->
                     <div class="bulletin-container">

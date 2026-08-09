@@ -161,90 +161,105 @@ export const FEED_CATEGORY_CONTENT = {
     all: {
         icon: '✨',
         title: 'Main Feed',
+        titleEs: 'Página principal',
         description: 'New help, classes, jobs, and community support from your advisors.',
         chips: ['New', 'Free help', 'This week']
     },
     housing: {
         icon: '🏠',
         title: 'Housing Help',
+        titleEs: 'Ayuda con vivienda',
         description: 'Find apartments, shelters, rent help, and housing support.',
         chips: ['Emergency Housing', 'Apartments', 'Rent Help', 'Tenant Rights']
     },
     job: {
         icon: '💼',
         title: 'Job Help',
+        titleEs: 'Ayuda con empleo',
         description: 'See advisor posts about job openings, hiring notices, resumes, and career support.',
         chips: ['Hiring Now', 'Resume Help', 'Career Support']
     },
     jobs: {
         icon: '💼',
         title: 'Job Help',
+        titleEs: 'Ayuda con empleo',
         description: 'See advisor posts about job openings, hiring notices, resumes, and career support.',
         chips: ['Hiring Now', 'Resume Help', 'Career Support']
     },
     immigration: {
         icon: '🌎',
         title: 'Immigration Help',
+        titleEs: 'Ayuda de inmigración',
         description: 'Find legal help, citizenship support, and trusted local organizations.',
         chips: ['Citizenship', 'Legal Help', 'Know Your Rights', 'Green Card']
     },
     health: {
         icon: '❤️',
         title: 'Health Support',
+        titleEs: 'Apoyo de salud',
         description: 'Find clinics, health information, mental health support, and care nearby.',
         chips: ['Clinics', 'Mental Health', 'Insurance', 'Urgent Help']
     },
     food: {
         icon: '🥕',
         title: 'Food Help',
+        titleEs: 'Ayuda con comida',
         description: 'Find food pantries, meal programs, and grocery help for families.',
         chips: ['Food Pantry', 'Meals', 'Delivery', 'Family Help']
     },
     esol: {
         icon: '📘',
         title: 'Free Classes',
+        titleEs: 'Clases gratuitas',
         description: 'Find English classes, adult education, GED, and student support.',
         chips: ['English Class', 'GED', 'Conversation', 'Career English']
     },
     college: {
         icon: '🎓',
         title: 'College Pathways',
+        titleEs: 'Caminos universitarios',
         description: 'Find college, GED, certificates, and next-step education support.',
         chips: ['GED', 'Certificates', 'Financial Aid', 'College Help']
     },
     money: {
         icon: '💵',
         title: 'Money Help',
+        titleEs: 'Ayuda con dinero',
         description: 'Find financial coaching, benefits, tax help, and low-cost support.',
         chips: ['Benefits', 'Tax Help', 'Budgeting', 'Free Support']
     },
     childcare: {
         icon: '👨‍👩‍👧',
         title: 'Family Support',
+        titleEs: 'Apoyo familiar',
         description: 'Find child care, family programs, youth support, and parent help.',
         chips: ['Child Care', 'Family Programs', 'Youth', 'Parent Help']
     },
     family: {
         icon: '👨‍👩‍👧',
         title: 'Family Support',
+        titleEs: 'Apoyo familiar',
         description: 'Find child care, family programs, youth support, and parent help.',
         chips: ['Child Care', 'Family Programs', 'Youth', 'Parent Help']
     },
     training: {
         icon: '🧰',
         title: 'Training Posts',
+        titleEs: 'Publicaciones de capacitación',
         description: 'See advisor posts about workshops, skills training, certificates, and programs.',
         chips: ['Workshops', 'Certificates', 'Career Skills', 'Programs']
     },
     'career-fair': {
         icon: '📍',
         title: 'Career Fairs',
+        titleEs: 'Ferias de empleo',
         description: 'Find hiring events, job fairs, and places to meet employers.',
         chips: ['Hiring Events', 'Employers', 'Resume', 'Interviews']
     },
     announcement: {
         icon: '📢',
         title: 'Announcements',
+        titleEs: 'Anuncios',
         description: 'School news, reminders, and general updates from your advisors.',
         chips: ['School News', 'Reminders', 'Updates', 'Events']
     }

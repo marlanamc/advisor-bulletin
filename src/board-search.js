@@ -89,7 +89,6 @@ export class BoardSearchMethods {
     renderUnifiedSearchResults() {
         const container = document.getElementById('searchResults');
         const status = document.getElementById('searchResultsStatus');
-        const cats = document.getElementById('searchLayerCats');
         if (!container) return;
 
         const query = (this.searchQuery || '').trim();
@@ -98,7 +97,6 @@ export class BoardSearchMethods {
             container.hidden = true;
             container.innerHTML = '';
             if (status) { status.hidden = true; status.textContent = ''; }
-            if (cats) cats.hidden = false;
             this.syncHeaderSearchButton();
             return;
         }
@@ -108,8 +106,6 @@ export class BoardSearchMethods {
             limit: RESULT_LIMIT_PER_GROUP,
         });
 
-        // While results are showing, the topic buttons are noise.
-        if (cats) cats.hidden = true;
         container.hidden = false;
 
         if (total === 0) {

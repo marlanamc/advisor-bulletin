@@ -1603,7 +1603,11 @@ body.ap-portal-active .main-content {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  margin-top: 6px;
+  margin-top: 0;
+}
+
+.ap-preview-card .mobile-resource-card__actions + .mobile-resource-card__action-links {
+  margin-top: -4px;
 }
 
 .ap-preview-card .mobile-resource-card__btn--action-link {

@@ -2,7 +2,7 @@ import { db } from './firebase-student.js'
 import { applyResourceLogos, fetchAllResourceLogos } from './resource-logos.js'
 import { STUDENT_ADVISOR_DIRECTORY } from './advisor-directory.js'
 import { installClientErrorLogger } from './error-logger.js'
-import { normalizePostCategory, getPostCategoryDisplay } from './feed-categories.js'
+import { normalizePostCategory, getPostCategoryDisplay, POST_CATEGORIES } from './feed-categories.js'
 import { RESOURCE_TILE_CATEGORIES } from './resource-categories.js'
 import {
     getActionResourceChipLabel,
@@ -64,6 +64,23 @@ import { BoardResourcesMethods } from './board-resources.js'
 import { BoardDetailMethods } from './board-detail.js'
 import { storeServerSnapshot } from './student-snapshot.js'
 import { BoardSearchMethods } from './board-search.js'
+
+// Maps a bulletin post category to the matching resource category, so the
+// feed category banner can point students to related Find Help listings.
+// Categories with no clear resource-tile match (training, career-fair,
+// announcement) are intentionally omitted.
+const FEED_CATEGORY_TO_RESOURCE_CATEGORY = {
+    job: 'jobs',
+    immigration: 'immigration',
+    housing: 'housing',
+    health: 'health',
+    food: 'food',
+    esol: 'esol',
+    college: 'college',
+    money: 'money',
+    childcare: 'family',
+    family: 'family',
+};
 
 // Firebase-enabled Bulletin Board System
 class FirebaseBulletinBoard {
@@ -609,6 +626,14 @@ class FirebaseBulletinBoard {
             });
         });
 
+        this.renderFeedCategorySelectOptions();
+        const feedCategorySelect = document.getElementById('feedCategorySelect');
+        if (feedCategorySelect) {
+            feedCategorySelect.addEventListener('change', () => {
+                this.setFeedCategory(feedCategorySelect.value);
+            });
+        }
+
         const toggleFiltersBtn = document.getElementById('toggleFilters');
         if (toggleFiltersBtn) {
             toggleFiltersBtn.addEventListener('click', () => {
@@ -625,20 +650,19 @@ class FirebaseBulletinBoard {
             element.addEventListener('click', () => this.closeSearchLayer());
         });
 
+        const searchLayer = document.getElementById('searchLayer');
+        if (searchLayer) {
+            searchLayer.addEventListener('click', (event) => {
+                if (!event.target.closest('.search-layer-panel')) {
+                    this.closeSearchLayer();
+                }
+            });
+        }
+
         const closeSearchLayer = document.getElementById('closeSearchLayer');
         if (closeSearchLayer) {
             closeSearchLayer.addEventListener('click', () => this.closeSearchLayer());
         }
-
-        // Search layer category buttons — filter feed and close the panel
-        document.querySelectorAll('.sl-cat-btn[data-cat-filter]').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const cat = btn.getAttribute('data-cat-filter') || 'all';
-                this.setFeedCategory(cat);
-                this.updateSearchLayerCatState(cat);
-                this.closeSearchLayer();
-            });
-        });
 
         this.selectedCategories = [];
         this.selectedPostedDates = [];
@@ -1250,12 +1274,9 @@ class FirebaseBulletinBoard {
     updateFeedCategoryHeader() {
         const header = document.getElementById('feedCategoryHeader');
         const icon = document.getElementById('feedCategoryIcon');
-        const kicker = document.getElementById('feedCategoryKicker');
         const title = document.getElementById('feedCategoryTitle');
-        const description = document.getElementById('feedCategoryDescription');
-        const chips = document.getElementById('feedCategoryChips');
-        const resourcesContainer = document.getElementById('feedCategoryResources');
-        if (!header || !icon || !kicker || !title || !description || !chips || !resourcesContainer) {
+        const findHelpLink = document.getElementById('feedCategoryFindHelpLink');
+        if (!header || !icon || !title) {
             return;
         }
 
@@ -1263,78 +1284,19 @@ class FirebaseBulletinBoard {
         const content = FEED_CATEGORY_CONTENT[category] || FEED_CATEGORY_CONTENT.all;
         const isAll = category === 'all';
 
+        const isEs = (document.body.getAttribute('data-lang') || 'EN') === 'ES';
+
         header.hidden = isAll;
         icon.textContent = content.icon;
-        kicker.textContent = `Showing: ${content.title}`;
-        title.textContent = content.title;
-        description.textContent = content.description;
-        chips.innerHTML = content.chips.map((chip) => `<span>${this.escapeHtml(chip)}</span>`).join('');
-        resourcesContainer.innerHTML = '';
-        resourcesContainer.hidden = true;
-    }
+        title.textContent = isEs ? (content.titleEs || content.title) : content.title;
 
-    createFeedCategoryResourcesHtml(category) {
-        if (category === 'all') {
-            return '';
+        if (findHelpLink) {
+            const resourceCategory = FEED_CATEGORY_TO_RESOURCE_CATEGORY[category];
+            findHelpLink.hidden = !resourceCategory;
+            if (resourceCategory) {
+                findHelpLink.setAttribute('data-resource-shortcut', resourceCategory);
+            }
         }
-
-        const resourceCategory = category === 'job' ? 'jobs' : category === 'childcare' ? 'family' : category;
-        const resources = this.getPublishedResources()
-            .filter((resource) => this.resourceMatchesCategory(resource, resourceCategory))
-            .slice(0, 3);
-
-        if (resources.length === 0) {
-            return `
-                <div class="feed-category-resource-empty">
-                    <strong>No help links listed yet for this topic.</strong>
-                    <span>Ask your advisor — they can point you to trusted places.</span>
-                </div>
-            `;
-        }
-
-        return `
-            <div class="feed-category-resource-heading">
-                <span>Trusted places nearby</span>
-                <small>Call or visit for free help</small>
-            </div>
-            <div class="feed-category-resource-grid">
-                ${resources.map((resource) => this.createFeedCategoryResourceCard(resource)).join('')}
-            </div>
-        `;
-    }
-
-    createFeedCategoryResourceCard(resource) {
-        const { titleEn } = this.getResourceTitles(resource);
-        const description = resource.description ? this.formatRichTextInline(resource.description) : '';
-        const url = this.getResourceUrl(resource);
-        const phone = resource.phone || '';
-        const tel = resource.tel || (phone ? `tel:${phone.replace(/[^0-9+]/g, '')}` : '');
-        const address = resource.address || '';
-        const mapUrl = resource.mapUrl || (address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}` : '');
-        const actionUrl = tel || (url !== '#' ? url : mapUrl);
-        const actionLabel = tel ? 'Call' : url !== '#' ? 'Website' : 'Directions';
-
-        return `
-            <article class="feed-category-resource-card">
-                <h3>${this.escapeHtml(titleEn)}</h3>
-                ${description ? `<p>${description}</p>` : ''}
-                ${address ? `<small>${this.escapeHtml(address)}</small>` : ''}
-                <div class="feed-category-resource-actions">
-                    ${actionUrl ? `<a href="${this.escapeAttribute(actionUrl)}" ${actionUrl.startsWith('http') ? 'target="_blank" rel="noopener"' : ''}>${actionLabel}</a>` : ''}
-                    ${mapUrl ? `<a href="${this.escapeAttribute(mapUrl)}" target="_blank" rel="noopener">Directions</a>` : ''}
-                </div>
-            </article>
-        `;
-    }
-
-    updateSearchLayerCatState(category) {
-        const normalized = this.normalizeFeedCategory(category);
-        document.querySelectorAll('.sl-cat-btn[data-cat-filter]').forEach(btn => {
-            const val = btn.getAttribute('data-cat-filter');
-            const isAll = val === 'all';
-            const matches = isAll ? normalized === 'all' : this.normalizeFeedCategory(val) === normalized;
-            btn.classList.toggle('active', matches);
-        });
     }
 
     updateActiveCategoryState() {
@@ -1350,6 +1312,28 @@ class FirebaseBulletinBoard {
             bubble.classList.toggle('active', bubbleCategory === category);
             bubble.setAttribute('aria-pressed', String(bubbleCategory === category));
         });
+
+        const feedCategorySelect = document.getElementById('feedCategorySelect');
+        if (feedCategorySelect) {
+            feedCategorySelect.value = category;
+        }
+    }
+
+    renderFeedCategorySelectOptions() {
+        const select = document.getElementById('feedCategorySelect');
+        if (!select) return;
+
+        const isEs = (document.body.getAttribute('data-lang') || 'EN') === 'ES';
+        const options = [
+            { id: 'all', labelEn: 'All topics', labelEs: 'Todos los temas' },
+            ...POST_CATEGORIES.map((cat) => ({ id: cat.id, labelEn: cat.filterLabelEn, labelEs: cat.filterLabelEs })),
+        ];
+
+        const previousValue = select.value || this.currentFeedCategory || 'all';
+        select.innerHTML = options
+            .map((opt) => `<option value="${opt.id}">${this.escapeHtml(isEs ? opt.labelEs : opt.labelEn)}</option>`)
+            .join('');
+        select.value = previousValue;
     }
 
     toggleSearchLayer() {
@@ -1432,6 +1416,7 @@ class FirebaseBulletinBoard {
         });
 
         this.updateSearchPlaceholder();
+        this.renderFeedCategorySelectOptions();
 
         if (this.currentView === 'resources') {
             this.renderResourcesSections(this.getPublishedResources());
@@ -2129,7 +2114,6 @@ class FirebaseBulletinBoard {
         this.updateFilterCount();
         this.updateFeedCategoryHeader();
         this.updateActiveCategoryState();
-        this.updateSearchLayerCatState('all');
         this.displayBulletins();
         this.updateToggleFiltersLabel(false);
     }

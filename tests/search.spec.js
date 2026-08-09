@@ -151,17 +151,12 @@ test.describe('Unified search', () => {
     expect(await resultTitles(page)).toContain('RAFT Rent Help');
   });
 
-  test('topic buttons hide while results show and come back when cleared', async ({ page }) => {
-    await page.evaluate(() => window.bulletinBoard.openSearchLayer({ focusInput: false }));
-    await expect(page.locator('#searchLayerCats')).toBeVisible();
-
-    await page.locator('#searchInput').fill('rent');
-    await page.waitForTimeout(200);
-    await expect(page.locator('#searchLayerCats')).toBeHidden();
+  test('clearing the search query hides results', async ({ page }) => {
+    await openSearch(page, 'rent');
+    await expect(page.locator('#searchResults')).toBeVisible();
 
     await page.locator('#searchInput').fill('');
     await page.waitForTimeout(200);
-    await expect(page.locator('#searchLayerCats')).toBeVisible();
     await expect(page.locator('#searchResults')).toBeHidden();
   });
 
