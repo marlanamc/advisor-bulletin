@@ -19,6 +19,7 @@ export const ADMIN_RESOURCE_CATEGORY_DATA = {
     esol:        ['English Class / Inglés', '🗣️', 'abc'],
     hse:         ['GED / HSE / Equivalencia escolar', '📚', 'abc'],
     college:     ['College & Careers / Universidad y carreras', '🎓', 'graduation'],
+    general:     ['General Help / Ayuda general', '🤝', 'handshake'],
 };
 
 // Sync assertion — fails fast at module load if the canonical list and the
