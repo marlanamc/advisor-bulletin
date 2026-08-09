@@ -27,7 +27,7 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Run Playwright tests
-        run: npm test
+        run: npm test -- --project=desktop --project=mobile
 
       - name: Upload test report on failure
         if: failure()
