@@ -33,8 +33,8 @@ export const COPY = {
     "en": "Get free fresh produce and food bags on Mondays. You can also make an appointment for emergency food help.",
     "es": "Consiga frutas, verduras y bolsas de comida gratis los lunes. También puede hacer una cita para recibir ayuda de comida de emergencia."
   },
-  "Crossroads Family Center - Our Daily Bread Pantry::food": {
-    "en": "Get free emergency food Sundays and Wednesdays, 3pm-4pm, at the white door on the side of the building. First time, bring ID and proof of address for your household (a photo on your phone is fine) — but you'll still get food even without it.",
+  "East Boston Adult Family Shelter - Our Daily Bread Pantry::food": {
+    "en": "Get free emergency food Sundays and Wednesdays, 3pm-4pm, at the white door on the side of the building. First time, bring ID and proof of address for your household (a photo on your phone is fine), but you'll still get food even without it.",
     "es": "Consiga comida de emergencia gratis los domingos y miércoles, de 3pm a 4pm, en la puerta blanca al lado del edificio. La primera vez, traiga identificación y prueba de dirección de su casa (una foto en su teléfono está bien), pero igual le darán comida aunque no las tenga."
   },
   "East Boston ABCD (SNAP Assistance)::food": {
@@ -105,10 +105,6 @@ export const COPY = {
     "en": "Get local help with your green card, citizenship, and immigration papers. They also have English classes and GED classes in Spanish.",
     "es": "Reciba ayuda local con su green card, la ciudadanía y papeles de inmigración. También tienen clases de inglés y clases de GED en español."
   },
-  "Agencia ALPHA::immigration": {
-    "en": "Get help with immigration papers, citizenship classes, and health insurance. They also have an East Boston office at 70 White St, open Thursdays and Saturdays.",
-    "es": "Reciba ayuda con papeles de inmigración, clases de ciudadanía y seguro de salud. También tienen una oficina en East Boston, en 70 White St, abierta jueves y sábados."
-  },
   "Greater Boston Legal Services::legal-aid": {
     "en": "Free lawyers for problems with housing, work, family, and immigration. This is for low-income families. Call between 9:30am and 12:30pm. They cannot take every case.",
     "es": "Abogados gratis para problemas de vivienda, trabajo, familia e inmigración. Es para familias de bajos ingresos. Llame entre las 9:30am y las 12:30pm. No pueden tomar todos los casos."
@@ -142,7 +138,7 @@ export const COPY = {
     "es": "Llame a la línea de ayuda gratuita para recibir orientación sobre inmigración. También organizan talleres gratuitos para ayudarle a llenar formularios de ciudadanía."
   },
   "Project Citizenship::immigration": {
-    "en": "Get free help applying for U.S. citizenship — filling out forms, practicing for the test, and connecting you to free English classes. Staff speak Spanish and other languages.",
+    "en": "Get free help applying for U.S. citizenship: filling out forms, practicing for the test, and connecting you to free English classes. Staff speak Spanish and other languages.",
     "es": "Reciba ayuda gratuita para solicitar la ciudadanía: llenar formularios, practicar para el examen y conectarlo con clases de inglés gratis. El personal habla español y otros idiomas."
   },
   "Massachusetts Attorney General’s Office::legal-aid": {
@@ -154,16 +150,16 @@ export const COPY = {
     "es": "Únase a otros inquilinos para luchar contra el desalojo y los aumentos de renta. Se reúnen cada semana en East Boston los miércoles y en Jamaica Plain los martes, en inglés y español."
   },
   "East Boston Adult Family Shelter (formerly Crossroads Family Center)::housing": {
-    "en": "A shelter for families with no home — you need a state referral to stay there, so call 2-1-1 to start. Their food pantry is open to everyone.",
-    "es": "Un refugio para familias sin hogar — necesita una referencia del estado para quedarse, así que llame al 2-1-1 para empezar. Su despensa de comida está abierta para todos."
+    "en": "A shelter for families with no home. You need a state referral to stay there, so call 2-1-1 or DHCD at 877-481-3308 to start. Their food pantry is open to everyone.",
+    "es": "Un refugio para familias sin hogar. Necesita una referencia del estado para quedarse, así que llame al 2-1-1 o a DHCD al 877-481-3308 para empezar. Su despensa de comida está abierta para todos."
   },
   "RAFT (Residential Assistance for Families in Transition)::housing": {
     "en": "Get up to $7,000 to pay rent you owe, moving costs, or light and gas bills, so you do not lose your home. Apply online or call 2-1-1.",
     "es": "Reciba hasta $7,000 para pagar renta atrasada, costos de mudanza o facturas de luz y gas, para no perder su casa. Solicite en línea o llame al 2-1-1."
   },
   "MA State Public Housing::housing": {
-    "en": "Apply for low-cost apartments for families, older adults, and people with disabilities. Rent is based on income. One form (CHAMP) covers the whole state — expect a long wait.",
-    "es": "Solicite apartamentos de bajo costo para familias, personas mayores y personas con discapacidad. La renta depende de sus ingresos. Una sola solicitud (CHAMP) sirve para todo el estado — espere una espera larga."
+    "en": "Apply for low-cost apartments for families, older adults, and people with disabilities. Rent is based on income. One form (CHAMP) covers the whole state, so expect a long wait.",
+    "es": "Solicite apartamentos de bajo costo para familias, personas mayores y personas con discapacidad. La renta depende de sus ingresos. Una sola solicitud (CHAMP) sirve para todo el estado, así que espere una espera larga."
   },
   "Mayor’s Office of Housing – Office of Housing Stability::housing": {
     "en": "Get help to stop an eviction and stay in your home. They have free legal clinics most Tuesdays and can connect you with a volunteer lawyer.",
@@ -198,8 +194,8 @@ export const COPY = {
     "es": "Evalúan papeles escolares de otros países para trabajar o ir al college. Cuesta $80-$130 (menos que otros servicios); papeles en español y portugués cuestan $50 más."
   },
   "East Boston Head Start::family": {
-    "en": "Get free preschool, childcare, and meals for children ages 3-5, plus help for parents. Free for families who qualify — call to check.",
-    "es": "Consiga preescolar, cuidado de niños y comidas gratis para niños de 3 a 5 años, más ayuda para los padres. Gratis para familias que califican — llame para preguntar."
+    "en": "Get free preschool, childcare, and meals for children ages 3-5, plus help for parents. Free for families who qualify, so call to check.",
+    "es": "Consiga preescolar, cuidado de niños y comidas gratis para niños de 3 a 5 años, más ayuda para los padres. Gratis para familias que califican, así que llame para preguntar."
   },
   "Community Healing Response Network::health": {
     "en": "Get free, private support if you or your family have been hurt by community violence. Someone answers the line every day of the year.",
@@ -222,8 +218,8 @@ export const COPY = {
     "es": "Llame o envíe un texto al 988 en cualquier momento para recibir apoyo gratis y confidencial si se siente triste, estresado o en crisis. Puede recibir ayuda en español."
   },
   "World Education Services (WES)::college": {
-    "en": "They evaluate your diploma or grades from another country so U.S. schools and jobs will accept them. Costs about $118-$214 — ask your advisor before you pay.",
-    "es": "Evalúan su diploma o calificaciones de otro país para que las escuelas y los trabajos de EE.UU. los acepten. Cuesta entre $118 y $214 — pregunte a su consejero antes de pagar."
+    "en": "They evaluate your diploma or grades from another country so U.S. schools and jobs will accept them. Costs about $118-$214, so ask your advisor before you pay.",
+    "es": "Evalúan su diploma o calificaciones de otro país para que las escuelas y los trabajos de EE.UU. los acepten. Cuesta entre $118 y $214, así que pregunte a su consejero antes de pagar."
   },
   "Roxbury Community College::college": {
     "en": "Get a 2-year degree or short certificate in health, business, or technology, plus financial aid and advisors. Campus is at the Roxbury Crossing T stop.",
@@ -241,19 +237,19 @@ export const COPY = {
     "en": "Call or text anytime to talk about stress, sadness, worry, or drug and alcohol use. It's free, private, no insurance needed, and they speak your language.",
     "es": "Llame o envíe un texto en cualquier momento para hablar sobre estrés, tristeza, preocupación o el uso de alcohol y drogas. Es gratis, privado, no necesita seguro, y hablan su idioma."
   },
-  "SafeLink Domestic Violence Hotline::family": {
-    "en": "Call anytime if someone at home hurts or scares you. It's free, private, and anonymous — no name needed. They speak Spanish and many other languages.",
-    "es": "Llame en cualquier momento si alguien en su casa le hace daño o le da miedo. Es gratis, privado y anónimo — no necesita dar su nombre. Hablan español y muchos otros idiomas."
+  "SafeLink Domestic Violence Hotline::health": {
+    "en": "Call anytime if someone at home hurts or scares you. It's free, private, and anonymous, no name needed. They speak Spanish and many other languages.",
+    "es": "Llame en cualquier momento si alguien en su casa le hace daño o le da miedo. Es gratis, privado y anónimo, no necesita dar su nombre. Hablan español y muchos otros idiomas."
   },
-  "Learn About the HSE Test (GED or HiSET)::hse": {
-    "en": "Learn how to get your Massachusetts high school credential. This page explains the GED and HiSET tests and where to take them — you can even mix parts of both.",
-    "es": "Aprenda cómo obtener su credencial de escuela secundaria de Massachusetts. Esta página explica los exámenes GED y HiSET y dónde tomarlos — puede combinar partes de los dos."
+  "Learn About the HSE Test (DESE)::hse": {
+    "en": "Learn how to get your Massachusetts high school credential. This page explains the GED and HiSET tests and where to take them. You can even mix parts of both.",
+    "es": "Aprenda cómo obtener su credencial de escuela secundaria de Massachusetts. Esta página explica los exámenes GED y HiSET y dónde tomarlos. Puede combinar partes de los dos."
   },
   "MassLINKS Free Online Classes::hse": {
     "en": "Take free classes online to study English or get ready for the HSE test. You can study at home and at your own speed.",
     "es": "Tome clases gratis en línea para estudiar inglés o prepararse para el examen HSE. Puede estudiar en casa y a su propio ritmo."
   },
-  "Help Paying for College::college": {
+  "Help Paying for College (OSFA)::college": {
     "en": "Community college is now free for Massachusetts residents. If you finished high school or your HSE in Massachusetts, you qualify no matter your immigration status.",
     "es": "El community college ahora es gratis para residentes de Massachusetts. Si terminó la secundaria o su HSE en Massachusetts, califica sin importar su estado migratorio."
   },
@@ -265,11 +261,11 @@ export const COPY = {
     "en": "Get free help looking for a job. You can use computers, printers, and phones there for free, and talk to a job counselor. Just walk in.",
     "es": "Reciba ayuda gratis para buscar trabajo. Puede usar computadoras, impresoras y teléfonos gratis, y hablar con un consejero de empleo. Puede llegar sin cita."
   },
-  "Agencia ALPHA - East Boston Office::immigration": {
+  "Agencia ALPHA::immigration": {
     "en": "Get help with immigration papers and citizenship right here in East Boston. This office is open Thursdays and Saturdays.",
     "es": "Reciba ayuda con papeles de inmigración y ciudadanía aquí mismo en East Boston. Esta oficina abre los jueves y sábados."
   },
-  "Boston Public Library - East Boston::college": {
+  "Boston Public Library - East Boston::family": {
     "en": "Use computers, wifi, and printing for free. They also have free English conversation groups where you can practice speaking. You do not need papers or money to join.",
     "es": "Use computadoras, wifi e impresión gratis. También tienen grupos gratuitos de conversación en inglés donde puede practicar. No necesita papeles ni dinero para participar."
   },
@@ -277,7 +273,7 @@ export const COPY = {
     "en": "Get free help with citizenship and immigration papers. They have a free citizenship clinic every Wednesday morning. They help people from every country, not only Ireland.",
     "es": "Reciba ayuda gratuita con la ciudadanía y papeles de inmigración. Tienen una clínica de ciudadanía gratis todos los miércoles por la mañana. Ayudan a personas de todos los países, no solo de Irlanda."
   },
-  "Mass 211::money": {
+  "Mass 211::general": {
     "en": "Call 2-1-1 anytime if you need help but do not know where to start. They listen to your problem and tell you where to go. Free and in many languages.",
     "es": "Llame al 2-1-1 en cualquier momento si necesita ayuda pero no sabe por dónde empezar. Escuchan su problema y le dicen adónde ir. Es gratis y en muchos idiomas."
   },
@@ -386,7 +382,7 @@ function main() {
   }
 
   if (!write) {
-    console.log('\nDry run — pass --write to update the CSV.');
+    console.log('\nDry run: pass --write to update the CSV.');
     return;
   }
 
