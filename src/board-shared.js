@@ -142,7 +142,7 @@ export const RESOURCE_CATEGORY_CONFIG = {
         labelEn: 'General Help',
         labelEs: 'Ayuda general',
         icon: 'handshake',
-        color: '#f08b1f'
+        color: '#64748b'
     },
     announcement: {
         labelEn: 'Announcements',
