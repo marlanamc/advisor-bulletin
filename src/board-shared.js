@@ -310,17 +310,16 @@ export const RESOURCE_ICON_SVGS = {
         </svg>
     `,
     handshake: `
-        <svg viewBox="0 0 64 64" aria-hidden="true">
-            <path fill="#fff" d="M9 34c8-2 15-4 22-6 3-1 6 0 8 2l5 5c3 3 1 8-3 8H25c-6 0-11-2-16-5v-4Z"/>
-            <path fill="#fff" d="M55 34c-8-2-15-4-22-6-3-1-6 0-8 2l-5 5c-3 3-1 8 3 8h16c6 0 11-2 16-5v-4Z" opacity=".95"/>
-            <circle cx="32" cy="37" r="7" fill="#f08b1f"/>
-            <circle cx="32" cy="37" r="3" fill="#fff"/>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="9"/>
+            <path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/>
+            <path d="M12 17h.01"/>
         </svg>
     `,
     money: `
-        <svg viewBox="0 0 64 64" aria-hidden="true">
-            <path fill="#fff" d="M14 20c8-5 28-5 36 0v27c-8 5-28 5-36 0V20Z"/>
-            <text x="27" y="30" fill="#1fa77e" font-family="Arial, sans-serif" font-size="19" font-weight="900">$</text>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 2v20"/>
+            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
         </svg>
     `,
     megaphone: `
