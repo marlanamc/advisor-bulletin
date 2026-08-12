@@ -3,23 +3,19 @@
  * Applies the August 2026 "Find Help" reorder audit's recommended
  * resourceOrder values.
  *
- * Writes are targeted by known Firestore document ID (pulled from
- * public/student-feed-snapshot.json, generated 2026-07-09) so this needs
- * zero Firestore reads — safe to run while the project's daily read quota
- * is exhausted, since reads and writes are billed separately. Same pattern
- * as scripts/apply-audit-links.mjs.
- *
- * The snapshot is otherwise unsafe to audit against (scripts/README.md:
- * "Never audit against the snapshot" — it can be stale by weeks). That
- * warning is about content staleness; it doesn't apply to ID-targeted
- * writes like this one, since a doc ID from Jul 9 is still valid today
- * unless that specific resource was deleted and recreated since.
- *
- * NOT covered here: resources added/edited after the Jul 9 snapshot (the
- * live resource count is 64; only 53 of those have known doc IDs below).
- * Those are listed in PENDING_LOOKUP at the bottom — resolve their doc IDs
- * with scripts/dump-live-resources.mjs (a read) once the quota resets,
- * then move them into RESOURCE_ORDER and rerun.
+ * 2026-08-11 update: quota reset, so doc IDs were re-resolved against a live
+ * scripts/dump-live-resources.mjs pull (66 resources) rather than trusting
+ * the Jul 9 snapshot blind. That surfaced two things worth knowing:
+ *   - Agencia ALPHA's doc was deleted and recreated since Jul 9 — the old
+ *     hardcoded id (gYOXKXHLeyVKwAKryXfA) 404s now; fixed below to the
+ *     current id.
+ *   - "Family Preparedness" (immigration) exists live with no audit
+ *     coverage at all — not in the Jul 9 snapshot or the Aug 8 additions
+ *     CSV. No recommended rank exists for it; left untouched here.
+ * 14 of the original 16 PENDING_LOOKUP resources now have known ids and
+ * were folded into RESOURCE_ORDER below. The remaining 2 (a Chelsea pop-up
+ * clinic and a "Summer 2026" class, both already flagged as likely expired)
+ * are no longer live at all — nothing to order.
  *
  * Usage:
  *   node scripts/apply-resource-order-audit.mjs           # dry run (default)
@@ -33,6 +29,7 @@ const COLLECTION = 'bulletins';
 
 const RESOURCE_ORDER = [
   // Job Help
+  { id: '4ONjF1DgFQ0pG2eCh9l5', title: 'MassHire Metro North Career Center (Chelsea)', order: 1 },
   { id: 'pkizk5s5rUJ4ZVAah624', title: 'JVS Boston', order: 2 },
   { id: 'kY1Qv7hP5P3FLP2U09hW', title: 'Asian American Civic Association (AACA)', order: 3 },
   { id: 'ipBCBYM0hh7s6ZW66wOf', title: 'BEST Hospitality Training', order: 4 },
@@ -40,6 +37,7 @@ const RESOURCE_ORDER = [
 
   // Housing
   { id: 'e8ZdCGj1ws7PIWJQpfLJ', title: 'Neighborhood of Affordable Housing (NOAH)', order: 1 },
+  { id: 'rSncRxrz2yhcy4Rs4zfO', title: 'Metro Housing Boston', order: 2 },
   { id: '5v2i2ZzQJ6dGva2bBQw9', title: 'RAFT (Residential Assistance for Families in Transition)', order: 3 },
   { id: 'XrFRTpcTXKObO9GbwtGj', title: 'East Boston Adult Family Shelter (formerly Crossroads Family Center)', order: 4 },
   { id: 'kw2XSXtjJITiQLwFtFGn', title: "Mayor's Office of Housing – Office of Housing Stability", order: 5 },
@@ -50,6 +48,8 @@ const RESOURCE_ORDER = [
   // Health
   { id: 'rhimw0Eete9pY9qKwbOf', title: 'NeighborHealth (formerly East Boston Neighborhood Health Center)', order: 1 },
   { id: '7CsAmPepfWdAFnYUL5XL', title: '988 Suicide & Crisis Lifeline', order: 2 },
+  { id: 'FGVi15mOY87toPVemNgK', title: 'Massachusetts Behavioral Health Help Line', order: 3 },
+  { id: 'zLiCrfxgtMGs80hPA6Ey', title: 'SafeLink Domestic Violence Hotline', order: 4 },
   { id: 'adVC7hL5kgoIwEqrZlTP', title: 'Community Healing Response Network', order: 5 },
   { id: 's5IIOgQvt2YoLXfyJZI9', title: "Mayor's Health Line", order: 6 },
   { id: 'N71pr8wPfU2aCNHlAcnT', title: 'Health Care For All Massachusetts', order: 7 },
@@ -67,6 +67,7 @@ const RESOURCE_ORDER = [
   // Family
   { id: 'esQ9KOR0Bicmf6eqLF8o', title: 'EBNHC Women, Infants & Children (WIC)', order: 1 },
   { id: '7JJfDHjpcnpksXd4WeCi', title: 'East Boston Head Start', order: 2 },
+  { id: 'h0qazDzNhQd0uaPFjAMJ', title: 'Boston Public Library - East Boston', order: 3 },
   { id: '6JdhXrCbfJM4dbc6lfJu', title: 'Ollie Diaper Depot', order: 4 },
   { id: 'eFM0C58XW3ggLkz3wtXM', title: 'The Home for Little Wanderers – Family Resource Centers', order: 5 },
   { id: 'm5is5IAec1EYNmsJ4O0X', title: 'Family Nurturing Center', order: 6 },
@@ -75,10 +76,13 @@ const RESOURCE_ORDER = [
   { id: 'n0gKQbe1gvueQfkDaWdU', title: 'Central Community Church (Clothing)', order: 9 },
 
   // HSE
+  { id: 'v1y3hzvIONtX9BLeJ188', title: 'Learn About the HSE Test (DESE)', order: 1 },
+  { id: 'nnaMculsnndTpOWtnqF6', title: 'MassLINKS Free Online Classes', order: 2 },
   { id: 'AFJD1xzk8OBGa5KWD784', title: 'Massachusetts HiSET', order: 3 },
 
   // College
   { id: 'NZf1fVhk0LQJiJI9kpWL', title: 'Bunker Hill Community College', order: 1 },
+  { id: 'Wr5OxhlYHI2AVqLSbjDa', title: 'Help Paying for College (OSFA)', order: 2 },
   { id: 'OxBuTnTY0jKB5LluTMRy', title: 'Roxbury Community College', order: 3 },
   { id: 'uegVzotHOvMeJ2fmHVQt', title: 'Center for Educational Documentation', order: 4 },
   { id: '0eVYeSFI5mYzoSfBwGnW', title: 'World Education Services (WES)', order: 5 },
@@ -94,16 +98,24 @@ const RESOURCE_ORDER = [
   { id: 'xNjwFMQNy9PdEXHOtmtt', title: 'East Boston ABCD APAC', order: 1 },
   { id: 'eQwUy0g8u4c36n5PicxY', title: 'MA Department of Transitional Assistance (DTA)', order: 2 },
   { id: 'JPm9kgAHjf1ltg4QyHKD', title: 'Find Your Funds (Tax Help)', order: 3 },
+  { id: 'NUCy4trgIRW9XKpXg482', title: 'MBTA Reduced Fare (Income-Eligible)', order: 4 },
 
   // Immigration
+  // NOTE: 'Agencia ALPHA' doc was recreated after the Jul 9 snapshot the audit
+  // used — old id gYOXKXHLeyVKwAKryXfA no longer exists live, replaced below
+  // with the current id (confirmed via scripts/dump-live-resources.mjs).
   { id: 'ftfx4zJIL11IfQjhSKIo', title: 'East Boston Community Council', order: 1 },
-  { id: 'gYOXKXHLeyVKwAKryXfA', title: 'Agencia ALPHA', order: 2 },
+  { id: 'Z6nHAJNi8iGKv2TsYreE', title: 'Agencia ALPHA', order: 2 },
+  { id: 'c1CzwnEaMjgyo6VVUB2k', title: 'Rian Immigrant Center', order: 3 },
   { id: 'HgjucUkz7dxNFnAPqvKS', title: 'La Colaborativa', order: 4 },
   { id: '2ARioOYAVid5tF3Jw7PI', title: 'Project Citizenship', order: 5 },
   { id: 'oFe0iexVA1riSpg1zG2D', title: 'MIRA Coalition', order: 6 },
   { id: 'e7aGhmTIECOBwS3KlAjp', title: 'La Comunidad', order: 7 },
   { id: 'JQwr3MbZChtEjReg1Qyb', title: "Mayor's Office for Immigrant Advancement (MOIA)", order: 8 },
   { id: 'mPDgv7Ap1o8vhzYlF5Nh', title: 'Permission to Share Your Case Info (ICE/DHS)', order: 9 },
+
+  // General
+  { id: 'eWEm0kaRoE5fLCgUEGB4', title: 'Mass 211', order: 1 },
 ];
 
 function parseArgs(argv) {
@@ -160,25 +172,18 @@ async function main() {
   }
 }
 
-// Resources the audit recommends ranking, added/edited after the Jul 9
-// snapshot — no doc ID known without a live Firestore read.
+// Resources the audit flagged that still need a human decision rather than
+// a mechanical resourceOrder write. Not resolved by this script.
 const PENDING_LOOKUP = [
-  { category: 'jobs', title: 'MassHire Metro North Career Center', recommend: 1 },
-  { category: 'housing', title: 'Metro Housing Boston', recommend: 2 },
-  { category: 'health', title: 'MA Behavioral Health Help Line', recommend: 3 },
-  { category: 'health', title: 'SafeLink Domestic Violence Hotline', recommend: 4 },
-  { category: 'health', title: 'Community Care Van Clinics in Chelsea', recommend: 'verify still running first' },
-  { category: 'health', title: 'EBSC Annual Community Baby Shower', recommend: 'likely expired — archive, not reorder' },
-  { category: 'family', title: 'Boston Public Library – East Boston', recommend: 3 },
-  { category: 'hse', title: 'Learn About the HSE Test (DESE)', recommend: 1 },
-  { category: 'hse', title: 'MassLINKS Free Online Classes', recommend: 2 },
-  { category: 'college', title: 'Help Paying for College (OSFA)', recommend: 2 },
-  { category: 'college', title: 'Early Childhood Educator Scholarship', recommend: 6 },
-  { category: 'money', title: 'MBTA Reduced Fare', recommend: 4 },
-  { category: 'immigration', title: 'Rian Immigrant Center', recommend: 3 },
-  { category: 'immigration', title: 'Free Immigration Consultation', recommend: 'check duplicate of MOIA first' },
-  { category: 'immigration', title: 'Citizenship Exam Prep Online Class — Summer 2026', recommend: 'likely expired — archive, not reorder' },
-  { category: 'general', title: 'Mass 211', recommend: 1 },
+  // No longer live as of the 2026-08-11 dump — presumably already
+  // archived/removed. Nothing to order; listed for the record only.
+  { category: 'health', title: 'Community Care Van Clinics in Chelsea', recommend: 'was: verify still running first — now gone from live data' },
+  { category: 'health', title: 'EBSC Annual Community Baby Shower', recommend: 'was: likely expired — now gone from live data' },
+  { category: 'immigration', title: 'Free Immigration Consultation', recommend: 'was: check duplicate of MOIA — now gone from live data' },
+  { category: 'immigration', title: 'Citizenship Exam Prep Online Class — Summer 2026', recommend: 'was: likely expired — now gone from live data' },
+  // Live but never covered by the Aug 2026 audit — no recommended rank exists.
+  { category: 'college', title: 'Early Childhood Educator Scholarship', recommend: 'not live as of 2026-08-11 dump either — check if intentionally unpublished' },
+  { category: 'immigration', title: 'Family Preparedness', recommend: 'NEW, not in audit at all — needs a human call on where it ranks' },
 ];
 
 main().catch((error) => {
