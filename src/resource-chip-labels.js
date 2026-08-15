@@ -211,7 +211,17 @@ const RESOURCE_CHIP_ES = {
     'report unpaid wages': 'Reportar salarios no pagados',
     'protected from retaliation': 'Protegido contra represalias',
     'no immigration questions asked': 'No se hacen preguntas sobre estatus migratorio',
-    'report a problem at work': 'Reportar un problema en el trabajo'
+    'report a problem at work': 'Reportar un problema en el trabajo',
+    'take ged classes in spanish': 'Tomar clases de GED en español',
+    'local east boston office': 'Oficina local en East Boston',
+    'free citizenship clinic': 'Clínica gratuita de ciudadanía',
+    'practice for citizenship test': 'Practicar para el examen de ciudadanía',
+    'fill out citizenship forms': 'Llenar formularios de ciudadanía',
+    'call for immigration info': 'Llamar para información de inmigración',
+    'citizenship form workshops': 'Talleres de formularios de ciudadanía',
+    'talk to an immigration lawyer': 'Hablar con un abogado de inmigración',
+    'make a family emergency plan': 'Hacer un plan de emergencia familiar',
+    'prepare for detention or deportation': 'Prepararse para detención o deportación'
 };
 
 export const SUGGESTED_RESOURCE_CHIPS_BY_CATEGORY = {
