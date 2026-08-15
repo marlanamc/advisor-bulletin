@@ -235,7 +235,10 @@ const RESOURCE_CHIP_ES = {
     'id not required': 'No se requiere identificación',
     'mobile food truck': 'Camión de comida móvil',
     'for pregnant women and young kids': 'Para mujeres embarazadas y niños pequeños',
-    'already qualify with masshealth or snap': 'Ya califica con MassHealth o SNAP'
+    'already qualify with masshealth or snap': 'Ya califica con MassHealth o SNAP',
+    'home visits available': 'Visitas a domicilio disponibles',
+    'after-school program': 'Programa después de la escuela',
+    'get holiday help': 'Ayuda para las fiestas'
 };
 
 export const SUGGESTED_RESOURCE_CHIPS_BY_CATEGORY = {
