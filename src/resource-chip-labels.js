@@ -238,7 +238,9 @@ const RESOURCE_CHIP_ES = {
     'already qualify with masshealth or snap': 'Ya califica con MassHealth o SNAP',
     'home visits available': 'Visitas a domicilio disponibles',
     'after-school program': 'Programa después de la escuela',
-    'get holiday help': 'Ayuda para las fiestas'
+    'get holiday help': 'Ayuda para las fiestas',
+    'compare ged and hiset': 'Comparar GED y HiSET',
+    'check your scores': 'Ver sus resultados'
 };
 
 export const SUGGESTED_RESOURCE_CHIPS_BY_CATEGORY = {
