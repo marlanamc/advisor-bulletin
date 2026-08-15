@@ -254,7 +254,8 @@ const RESOURCE_CHIP_ES = {
     'fill out court forms': 'Llenar formularios de la corte',
     'get a restraining order': 'Solicitar una orden de protección',
     'respond to an eviction or court case': 'Responder a un desalojo o caso judicial',
-    'ask the court to waive fees': 'Pedir que la corte exente los costos'
+    'ask the court to waive fees': 'Pedir que la corte exente los costos',
+    'get money back on taxes': 'Recuperar dinero de sus impuestos'
 };
 
 export const SUGGESTED_RESOURCE_CHIPS_BY_CATEGORY = {
