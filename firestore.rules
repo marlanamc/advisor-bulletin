@@ -16,17 +16,16 @@ service cloud.firestore {
         && validateBulletinData(request.resource.data)
         && request.resource.data.postedBy == getUsername(request.auth.token.email);
 
-      // Original authors can update their own content; admin/leah may update any content.
-      allow update: if isActiveAdvisor(request.auth)
-        && (isPrivilegedAdvisor(request.auth.token.email)
-          || resource.data.postedBy == getUsername(request.auth.token.email))
-        && validateBulletinData(request.resource.data)
-        && (!('postedBy' in request.resource.data) || request.resource.data.postedBy == resource.data.postedBy)
-        && (!('datePosted' in request.resource.data) || request.resource.data.datePosted == resource.data.datePosted)
-        && (!('createdAt' in request.resource.data) || !('createdAt' in resource.data) || request.resource.data.createdAt == resource.data.createdAt);
-
       // Any active advisor can update the display order of a resource (drag-to-reorder).
       // Only resourceOrder and updatedAt may change; everything else must remain identical.
+      // Deliberately declared before the full-validation rule below: Firestore evaluates
+      // allow statements in order and shares one complexity budget across all of them for
+      // a single request, so putting this cheap, narrow check first lets a plain reorder
+      // grant immediately without ever paying for the expensive validateBulletinData walk
+      // (which iterates every actionLinks entry) in the rule below. With the full-validation
+      // rule tried first, resources carrying a populated actionLinks array could exhaust
+      // that shared budget before this rule was even reached, denying reorders that should
+      // have been allowed by this rule alone.
       allow update: if isActiveAdvisor(request.auth)
         && resource.data.type == 'resource'
         && request.resource.data.type == 'resource'
@@ -35,6 +34,15 @@ service cloud.firestore {
           || ((request.resource.data.resourceOrder is int || request.resource.data.resourceOrder is float)
             && request.resource.data.resourceOrder >= 0
             && request.resource.data.resourceOrder <= 100000));
+
+      // Original authors can update their own content; admin/leah may update any content.
+      allow update: if isActiveAdvisor(request.auth)
+        && (isPrivilegedAdvisor(request.auth.token.email)
+          || resource.data.postedBy == getUsername(request.auth.token.email))
+        && validateBulletinData(request.resource.data)
+        && (!('postedBy' in request.resource.data) || request.resource.data.postedBy == resource.data.postedBy)
+        && (!('datePosted' in request.resource.data) || request.resource.data.datePosted == resource.data.datePosted)
+        && (!('createdAt' in request.resource.data) || !('createdAt' in resource.data) || request.resource.data.createdAt == resource.data.createdAt);
 
       // Privileged advisors can permanently delete any bulletin. Authors may delete
       // their own inactive placeholders (cancelled or failed publish drafts).
