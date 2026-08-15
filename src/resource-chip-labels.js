@@ -221,7 +221,13 @@ const RESOURCE_CHIP_ES = {
     'citizenship form workshops': 'Talleres de formularios de ciudadanía',
     'talk to an immigration lawyer': 'Hablar con un abogado de inmigración',
     'make a family emergency plan': 'Hacer un plan de emergencia familiar',
-    'prepare for detention or deportation': 'Prepararse para detención o deportación'
+    'prepare for detention or deportation': 'Prepararse para detención o deportación',
+    'see a doctor with no insurance': 'Ver a un médico sin seguro',
+    'call or text 988': 'Llame o envíe un mensaje al 988',
+    'talk about drug or alcohol use': 'Hablar sobre el uso de drogas o alcohol',
+    'if someone at home scares you': 'Si alguien en casa le da miedo',
+    'support after community violence': 'Apoyo después de violencia comunitaria',
+    'keep your masshealth': 'Mantener su MassHealth'
 };
 
 export const SUGGESTED_RESOURCE_CHIPS_BY_CATEGORY = {
