@@ -210,7 +210,8 @@ const RESOURCE_CHIP_ES = {
     'talk to a job counselor': 'Hablar con un consejero de empleo',
     'report unpaid wages': 'Reportar salarios no pagados',
     'protected from retaliation': 'Protegido contra represalias',
-    'no immigration questions asked': 'No se hacen preguntas sobre estatus migratorio'
+    'no immigration questions asked': 'No se hacen preguntas sobre estatus migratorio',
+    'report a problem at work': 'Reportar un problema en el trabajo'
 };
 
 export const SUGGESTED_RESOURCE_CHIPS_BY_CATEGORY = {
