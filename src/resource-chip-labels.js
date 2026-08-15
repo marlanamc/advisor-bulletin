@@ -240,7 +240,9 @@ const RESOURCE_CHIP_ES = {
     'after-school program': 'Programa después de la escuela',
     'get holiday help': 'Ayuda para las fiestas',
     'compare ged and hiset': 'Comparar GED y HiSET',
-    'check your scores': 'Ver sus resultados'
+    'check your scores': 'Ver sus resultados',
+    'get english support': 'Obtener apoyo de inglés',
+    'study health, business, or tech': 'Estudiar salud, negocios o tecnología'
 };
 
 export const SUGGESTED_RESOURCE_CHIPS_BY_CATEGORY = {
