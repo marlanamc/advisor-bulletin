@@ -227,7 +227,15 @@ const RESOURCE_CHIP_ES = {
     'talk about drug or alcohol use': 'Hablar sobre el uso de drogas o alcohol',
     'if someone at home scares you': 'Si alguien en casa le da miedo',
     'support after community violence': 'Apoyo después de violencia comunitaria',
-    'keep your masshealth': 'Mantener su MassHealth'
+    'keep your masshealth': 'Mantener su MassHealth',
+    'get fresh produce': 'Conseguir frutas y verduras frescas',
+    'accepts snap and hip': 'Acepta SNAP y HIP',
+    'no appointment needed': 'No necesita cita',
+    'get grocery bags': 'Conseguir bolsas de comida',
+    'id not required': 'No se requiere identificación',
+    'mobile food truck': 'Camión de comida móvil',
+    'for pregnant women and young kids': 'Para mujeres embarazadas y niños pequeños',
+    'already qualify with masshealth or snap': 'Ya califica con MassHealth o SNAP'
 };
 
 export const SUGGESTED_RESOURCE_CHIPS_BY_CATEGORY = {
