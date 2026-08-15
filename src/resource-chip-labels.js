@@ -189,7 +189,22 @@ const RESOURCE_CHIP_ES = {
     'take classes online': 'Tomar clases en línea',
     'get help paying for college': 'Ayuda para pagar el college',
     'use free computers': 'Usar computadoras gratis',
-    'find help near you': 'Buscar ayuda cerca de usted'
+    'find help near you': 'Buscar ayuda cerca de usted',
+    'prevent losing your home': 'Evitar perder su hogar',
+    'get help finding a home': 'Ayuda para encontrar un hogar',
+    'get a state referral': 'Obtener una referencia estatal',
+    'find affordable housing': 'Buscar vivienda asequible',
+    'get help buying a home': 'Ayuda para comprar una casa',
+    'get help paying rent': 'Ayuda para pagar la renta',
+    'call if you owe rent': 'Llame si debe renta',
+    'pay less rent every month': 'Pague menos renta cada mes',
+    'search apartment listings': 'Buscar anuncios de apartamentos',
+    'get new listing alerts': 'Recibir alertas de nuevos anuncios',
+    'enter the housing lottery': 'Participar en el sorteo de vivienda',
+    'talk to a housing lawyer': 'Hablar con un abogado de vivienda',
+    'learn your housing rights': 'Conocer sus derechos de vivienda',
+    'talk to a housing case manager': 'Hablar con un administrador de casos de vivienda',
+    'get help with landlord problems': 'Ayuda con problemas con el dueño'
 };
 
 export const SUGGESTED_RESOURCE_CHIPS_BY_CATEGORY = {
