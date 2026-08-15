@@ -22,6 +22,18 @@ const PROJECT_ID = 'ebhcs-bulletin-board';
 const COLLECTION = 'bulletins';
 const TIMEOUT_MS = 10_000;
 
+// Resources whose description states a dollar figure that the org sets
+// independently and can change without breaking any link (so the link
+// check above wouldn't catch it). Listed here so the weekly report
+// surfaces a manual recheck reminder instead of the price silently going
+// stale. Add an entry whenever a description is written with a specific
+// cost — see feedback_chip_writing_style memory on why costs are kept
+// rather than omitted.
+const PRICE_CHECK_REMINDERS = [
+  { id: 'uegVzotHOvMeJ2fmHVQt', title: 'Center for Educational Documentation', checkUrl: 'https://cedevaluations.com/' },
+  { id: '0eVYeSFI5mYzoSfBwGnW', title: 'World Education Services (WES)', checkUrl: 'https://www.wes.org/' },
+];
+
 function parseArgs(argv) {
   const args = { json: null, concurrency: 5, credentials: null };
   for (const arg of argv) {
@@ -118,7 +130,13 @@ async function main() {
       title: d.titleEn || d.title || doc.id,
       url: d.url || '',
       actionLinks: Array.isArray(d.actionLinks) ? d.actionLinks : [],
+      description: d.description || '',
     };
+  });
+
+  const priceReminders = PRICE_CHECK_REMINDERS.map((r) => {
+    const match = resources.find((res) => res.id === r.id);
+    return { ...r, currentDescription: match ? match.description : '(resource not found — id may have changed)' };
   });
 
   const checks = [];
@@ -148,11 +166,16 @@ async function main() {
     broken,
     movedDomain: moved,
     forbidden: warned,
+    priceReminders,
   };
 
   console.log(`\nDone: ${ok.length} ok, ${moved.length} domain-moved (still resolving), ${warned.length} forbidden/possible-bot-block, ${broken.length} broken.\n`);
   for (const b of broken) console.log(`BROKEN: [${b.resource}] ${b.kind} → ${b.url} (${b.reason || b.httpStatus})`);
   for (const m of moved) console.log(`MOVED: [${m.resource}] ${m.kind} → ${m.url} now resolves to ${m.finalUrl}`);
+  if (priceReminders.length) {
+    console.log('\nPrice recheck reminders:');
+    for (const p of priceReminders) console.log(`  [${p.title}] verify against ${p.checkUrl}\n    current: ${p.currentDescription}`);
+  }
 
   if (args.json) {
     writeFileSync(args.json, JSON.stringify(report, null, 2));

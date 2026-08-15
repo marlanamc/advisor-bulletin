@@ -134,3 +134,62 @@ jobs:
                 labels: [label],
               });
             }
+
+      - name: Post weekly price recheck reminder
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = JSON.parse(fs.readFileSync('/tmp/link-check-report.json', 'utf8'));
+            const { priceReminders } = report;
+            if (!priceReminders || !priceReminders.length) return;
+
+            // A price recheck is never "resolved" the way a broken link is — this
+            // issue stays open permanently and its body is just refreshed weekly,
+            // rather than being opened/closed like the broken-link tracker above.
+            const label = 'price-check';
+            try {
+              await github.rest.issues.getLabel({ owner: context.repo.owner, repo: context.repo.repo, name: label });
+            } catch {
+              await github.rest.issues.createLabel({ owner: context.repo.owner, repo: context.repo.repo, name: label, color: '0e8a16', description: 'Resources whose stated cost should be spot-checked periodically' });
+            }
+
+            const lines = [];
+            lines.push(`**Weekly price recheck reminder — ${report.checkedAt}**`);
+            lines.push('');
+            lines.push('These resource descriptions state a specific dollar figure the org sets independently, so nothing else here would catch it going stale. Worth a quick manual glance:');
+            lines.push('');
+            for (const p of priceReminders) {
+              lines.push(`### ${p.title}`);
+              lines.push(`Check against: ${p.checkUrl}`);
+              lines.push('');
+              lines.push(`Current card text: "${p.currentDescription}"`);
+              lines.push('');
+            }
+            const body = lines.join('\n');
+
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: label,
+            });
+            const existing = issues.data[0];
+
+            if (existing) {
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existing.number,
+                body,
+              });
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: 'Weekly price recheck reminder',
+                body,
+                labels: [label],
+              });
+            }
