@@ -207,7 +207,10 @@ const RESOURCE_CHIP_ES = {
     'get help with landlord problems': 'Ayuda con problemas con el dueño',
     'train for hotel & restaurant jobs': 'Capacitación para hoteles y restaurantes',
     'apply for unemployment benefits': 'Solicitar beneficios de desempleo',
-    'talk to a job counselor': 'Hablar con un consejero de empleo'
+    'talk to a job counselor': 'Hablar con un consejero de empleo',
+    'report unpaid wages': 'Reportar salarios no pagados',
+    'protected from retaliation': 'Protegido contra represalias',
+    'no immigration questions asked': 'No se hacen preguntas sobre estatus migratorio'
 };
 
 export const SUGGESTED_RESOURCE_CHIPS_BY_CATEGORY = {
