@@ -204,7 +204,10 @@ const RESOURCE_CHIP_ES = {
     'talk to a housing lawyer': 'Hablar con un abogado de vivienda',
     'learn your housing rights': 'Conocer sus derechos de vivienda',
     'talk to a housing case manager': 'Hablar con un administrador de casos de vivienda',
-    'get help with landlord problems': 'Ayuda con problemas con el dueño'
+    'get help with landlord problems': 'Ayuda con problemas con el dueño',
+    'train for hotel & restaurant jobs': 'Capacitación para hoteles y restaurantes',
+    'apply for unemployment benefits': 'Solicitar beneficios de desempleo',
+    'talk to a job counselor': 'Hablar con un consejero de empleo'
 };
 
 export const SUGGESTED_RESOURCE_CHIPS_BY_CATEGORY = {
