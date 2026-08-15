@@ -242,7 +242,19 @@ const RESOURCE_CHIP_ES = {
     'compare ged and hiset': 'Comparar GED y HiSET',
     'check your scores': 'Ver sus resultados',
     'get english support': 'Obtener apoyo de inglés',
-    'study health, business, or tech': 'Estudiar salud, negocios o tecnología'
+    'study health, business, or tech': 'Estudiar salud, negocios o tecnología',
+    'talk to a free lawyer': 'Hablar con un abogado gratis',
+    'report discrimination': 'Reportar discriminación',
+    'free workshops for businesses': 'Talleres gratuitos para negocios',
+    'read your rights online': 'Leer sus derechos en línea',
+    'learn about housing or family law': 'Aprender sobre leyes de vivienda o familia',
+    'find a lawyer near you': 'Buscar un abogado cerca de usted',
+    'search by your problem': 'Buscar por su problema',
+    'landlord, job, or business issues': 'Problemas con el dueño, el trabajo o un negocio',
+    'fill out court forms': 'Llenar formularios de la corte',
+    'get a restraining order': 'Solicitar una orden de protección',
+    'respond to an eviction or court case': 'Responder a un desalojo o caso judicial',
+    'ask the court to waive fees': 'Pedir que la corte exente los costos'
 };
 
 export const SUGGESTED_RESOURCE_CHIPS_BY_CATEGORY = {
