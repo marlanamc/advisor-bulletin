@@ -17,19 +17,40 @@ service cloud.firestore {
         && request.resource.data.postedBy == getUsername(request.auth.token.email);
 
       // Any active advisor can update the display order of a resource (drag-to-reorder).
-      // Only resourceOrder and updatedAt may change; everything else must remain identical.
       // Deliberately declared before the full-validation rule below: Firestore evaluates
       // allow statements in order and shares one complexity budget across all of them for
       // a single request, so putting this cheap, narrow check first lets a plain reorder
-      // grant immediately without ever paying for the expensive validateBulletinData walk
-      // (which iterates every actionLinks entry) in the rule below. With the full-validation
-      // rule tried first, resources carrying a populated actionLinks array could exhaust
-      // that shared budget before this rule was even reached, denying reorders that should
-      // have been allowed by this rule alone.
+      // grant immediately without ever paying for the cost of the full-validation rule below.
+      //
+      // Scalar fields (title/description/url/isPublished/isActive/postedBy) are checked
+      // for equality so this can't be used to sneak a content edit through as a fake
+      // "reorder" by a non-author, non-privileged advisor. serviceChips and actionLinks
+      // are deliberately NOT compared here: comparing either array (via .diff() or a direct
+      // == on the field) was empirically the expensive operation blowing the shared budget
+      // — not validateBulletinData's own array walk. With both rules attempting an
+      // array comparison on the same request (this rule failing to grant, then falling
+      // through to the rule below), a resource with actionLinks could exhaust the budget
+      // before either rule finished, denying an ordinary content edit outright.
+      //
+      // Residual risk: a non-author, non-privileged active advisor could in principle craft
+      // a raw request that changes serviceChips/actionLinks while satisfying this rule's
+      // other checks, bypassing the author/privileged restriction the rule below enforces
+      // for those two fields. The legitimate client (reorderResourcesInCategory in
+      // board-resources.js) never sends those fields here, so this is not exploitable
+      // through the app's UI — only by an authenticated staff account deliberately
+      // hand-crafting a request. Accepted given every other approach tried (full .diff(),
+      // per-field == including the arrays, element-wise array comparison) still exhausted
+      // the budget when both rules were evaluated for the same write; re-tighten this if
+      // Firestore's cost model changes or a cheaper array-equality path is found.
       allow update: if isActiveAdvisor(request.auth)
         && resource.data.type == 'resource'
         && request.resource.data.type == 'resource'
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['resourceOrder', 'updatedAt'])
+        && request.resource.data.titleEn == resource.data.titleEn
+        && request.resource.data.description == resource.data.description
+        && request.resource.data.url == resource.data.url
+        && request.resource.data.isPublished == resource.data.isPublished
+        && request.resource.data.isActive == resource.data.isActive
+        && request.resource.data.postedBy == resource.data.postedBy
         && (request.resource.data.resourceOrder == null
           || ((request.resource.data.resourceOrder is int || request.resource.data.resourceOrder is float)
             && request.resource.data.resourceOrder >= 0
