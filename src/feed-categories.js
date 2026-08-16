@@ -157,3 +157,23 @@ export function getPostCategoryDisplay(category) {
 export function isPostCategoryId(category) {
     return Boolean(POST_CATEGORY_BY_ID[normalizePostCategory(category)]);
 }
+
+/** Student feed filters match the post's topic, not leftover classType/tags. */
+export function bulletinMatchesPostCategory(bulletin, category) {
+    const wanted = normalizePostCategory(category);
+    if (!wanted || wanted === 'all') {
+        return true;
+    }
+
+    const rawValues = [bulletin?.category];
+    if (Array.isArray(bulletin?.categories)) {
+        rawValues.push(...bulletin.categories);
+    } else if (typeof bulletin?.categories === 'string') {
+        rawValues.push(...bulletin.categories.split(','));
+    }
+
+    return rawValues
+        .filter(Boolean)
+        .map((value) => normalizePostCategory(String(value).trim().toLowerCase()))
+        .includes(wanted);
+}

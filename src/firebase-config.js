@@ -2,7 +2,7 @@ import { db } from './firebase-student.js'
 import { applyResourceLogos, fetchAllResourceLogos } from './resource-logos.js'
 import { STUDENT_ADVISOR_DIRECTORY } from './advisor-directory.js'
 import { installClientErrorLogger } from './error-logger.js'
-import { normalizePostCategory, getPostCategoryDisplay, POST_CATEGORIES } from './feed-categories.js'
+import { normalizePostCategory, getPostCategoryDisplay, getPostCategoryMeta, bulletinMatchesPostCategory, POST_CATEGORIES } from './feed-categories.js'
 import { RESOURCE_TILE_CATEGORIES } from './resource-categories.js'
 import {
     getActionResourceChipLabel,
@@ -1280,13 +1280,16 @@ class FirebaseBulletinBoard {
 
         const category = this.currentFeedCategory || 'all';
         const content = FEED_CATEGORY_CONTENT[category] || FEED_CATEGORY_CONTENT.all;
+        const meta = getPostCategoryMeta(category);
         const isAll = category === 'all';
 
         const isEs = (document.body.getAttribute('data-lang') || 'EN') === 'ES';
 
         header.hidden = isAll;
         icon.textContent = content.icon;
-        title.textContent = isEs ? (content.titleEs || content.title) : content.title;
+        title.textContent = isEs
+            ? (meta?.filterLabelEs || content.titleEs || content.title)
+            : (meta?.filterLabelEn || content.title);
 
         if (findHelpLink) {
             const resourceCategory = FEED_CATEGORY_TO_RESOURCE_CATEGORY[category];
@@ -1673,8 +1676,7 @@ class FirebaseBulletinBoard {
     }
 
     bulletinMatchesCategory(bulletin, category) {
-        const normalizedCategory = this.normalizeFeedCategory(category);
-        return this.getBulletinCategoryKeys(bulletin).includes(normalizedCategory);
+        return bulletinMatchesPostCategory(bulletin, category);
     }
 
     getResourceCategoryConfig(resource) {

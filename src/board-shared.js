@@ -219,10 +219,10 @@ export const FEED_CATEGORY_CONTENT = {
     },
     esol: {
         icon: '📘',
-        title: 'Free Classes',
-        titleEs: 'Clases gratuitas',
-        description: 'Find English classes, adult education, GED, and student support.',
-        chips: ['English Class', 'GED', 'Conversation', 'Career English']
+        title: 'English class',
+        titleEs: 'Inglés',
+        description: 'Find English classes, conversation groups, and ESOL support.',
+        chips: ['English Class', 'Conversation', 'ESOL']
     },
     college: {
         icon: '🎓',
