@@ -69,7 +69,7 @@ How it works:
 - Emulator ports and config live in `firebase.json`'s `emulators` block (Firestore 8080, Auth 9099, Storage 9199, UI 4000).
 - Tests don't need real-looking seed data: nearly every spec overwrites `window.bulletinBoard.bulletins` with an inline fixture via `page.evaluate` before asserting, so the emulator just needs to be reachable and return fast (mostly empty) responses for that first real-data page load.
 
-**Requires Java** (the Firestore emulator is JVM-based). GitHub's `ubuntu-latest` runners get it via an explicit `actions/setup-java@v4` step in both `deploy.yml` and `full-test-matrix.yml`. To run tests locally: `brew install openjdk` (macOS, keg-only — add `/opt/homebrew/opt/openjdk/bin` to your `PATH`), or your OS's equivalent.
+**Requires Java** (the Firestore emulator is JVM-based). GitHub's `ubuntu-latest` runners get it via an explicit `actions/setup-java@v5` step in both `deploy.yml` and `full-test-matrix.yml`. To run tests locally: `brew install openjdk` (macOS, keg-only — add `/opt/homebrew/opt/openjdk/bin` to your `PATH`), or your OS's equivalent.
 
 ## Billing and usage
 
@@ -89,6 +89,6 @@ The refresh workflow runs `npm run build` (which regenerates the snapshot) and d
 
 - **Never audit against `public/student-feed-snapshot.json`.** It's a first-paint cache only, refreshed by a push to `main` or the daily 09:00 UTC cron — nothing regenerates it when an advisor saves an edit in the portal, so the copy in the repo (or even a recent-looking deploy) can trail live Firestore by days or weeks. For anything that needs current data (link audits, content checks, counting resources), use `scripts/dump-live-resources.mjs` instead, which reads Firestore directly: `GOOGLE_APPLICATION_CREDENTIALS=./service-account.json node scripts/dump-live-resources.mjs --json`. (Learned the hard way in August 2026 — a resource-link audit flagged 4 resources as broken/dead that had already been fixed live, because it read the stale snapshot file.)
 - **Contact email:** `index.html` currently lists `mcreed@ebhcs.org` as the student-facing contact (two places — search the file). When Marlie is no longer reachable, change this to a monitored address and redeploy. See [SUCCESSION_CHECKLIST.md](SUCCESSION_CHECKLIST.md) for the full handoff steps.
-- **Node version:** use Node 20 (see `.nvmrc`; run `nvm use` if you have nvm).
+- **Node version:** use Node 22 (see `.nvmrc`; run `nvm use` if you have nvm).
 - **Custom domain:** the site runs on Firebase Hosting's default domain. If the school adds a custom domain later: Firebase Console → Hosting → "Add custom domain" (Firebase handles the SSL certificate; you only add DNS records at the domain registrar).
 - **Rollback:** Firebase Console → Hosting → Release history → "Rollback" instantly restores a previous version of the site without touching git.

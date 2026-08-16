@@ -2,6 +2,9 @@
   "name": "advisor-bulletin",
   "version": "1.0.0",
   "description": "EBHCS Advisor Bulletin Board",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "vite",
     "start": "vite",
