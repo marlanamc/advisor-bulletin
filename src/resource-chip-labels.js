@@ -257,7 +257,17 @@ const RESOURCE_CHIP_ES = {
     'ask the court to waive fees': 'Pedir que la corte exente los costos',
     'get money back on taxes': 'Recuperar dinero de sus impuestos',
     'get help with tps': 'Ayuda con TPS',
-    'renew your work permit': 'Renovar su permiso de trabajo'
+    'renew your work permit': 'Renovar su permiso de trabajo',
+    'get a salvadoran passport': 'Solicitar un pasaporte salvadoreño',
+    'get or renew my dui': 'Solicitar o renovar mi DUI',
+    'get help with salvadoran documents': 'Ayuda con documentos salvadoreños',
+    'get help paying for child care': 'Ayuda para pagar el cuidado de niños',
+    'learn your rights as a domestic worker': 'Conocer sus derechos como trabajadora del hogar',
+    'get help with a work problem': 'Ayuda con un problema en el trabajo',
+    'join a workshop': 'Unirse a un taller',
+    'get help finding a job': 'Ayuda para encontrar trabajo',
+    'find help for an older adult': 'Buscar ayuda para un adulto mayor',
+    'get help with care at home': 'Ayuda con cuidado en casa'
 };
 
 export const SUGGESTED_RESOURCE_CHIPS_BY_CATEGORY = {
