@@ -29,8 +29,10 @@ async function seedFeedPosts(page) {
       },
     ];
     window.bulletinBoard.bulletins = posts;
+    window.bulletinBoard.bulletinsHydrated = true;
     window.bulletinBoard.displayBulletins(posts);
   });
+  await expect(page.locator('#bulletinGrid')).toContainText('Online English Conversation Groups');
 }
 
 test.describe('Feed category filter', () => {
