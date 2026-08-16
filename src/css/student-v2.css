@@ -3619,8 +3619,8 @@ body[data-lang="ES"] .story-row-wrap--bilingual .story-bubble-label.es-text {
     flex-shrink: 0;
     display: inline-flex;
     align-items: center;
-    background: rgba(255, 255, 255, 0.08);
-    border: 1.5px solid rgba(255, 255, 255, 0.18);
+    background: color-mix(in srgb, var(--tint, #64748b) 16%, rgba(255, 255, 255, 0.06));
+    border: 1.5px solid color-mix(in srgb, var(--tint, #64748b) 30%, rgba(255, 255, 255, 0.14));
     color: #e2e8f0;
     border-radius: 999px;
     padding: 8px 16px;
@@ -3634,8 +3634,8 @@ body[data-lang="ES"] .story-row-wrap--bilingual .story-bubble-label.es-text {
 }
 
 .resource-need-hero-chip:hover {
-    background: rgba(255, 255, 255, 0.16);
-    border-color: rgba(255, 255, 255, 0.35);
+    background: color-mix(in srgb, var(--tint, #64748b) 26%, rgba(255, 255, 255, 0.1));
+    border-color: color-mix(in srgb, var(--tint, #64748b) 42%, rgba(255, 255, 255, 0.24));
     color: #fff;
 }
 
@@ -3735,9 +3735,9 @@ body[data-lang="ES"] .story-row-wrap--bilingual .story-bubble-label.es-text {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    background: rgba(255, 255, 255, 0.08);
+    background: color-mix(in srgb, var(--tint, #64748b) 16%, rgba(255, 255, 255, 0.06));
     color: #e2e8f0;
-    border: 1px solid rgba(255, 255, 255, 0.16);
+    border: 1px solid color-mix(in srgb, var(--tint, #64748b) 30%, rgba(255, 255, 255, 0.14));
     padding: 7px 12px;
     border-radius: 999px;
     font-family: 'Plus Jakarta Sans', sans-serif;
@@ -3750,8 +3750,8 @@ body[data-lang="ES"] .story-row-wrap--bilingual .story-bubble-label.es-text {
 }
 
 .resource-need-chip:hover {
-    background: rgba(255, 255, 255, 0.14);
-    border-color: rgba(255, 255, 255, 0.28);
+    background: color-mix(in srgb, var(--tint, #64748b) 26%, rgba(255, 255, 255, 0.1));
+    border-color: color-mix(in srgb, var(--tint, #64748b) 42%, rgba(255, 255, 255, 0.24));
     color: #fff;
 }
 
@@ -3769,17 +3769,18 @@ body[data-lang="ES"] .story-row-wrap--bilingual .story-bubble-label.es-text {
     height: 20px;
     padding: 0 5px;
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.12);
+    background: color-mix(in srgb, var(--tint, #64748b) 22%, rgba(255, 255, 255, 0.1));
     font-size: 10px;
     font-weight: 700;
     line-height: 1;
-    color: rgba(255, 255, 255, 0.82);
+    color: color-mix(in srgb, var(--tint, #64748b) 35%, #ffffff);
 }
 
 .resource-need-chip.is-active {
     background: var(--tint);
     color: #fff;
-    border-color: var(--tint);
+    border-color: color-mix(in srgb, var(--tint) 80%, #ffffff);
+    box-shadow: 0 4px 14px -4px color-mix(in srgb, var(--tint) 55%, transparent);
 }
 
 .resource-need-chip.is-active .resource-need-chip__count {
