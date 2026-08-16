@@ -41,7 +41,7 @@ const NEW_RESOURCES = [
     summaryEs: 'Reciba ayuda con documentos salvadoreños como pasaportes, documentos de identidad (DUI) y otros servicios consulares. Puede hacer una cita en línea o llamar para recibir ayuda.',
     url: 'https://consuladoelsalvadorenusa.us/boston/',
     phone: '1-888-301-1130',
-    hours: 'Monday-Friday 6am-6pm; weekends 8am-12pm',
+    hours: 'Monday-Friday 8am-4pm (office); Monday-Friday 6am-6pm (phone); Saturday-Sunday 8am-12pm (phone)',
     services: ['Get a Salvadoran passport', 'Get or renew my DUI', 'Get help with Salvadoran documents'],
     resourceCategory: 'immigration',
     resourceIcon: 'shield',
