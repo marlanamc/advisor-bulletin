@@ -26,7 +26,9 @@ const UPDATES = [
   {
     id: 'Z6nHAJNi8iGKv2TsYreE',
     title: 'Agencia ALPHA',
-    serviceChips: ['Local East Boston office', 'Apply for citizenship'],
+    serviceChips: ['Get help with TPS', 'Renew your work permit', 'Apply for citizenship'],
+    description: 'Get help with immigration papers, TPS, work permit renewals, and family petitions. They also offer free citizenship help, citizenship classes, translation, and notary services. This office is in East Boston.',
+    summaryEs: 'Reciba ayuda con papeles de inmigración, TPS, renovación de permisos de trabajo y peticiones familiares. También ofrecen ayuda gratuita con la ciudadanía, clases de ciudadanía, traducción y servicios de notario. Esta oficina está en East Boston.',
   },
   {
     id: 'c1CzwnEaMjgyo6VVUB2k',

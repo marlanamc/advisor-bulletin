@@ -255,7 +255,9 @@ const RESOURCE_CHIP_ES = {
     'get a restraining order': 'Solicitar una orden de protección',
     'respond to an eviction or court case': 'Responder a un desalojo o caso judicial',
     'ask the court to waive fees': 'Pedir que la corte exente los costos',
-    'get money back on taxes': 'Recuperar dinero de sus impuestos'
+    'get money back on taxes': 'Recuperar dinero de sus impuestos',
+    'get help with tps': 'Ayuda con TPS',
+    'renew your work permit': 'Renovar su permiso de trabajo'
 };
 
 export const SUGGESTED_RESOURCE_CHIPS_BY_CATEGORY = {
