@@ -3,6 +3,7 @@
 // FirebaseBulletinBoard.prototype by applyMethods() in firebase-config.js.
 import {
     scrollWindowTo,
+    getAppHeaderOffset,
     RESOURCE_CATEGORY_CONFIG,
     STORY_BUBBLE_PREVIEW_CATEGORIES,
     RESOURCE_ICON_SVGS,
@@ -760,10 +761,7 @@ export class BoardResourcesMethods {
                 }
                 setActiveDesktopTopic(cat);
 
-                const headerOffset = parseInt(
-                    getComputedStyle(document.documentElement)
-                        .getPropertyValue('--app-header-offset') || '70', 10
-                );
+                const headerOffset = getAppHeaderOffset();
 
                 if (cat === 'all') {
                     const scrollTarget = sectionsContainer.closest('.resources-desktop-main') || sectionsContainer;
@@ -927,10 +925,7 @@ export class BoardResourcesMethods {
             });
         }
 
-        const headerOffset = parseInt(
-            getComputedStyle(document.documentElement).getPropertyValue('--app-header-offset') || '70',
-            10
-        );
+        const headerOffset = getAppHeaderOffset();
         const target = document.getElementById(`desktop-section-${category}`);
         if (target) {
             const top = window.scrollY + target.getBoundingClientRect().top - headerOffset - 16;
@@ -956,7 +951,7 @@ export class BoardResourcesMethods {
         this.switchView('resources', { preserveResourceNavigation: true, skipRender: true });
         this.renderResourcesSections(this.getPublishedResources());
 
-        if (isDesktop) {
+        if (isDesktop && !options.skipScroll) {
             requestAnimationFrame(() => {
                 this.scrollToDesktopResourceSection(resourceKey);
             });
@@ -972,16 +967,25 @@ export class BoardResourcesMethods {
         const resource = this.getPublishedResources().find((item) => item.id === resourceId);
         if (!resource) return;
 
-        this.navigateToResourceCategory(this.getResourceCategoryKey(resource));
+        this.navigateToResourceCategory(this.getResourceCategoryKey(resource), { skipScroll: true });
 
         const jumpToCard = () => {
             requestAnimationFrame(() => {
-                const card = document.querySelector(`[data-resource-id="${CSS.escape(resourceId)}"]`);
-                if (!card) return;
+                requestAnimationFrame(() => {
+                    const card = this.findVisibleResourceCard(resourceId);
+                    if (!card) return;
 
-                this.scrollElementBelowHeader(card, { gap: 24 });
-                card.classList.add('hash-highlight');
-                setTimeout(() => card.classList.remove('hash-highlight'), 2800);
+                    this.scrollElementBelowHeader(card, { gap: 24 });
+                    const pinBelowHeader = () => {
+                        if (card.getBoundingClientRect().top < getAppHeaderOffset() + 8) {
+                            this.scrollElementBelowHeader(card, { gap: 24, behavior: 'auto' });
+                        }
+                    };
+                    requestAnimationFrame(pinBelowHeader);
+                    setTimeout(pinBelowHeader, 450);
+                    card.classList.add('hash-highlight');
+                    setTimeout(() => card.classList.remove('hash-highlight'), 2800);
+                });
             });
         };
 
@@ -1208,12 +1212,19 @@ export class BoardResourcesMethods {
             return;
         }
 
-        const header = document.querySelector('header');
-        const headerHeight = header ? header.getBoundingClientRect().height : 0;
+        const headerHeight = getAppHeaderOffset();
         const gap = options.gap ?? 20;
         const top = window.scrollY + element.getBoundingClientRect().top - headerHeight - gap;
 
         scrollWindowTo(top, options.behavior);
+    }
+
+    findVisibleResourceCard(resourceId) {
+        const cards = document.querySelectorAll(`[data-resource-id="${CSS.escape(resourceId)}"]`);
+        return [...cards].find((card) => {
+            const rect = card.getBoundingClientRect();
+            return rect.width > 0 && rect.height > 0;
+        }) || cards[0] || null;
     }
 
     getStoryBubbleResources(resources) {

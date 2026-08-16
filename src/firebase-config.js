@@ -567,9 +567,7 @@ class FirebaseBulletinBoard {
                 const nextView = button.getAttribute('data-app-view');
                 if (nextView) {
                     this.switchView(nextView);
-                    if (button.hasAttribute('data-scroll-home')) {
-                        scrollWindowTo(0);
-                    }
+                    scrollWindowTo(0, 'auto');
                 }
             });
         });

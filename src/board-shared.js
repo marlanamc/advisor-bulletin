@@ -64,6 +64,16 @@ export function scrollWindowTo(top, behavior) {
     });
 }
 
+/** Pixels the fixed/sticky topbar occupies, for scroll-to-card math. */
+export function getAppHeaderOffset() {
+    const fromCss = parseFloat(
+        getComputedStyle(document.documentElement).getPropertyValue('--app-header-offset')
+    ) || 0;
+    const topbar = document.querySelector('.app-topbar') || document.querySelector('header');
+    const fromBox = topbar ? topbar.getBoundingClientRect().height : 0;
+    return Math.max(fromCss, fromBox, 0);
+}
+
 /** Optional synthetic items merged into student calendar / upcoming — not stored in Firestore. */
 export const SCHOOL_CALENDAR_ANCHORS = [];
 

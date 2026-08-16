@@ -80,4 +80,22 @@ test.describe('Desktop resource shortcuts', () => {
     await expect(page.locator('#resourceNeedActive')).toBeHidden();
     await expect(page.locator('#desktop-section-food .mobile-resource-card')).toHaveCount(4);
   });
+
+  test('header nav starts each page at the top', async ({ page }) => {
+    await page.evaluate(() => {
+      window.bulletinBoard.switchView('resources');
+      document.body.style.minHeight = '2400px';
+      window.scrollTo(0, 800);
+    });
+    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(100);
+
+    await page.locator('.desktop-topnav-btn[data-app-view="about"]').click();
+    await expect(page.locator('#aboutView')).toHaveClass(/active/);
+    expect(await page.evaluate(() => window.scrollY)).toBeLessThan(8);
+
+    await page.evaluate(() => window.scrollTo(0, 400));
+    await page.locator('.desktop-topnav-btn[data-app-view="resources"]').click();
+    await expect(page.locator('#resourcesView')).toHaveClass(/active/);
+    expect(await page.evaluate(() => window.scrollY)).toBeLessThan(8);
+  });
 });

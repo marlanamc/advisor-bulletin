@@ -175,6 +175,57 @@ test.describe('Unified search', () => {
     await expect(page.locator(`[data-resource-id="${resourceId}"]`).first()).toBeVisible();
   });
 
+  test('opening a resource result leaves the card title below the header', async ({ page }) => {
+    await page.evaluate(() => {
+      const now = new Date().toISOString();
+      const fillers = ['immigration', 'jobs', 'housing', 'health'].flatMap((category, index) => (
+        [1, 2, 3, 4].map((n) => ({
+          id: `res-filler-${category}-${n}`,
+          type: 'resource',
+          title: `${category} filler ${n}`,
+          titleEn: `${category} filler ${n}`,
+          titleEs: `${category} filler ${n}`,
+          category: 'resource',
+          resourceCategory: category,
+          description: 'Placeholder so the target card sits below the fold.',
+          url: 'https://example.org',
+          advisorName: 'Import',
+          datePosted: now,
+          isActive: true,
+          isPublished: true,
+          resourceOrder: index * 10 + n,
+        }))
+      ));
+      const board = window.bulletinBoard;
+      board.bulletins = [...fillers, ...board.bulletins];
+      board.displayBulletins(board.bulletins);
+    });
+
+    await openSearch(page, 'soup kitchen');
+    const resourceId = await page.locator('.search-result').first().getAttribute('data-search-result-id');
+    await page.locator('.search-result').first().click();
+
+    const card = page.locator(`[data-resource-id="${resourceId}"]`).locator('visible=true').first();
+    await expect(card).toBeVisible();
+    await expect(card.locator('.mobile-resource-card__title')).toContainText('East Boston Soup Kitchen');
+
+    await page.waitForTimeout(200);
+    const clearance = await page.evaluate((id) => {
+      const visibleCard = [...document.querySelectorAll(`[data-resource-id="${id}"]`)]
+        .find((el) => el.getBoundingClientRect().height > 0);
+      const header = document.querySelector('.app-topbar');
+      const title = visibleCard?.querySelector('.mobile-resource-card__title');
+      if (!visibleCard || !header || !title) return null;
+      return {
+        titleTop: title.getBoundingClientRect().top,
+        headerBottom: header.getBoundingClientRect().bottom,
+      };
+    }, resourceId);
+
+    expect(clearance).not.toBeNull();
+    expect(clearance.titleTop).toBeGreaterThanOrEqual(clearance.headerBottom - 2);
+  });
+
   test('closing search restores browsing and clears every box', async ({ page }) => {
     await openSearch(page, 'rent');
     await page.evaluate(() => window.bulletinBoard.closeSearchLayer());

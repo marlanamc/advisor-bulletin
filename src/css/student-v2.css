@@ -3271,6 +3271,7 @@ body[data-lang="ES"] .story-row-wrap--bilingual .story-bubble-label.es-text {
     background: #fff;
     margin: 0;
     padding: 20px;
+    scroll-margin-top: calc(var(--app-header-offset, 56px) + 24px);
     border-radius: 20px;
     box-shadow:
         0 1px 0 rgba(10, 29, 58, 0.04),
@@ -7171,6 +7172,7 @@ body[data-lang="ES"] .story-row-wrap--bilingual .story-bubble-label.es-text {
     display: flex;
     flex-direction: column;
     gap: 16px;
+    scroll-margin-top: calc(var(--app-header-offset, 56px) + 16px);
 }
 
 .desktop-section-header {
