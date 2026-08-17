@@ -1439,7 +1439,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             });
             rows.sort(function(a, b) { return b.value - a.value; });
-            noteEl.textContent = 'Level breakdown is only available for the eight most-requested industries.';
+            noteEl.textContent = 'Level split shown for top 8 industries only.';
         }
 
         workforceRenderBarChart(chartEl, rows);
@@ -1451,7 +1451,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var dot = document.createElement('span');
         dot.className = 'dot';
         badge.appendChild(dot);
-        badge.appendChild(document.createTextNode(label || 'Strong fit'));
+        badge.appendChild(document.createTextNode(label || 'Strong'));
         return badge;
     }
 
@@ -1524,12 +1524,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (titleEl && subEl) {
             if (tab === 'program-fit') {
-                titleEl.textContent = 'FY27 Program Fit';
-                subEl.textContent = 'How student interest and current English levels line up against the FY27 training programs under consideration.';
+                titleEl.textContent = 'Program fit';
+                subEl.textContent = 'FY27 training options matched to student interest and English level.';
             } else {
-                titleEl.textContent = 'FY26 Industry & Interest Report';
+                titleEl.textContent = 'Industry snapshot';
                 var stats = workforceReportCache && workforceReportCache.stats ? workforceReportCache.stats : {};
-                subEl.textContent = 'What ' + workforceFormatNumber(stats.students_analyzed || 0) + ' advising students want to work in, where they already work, and what their education goals are.';
+                subEl.textContent = workforceFormatNumber(stats.students_analyzed || 0) + ' students. Career interests, current jobs, and education goals.';
             }
         }
     }
@@ -1556,20 +1556,20 @@ document.addEventListener('DOMContentLoaded', function() {
             var fitStats = report.program_fit_stats || {};
             var metaEl = document.getElementById('workforceBannerMeta');
             if (metaEl) {
-                metaEl.textContent = 'Based on FY26 advising forms (English + Spanish) · aggregate data only, no student names · updated ' + (report.generated_on || 'recently');
+                metaEl.textContent = 'FY26 advising forms · de-identified · updated ' + (report.generated_on || 'recently');
             }
 
             workforceRenderStatCards(document.getElementById('workforceAnalysisStats'), [
-                { tone: 'blue', value: workforceFormatNumber(stats.students_analyzed), label: 'Students analyzed' },
-                { tone: 'green', value: workforceFormatNumber(stats.gave_career_goal), label: 'Gave a career goal' },
-                { tone: 'purple', value: workforceFormatNumber(stats.industries_represented), label: 'Industries represented' },
-                { tone: 'amber', value: (stats.top3_share_pct || 0) + '%', label: 'Share in top 3 industries' }
+                { tone: 'blue', value: workforceFormatNumber(stats.students_analyzed), label: 'Students' },
+                { tone: 'green', value: workforceFormatNumber(stats.gave_career_goal), label: 'Named a goal' },
+                { tone: 'purple', value: workforceFormatNumber(stats.industries_represented), label: 'Industries' },
+                { tone: 'amber', value: (stats.top3_share_pct || 0) + '%', label: 'Top 3 share' }
             ]);
 
             workforceRenderStatCards(document.getElementById('workforceProgramStats'), [
-                { tone: 'blue', value: workforceFormatNumber(fitStats.candidate_programs), label: 'Candidate programs' },
-                { tone: 'green', value: workforceFormatNumber(fitStats.strong_fit), label: 'Strong fit' },
-                { tone: 'amber', value: workforceFormatNumber(fitStats.needs_attention), label: 'Needs attention' },
+                { tone: 'blue', value: workforceFormatNumber(fitStats.candidate_programs), label: 'Programs' },
+                { tone: 'green', value: workforceFormatNumber(fitStats.strong_fit), label: 'Strong' },
+                { tone: 'amber', value: workforceFormatNumber(fitStats.needs_attention), label: 'Review' },
                 { tone: 'red', value: workforceFormatNumber(fitStats.blocked), label: 'Blocked' }
             ]);
 
@@ -1603,8 +1603,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('workforceStatusFilter'),
                 [
                     { value: 'all', label: 'All programs' },
-                    { value: 'good', label: 'Strong fit' },
-                    { value: 'warn', label: 'Needs attention' },
+                    { value: 'good', label: 'Strong' },
+                    { value: 'warn', label: 'Review' },
                     { value: 'bad', label: 'Blocked' }
                 ],
                 workforceActiveStatus,

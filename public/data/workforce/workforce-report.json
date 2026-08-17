@@ -21,16 +21,16 @@
     "blocked": 1
   },
   "analysis_summary": [
-    "**Healthcare, Office / Admin / Tech, and Construction Trades** are the top three industries students want to enter \u2014 46% of all mapped career goals.",
-    "Biggest opportunity gap: **Healthcare** and **Office / Admin / Tech**. Far more students want these jobs than currently hold one.",
-    "Most students (521 of 883) said their primary education goal is simply to **improve their English** \u2014 career-specific goals are the minority.",
-    "See the **FY27 Program Fit** tab for how these interests map against the specific training programs under consideration, including which ones are blocked or need more data."
+    "**Top 3:** Healthcare, Office / Admin / Tech, Construction Trades. They account for **46%** of mapped career goals.",
+    "**Largest gaps:** Healthcare and Office / Admin / Tech. More students want these jobs than hold them today.",
+    "**521 of 883** list improving English as their main goal. Fewer name a specific career path.",
+    "Open **Program fit** for FY27 training options, blockers, and headcount."
   ],
   "program_fit_summary": [
-    "**CPR/First Aid and ServSafe** are the best-fit FY27 programs right now \u2014 133 and 38 students are ready and eligible.",
-    "**Urban College Early Ed** is under review: only 11 of 77 interested students meet the language-level bar. Considering Bunker Hill CC as an alternative.",
-    "**YMCA Culinary Arts** requires work authorization \u2014 33 unclear and 30 likely ineligible among 63 interested students.",
-    "**Microsoft Office / Google Workspace** has universal interest (883 of 883), but 363 students' English level is unscreened \u2014 that's the real bottleneck, not demand."
+    "**CPR/First Aid** and **ServSafe** look strongest: **133** and **38** ready and eligible.",
+    "**Urban College Early Ed:** only **11 of 77** meet the level bar. Reviewing Bunker Hill CC instead.",
+    "**YMCA Culinary** needs work authorization. **33** unclear and **30** likely ineligible out of **63** interested.",
+    "**Office/Google cert** draws everyone, but **363** are still unscreened on English level."
   ],
   "program_fit": [
     {
@@ -45,9 +45,9 @@
       "ready_and_eligible": 133,
       "notes": "Short course; multilingual materials available",
       "status": "good",
-      "badge_label": "Strong fit",
+      "badge_label": "Strong",
       "badge_class": "ap-badge-green",
-      "note": "Short course; multilingual materials available"
+      "note": "Short course. Multilingual materials."
     },
     {
       "program": "Microsoft Office / Google Workspace Cert",
@@ -63,7 +63,7 @@
       "status": "warn",
       "badge_label": "363 unscreened",
       "badge_class": "ap-badge-amber",
-      "note": "Cross-cutting; many students expressed interest"
+      "note": "Broad interest across the roster."
     },
     {
       "program": "ServSafe Certification",
@@ -77,9 +77,9 @@
       "ready_and_eligible": 38,
       "notes": "Exam offered in Spanish and other languages; level 1 students pick up material fast",
       "status": "good",
-      "badge_label": "Strong fit",
+      "badge_label": "Strong",
       "badge_class": "ap-badge-green",
-      "note": "Exam offered in Spanish and other languages; level 1 students pick up material fast"
+      "note": "Spanish exam available. Level 1 friendly."
     },
     {
       "program": "College Prep / NECC",
@@ -95,7 +95,7 @@
       "status": "warn",
       "badge_label": "36 unscreened",
       "badge_class": "ap-badge-amber",
-      "note": "Counts students whose education goal mentions college"
+      "note": "Counts students with a college goal."
     },
     {
       "program": "Urban College Early Ed",
@@ -111,7 +111,7 @@
       "status": "warn",
       "badge_label": "25 unscreened",
       "badge_class": "ap-badge-amber",
-      "note": "College-level coursework - last cohort struggled; gate on level + orientation. Considering Bunker Hill instead this year pending Urban College feedback review."
+      "note": "Hard level gate. Reviewing Bunker Hill alt."
     },
     {
       "program": "YMCA Culinary Arts",
@@ -125,9 +125,9 @@
       "ready_and_eligible": 0,
       "notes": "Work-authorization dependent",
       "status": "bad",
-      "badge_label": "Work-auth blocked",
+      "badge_label": "Blocked",
       "badge_class": "ap-badge-expired",
-      "note": "Work-authorization dependent"
+      "note": "Requires work authorization."
     }
   ],
   "industry_demand": [
@@ -287,7 +287,7 @@
     "retail_customer_service"
   ],
   "industry_by_esol_level_stacked": {
-    "title": "Interest by ESOL level (top industries)",
+    "title": "Top industries by ESOL level",
     "legend_title": "ESOL level",
     "rows": [
       {
@@ -444,8 +444,8 @@
     }
   },
   "industry_by_work_docs_stacked": {
-    "title": "SSN/TIN status by desired industry (program-eligibility planning)",
-    "legend_title": "reported",
+    "title": "Work authorization by industry",
+    "legend_title": "Reported status",
     "rows": [
       {
         "industry": "healthcare",
