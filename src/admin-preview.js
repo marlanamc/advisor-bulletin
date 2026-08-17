@@ -1176,38 +1176,472 @@ document.addEventListener('DOMContentLoaded', function() {
         return Math.floor(days / 30) + ' month' + (days >= 60 ? 's' : '') + ' ago';
     }
 
-    // ── Workforce Report page (static, admin-only) ─────────────────
+    // ── Workforce Report page (interactive, admin-only) ────────────
     var workforceReportCache = null;
+    var workforceReportBound = false;
+    var workforceReportReady = false;
+    var workforceActiveTab = 'analysis';
+    var workforceActiveLevel = 'all';
+    var workforceActiveStatus = 'all';
+
+    function workforceClear(el) {
+        if (el) el.replaceChildren();
+    }
+
+    function workforceFormatNumber(value) {
+        var n = Number(value);
+        return Number.isFinite(n) ? n.toLocaleString('en-US') : '0';
+    }
+
+    function workforceAppendRichText(parent, text) {
+        String(text || '').split(/\*\*(.+?)\*\*/).forEach(function(part, index) {
+            if (!part) return;
+            if (index % 2 === 1) {
+                var strong = document.createElement('strong');
+                strong.textContent = part;
+                parent.appendChild(strong);
+            } else {
+                parent.appendChild(document.createTextNode(part));
+            }
+        });
+    }
+
+    function workforceRenderBulletList(container, items) {
+        workforceClear(container);
+        if (!items || !items.length) {
+            var empty = document.createElement('p');
+            empty.style.fontSize = '.82rem';
+            empty.style.color = 'var(--ap-text-3)';
+            empty.style.margin = '0';
+            empty.textContent = 'No summary available.';
+            container.appendChild(empty);
+            return;
+        }
+        var list = document.createElement('ul');
+        items.forEach(function(item) {
+            var li = document.createElement('li');
+            workforceAppendRichText(li, item);
+            list.appendChild(li);
+        });
+        container.appendChild(list);
+    }
+
+    function workforceRenderStatCards(container, cards) {
+        workforceClear(container);
+        if (!container) return;
+        cards.forEach(function(card) {
+            var wrap = document.createElement('div');
+            wrap.className = 'ap-stat-card ap-stat-' + card.tone;
+            var value = document.createElement('div');
+            value.className = 'ap-stat-value';
+            value.textContent = String(card.value);
+            var label = document.createElement('div');
+            label.className = 'ap-stat-label';
+            label.textContent = card.label;
+            wrap.appendChild(value);
+            wrap.appendChild(label);
+            container.appendChild(wrap);
+        });
+    }
+
+    function workforceRenderFilterPills(container, pills, activeValue, attrName, onClick) {
+        workforceClear(container);
+        if (!container) return;
+        pills.forEach(function(pill) {
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'ap-filter-pill' + (pill.value === activeValue ? ' active' : '');
+            btn.setAttribute('aria-pressed', pill.value === activeValue ? 'true' : 'false');
+            btn.setAttribute('data-' + attrName, pill.value);
+            btn.textContent = pill.label;
+            btn.addEventListener('click', function() { onClick(pill.value, btn); });
+            container.appendChild(btn);
+        });
+    }
+
+    function workforceCreateBarRow(row) {
+        var wrap = document.createElement('div');
+        wrap.className = 'ap-workforce-barrow';
+        var label = document.createElement('span');
+        label.className = 'label';
+        label.textContent = row.label;
+        var track = document.createElement('span');
+        track.className = 'track';
+        var fill = document.createElement('span');
+        fill.className = 'fill';
+        fill.style.transform = 'scaleX(' + row.scale + ')';
+        track.appendChild(fill);
+        var val = document.createElement('span');
+        val.className = 'val';
+        val.textContent = workforceFormatNumber(row.value);
+        wrap.appendChild(label);
+        wrap.appendChild(track);
+        wrap.appendChild(val);
+        return wrap;
+    }
+
+    function workforceRenderBarChart(container, rows) {
+        workforceClear(container);
+        if (!container) return;
+        if (!rows.length) {
+            var note = document.createElement('p');
+            note.className = 'ap-workforce-empty-note';
+            note.textContent = 'No data for this view.';
+            container.appendChild(note);
+            return;
+        }
+        var max = Math.max.apply(null, rows.map(function(row) { return row.value; }).concat([1]));
+        rows.forEach(function(row) {
+            container.appendChild(workforceCreateBarRow({
+                label: row.label,
+                value: row.value,
+                scale: row.value / max
+            }));
+        });
+    }
+
+    function workforceRenderGapChart(container, rows) {
+        workforceClear(container);
+        if (!container) return;
+        rows.forEach(function(row) {
+            var wrap = document.createElement('div');
+            wrap.className = 'ap-workforce-grouprow';
+            var label = document.createElement('span');
+            label.className = 'label';
+            label.textContent = row.label;
+            var tracks = document.createElement('span');
+            tracks.className = 'tracks';
+            ['current', 'desired'].forEach(function(kind) {
+                var track = document.createElement('span');
+                track.className = 'track';
+                var fill = document.createElement('span');
+                fill.className = 'fill ' + kind;
+                fill.style.transform = 'scaleX(' + (kind === 'current' ? row.current_scale : row.desired_scale) + ')';
+                track.appendChild(fill);
+                tracks.appendChild(track);
+            });
+            wrap.appendChild(label);
+            wrap.appendChild(tracks);
+            container.appendChild(wrap);
+        });
+    }
+
+    function workforceIsLightSegment(color) {
+        var hex = String(color || '').replace('#', '');
+        if (hex.length !== 6) return false;
+        var r = parseInt(hex.slice(0, 2), 16);
+        var g = parseInt(hex.slice(2, 4), 16);
+        var b = parseInt(hex.slice(4, 6), 16);
+        var luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+        return luminance > 0.72;
+    }
+
+    function workforceRenderStackLegend(container, chartData) {
+        workforceClear(container);
+        if (!container || !chartData) return;
+        var order = chartData.segment_order || [];
+        var meta = chartData.segment_meta || {};
+        if (chartData.legend_title) {
+            var title = document.createElement('span');
+            title.className = 'ap-workforce-stack-legend-title';
+            title.textContent = chartData.legend_title + ':';
+            container.appendChild(title);
+        }
+        order.forEach(function(key) {
+            var info = meta[key] || { label: key, color: '#c3c2b7' };
+            var item = document.createElement('span');
+            item.className = 'ap-workforce-stack-legend-item';
+            var sw = document.createElement('span');
+            sw.className = 'sw';
+            sw.style.background = info.color;
+            var text = document.createElement('span');
+            text.textContent = info.label;
+            item.appendChild(sw);
+            item.appendChild(text);
+            container.appendChild(item);
+        });
+    }
+
+    function workforceRenderStackedChart(container, chartData) {
+        workforceClear(container);
+        if (!container || !chartData) return;
+        var rows = chartData.rows || [];
+        if (!rows.length) {
+            var note = document.createElement('p');
+            note.className = 'ap-workforce-empty-note';
+            note.textContent = 'No data for this view.';
+            container.appendChild(note);
+            return;
+        }
+
+        var order = chartData.segment_order || [];
+        var meta = chartData.segment_meta || {};
+        var maxTotal = Math.max.apply(null, rows.map(function(row) { return row.total; }).concat([1]));
+
+        rows.forEach(function(row) {
+            var wrap = document.createElement('div');
+            wrap.className = 'ap-workforce-stackrow';
+
+            var label = document.createElement('span');
+            label.className = 'label';
+            label.textContent = row.label;
+
+            var trackWrap = document.createElement('div');
+            trackWrap.className = 'ap-workforce-stack-track-wrap';
+            var track = document.createElement('div');
+            track.className = 'ap-workforce-stack-track';
+            track.style.width = Math.round((row.total / maxTotal) * 100) + '%';
+
+            order.forEach(function(key) {
+                var value = Number((row.segments && row.segments[key]) || 0);
+                if (value <= 0) return;
+                var info = meta[key] || { color: '#c3c2b7' };
+                var seg = document.createElement('span');
+                seg.className = 'ap-workforce-stack-seg';
+                if (workforceIsLightSegment(info.color)) seg.classList.add('is-light');
+                seg.style.flex = value + ' 0 0';
+                seg.style.background = info.color;
+                if (value >= maxTotal * 0.05) seg.textContent = String(value);
+                track.appendChild(seg);
+            });
+
+            trackWrap.appendChild(track);
+            wrap.appendChild(label);
+            wrap.appendChild(trackWrap);
+            container.appendChild(wrap);
+        });
+    }
+
+    function workforceRenderLevelChart(report, level) {
+        var chartEl = document.getElementById('workforceLevelChart');
+        var noteEl = document.getElementById('workforceLevelNote');
+        if (!chartEl || !noteEl) return;
+
+        var breakdown = report.industry_by_esol_level || {};
+        var totals = report.industry_totals || {};
+        var rows = [];
+
+        if (level === 'all') {
+            Object.keys(totals).forEach(function(slug) {
+                var demandRow = (report.industry_demand || []).find(function(item) { return item.industry === slug; });
+                rows.push({ label: demandRow ? demandRow.label : slug, value: totals[slug] });
+            });
+            rows.sort(function(a, b) { return b.value - a.value; });
+            noteEl.textContent = '';
+        } else {
+            var industries = report.esol_breakdown_industries || Object.keys(breakdown);
+            industries.forEach(function(slug) {
+                var demandRow = (report.industry_demand || []).find(function(item) { return item.industry === slug; });
+                var levelCounts = breakdown[slug] || {};
+                rows.push({
+                    label: demandRow ? demandRow.label : slug,
+                    value: Number(levelCounts[level] || 0)
+                });
+            });
+            rows.sort(function(a, b) { return b.value - a.value; });
+            noteEl.textContent = 'Level breakdown is only available for the eight most-requested industries.';
+        }
+
+        workforceRenderBarChart(chartEl, rows);
+    }
+
+    function workforceCreateBadge(label, badgeClass) {
+        var badge = document.createElement('span');
+        badge.className = 'ap-badge ' + (badgeClass || 'ap-badge-green');
+        var dot = document.createElement('span');
+        dot.className = 'dot';
+        badge.appendChild(dot);
+        badge.appendChild(document.createTextNode(label || 'Strong fit'));
+        return badge;
+    }
+
+    function workforceRenderProgramRows(report, status) {
+        var tbody = document.getElementById('workforceProgramRows');
+        workforceClear(tbody);
+        if (!tbody) return;
+
+        var rows = report.program_fit || [];
+        if (!rows.length) {
+            var emptyRow = document.createElement('tr');
+            var emptyCell = document.createElement('td');
+            emptyCell.colSpan = 7;
+            emptyCell.style.fontSize = '.82rem';
+            emptyCell.style.color = 'var(--ap-text-3)';
+            emptyCell.textContent = 'No program-fit data yet.';
+            emptyRow.appendChild(emptyCell);
+            tbody.appendChild(emptyRow);
+            return;
+        }
+
+        rows.forEach(function(row) {
+            var tr = document.createElement('tr');
+            tr.setAttribute('data-status', row.status || 'good');
+            if (status !== 'all' && row.status !== status) tr.classList.add('is-hidden');
+
+            [
+                { text: row.program, cls: '' },
+                { text: workforceFormatNumber(row.interested), cls: 'num' },
+                { text: workforceFormatNumber(row.level_ready), cls: 'num' },
+                { text: workforceFormatNumber(row.level_unknown), cls: 'num' },
+                { text: workforceFormatNumber(row.ready_and_eligible), cls: 'num' }
+            ].forEach(function(cellData) {
+                var td = document.createElement('td');
+                if (cellData.cls) td.className = cellData.cls;
+                td.textContent = cellData.text;
+                tr.appendChild(td);
+            });
+
+            var statusCell = document.createElement('td');
+            statusCell.appendChild(workforceCreateBadge(row.badge_label, row.badge_class));
+            tr.appendChild(statusCell);
+
+            var noteCell = document.createElement('td');
+            noteCell.className = 'note-cell';
+            noteCell.textContent = row.note || row.notes || '';
+            tr.appendChild(noteCell);
+            tbody.appendChild(tr);
+        });
+    }
+
+    function workforceSetActiveTab(tab) {
+        workforceActiveTab = tab;
+        var analysisBtn = document.getElementById('workforceTabAnalysis');
+        var programBtn = document.getElementById('workforceTabProgramFit');
+        var analysisPanel = document.getElementById('workforcePanelAnalysis');
+        var programPanel = document.getElementById('workforcePanelProgramFit');
+        var titleEl = document.getElementById('workforceBannerTitle');
+        var subEl = document.getElementById('workforceBannerSub');
+
+        if (analysisBtn && programBtn && analysisPanel && programPanel) {
+            var isAnalysis = tab === 'analysis';
+            analysisBtn.classList.toggle('active', isAnalysis);
+            programBtn.classList.toggle('active', !isAnalysis);
+            analysisBtn.setAttribute('aria-selected', isAnalysis ? 'true' : 'false');
+            programBtn.setAttribute('aria-selected', !isAnalysis ? 'true' : 'false');
+            analysisPanel.hidden = !isAnalysis;
+            programPanel.hidden = isAnalysis;
+        }
+
+        if (titleEl && subEl) {
+            if (tab === 'program-fit') {
+                titleEl.textContent = 'FY27 Program Fit';
+                subEl.textContent = 'How student interest and current English levels line up against the FY27 training programs under consideration.';
+            } else {
+                titleEl.textContent = 'FY26 Industry & Interest Report';
+                var stats = workforceReportCache && workforceReportCache.stats ? workforceReportCache.stats : {};
+                subEl.textContent = 'What ' + workforceFormatNumber(stats.students_analyzed || 0) + ' advising students want to work in, where they already work, and what their education goals are.';
+            }
+        }
+    }
+
+    function workforceBindTabButtons() {
+        if (workforceReportBound) return;
+        workforceReportBound = true;
+
+        var tabAnalysis = document.getElementById('workforceTabAnalysis');
+        var tabProgram = document.getElementById('workforceTabProgramFit');
+        if (tabAnalysis) tabAnalysis.addEventListener('click', function() { workforceSetActiveTab('analysis'); });
+        if (tabProgram) tabProgram.addEventListener('click', function() { workforceSetActiveTab('program-fit'); });
+    }
 
     function renderWorkforcePage() {
-        var headlineEl = document.getElementById('workforceHeadline');
-        var tableBody = document.querySelector('#workforceProgramTable tbody');
-        if (!headlineEl || !tableBody) return;
+        var loadingEl = document.getElementById('workforceLoading');
+        var contentEl = document.getElementById('workforceContent');
+        if (!loadingEl || !contentEl) return;
 
-        var render = function(report) {
-            headlineEl.textContent = report.headline || 'No summary available.';
-            var rows = report.program_fit || [];
-            if (!rows.length) {
-                tableBody.innerHTML = '<tr><td colspan="6" style="font-size:.82rem;color:var(--ap-text-3);">No program-fit data yet.</td></tr>';
-                return;
+        var paint = function(report) {
+            if (workforceReportReady) return;
+            workforceReportReady = true;
+            var stats = report.stats || {};
+            var fitStats = report.program_fit_stats || {};
+            var metaEl = document.getElementById('workforceBannerMeta');
+            if (metaEl) {
+                metaEl.textContent = 'Based on FY26 advising forms (English + Spanish) · aggregate data only, no student names · updated ' + (report.generated_on || 'recently');
             }
-            tableBody.innerHTML = rows.map(function(r) {
-                var authReq = String(r.workauth_required).toLowerCase() === 'yes' ? 'Yes' : 'No';
-                return '<tr>' +
-                    '<td>' + escHtml(r.program) + '</td>' +
-                    '<td>' + escHtml(r.interested) + '</td>' +
-                    '<td>' + escHtml(r.level_ready) + '</td>' +
-                    '<td>' + authReq + '</td>' +
-                    '<td>' + escHtml(r.ready_and_eligible) + '</td>' +
-                    '<td>' + escHtml(r.notes || '') + '</td>' +
-                '</tr>';
-            }).join('');
+
+            workforceRenderStatCards(document.getElementById('workforceAnalysisStats'), [
+                { tone: 'blue', value: workforceFormatNumber(stats.students_analyzed), label: 'Students analyzed' },
+                { tone: 'green', value: workforceFormatNumber(stats.gave_career_goal), label: 'Gave a career goal' },
+                { tone: 'purple', value: workforceFormatNumber(stats.industries_represented), label: 'Industries represented' },
+                { tone: 'amber', value: (stats.top3_share_pct || 0) + '%', label: 'Share in top 3 industries' }
+            ]);
+
+            workforceRenderStatCards(document.getElementById('workforceProgramStats'), [
+                { tone: 'blue', value: workforceFormatNumber(fitStats.candidate_programs), label: 'Candidate programs' },
+                { tone: 'green', value: workforceFormatNumber(fitStats.strong_fit), label: 'Strong fit' },
+                { tone: 'amber', value: workforceFormatNumber(fitStats.needs_attention), label: 'Needs attention' },
+                { tone: 'red', value: workforceFormatNumber(fitStats.blocked), label: 'Blocked' }
+            ]);
+
+            workforceRenderBulletList(document.getElementById('workforceAnalysisSummary'), report.analysis_summary);
+            workforceRenderBulletList(document.getElementById('workforceProgramSummary'), report.program_fit_summary);
+
+            workforceRenderFilterPills(
+                document.getElementById('workforceLevelFilter'),
+                [
+                    { value: 'all', label: 'All levels' },
+                    { value: '1', label: 'Level 1' },
+                    { value: '2', label: 'Level 2' },
+                    { value: '3', label: 'Level 3' },
+                    { value: '4', label: 'Level 4' },
+                    { value: 'unknown', label: 'Level unknown' }
+                ],
+                workforceActiveLevel,
+                'level',
+                function(nextLevel) {
+                    workforceActiveLevel = nextLevel;
+                    document.querySelectorAll('#workforceLevelFilter .ap-filter-pill').forEach(function(pill) {
+                        var active = pill.getAttribute('data-level') === nextLevel;
+                        pill.classList.toggle('active', active);
+                        pill.setAttribute('aria-pressed', active ? 'true' : 'false');
+                    });
+                    workforceRenderLevelChart(report, workforceActiveLevel);
+                }
+            );
+
+            workforceRenderFilterPills(
+                document.getElementById('workforceStatusFilter'),
+                [
+                    { value: 'all', label: 'All programs' },
+                    { value: 'good', label: 'Strong fit' },
+                    { value: 'warn', label: 'Needs attention' },
+                    { value: 'bad', label: 'Blocked' }
+                ],
+                workforceActiveStatus,
+                'status',
+                function(nextStatus) {
+                    workforceActiveStatus = nextStatus;
+                    document.querySelectorAll('#workforceStatusFilter .ap-filter-pill').forEach(function(pill) {
+                        var active = pill.getAttribute('data-status') === nextStatus;
+                        pill.classList.toggle('active', active);
+                        pill.setAttribute('aria-pressed', active ? 'true' : 'false');
+                    });
+                    workforceRenderProgramRows(report, workforceActiveStatus);
+                }
+            );
+
+            workforceRenderLevelChart(report, workforceActiveLevel);
+            workforceRenderGapChart(document.getElementById('workforceGapChart'), report.current_vs_desired || []);
+            workforceRenderStackLegend(document.getElementById('workforceEsolStackLegend'), report.industry_by_esol_level_stacked);
+            workforceRenderStackedChart(document.getElementById('workforceEsolStackChart'), report.industry_by_esol_level_stacked);
+            workforceRenderStackLegend(document.getElementById('workforceDocsStackLegend'), report.industry_by_work_docs_stacked);
+            workforceRenderStackedChart(document.getElementById('workforceDocsStackChart'), report.industry_by_work_docs_stacked);
+            workforceRenderBarChart(document.getElementById('workforceGoalsChart'), (report.education_goals || []).map(function(goal) {
+                return { label: goal.label, value: goal.students };
+            }));
+            workforceRenderProgramRows(report, workforceActiveStatus);
+            workforceSetActiveTab(workforceActiveTab);
+            workforceBindTabButtons();
+
+            loadingEl.hidden = true;
+            contentEl.hidden = false;
         };
 
         if (workforceReportCache) {
-            render(workforceReportCache);
+            paint(workforceReportCache);
             return;
         }
+
         fetch('/data/workforce/workforce-report.json')
             .then(function(res) {
                 if (!res.ok) throw new Error('workforce-report.json ' + res.status);
@@ -1215,12 +1649,11 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(function(report) {
                 workforceReportCache = report;
-                render(report);
+                paint(report);
             })
             .catch(function(err) {
                 console.error('Error loading workforce report:', err);
-                headlineEl.textContent = 'Could not load the workforce report. Run src/export_bulletin.py in ed-career-plan and redeploy.';
-                tableBody.innerHTML = '<tr><td colspan="6" style="font-size:.82rem;color:var(--ap-text-3);">Unavailable.</td></tr>';
+                loadingEl.textContent = 'Could not load the workforce report. Run src/export_bulletin.py in ed-career-plan and redeploy.';
             });
     }
 

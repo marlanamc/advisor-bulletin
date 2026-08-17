@@ -790,59 +790,126 @@
                      PAGE: WORKFORCE REPORT
                      ══════════════════════════════════════ -->
                 <div id="apPageWorkforce" class="ap-page">
-                    <div class="ap-stats-header">
-                        <h1>Workforce Report</h1>
-                        <p>ARPA workforce/advising data, de-identified — industry demand, current-vs-desired gap, and program fit. Admin-only.</p>
-                    </div>
+                    <div id="workforceReportRoot" class="ap-workforce-report">
+                        <p id="workforceLoading" class="ap-workforce-loading">Loading workforce report…</p>
+                        <div id="workforceContent" hidden>
+                            <header class="ap-workforce-banner">
+                                <div class="ap-workforce-eyebrow">Advisor Portal · EBHCS · Data &amp; Planning</div>
+                                <h1 id="workforceBannerTitle" class="ap-workforce-title">FY26 Industry &amp; Interest Report</h1>
+                                <p id="workforceBannerSub" class="ap-workforce-sub"></p>
+                                <div id="workforceBannerMeta" class="ap-workforce-meta"></div>
+                            </header>
 
-                    <div id="workforceHeadline" class="ap-workforce-headline">
-                        <p style="font-size:.82rem;color:var(--ap-text-3);">Loading…</p>
-                    </div>
+                            <div class="ap-workforce-tabs" role="tablist" aria-label="Workforce report sections">
+                                <button id="workforceTabAnalysis" class="ap-workforce-tab active" type="button" role="tab" aria-selected="true" aria-controls="workforcePanelAnalysis" data-tab="analysis">Summary &amp; Analysis</button>
+                                <button id="workforceTabProgramFit" class="ap-workforce-tab" type="button" role="tab" aria-selected="false" aria-controls="workforcePanelProgramFit" data-tab="program-fit">FY27 Program Fit</button>
+                            </div>
 
-                    <div class="ap-chart-grid ap-workforce-charts">
-                        <div class="ap-chart-card">
-                            <div class="ap-chart-card-title">Where students want to work</div>
-                            <img src="/data/workforce/industry_demand.png" alt="Desired industry demand chart" class="ap-workforce-figure" loading="lazy">
-                        </div>
-                        <div class="ap-chart-card">
-                            <div class="ap-chart-card-title">Current vs. desired industry (the training gap)</div>
-                            <img src="/data/workforce/current_vs_desired.png" alt="Current versus desired industry chart" class="ap-workforce-figure" loading="lazy">
-                        </div>
-                        <div class="ap-chart-card">
-                            <div class="ap-chart-card-title">Desired industry by ESOL level</div>
-                            <img src="/data/workforce/industry_by_esol_level.png" alt="Industry by ESOL level chart" class="ap-workforce-figure" loading="lazy">
-                        </div>
-                        <div class="ap-chart-card">
-                            <div class="ap-chart-card-title">Desired industry by work-authorization status</div>
-                            <img src="/data/workforce/industry_by_work_docs.png" alt="Industry by work documentation status chart" class="ap-workforce-figure" loading="lazy">
-                        </div>
-                        <div class="ap-chart-card">
-                            <div class="ap-chart-card-title">Education goals</div>
-                            <img src="/data/workforce/education_goals.png" alt="Education goals chart" class="ap-workforce-figure" loading="lazy">
-                        </div>
-                    </div>
+                            <div id="workforcePanelAnalysis" class="ap-workforce-panel" role="tabpanel" aria-labelledby="workforceTabAnalysis">
+                                <div id="workforceAnalysisStats" class="ap-stats-grid"></div>
+                                <section class="ap-section-card">
+                                    <div class="ap-section-header ap-workforce-section-header">
+                                        <h2 class="ap-section-title">Summary</h2>
+                                    </div>
+                                    <div class="ap-section-body">
+                                        <div id="workforceAnalysisSummary" class="ap-workforce-callout ap-workforce-callout-green"></div>
+                                    </div>
+                                </section>
+                                <section class="ap-section-card">
+                                    <div class="ap-section-header ap-workforce-section-header">
+                                        <h2 class="ap-section-title">Desired industries</h2>
+                                        <p class="ap-workforce-section-desc">What students said they want to work in. Filter by current English level to see how interest breaks down for the eight most-requested industries.</p>
+                                    </div>
+                                    <div class="ap-section-body">
+                                        <div id="workforceLevelFilter" class="ap-filter-pills ap-workforce-filter-pills" role="group" aria-label="Filter by ESOL level"></div>
+                                        <div id="workforceLevelChart" class="ap-workforce-barchart"></div>
+                                        <p id="workforceLevelNote" class="ap-workforce-empty-note"></p>
+                                    </div>
+                                </section>
+                                <section class="ap-section-card">
+                                    <div class="ap-section-header ap-workforce-section-header">
+                                        <h2 class="ap-section-title">Current work vs. desired work</h2>
+                                        <p class="ap-workforce-section-desc">Compare where students currently work (grey) with where they want to work (green). All bars share the same scale — when green is longer, more students want that industry than work in it today.</p>
+                                    </div>
+                                    <div class="ap-section-body">
+                                        <div class="ap-workforce-group-legend">
+                                            <span><span class="sw sw-current"></span>Currently work in</span>
+                                            <span><span class="sw sw-desired"></span>Want to work in</span>
+                                        </div>
+                                        <div id="workforceGapChart" class="ap-workforce-grouprows"></div>
+                                    </div>
+                                </section>
+                                <div class="ap-workforce-two-col">
+                                    <section class="ap-section-card">
+                                        <div class="ap-section-header ap-workforce-section-header">
+                                            <h2 class="ap-section-title">Desired industry by ESOL level</h2>
+                                            <p class="ap-workforce-section-desc">Interest by ESOL level for the eight most-requested industries.</p>
+                                        </div>
+                                        <div class="ap-section-body">
+                                            <div id="workforceEsolStackLegend" class="ap-workforce-stack-legend"></div>
+                                            <div id="workforceEsolStackChart" class="ap-workforce-stackchart"></div>
+                                        </div>
+                                    </section>
+                                    <section class="ap-section-card">
+                                        <div class="ap-section-header ap-workforce-section-header">
+                                            <h2 class="ap-section-title">Desired industry by work-authorization status</h2>
+                                            <p class="ap-workforce-section-desc">SSN/TIN status by desired industry for program-eligibility planning.</p>
+                                        </div>
+                                        <div class="ap-section-body">
+                                            <div id="workforceDocsStackLegend" class="ap-workforce-stack-legend"></div>
+                                            <div id="workforceDocsStackChart" class="ap-workforce-stackchart"></div>
+                                        </div>
+                                    </section>
+                                </div>
+                                <section class="ap-section-card">
+                                    <div class="ap-section-header ap-workforce-section-header">
+                                        <h2 class="ap-section-title">Education goals</h2>
+                                        <p class="ap-workforce-section-desc">What students said their primary education goal is.</p>
+                                    </div>
+                                    <div class="ap-section-body">
+                                        <div id="workforceGoalsChart" class="ap-workforce-barchart"></div>
+                                    </div>
+                                </section>
+                            </div>
 
-                    <div class="ap-top-posts">
-                        <div class="ap-top-posts-header">
-                            <h3 class="ap-top-posts-title">Program Fit Matrix</h3>
-                            <span style="font-size:.75rem;color:var(--ap-text-3);">FY27 on-site training candidate pools, sorted by ready &amp; eligible</span>
-                        </div>
-                        <div class="ap-workforce-table-wrap">
-                            <table id="workforceProgramTable" class="ap-workforce-table">
-                                <thead>
-                                    <tr>
-                                        <th>Program</th>
-                                        <th>Interested</th>
-                                        <th>Level ready</th>
-                                        <th>Work auth req'd</th>
-                                        <th>Ready &amp; eligible</th>
-                                        <th>Notes</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr><td colspan="6" style="font-size:.82rem;color:var(--ap-text-3);">Loading…</td></tr>
-                                </tbody>
-                            </table>
+                            <div id="workforcePanelProgramFit" class="ap-workforce-panel" role="tabpanel" aria-labelledby="workforceTabProgramFit" hidden>
+                                <div id="workforceProgramStats" class="ap-stats-grid"></div>
+                                <section class="ap-section-card">
+                                    <div class="ap-section-header ap-workforce-section-header">
+                                        <h2 class="ap-section-title">What needs a decision</h2>
+                                    </div>
+                                    <div class="ap-section-body">
+                                        <div id="workforceProgramSummary" class="ap-workforce-callout ap-workforce-callout-amber"></div>
+                                    </div>
+                                </section>
+                                <section class="ap-section-card">
+                                    <div class="ap-section-header ap-workforce-section-header">
+                                        <h2 class="ap-section-title">Program-fit matrix</h2>
+                                        <p class="ap-workforce-section-desc">Interested = target industry match (or, for College Prep, an education goal mentioning college). Level-ready uses each program's minimum English level. Eligible counts confirmed-SSN answers only — an ITIN is a tax ID, not work authorization. Filter by status to focus on what needs attention.</p>
+                                    </div>
+                                    <div class="ap-section-body">
+                                        <div id="workforceStatusFilter" class="ap-filter-pills ap-workforce-filter-pills" role="group" aria-label="Filter by fit status"></div>
+                                        <div class="ap-workforce-table-wrap">
+                                            <table class="ap-workforce-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th scope="col">Program</th>
+                                                        <th class="num" scope="col">Interested</th>
+                                                        <th class="num" scope="col">Level-ready</th>
+                                                        <th class="num" scope="col">Level unknown</th>
+                                                        <th class="num" scope="col">Ready &amp; eligible</th>
+                                                        <th scope="col">Status</th>
+                                                        <th scope="col">Note</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="workforceProgramRows"></tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </section>
+                            </div>
+
+                            <p class="ap-workforce-footnote">Data note: figures are aggregate counts, de-identified by construction. Education level is self-reported and not a verified US credential equivalency.</p>
                         </div>
                     </div>
                 </div><!-- /apPageWorkforce -->

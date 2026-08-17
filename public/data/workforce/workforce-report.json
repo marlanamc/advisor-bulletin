@@ -1,54 +1,101 @@
 {
   "generated_from": "ed-career-plan/outputs/report",
-  "headline": "ARPA workforce analysis \u2014 de-identified summary\n\nstudents analyzed: 909\ndesired industry mapped: 634  (no real answer given: 207, text given but unmapped: 68)\n\nTOP DESIRED INDUSTRIES:\n   112  Healthcare\n    99  Office Admin Tech",
+  "generated_on": "2026-08-16",
+  "headline": "ARPA workforce analysis \u2014 de-identified summary\n\nstudents analyzed: 883\ndesired industry mapped: 629  (no real answer given: 186, text given but unmapped: 68)\n\nTOP DESIRED INDUSTRIES:\n   111  Healthcare\n    98  Office Admin Tech",
+  "meta": {
+    "students_analyzed": 883,
+    "desired_industry_mapped": 629,
+    "no_answer": 186,
+    "unmapped_text": 68
+  },
+  "stats": {
+    "students_analyzed": 883,
+    "gave_career_goal": 629,
+    "industries_represented": 14,
+    "top3_share_pct": 46
+  },
+  "program_fit_stats": {
+    "candidate_programs": 6,
+    "strong_fit": 2,
+    "needs_attention": 3,
+    "blocked": 1
+  },
+  "analysis_summary": [
+    "**Healthcare, Office / Admin / Tech, and Construction Trades** are the top three industries students want to enter \u2014 46% of all mapped career goals.",
+    "Biggest opportunity gap: **Healthcare** and **Office / Admin / Tech**. Far more students want these jobs than currently hold one.",
+    "Most students (521 of 883) said their primary education goal is simply to **improve their English** \u2014 career-specific goals are the minority.",
+    "See the **FY27 Program Fit** tab for how these interests map against the specific training programs under consideration, including which ones are blocked or need more data."
+  ],
+  "program_fit_summary": [
+    "**CPR/First Aid and ServSafe** are the best-fit FY27 programs right now \u2014 133 and 38 students are ready and eligible.",
+    "**Urban College Early Ed** is under review: only 11 of 77 interested students meet the language-level bar. Considering Bunker Hill CC as an alternative.",
+    "**YMCA Culinary Arts** requires work authorization \u2014 33 unclear and 30 likely ineligible among 63 interested students.",
+    "**Microsoft Office / Google Workspace** has universal interest (883 of 883), but 363 students' English level is unscreened \u2014 that's the real bottleneck, not demand."
+  ],
   "program_fit": [
     {
       "program": "CPR / First Aid",
-      "interested": 206,
+      "interested": 204,
       "level_ready": 133,
-      "level_unknown": 73,
+      "level_unknown": 71,
       "workauth_required": "no",
-      "likely_eligible": 206,
+      "likely_eligible": 204,
       "eligibility_unclear": 0,
       "likely_ineligible": 0,
       "ready_and_eligible": 133,
-      "notes": "Short course; multilingual materials available"
+      "notes": "Short course; multilingual materials available",
+      "status": "good",
+      "badge_label": "Strong fit",
+      "badge_class": "ap-badge-green",
+      "note": "Short course; multilingual materials available"
     },
     {
       "program": "Microsoft Office / Google Workspace Cert",
-      "interested": 909,
-      "level_ready": 97,
-      "level_unknown": 388,
+      "interested": 883,
+      "level_ready": 96,
+      "level_unknown": 363,
       "workauth_required": "no",
-      "likely_eligible": 909,
+      "likely_eligible": 883,
       "eligibility_unclear": 0,
       "likely_ineligible": 0,
-      "ready_and_eligible": 97,
-      "notes": "Cross-cutting; many students expressed interest"
+      "ready_and_eligible": 96,
+      "notes": "Cross-cutting; many students expressed interest",
+      "status": "warn",
+      "badge_label": "363 unscreened",
+      "badge_class": "ap-badge-amber",
+      "note": "Cross-cutting; many students expressed interest"
     },
     {
       "program": "ServSafe Certification",
-      "interested": 64,
+      "interested": 63,
       "level_ready": 38,
-      "level_unknown": 26,
+      "level_unknown": 25,
       "workauth_required": "no",
-      "likely_eligible": 64,
+      "likely_eligible": 63,
       "eligibility_unclear": 0,
       "likely_ineligible": 0,
       "ready_and_eligible": 38,
-      "notes": "Exam offered in Spanish and other languages; level 1 students pick up material fast"
+      "notes": "Exam offered in Spanish and other languages; level 1 students pick up material fast",
+      "status": "good",
+      "badge_label": "Strong fit",
+      "badge_class": "ap-badge-green",
+      "note": "Exam offered in Spanish and other languages; level 1 students pick up material fast"
     },
     {
       "program": "College Prep / NECC",
-      "interested": 84,
+      "interested": 82,
       "level_ready": 20,
-      "level_unknown": 38,
+      "level_unknown": 36,
       "workauth_required": "no",
-      "likely_eligible": 84,
+      "likely_eligible": 82,
       "eligibility_unclear": 0,
       "likely_ineligible": 0,
       "ready_and_eligible": 20,
-      "notes": "Counts students whose education goal mentions college"
+      "notes": "Counts students whose education goal mentions college",
+      "status": "warn",
+      "badge_label": "36 unscreened",
+      "badge_class": "ap-badge-amber",
+      "note": "Counts students whose education goal mentions college"
     },
     {
       "program": "Urban College Early Ed",
@@ -60,77 +107,616 @@
       "eligibility_unclear": 0,
       "likely_ineligible": 0,
       "ready_and_eligible": 11,
-      "notes": "College-level coursework - last cohort struggled; gate on level + orientation. Considering Bunker Hill instead this year pending Urban College feedback review."
+      "notes": "College-level coursework - last cohort struggled; gate on level + orientation. Considering Bunker Hill instead this year pending Urban College feedback review.",
+      "status": "warn",
+      "badge_label": "25 unscreened",
+      "badge_class": "ap-badge-amber",
+      "note": "College-level coursework - last cohort struggled; gate on level + orientation. Considering Bunker Hill instead this year pending Urban College feedback review."
     },
     {
       "program": "YMCA Culinary Arts",
-      "interested": 64,
+      "interested": 63,
       "level_ready": 5,
-      "level_unknown": 26,
+      "level_unknown": 25,
       "workauth_required": "yes",
       "likely_eligible": 0,
-      "eligibility_unclear": 34,
+      "eligibility_unclear": 33,
       "likely_ineligible": 30,
       "ready_and_eligible": 0,
-      "notes": "Work-authorization dependent"
+      "notes": "Work-authorization dependent",
+      "status": "bad",
+      "badge_label": "Work-auth blocked",
+      "badge_class": "ap-badge-expired",
+      "note": "Work-authorization dependent"
     }
   ],
   "industry_demand": [
     {
       "industry": "healthcare",
-      "students": 112
+      "label": "Healthcare",
+      "students": 111
     },
     {
       "industry": "office_admin_tech",
-      "students": 99
+      "label": "Office / Admin / Tech",
+      "students": 98
     },
     {
       "industry": "construction_trades",
+      "label": "Construction Trades",
       "students": 81
     },
     {
       "industry": "food_service_culinary",
-      "students": 64
+      "label": "Food Service / Culinary",
+      "students": 63
     },
     {
       "industry": "early_childhood_education",
+      "label": "Early Childhood Ed",
       "students": 55
     },
     {
       "industry": "retail_customer_service",
-      "students": 49
+      "label": "Retail / Customer Svc",
+      "students": 48
     },
     {
       "industry": "business_entrepreneurship",
+      "label": "Business / Entrepreneurship",
       "students": 36
     },
     {
       "industry": "cleaning_hospitality",
+      "label": "Cleaning / Hospitality",
       "students": 33
     },
     {
       "industry": "personal_care_beauty",
+      "label": "Personal Care / Beauty",
       "students": 23
     },
     {
       "industry": "education",
+      "label": "Education",
       "students": 22
     },
     {
       "industry": "transportation",
+      "label": "Transportation",
       "students": 19
     },
     {
       "industry": "human_services",
-      "students": 17
+      "label": "Human Services",
+      "students": 16
     },
     {
       "industry": "manufacturing_warehouse",
+      "label": "Manufacturing / Warehouse",
       "students": 14
     },
     {
       "industry": "protective_services",
+      "label": "Protective Services",
       "students": 10
+    }
+  ],
+  "industry_totals": {
+    "healthcare": 111,
+    "office_admin_tech": 98,
+    "construction_trades": 81,
+    "food_service_culinary": 63,
+    "early_childhood_education": 55,
+    "retail_customer_service": 48,
+    "business_entrepreneurship": 36,
+    "cleaning_hospitality": 33,
+    "personal_care_beauty": 23,
+    "education": 22,
+    "transportation": 19,
+    "human_services": 16,
+    "manufacturing_warehouse": 14,
+    "protective_services": 10
+  },
+  "industry_by_esol_level": {
+    "business_entrepreneurship": {
+      "1": 14,
+      "2": 5,
+      "3": 0,
+      "4": 1,
+      "unknown": 16
+    },
+    "cleaning_hospitality": {
+      "1": 11,
+      "2": 3,
+      "3": 5,
+      "4": 0,
+      "unknown": 14
+    },
+    "construction_trades": {
+      "1": 25,
+      "2": 12,
+      "3": 8,
+      "4": 2,
+      "unknown": 34
+    },
+    "early_childhood_education": {
+      "1": 23,
+      "2": 7,
+      "3": 3,
+      "4": 0,
+      "unknown": 22
+    },
+    "food_service_culinary": {
+      "1": 24,
+      "2": 9,
+      "3": 4,
+      "4": 1,
+      "unknown": 25
+    },
+    "healthcare": {
+      "1": 40,
+      "2": 22,
+      "3": 7,
+      "4": 1,
+      "unknown": 41
+    },
+    "office_admin_tech": {
+      "1": 28,
+      "2": 22,
+      "3": 15,
+      "4": 2,
+      "unknown": 31
+    },
+    "retail_customer_service": {
+      "1": 14,
+      "2": 6,
+      "3": 8,
+      "4": 1,
+      "unknown": 19
+    }
+  },
+  "esol_breakdown_industries": [
+    "business_entrepreneurship",
+    "cleaning_hospitality",
+    "construction_trades",
+    "early_childhood_education",
+    "food_service_culinary",
+    "healthcare",
+    "office_admin_tech",
+    "retail_customer_service"
+  ],
+  "industry_by_esol_level_stacked": {
+    "title": "Interest by ESOL level (top industries)",
+    "legend_title": "ESOL level",
+    "rows": [
+      {
+        "industry": "healthcare",
+        "label": "Healthcare",
+        "total": 111,
+        "segments": {
+          "1": 40,
+          "2": 22,
+          "3": 7,
+          "4": 1,
+          "5": 1,
+          "hse": 17,
+          "unknown": 23
+        }
+      },
+      {
+        "industry": "office_admin_tech",
+        "label": "Office / Admin / Tech",
+        "total": 98,
+        "segments": {
+          "1": 28,
+          "2": 22,
+          "3": 15,
+          "4": 2,
+          "5": 1,
+          "hse": 13,
+          "unknown": 17
+        }
+      },
+      {
+        "industry": "construction_trades",
+        "label": "Construction Trades",
+        "total": 81,
+        "segments": {
+          "1": 25,
+          "2": 12,
+          "3": 8,
+          "4": 2,
+          "5": 0,
+          "hse": 10,
+          "unknown": 24
+        }
+      },
+      {
+        "industry": "food_service_culinary",
+        "label": "Food Service / Culinary",
+        "total": 63,
+        "segments": {
+          "1": 24,
+          "2": 9,
+          "3": 4,
+          "4": 1,
+          "5": 0,
+          "hse": 2,
+          "unknown": 23
+        }
+      },
+      {
+        "industry": "early_childhood_education",
+        "label": "Early Childhood Ed",
+        "total": 55,
+        "segments": {
+          "1": 23,
+          "2": 7,
+          "3": 3,
+          "4": 0,
+          "5": 0,
+          "hse": 2,
+          "unknown": 20
+        }
+      },
+      {
+        "industry": "retail_customer_service",
+        "label": "Retail / Customer Svc",
+        "total": 48,
+        "segments": {
+          "1": 14,
+          "2": 6,
+          "3": 8,
+          "4": 1,
+          "5": 0,
+          "hse": 6,
+          "unknown": 13
+        }
+      },
+      {
+        "industry": "business_entrepreneurship",
+        "label": "Business / Entrepreneurship",
+        "total": 36,
+        "segments": {
+          "1": 14,
+          "2": 5,
+          "3": 0,
+          "4": 1,
+          "5": 1,
+          "hse": 1,
+          "unknown": 14
+        }
+      },
+      {
+        "industry": "cleaning_hospitality",
+        "label": "Cleaning / Hospitality",
+        "total": 33,
+        "segments": {
+          "1": 11,
+          "2": 3,
+          "3": 5,
+          "4": 0,
+          "5": 0,
+          "hse": 1,
+          "unknown": 13
+        }
+      }
+    ],
+    "segment_order": [
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "hse",
+      "unknown"
+    ],
+    "segment_meta": {
+      "1": {
+        "label": "1",
+        "color": "#86b6ef"
+      },
+      "2": {
+        "label": "2",
+        "color": "#5598e7"
+      },
+      "3": {
+        "label": "3",
+        "color": "#2a78d6"
+      },
+      "4": {
+        "label": "4",
+        "color": "#256abf"
+      },
+      "5": {
+        "label": "5",
+        "color": "#1c5cab"
+      },
+      "hse": {
+        "label": "hse",
+        "color": "#104281"
+      },
+      "unknown": {
+        "label": "unknown",
+        "color": "#c3c2b7"
+      }
+    }
+  },
+  "industry_by_work_docs_stacked": {
+    "title": "SSN/TIN status by desired industry (program-eligibility planning)",
+    "legend_title": "reported",
+    "rows": [
+      {
+        "industry": "healthcare",
+        "label": "Healthcare",
+        "total": 111,
+        "segments": {
+          "yes_unspecified": 72,
+          "no": 39,
+          "other_unparsed": 0,
+          "unknown": 0
+        }
+      },
+      {
+        "industry": "office_admin_tech",
+        "label": "Office / Admin / Tech",
+        "total": 98,
+        "segments": {
+          "yes_unspecified": 52,
+          "no": 43,
+          "other_unparsed": 0,
+          "unknown": 3
+        }
+      },
+      {
+        "industry": "construction_trades",
+        "label": "Construction Trades",
+        "total": 81,
+        "segments": {
+          "yes_unspecified": 45,
+          "no": 34,
+          "other_unparsed": 0,
+          "unknown": 2
+        }
+      },
+      {
+        "industry": "food_service_culinary",
+        "label": "Food Service / Culinary",
+        "total": 63,
+        "segments": {
+          "yes_unspecified": 32,
+          "no": 30,
+          "other_unparsed": 1,
+          "unknown": 0
+        }
+      },
+      {
+        "industry": "early_childhood_education",
+        "label": "Early Childhood Ed",
+        "total": 55,
+        "segments": {
+          "yes_unspecified": 35,
+          "no": 20,
+          "other_unparsed": 0,
+          "unknown": 0
+        }
+      },
+      {
+        "industry": "retail_customer_service",
+        "label": "Retail / Customer Svc",
+        "total": 48,
+        "segments": {
+          "yes_unspecified": 27,
+          "no": 17,
+          "other_unparsed": 2,
+          "unknown": 2
+        }
+      },
+      {
+        "industry": "business_entrepreneurship",
+        "label": "Business / Entrepreneurship",
+        "total": 36,
+        "segments": {
+          "yes_unspecified": 21,
+          "no": 14,
+          "other_unparsed": 0,
+          "unknown": 1
+        }
+      },
+      {
+        "industry": "cleaning_hospitality",
+        "label": "Cleaning / Hospitality",
+        "total": 33,
+        "segments": {
+          "yes_unspecified": 18,
+          "no": 13,
+          "other_unparsed": 1,
+          "unknown": 1
+        }
+      }
+    ],
+    "segment_order": [
+      "yes_unspecified",
+      "no",
+      "other_unparsed",
+      "unknown"
+    ],
+    "segment_meta": {
+      "yes_unspecified": {
+        "label": "yes_unspecified",
+        "color": "#eda100"
+      },
+      "no": {
+        "label": "no",
+        "color": "#898781"
+      },
+      "other_unparsed": {
+        "label": "other_unparsed",
+        "color": "#c3c2b7"
+      },
+      "unknown": {
+        "label": "unknown",
+        "color": "#d8d7cf"
+      }
+    }
+  },
+  "current_vs_desired": [
+    {
+      "industry": "healthcare",
+      "label": "Healthcare",
+      "currently_work_in": 20,
+      "want_to_work_in": 111,
+      "current_scale": 0.0962,
+      "desired_scale": 0.5337
+    },
+    {
+      "industry": "office_admin_tech",
+      "label": "Office / Admin / Tech",
+      "currently_work_in": 15,
+      "want_to_work_in": 98,
+      "current_scale": 0.0721,
+      "desired_scale": 0.4712
+    },
+    {
+      "industry": "construction_trades",
+      "label": "Construction Trades",
+      "currently_work_in": 87,
+      "want_to_work_in": 81,
+      "current_scale": 0.4183,
+      "desired_scale": 0.3894
+    },
+    {
+      "industry": "food_service_culinary",
+      "label": "Food Service / Culinary",
+      "currently_work_in": 208,
+      "want_to_work_in": 63,
+      "current_scale": 1.0,
+      "desired_scale": 0.3029
+    },
+    {
+      "industry": "early_childhood_education",
+      "label": "Early Childhood Ed",
+      "currently_work_in": 27,
+      "want_to_work_in": 55,
+      "current_scale": 0.1298,
+      "desired_scale": 0.2644
+    },
+    {
+      "industry": "retail_customer_service",
+      "label": "Retail / Customer Svc",
+      "currently_work_in": 47,
+      "want_to_work_in": 48,
+      "current_scale": 0.226,
+      "desired_scale": 0.2308
+    },
+    {
+      "industry": "business_entrepreneurship",
+      "label": "Business / Entrepreneurship",
+      "currently_work_in": 11,
+      "want_to_work_in": 36,
+      "current_scale": 0.0529,
+      "desired_scale": 0.1731
+    },
+    {
+      "industry": "cleaning_hospitality",
+      "label": "Cleaning / Hospitality",
+      "currently_work_in": 103,
+      "want_to_work_in": 33,
+      "current_scale": 0.4952,
+      "desired_scale": 0.1587
+    },
+    {
+      "industry": "personal_care_beauty",
+      "label": "Personal Care / Beauty",
+      "currently_work_in": 14,
+      "want_to_work_in": 23,
+      "current_scale": 0.0673,
+      "desired_scale": 0.1106
+    },
+    {
+      "industry": "education",
+      "label": "Education",
+      "currently_work_in": 9,
+      "want_to_work_in": 22,
+      "current_scale": 0.0433,
+      "desired_scale": 0.1058
+    },
+    {
+      "industry": "transportation",
+      "label": "Transportation",
+      "currently_work_in": 30,
+      "want_to_work_in": 19,
+      "current_scale": 0.1442,
+      "desired_scale": 0.0913
+    },
+    {
+      "industry": "human_services",
+      "label": "Human Services",
+      "currently_work_in": 1,
+      "want_to_work_in": 16,
+      "current_scale": 0.0048,
+      "desired_scale": 0.0769
+    },
+    {
+      "industry": "manufacturing_warehouse",
+      "label": "Manufacturing / Warehouse",
+      "currently_work_in": 28,
+      "want_to_work_in": 14,
+      "current_scale": 0.1346,
+      "desired_scale": 0.0673
+    },
+    {
+      "industry": "protective_services",
+      "label": "Protective Services",
+      "currently_work_in": 4,
+      "want_to_work_in": 10,
+      "current_scale": 0.0192,
+      "desired_scale": 0.0481
+    }
+  ],
+  "education_goals": [
+    {
+      "goal": "improve_english",
+      "label": "Improve English",
+      "students": 521,
+      "scale": 1.0
+    },
+    {
+      "goal": "other",
+      "label": "Other",
+      "students": 107,
+      "scale": 0.2054
+    },
+    {
+      "goal": "college",
+      "label": "College",
+      "students": 82,
+      "scale": 0.1574
+    },
+    {
+      "goal": "hiset_ged",
+      "label": "HiSET / GED",
+      "students": 76,
+      "scale": 0.1459
+    },
+    {
+      "goal": "unknown",
+      "label": "Unknown",
+      "students": 50,
+      "scale": 0.096
+    },
+    {
+      "goal": "certificate_license",
+      "label": "Certificate / License",
+      "students": 46,
+      "scale": 0.0883
+    },
+    {
+      "goal": "citizenship",
+      "label": "Citizenship",
+      "students": 1,
+      "scale": 0.0019
     }
   ],
   "figures": [
