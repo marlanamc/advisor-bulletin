@@ -71,6 +71,7 @@ document.addEventListener('DOMContentLoaded', function() {
         events:    { el: 'apPagePosts',     nav: 'apNavEvents',     title: 'My Events' },
         stats:     { el: 'apPageStats',     nav: 'apNavStats',      title: 'Stats' },
         advisors:  { el: 'apPageAdvisors',  nav: 'apNavAdvisors',   title: 'Advisors' },
+        workforce: { el: 'apPageWorkforce', nav: 'apNavWorkforce',  title: 'Workforce Report' },
     };
 
     var POSTS_PAGE_FILTERS = {
@@ -130,6 +131,9 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 ap.loadAdvisors();
             }
+        }
+        if (page === 'workforce') {
+            renderWorkforcePage();
         }
         if (page === 'create' && window.adminPanel) {
             var ap = window.adminPanel;
@@ -1170,6 +1174,54 @@ document.addEventListener('DOMContentLoaded', function() {
         if (days < 14) return '1 week ago';
         if (days < 30) return Math.floor(days / 7) + ' weeks ago';
         return Math.floor(days / 30) + ' month' + (days >= 60 ? 's' : '') + ' ago';
+    }
+
+    // ── Workforce Report page (static, admin-only) ─────────────────
+    var workforceReportCache = null;
+
+    function renderWorkforcePage() {
+        var headlineEl = document.getElementById('workforceHeadline');
+        var tableBody = document.querySelector('#workforceProgramTable tbody');
+        if (!headlineEl || !tableBody) return;
+
+        var render = function(report) {
+            headlineEl.textContent = report.headline || 'No summary available.';
+            var rows = report.program_fit || [];
+            if (!rows.length) {
+                tableBody.innerHTML = '<tr><td colspan="6" style="font-size:.82rem;color:var(--ap-text-3);">No program-fit data yet.</td></tr>';
+                return;
+            }
+            tableBody.innerHTML = rows.map(function(r) {
+                var authReq = String(r.workauth_required).toLowerCase() === 'yes' ? 'Yes' : 'No';
+                return '<tr>' +
+                    '<td>' + escHtml(r.program) + '</td>' +
+                    '<td>' + escHtml(r.interested) + '</td>' +
+                    '<td>' + escHtml(r.level_ready) + '</td>' +
+                    '<td>' + authReq + '</td>' +
+                    '<td>' + escHtml(r.ready_and_eligible) + '</td>' +
+                    '<td>' + escHtml(r.notes || '') + '</td>' +
+                '</tr>';
+            }).join('');
+        };
+
+        if (workforceReportCache) {
+            render(workforceReportCache);
+            return;
+        }
+        fetch('/data/workforce/workforce-report.json')
+            .then(function(res) {
+                if (!res.ok) throw new Error('workforce-report.json ' + res.status);
+                return res.json();
+            })
+            .then(function(report) {
+                workforceReportCache = report;
+                render(report);
+            })
+            .catch(function(err) {
+                console.error('Error loading workforce report:', err);
+                headlineEl.textContent = 'Could not load the workforce report. Run src/export_bulletin.py in ed-career-plan and redeploy.';
+                tableBody.innerHTML = '<tr><td colspan="6" style="font-size:.82rem;color:var(--ap-text-3);">Unavailable.</td></tr>';
+            });
     }
 
     function renderStatsPage() {

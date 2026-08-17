@@ -558,6 +558,8 @@ class FirebaseAdminPanel {
                     if (advisorsTabBtn) advisorsTabBtn.style.display = this.currentUser.isAdmin ? '' : 'none';
                     const advisorsRailBtn = document.getElementById('advisorsRailBtn');
                     if (advisorsRailBtn) advisorsRailBtn.style.display = this.currentUser.isAdmin ? '' : 'none';
+                    const workforceRailBtn = document.getElementById('workforceRailBtn');
+                    if (workforceRailBtn) workforceRailBtn.style.display = this.currentUser.isAdmin ? '' : 'none';
                 }
             }).catch(err => console.error('Error loading advisor metadata:', err))
             .finally(() => {
@@ -632,6 +634,8 @@ class FirebaseAdminPanel {
         if (advisorsTabBtn) advisorsTabBtn.style.display = this.currentUser.isAdmin ? '' : 'none';
         const advisorsRailBtn = document.getElementById('advisorsRailBtn');
         if (advisorsRailBtn) advisorsRailBtn.style.display = this.currentUser.isAdmin ? '' : 'none';
+        const workforceRailBtn = document.getElementById('workforceRailBtn');
+        if (workforceRailBtn) workforceRailBtn.style.display = this.currentUser.isAdmin ? '' : 'none';
 
         this.setContentType(this.contentType || 'post', { preserveFields: true, silent: true });
     }

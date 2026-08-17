@@ -140,6 +140,13 @@
                         Advisors
                     </button>
 
+                    <button id="workforceRailBtn" class="ap-nav-item" type="button" onclick="apShowPage('workforce')" id="apNavWorkforce" style="display:none">
+                        <div class="ap-nav-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-6 4 3 5-8"/></svg>
+                        </div>
+                        Workforce Report
+                    </button>
+
                     <div class="ap-nav-divider"></div>
 
                     <a class="ap-nav-item" href="/">
@@ -778,6 +785,67 @@
                         </div>
                     </div>
                 </div><!-- /apPageStats -->
+
+                <!-- ══════════════════════════════════════
+                     PAGE: WORKFORCE REPORT
+                     ══════════════════════════════════════ -->
+                <div id="apPageWorkforce" class="ap-page">
+                    <div class="ap-stats-header">
+                        <h1>Workforce Report</h1>
+                        <p>ARPA workforce/advising data, de-identified — industry demand, current-vs-desired gap, and program fit. Admin-only.</p>
+                    </div>
+
+                    <div id="workforceHeadline" class="ap-workforce-headline">
+                        <p style="font-size:.82rem;color:var(--ap-text-3);">Loading…</p>
+                    </div>
+
+                    <div class="ap-chart-grid ap-workforce-charts">
+                        <div class="ap-chart-card">
+                            <div class="ap-chart-card-title">Where students want to work</div>
+                            <img src="/data/workforce/industry_demand.png" alt="Desired industry demand chart" class="ap-workforce-figure" loading="lazy">
+                        </div>
+                        <div class="ap-chart-card">
+                            <div class="ap-chart-card-title">Current vs. desired industry (the training gap)</div>
+                            <img src="/data/workforce/current_vs_desired.png" alt="Current versus desired industry chart" class="ap-workforce-figure" loading="lazy">
+                        </div>
+                        <div class="ap-chart-card">
+                            <div class="ap-chart-card-title">Desired industry by ESOL level</div>
+                            <img src="/data/workforce/industry_by_esol_level.png" alt="Industry by ESOL level chart" class="ap-workforce-figure" loading="lazy">
+                        </div>
+                        <div class="ap-chart-card">
+                            <div class="ap-chart-card-title">Desired industry by work-authorization status</div>
+                            <img src="/data/workforce/industry_by_work_docs.png" alt="Industry by work documentation status chart" class="ap-workforce-figure" loading="lazy">
+                        </div>
+                        <div class="ap-chart-card">
+                            <div class="ap-chart-card-title">Education goals</div>
+                            <img src="/data/workforce/education_goals.png" alt="Education goals chart" class="ap-workforce-figure" loading="lazy">
+                        </div>
+                    </div>
+
+                    <div class="ap-top-posts">
+                        <div class="ap-top-posts-header">
+                            <h3 class="ap-top-posts-title">Program Fit Matrix</h3>
+                            <span style="font-size:.75rem;color:var(--ap-text-3);">FY27 on-site training candidate pools, sorted by ready &amp; eligible</span>
+                        </div>
+                        <div class="ap-workforce-table-wrap">
+                            <table id="workforceProgramTable" class="ap-workforce-table">
+                                <thead>
+                                    <tr>
+                                        <th>Program</th>
+                                        <th>Interested</th>
+                                        <th>Level ready</th>
+                                        <th>Work auth req'd</th>
+                                        <th>Ready &amp; eligible</th>
+                                        <th>Notes</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td colspan="6" style="font-size:.82rem;color:var(--ap-text-3);">Loading…</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div><!-- /apPageWorkforce -->
 
                 <!-- ══════════════════════════════════════
                      PAGE: ADVISORS (admin only)

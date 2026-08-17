@@ -2385,6 +2385,63 @@ body.ap-portal-active .main-content {
   letter-spacing: -0.01em;
 }
 
+/* Workforce Report page */
+.ap-workforce-headline {
+  background: var(--ap-surface);
+  border-radius: var(--ap-r-xl);
+  border: 1px solid var(--ap-border);
+  box-shadow: var(--ap-shadow-sm);
+  padding: 18px 22px;
+  margin-bottom: 18px;
+  font-size: 0.85rem;
+  color: var(--ap-text-2);
+  white-space: pre-line;
+  line-height: 1.5;
+}
+
+.ap-workforce-figure {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--ap-r-md);
+}
+
+.ap-workforce-table-wrap {
+  overflow-x: auto;
+}
+
+.ap-workforce-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.ap-workforce-table th,
+.ap-workforce-table td {
+  text-align: left;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--ap-border);
+  white-space: nowrap;
+}
+
+.ap-workforce-table td:last-child {
+  white-space: normal;
+  min-width: 220px;
+  color: var(--ap-text-2);
+}
+
+.ap-workforce-table th {
+  color: var(--ap-text-3);
+  font-weight: 600;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.ap-workforce-table tbody tr:hover {
+  background: var(--ap-surface-2);
+}
+
 /* Simple bar chart */
 .ap-bar-chart {
   display: flex;

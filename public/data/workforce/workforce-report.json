@@ -1,0 +1,143 @@
+{
+  "generated_from": "ed-career-plan/outputs/report",
+  "headline": "ARPA workforce analysis \u2014 de-identified summary\n\nstudents analyzed: 909\ndesired industry mapped: 634  (no real answer given: 207, text given but unmapped: 68)\n\nTOP DESIRED INDUSTRIES:\n   112  Healthcare\n    99  Office Admin Tech",
+  "program_fit": [
+    {
+      "program": "CPR / First Aid",
+      "interested": 206,
+      "level_ready": 133,
+      "level_unknown": 73,
+      "workauth_required": "no",
+      "likely_eligible": 206,
+      "eligibility_unclear": 0,
+      "likely_ineligible": 0,
+      "ready_and_eligible": 133,
+      "notes": "Short course; multilingual materials available"
+    },
+    {
+      "program": "Microsoft Office / Google Workspace Cert",
+      "interested": 909,
+      "level_ready": 97,
+      "level_unknown": 388,
+      "workauth_required": "no",
+      "likely_eligible": 909,
+      "eligibility_unclear": 0,
+      "likely_ineligible": 0,
+      "ready_and_eligible": 97,
+      "notes": "Cross-cutting; many students expressed interest"
+    },
+    {
+      "program": "ServSafe Certification",
+      "interested": 64,
+      "level_ready": 38,
+      "level_unknown": 26,
+      "workauth_required": "no",
+      "likely_eligible": 64,
+      "eligibility_unclear": 0,
+      "likely_ineligible": 0,
+      "ready_and_eligible": 38,
+      "notes": "Exam offered in Spanish and other languages; level 1 students pick up material fast"
+    },
+    {
+      "program": "College Prep / NECC",
+      "interested": 84,
+      "level_ready": 20,
+      "level_unknown": 38,
+      "workauth_required": "no",
+      "likely_eligible": 84,
+      "eligibility_unclear": 0,
+      "likely_ineligible": 0,
+      "ready_and_eligible": 20,
+      "notes": "Counts students whose education goal mentions college"
+    },
+    {
+      "program": "Urban College Early Ed",
+      "interested": 77,
+      "level_ready": 11,
+      "level_unknown": 25,
+      "workauth_required": "no",
+      "likely_eligible": 77,
+      "eligibility_unclear": 0,
+      "likely_ineligible": 0,
+      "ready_and_eligible": 11,
+      "notes": "College-level coursework - last cohort struggled; gate on level + orientation. Considering Bunker Hill instead this year pending Urban College feedback review."
+    },
+    {
+      "program": "YMCA Culinary Arts",
+      "interested": 64,
+      "level_ready": 5,
+      "level_unknown": 26,
+      "workauth_required": "yes",
+      "likely_eligible": 0,
+      "eligibility_unclear": 34,
+      "likely_ineligible": 30,
+      "ready_and_eligible": 0,
+      "notes": "Work-authorization dependent"
+    }
+  ],
+  "industry_demand": [
+    {
+      "industry": "healthcare",
+      "students": 112
+    },
+    {
+      "industry": "office_admin_tech",
+      "students": 99
+    },
+    {
+      "industry": "construction_trades",
+      "students": 81
+    },
+    {
+      "industry": "food_service_culinary",
+      "students": 64
+    },
+    {
+      "industry": "early_childhood_education",
+      "students": 55
+    },
+    {
+      "industry": "retail_customer_service",
+      "students": 49
+    },
+    {
+      "industry": "business_entrepreneurship",
+      "students": 36
+    },
+    {
+      "industry": "cleaning_hospitality",
+      "students": 33
+    },
+    {
+      "industry": "personal_care_beauty",
+      "students": 23
+    },
+    {
+      "industry": "education",
+      "students": 22
+    },
+    {
+      "industry": "transportation",
+      "students": 19
+    },
+    {
+      "industry": "human_services",
+      "students": 17
+    },
+    {
+      "industry": "manufacturing_warehouse",
+      "students": 14
+    },
+    {
+      "industry": "protective_services",
+      "students": 10
+    }
+  ],
+  "figures": [
+    "industry_demand.png",
+    "current_vs_desired.png",
+    "education_goals.png",
+    "industry_by_esol_level.png",
+    "industry_by_work_docs.png"
+  ]
+}
