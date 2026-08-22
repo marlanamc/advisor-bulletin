@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Industry snapshot · EBHCS</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      background: #fff;
+      color: #0d1b35;
+      font: 400 12px/1.45 "Source Sans 3", "Segoe UI", Helvetica, Arial, sans-serif;
+      print-color-adjust: exact;
+      -webkit-print-color-adjust: exact;
+    }
+    .toolbar {
+      max-width: 8.5in;
+      margin: 16px auto;
+      padding: 0 16px;
+      display: flex;
+      justify-content: flex-end;
+    }
+    .toolbar button {
+      appearance: none;
+      border: 1px solid #0a1f44;
+      background: #0a1f44;
+      color: #fff;
+      font: 600 13px "Segoe UI", sans-serif;
+      padding: 8px 14px;
+      cursor: pointer;
+    }
+    .page { max-width: 8.5in; margin: 0 auto; padding: 0 0.5in 0.4in; }
+    h1 { font-size: 16px; font-weight: 700; margin: 0 0 12px; }
+    h2 { font-size: 13px; font-weight: 700; margin: 0 0 6px; }
+    .desc { margin: 0 0 8px; color: #4d6d90; font-size: 11px; }
+    .callout { border: 1px solid #d7e0ee; padding: 8px 12px; margin: 0 0 16px; }
+    .callout ul { margin: 0; padding-left: 1.15rem; }
+    .callout li { margin: 3px 0; }
+    .section { margin-bottom: 16px; }
+    .barchart { display: flex; flex-direction: column; gap: 5px; }
+    .barrow { display: grid; grid-template-columns: 150px 1fr 32px; align-items: center; gap: 8px; }
+    .barrow .label, .grouprow .label { font-size: 11px; color: #3d5a80; }
+    .barrow .track, .grouprow .track { height: 10px; background: #eef2f7; }
+    .barrow .fill { display: block; height: 100%; background: #1a56db; }
+    .barrow .val { font-size: 11px; text-align: right; font-variant-numeric: tabular-nums; }
+    .legend { display: flex; gap: 16px; margin: 0 0 8px; font-size: 11px; color: #3d5a80; }
+    .sw { display: inline-block; width: 9px; height: 9px; margin-right: 5px; vertical-align: -1px; }
+    .grouprows { display: flex; flex-direction: column; gap: 6px; }
+    .grouprow { display: grid; grid-template-columns: 150px 1fr 36px; align-items: center; gap: 8px; }
+    .grouprow .tracks { display: flex; flex-direction: column; gap: 2px; }
+    .grouprow .fill { display: block; height: 100%; }
+    .grouprow .fill.current { background: #9aa7b8; }
+    .grouprow .fill.desired { background: #059669; }
+    .grouprow .pair { display: flex; flex-direction: column; align-items: flex-end; font-size: 10px; font-variant-numeric: tabular-nums; color: #4d6d90; line-height: 1.2; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .stack-legend { display: flex; flex-wrap: wrap; gap: 6px 10px; margin: 0 0 8px; font-size: 10px; color: #3d5a80; }
+    .legend-item { display: inline-flex; align-items: center; gap: 4px; }
+    .legend-item .sw { margin: 0; }
+    .stackrow { display: grid; grid-template-columns: 120px 1fr; align-items: center; gap: 8px; margin-bottom: 5px; }
+    .stackrow .label { font-size: 10.5px; color: #3d5a80; }
+    .stack-wrap { min-width: 0; }
+    .stack-track { display: flex; height: 12px; background: #eef2f7; }
+    .seg { display: flex; align-items: center; justify-content: center; min-width: 0; font-size: 8px; font-weight: 600; color: #fff; font-variant-numeric: tabular-nums; }
+    .seg.is-light { color: #0d1b35; }
+    .fineprint { margin: 8px 0 0; color: #5a7394; font-size: 10px; }
+    @page { size: letter; margin: 0.5in; }
+    @media print {
+      .toolbar { display: none !important; }
+      .page { max-width: none; padding: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="toolbar">
+    <button type="button" onclick="window.print()">Print / Save as PDF</button>
+  </div>
+  <main class="page">
+    <h1>Industry snapshot · EBHCS · FY26</h1>
+
+    <section class="section">
+      <h2>At a glance</h2>
+      <div class="callout">
+        <ul>
+          <li><strong>Top 3:</strong> Healthcare, Office / Admin / Tech, Construction Trades. They account for <strong>46%</strong> of mapped career goals.</li><li><strong>Largest gaps:</strong> Healthcare and Office / Admin / Tech. More students want these jobs than hold them today.</li><li><strong>521 of 883</strong> list improving English as their main goal. Fewer name a specific career path.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Desired industries</h2>
+      <p class="desc">Top industries students want.</p>
+      <div class="barchart">
+      <div class="barrow">
+        <span class="label">Healthcare</span>
+        <span class="track"><span class="fill" style="width:100.0%"></span></span>
+        <span class="val">111</span>
+      </div>
+      <div class="barrow">
+        <span class="label">Office / Admin / Tech</span>
+        <span class="track"><span class="fill" style="width:88.3%"></span></span>
+        <span class="val">98</span>
+      </div>
+      <div class="barrow">
+        <span class="label">Construction Trades</span>
+        <span class="track"><span class="fill" style="width:73.0%"></span></span>
+        <span class="val">81</span>
+      </div>
+      <div class="barrow">
+        <span class="label">Food Service / Culinary</span>
+        <span class="track"><span class="fill" style="width:56.8%"></span></span>
+        <span class="val">63</span>
+      </div>
+      <div class="barrow">
+        <span class="label">Early Childhood Ed</span>
+        <span class="track"><span class="fill" style="width:49.5%"></span></span>
+        <span class="val">55</span>
+      </div>
+      <div class="barrow">
+        <span class="label">Retail / Customer Svc</span>
+        <span class="track"><span class="fill" style="width:43.2%"></span></span>
+        <span class="val">48</span>
+      </div>
+      <div class="barrow">
+        <span class="label">Business / Entrepreneurship</span>
+        <span class="track"><span class="fill" style="width:32.4%"></span></span>
+        <span class="val">36</span>
+      </div>
+      <div class="barrow">
+        <span class="label">Cleaning / Hospitality</span>
+        <span class="track"><span class="fill" style="width:29.7%"></span></span>
+        <span class="val">33</span>
+      </div>
+      <div class="barrow">
+        <span class="label">Personal Care / Beauty</span>
+        <span class="track"><span class="fill" style="width:20.7%"></span></span>
+        <span class="val">23</span>
+      </div>
+      <div class="barrow">
+        <span class="label">Education</span>
+        <span class="track"><span class="fill" style="width:19.8%"></span></span>
+        <span class="val">22</span>
+      </div>
+      <div class="barrow">
+        <span class="label">Transportation</span>
+        <span class="track"><span class="fill" style="width:17.1%"></span></span>
+        <span class="val">19</span>
+      </div>
+      <div class="barrow">
+        <span class="label">Human Services</span>
+        <span class="track"><span class="fill" style="width:14.4%"></span></span>
+        <span class="val">16</span>
+      </div>
+      <div class="barrow">
+        <span class="label">Manufacturing / Warehouse</span>
+        <span class="track"><span class="fill" style="width:12.6%"></span></span>
+        <span class="val">14</span>
+      </div>
+      <div class="barrow">
+        <span class="label">Protective Services</span>
+        <span class="track"><span class="fill" style="width:9.0%"></span></span>
+        <span class="val">10</span>
+      </div></div>
+    </section>
+
+    <section class="section">
+      <h2>Current vs. desired</h2>
+      <p class="desc">Grey = current job. Green = desired job. Same scale across rows.</p>
+      <div class="legend">
+        <span><span class="sw" style="background:#9aa7b8"></span>Current job</span>
+        <span><span class="sw" style="background:#059669"></span>Desired job</span>
+      </div>
+      <div class="grouprows">
+      <div class="grouprow">
+        <span class="label">Healthcare</span>
+        <span class="tracks">
+          <span class="track"><span class="fill current" style="width:9.6%"></span></span>
+          <span class="track"><span class="fill desired" style="width:53.4%"></span></span>
+        </span>
+        <span class="pair"><span>20</span><span>111</span></span>
+      </div>
+      <div class="grouprow">
+        <span class="label">Office / Admin / Tech</span>
+        <span class="tracks">
+          <span class="track"><span class="fill current" style="width:7.2%"></span></span>
+          <span class="track"><span class="fill desired" style="width:47.1%"></span></span>
+        </span>
+        <span class="pair"><span>15</span><span>98</span></span>
+      </div>
+      <div class="grouprow">
+        <span class="label">Construction Trades</span>
+        <span class="tracks">
+          <span class="track"><span class="fill current" style="width:41.8%"></span></span>
+          <span class="track"><span class="fill desired" style="width:38.9%"></span></span>
+        </span>
+        <span class="pair"><span>87</span><span>81</span></span>
+      </div>
+      <div class="grouprow">
+        <span class="label">Food Service / Culinary</span>
+        <span class="tracks">
+          <span class="track"><span class="fill current" style="width:100.0%"></span></span>
+          <span class="track"><span class="fill desired" style="width:30.3%"></span></span>
+        </span>
+        <span class="pair"><span>208</span><span>63</span></span>
+      </div>
+      <div class="grouprow">
+        <span class="label">Early Childhood Ed</span>
+        <span class="tracks">
+          <span class="track"><span class="fill current" style="width:13.0%"></span></span>
+          <span class="track"><span class="fill desired" style="width:26.4%"></span></span>
+        </span>
+        <span class="pair"><span>27</span><span>55</span></span>
+      </div>
+      <div class="grouprow">
+        <span class="label">Retail / Customer Svc</span>
+        <span class="tracks">
+          <span class="track"><span class="fill current" style="width:22.6%"></span></span>
+          <span class="track"><span class="fill desired" style="width:23.1%"></span></span>
+        </span>
+        <span class="pair"><span>47</span><span>48</span></span>
+      </div>
+      <div class="grouprow">
+        <span class="label">Business / Entrepreneurship</span>
+        <span class="tracks">
+          <span class="track"><span class="fill current" style="width:5.3%"></span></span>
+          <span class="track"><span class="fill desired" style="width:17.3%"></span></span>
+        </span>
+        <span class="pair"><span>11</span><span>36</span></span>
+      </div>
+      <div class="grouprow">
+        <span class="label">Cleaning / Hospitality</span>
+        <span class="tracks">
+          <span class="track"><span class="fill current" style="width:49.5%"></span></span>
+          <span class="track"><span class="fill desired" style="width:15.9%"></span></span>
+        </span>
+        <span class="pair"><span>103</span><span>33</span></span>
+      </div>
+      <div class="grouprow">
+        <span class="label">Personal Care / Beauty</span>
+        <span class="tracks">
+          <span class="track"><span class="fill current" style="width:6.7%"></span></span>
+          <span class="track"><span class="fill desired" style="width:11.1%"></span></span>
+        </span>
+        <span class="pair"><span>14</span><span>23</span></span>
+      </div>
+      <div class="grouprow">
+        <span class="label">Education</span>
+        <span class="tracks">
+          <span class="track"><span class="fill current" style="width:4.3%"></span></span>
+          <span class="track"><span class="fill desired" style="width:10.6%"></span></span>
+        </span>
+        <span class="pair"><span>9</span><span>22</span></span>
+      </div>
+      <div class="grouprow">
+        <span class="label">Transportation</span>
+        <span class="tracks">
+          <span class="track"><span class="fill current" style="width:14.4%"></span></span>
+          <span class="track"><span class="fill desired" style="width:9.1%"></span></span>
+        </span>
+        <span class="pair"><span>30</span><span>19</span></span>
+      </div>
+      <div class="grouprow">
+        <span class="label">Human Services</span>
+        <span class="tracks">
+          <span class="track"><span class="fill current" style="width:0.5%"></span></span>
+          <span class="track"><span class="fill desired" style="width:7.7%"></span></span>
+        </span>
+        <span class="pair"><span>1</span><span>16</span></span>
+      </div>
+      <div class="grouprow">
+        <span class="label">Manufacturing / Warehouse</span>
+        <span class="tracks">
+          <span class="track"><span class="fill current" style="width:13.5%"></span></span>
+          <span class="track"><span class="fill desired" style="width:6.7%"></span></span>
+        </span>
+        <span class="pair"><span>28</span><span>14</span></span>
+      </div>
+      <div class="grouprow">
+        <span class="label">Protective Services</span>
+        <span class="tracks">
+          <span class="track"><span class="fill current" style="width:1.9%"></span></span>
+          <span class="track"><span class="fill desired" style="width:4.8%"></span></span>
+        </span>
+        <span class="pair"><span>4</span><span>10</span></span>
+      </div></div>
+    </section>
+
+    <div class="two-col">
+      <section class="section">
+        <h2>Industry by ESOL level</h2>
+        <p class="desc">Top 8 industries, split by ESOL level.</p>
+        <div class="stack-legend"><span class="legend-item"><span class="sw" style="background:#86b6ef"></span>L1</span><span class="legend-item"><span class="sw" style="background:#5598e7"></span>L2</span><span class="legend-item"><span class="sw" style="background:#2a78d6"></span>L3</span><span class="legend-item"><span class="sw" style="background:#256abf"></span>L4</span><span class="legend-item"><span class="sw" style="background:#1c5cab"></span>L5</span><span class="legend-item"><span class="sw" style="background:#104281"></span>HSE</span><span class="legend-item"><span class="sw" style="background:#c3c2b7"></span>Unknown</span></div>
+        
+        <div class="stackrow">
+          <span class="label">Healthcare</span>
+          <div class="stack-wrap">
+            <div class="stack-track" style="width:100.0%"><span class="seg" style="flex:40 0 0;background:#86b6ef">40</span><span class="seg" style="flex:22 0 0;background:#5598e7">22</span><span class="seg" style="flex:7 0 0;background:#2a78d6"></span><span class="seg" style="flex:1 0 0;background:#256abf"></span><span class="seg" style="flex:1 0 0;background:#1c5cab"></span><span class="seg" style="flex:17 0 0;background:#104281">17</span><span class="seg is-light" style="flex:23 0 0;background:#c3c2b7">23</span></div>
+          </div>
+        </div>
+        <div class="stackrow">
+          <span class="label">Office / Admin / Tech</span>
+          <div class="stack-wrap">
+            <div class="stack-track" style="width:88.3%"><span class="seg" style="flex:28 0 0;background:#86b6ef">28</span><span class="seg" style="flex:22 0 0;background:#5598e7">22</span><span class="seg" style="flex:15 0 0;background:#2a78d6">15</span><span class="seg" style="flex:2 0 0;background:#256abf"></span><span class="seg" style="flex:1 0 0;background:#1c5cab"></span><span class="seg" style="flex:13 0 0;background:#104281">13</span><span class="seg is-light" style="flex:17 0 0;background:#c3c2b7">17</span></div>
+          </div>
+        </div>
+        <div class="stackrow">
+          <span class="label">Construction Trades</span>
+          <div class="stack-wrap">
+            <div class="stack-track" style="width:73.0%"><span class="seg" style="flex:25 0 0;background:#86b6ef">25</span><span class="seg" style="flex:12 0 0;background:#5598e7">12</span><span class="seg" style="flex:8 0 0;background:#2a78d6"></span><span class="seg" style="flex:2 0 0;background:#256abf"></span><span class="seg" style="flex:10 0 0;background:#104281">10</span><span class="seg is-light" style="flex:24 0 0;background:#c3c2b7">24</span></div>
+          </div>
+        </div>
+        <div class="stackrow">
+          <span class="label">Food Service / Culinary</span>
+          <div class="stack-wrap">
+            <div class="stack-track" style="width:56.8%"><span class="seg" style="flex:24 0 0;background:#86b6ef">24</span><span class="seg" style="flex:9 0 0;background:#5598e7">9</span><span class="seg" style="flex:4 0 0;background:#2a78d6"></span><span class="seg" style="flex:1 0 0;background:#256abf"></span><span class="seg" style="flex:2 0 0;background:#104281"></span><span class="seg is-light" style="flex:23 0 0;background:#c3c2b7">23</span></div>
+          </div>
+        </div>
+        <div class="stackrow">
+          <span class="label">Early Childhood Ed</span>
+          <div class="stack-wrap">
+            <div class="stack-track" style="width:49.5%"><span class="seg" style="flex:23 0 0;background:#86b6ef">23</span><span class="seg" style="flex:7 0 0;background:#5598e7"></span><span class="seg" style="flex:3 0 0;background:#2a78d6"></span><span class="seg" style="flex:2 0 0;background:#104281"></span><span class="seg is-light" style="flex:20 0 0;background:#c3c2b7">20</span></div>
+          </div>
+        </div>
+        <div class="stackrow">
+          <span class="label">Retail / Customer Svc</span>
+          <div class="stack-wrap">
+            <div class="stack-track" style="width:43.2%"><span class="seg" style="flex:14 0 0;background:#86b6ef">14</span><span class="seg" style="flex:6 0 0;background:#5598e7"></span><span class="seg" style="flex:8 0 0;background:#2a78d6"></span><span class="seg" style="flex:1 0 0;background:#256abf"></span><span class="seg" style="flex:6 0 0;background:#104281"></span><span class="seg is-light" style="flex:13 0 0;background:#c3c2b7">13</span></div>
+          </div>
+        </div>
+        <div class="stackrow">
+          <span class="label">Business / Entrepreneurship</span>
+          <div class="stack-wrap">
+            <div class="stack-track" style="width:32.4%"><span class="seg" style="flex:14 0 0;background:#86b6ef">14</span><span class="seg" style="flex:5 0 0;background:#5598e7"></span><span class="seg" style="flex:1 0 0;background:#256abf"></span><span class="seg" style="flex:1 0 0;background:#1c5cab"></span><span class="seg" style="flex:1 0 0;background:#104281"></span><span class="seg is-light" style="flex:14 0 0;background:#c3c2b7">14</span></div>
+          </div>
+        </div>
+        <div class="stackrow">
+          <span class="label">Cleaning / Hospitality</span>
+          <div class="stack-wrap">
+            <div class="stack-track" style="width:29.7%"><span class="seg" style="flex:11 0 0;background:#86b6ef">11</span><span class="seg" style="flex:3 0 0;background:#5598e7"></span><span class="seg" style="flex:5 0 0;background:#2a78d6"></span><span class="seg" style="flex:1 0 0;background:#104281"></span><span class="seg is-light" style="flex:13 0 0;background:#c3c2b7">13</span></div>
+          </div>
+        </div>
+      </section>
+      <section class="section">
+        <h2>Industry by work docs</h2>
+        <p class="desc">Work doc status for top industries.</p>
+        <div class="stack-legend"><span class="legend-item"><span class="sw" style="background:#0f7a5a"></span>Has work docs</span><span class="legend-item"><span class="sw" style="background:#8a93a3"></span>No work docs</span><span class="legend-item"><span class="sw" style="background:#c3c2b7"></span>Other</span><span class="legend-item"><span class="sw" style="background:#d8d7cf"></span>Unknown</span></div>
+        
+        <div class="stackrow">
+          <span class="label">Healthcare</span>
+          <div class="stack-wrap">
+            <div class="stack-track" style="width:100.0%"><span class="seg" style="flex:72 0 0;background:#0f7a5a">72</span><span class="seg" style="flex:39 0 0;background:#8a93a3">39</span></div>
+          </div>
+        </div>
+        <div class="stackrow">
+          <span class="label">Office / Admin / Tech</span>
+          <div class="stack-wrap">
+            <div class="stack-track" style="width:88.3%"><span class="seg" style="flex:52 0 0;background:#0f7a5a">52</span><span class="seg" style="flex:43 0 0;background:#8a93a3">43</span><span class="seg is-light" style="flex:3 0 0;background:#d8d7cf"></span></div>
+          </div>
+        </div>
+        <div class="stackrow">
+          <span class="label">Construction Trades</span>
+          <div class="stack-wrap">
+            <div class="stack-track" style="width:73.0%"><span class="seg" style="flex:45 0 0;background:#0f7a5a">45</span><span class="seg" style="flex:34 0 0;background:#8a93a3">34</span><span class="seg is-light" style="flex:2 0 0;background:#d8d7cf"></span></div>
+          </div>
+        </div>
+        <div class="stackrow">
+          <span class="label">Food Service / Culinary</span>
+          <div class="stack-wrap">
+            <div class="stack-track" style="width:56.8%"><span class="seg" style="flex:32 0 0;background:#0f7a5a">32</span><span class="seg" style="flex:30 0 0;background:#8a93a3">30</span><span class="seg is-light" style="flex:1 0 0;background:#c3c2b7"></span></div>
+          </div>
+        </div>
+        <div class="stackrow">
+          <span class="label">Early Childhood Ed</span>
+          <div class="stack-wrap">
+            <div class="stack-track" style="width:49.5%"><span class="seg" style="flex:35 0 0;background:#0f7a5a">35</span><span class="seg" style="flex:20 0 0;background:#8a93a3">20</span></div>
+          </div>
+        </div>
+        <div class="stackrow">
+          <span class="label">Retail / Customer Svc</span>
+          <div class="stack-wrap">
+            <div class="stack-track" style="width:43.2%"><span class="seg" style="flex:27 0 0;background:#0f7a5a">27</span><span class="seg" style="flex:17 0 0;background:#8a93a3">17</span><span class="seg is-light" style="flex:2 0 0;background:#c3c2b7"></span><span class="seg is-light" style="flex:2 0 0;background:#d8d7cf"></span></div>
+          </div>
+        </div>
+        <div class="stackrow">
+          <span class="label">Business / Entrepreneurship</span>
+          <div class="stack-wrap">
+            <div class="stack-track" style="width:32.4%"><span class="seg" style="flex:21 0 0;background:#0f7a5a">21</span><span class="seg" style="flex:14 0 0;background:#8a93a3">14</span><span class="seg is-light" style="flex:1 0 0;background:#d8d7cf"></span></div>
+          </div>
+        </div>
+        <div class="stackrow">
+          <span class="label">Cleaning / Hospitality</span>
+          <div class="stack-wrap">
+            <div class="stack-track" style="width:29.7%"><span class="seg" style="flex:18 0 0;background:#0f7a5a">18</span><span class="seg" style="flex:13 0 0;background:#8a93a3">13</span><span class="seg is-light" style="flex:1 0 0;background:#c3c2b7"></span><span class="seg is-light" style="flex:1 0 0;background:#d8d7cf"></span></div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <section class="section">
+      <h2>Education goals</h2>
+      <p class="desc">Primary education goal.</p>
+      <div class="barchart">
+      <div class="barrow">
+        <span class="label">Improve English</span>
+        <span class="track"><span class="fill" style="width:100.0%"></span></span>
+        <span class="val">521</span>
+      </div>
+      <div class="barrow">
+        <span class="label">Other</span>
+        <span class="track"><span class="fill" style="width:20.5%"></span></span>
+        <span class="val">107</span>
+      </div>
+      <div class="barrow">
+        <span class="label">College</span>
+        <span class="track"><span class="fill" style="width:15.7%"></span></span>
+        <span class="val">82</span>
+      </div>
+      <div class="barrow">
+        <span class="label">HiSET / GED</span>
+        <span class="track"><span class="fill" style="width:14.6%"></span></span>
+        <span class="val">76</span>
+      </div>
+      <div class="barrow">
+        <span class="label">Unknown</span>
+        <span class="track"><span class="fill" style="width:9.6%"></span></span>
+        <span class="val">50</span>
+      </div>
+      <div class="barrow">
+        <span class="label">Certificate / License</span>
+        <span class="track"><span class="fill" style="width:8.8%"></span></span>
+        <span class="val">46</span>
+      </div>
+      <div class="barrow">
+        <span class="label">Citizenship</span>
+        <span class="track"><span class="fill" style="width:0.2%"></span></span>
+        <span class="val">1</span>
+      </div></div>
+    </section>
+
+    <p class="fineprint">Aggregate counts only. No names. Education level is self-reported.</p>
+  </main>
+</body>
+</html>

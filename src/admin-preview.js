@@ -1087,6 +1087,7 @@ document.addEventListener('DOMContentLoaded', function() {
         'esol':         { fill: 'ap-bar-fill-purple', label: 'English Class' },
         'money':        { fill: 'ap-bar-fill-green',  label: 'Money Help' },
         'family':       { fill: 'ap-bar-fill-amber',  label: 'Family Help' },
+        'family-community': { fill: 'ap-bar-fill-amber', label: 'Family & Community' },
         'childcare':    { fill: 'ap-bar-fill-amber',  label: 'Childcare' },
         'legal-aid':    { fill: 'ap-bar-fill-purple', label: 'Legal Help' },
         'uncategorized': { fill: 'ap-bar-fill-coral', label: 'Uncategorized' },

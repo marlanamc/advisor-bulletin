@@ -118,6 +118,12 @@ export const RESOURCE_CATEGORY_CONFIG = {
         icon: 'family',
         color: '#c99035'
     },
+    'family-community': {
+        labelEn: 'Family & Community',
+        labelEs: 'Familia y comunidad',
+        icon: 'community',
+        color: '#b3542c'
+    },
     esol: {
         labelEn: 'English class',
         labelEs: 'Inglés',
@@ -324,6 +330,17 @@ export const RESOURCE_ICON_SVGS = {
             <path fill="#fff" d="M12 14h37c5.5 0 9 3.5 9 9v16c0 5.5-3.5 9-9 9H31L18 59V48h-6c-5.5 0-9-3.5-9-9V23c0-5.5 3.5-9 9-9Z"/>
             <text x="13" y="38" fill="#8050d1" font-family="Arial, sans-serif" font-size="18" font-weight="900">ABC</text>
             <circle cx="52" cy="52" r="7.5" fill="#c9b5ff"/>
+        </svg>
+    `,
+    community: `
+        <svg viewBox="0 0 64 64" aria-hidden="true">
+            <path fill="#fff" d="M32 9 50 22v6H14v-6L32 9Z"/>
+            <path fill="#fff" d="M20 28h24v25H20V28Z"/>
+            <path fill="#b3542c" d="M27 40a5 5 0 1 1 10 0 5 5 0 0 1-10 0Z"/>
+            <circle cx="10" cy="46" r="6" fill="#fff"/>
+            <path fill="#fff" d="M2 61c.6-6.6 3.8-10.4 8-10.4S17.4 54.4 18 61H2Z"/>
+            <circle cx="54" cy="46" r="6" fill="#fff"/>
+            <path fill="#fff" d="M46 61c.6-6.6 3.8-10.4 8-10.4S61.4 54.4 62 61H46Z"/>
         </svg>
     `,
     graduation: `

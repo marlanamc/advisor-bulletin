@@ -18,6 +18,7 @@
     "test:mobile": "node scripts/run-with-emulator.mjs -- playwright test --project=mobile",
     "test:ui": "node scripts/run-with-emulator.mjs -- playwright test --ui",
     "test:headed": "node scripts/run-with-emulator.mjs -- playwright test --headed",
+    "export:industry-pdf": "node scripts/export-industry-report-pdf.mjs",
     "import:resources": "node scripts/import-resources.mjs",
     "clear:analytics": "node scripts/clear-analytics-events.mjs --dry-run",
     "clear:analytics:confirm": "node scripts/clear-analytics-events.mjs --confirm",

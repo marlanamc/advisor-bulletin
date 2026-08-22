@@ -2406,6 +2406,36 @@ body.ap-portal-active .main-content {
   overflow: hidden;
 }
 
+.ap-workforce-print-btn {
+  position: absolute;
+  top: 22px;
+  right: 22px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 6px 14px;
+  border: 1.5px solid rgba(255, 255, 255, 0.35);
+  border-radius: var(--ap-r-pill);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font-family: var(--ap-font-head);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-decoration: none;
+  letter-spacing: 0.01em;
+}
+
+.ap-workforce-print-btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.55);
+}
+
+.ap-workforce-print-btn:focus-visible {
+  outline: 2px solid #ffd55d;
+  outline-offset: 2px;
+}
+
 .ap-workforce-banner::before {
   content: '';
   position: absolute;
@@ -2451,6 +2481,7 @@ body.ap-portal-active .main-content {
   z-index: 1;
   max-width: 640px;
   color: #fff;
+  padding-right: 9.5rem;
 }
 
 .ap-workforce-sub {
@@ -2861,6 +2892,15 @@ body.ap-portal-active .main-content {
 
   .ap-workforce-grouprow {
     grid-template-columns: 120px 1fr;
+  }
+
+  .ap-workforce-title {
+    padding-right: 0;
+  }
+
+  .ap-workforce-print-btn {
+    position: static;
+    margin-top: 12px;
   }
 }
 

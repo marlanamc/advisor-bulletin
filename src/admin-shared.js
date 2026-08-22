@@ -12,6 +12,7 @@ export const ADMIN_RESOURCE_CATEGORY_DATA = {
     jobs:        ['Job Help / Ayuda con empleo', '💼', 'briefcase'],
     food:        ['Food / Comida', '🍽️', 'food'],
     family:      ['Child Care / Cuidado de niños', '👨‍👩‍👧', 'family'],
+    'family-community': ['Family & Community / Familia y comunidad', '🏘️', 'community'],
     health:      ['Health / Salud', '❤️', 'heart'],
     housing:     ['Housing / Vivienda', '🏠', 'home'],
     'legal-aid': ['Legal Help / Ayuda legal', '⚖️', 'scale'],

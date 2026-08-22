@@ -5,16 +5,17 @@
 
 // Categories shown as tiles in the student "Find Help" sidebar.
 export const RESOURCE_TILE_CATEGORIES = [
-  'immigration',
   'jobs',
+  'immigration',
   'housing',
-  'health',
   'food',
+  'health',
   'family',
+  'family-community',
+  'money',
+  'legal-aid',
   'hse',
   'college',
-  'legal-aid',
-  'money',
   'general',
 ];
 
@@ -33,6 +34,7 @@ export const AUTHORABLE_RESOURCE_CATEGORIES = [
   'health',
   'food',
   'family',
+  'family-community',
   'hse',
   'college',
   'legal-aid',
