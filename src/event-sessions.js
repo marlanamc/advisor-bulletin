@@ -2,6 +2,50 @@
 
 export const MAX_EVENT_SESSIONS = 20;
 
+export const WEEKDAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+/**
+ * Expand a weekly-recurring bulletin (weekday + date range) into individual
+ * EventSession occurrences, capped at MAX_EVENT_SESSIONS.
+ * @param {{ recurringWeekday?: string | number, startDate?: string, endDate?: string, startTime?: string, endTime?: string }} bulletin
+ * @returns {EventSession[]}
+ */
+export function expandRecurringWeeklySessions(bulletin) {
+    if (!bulletin) return [];
+
+    const weekday = Number(bulletin.recurringWeekday);
+    const startDate = String(bulletin.startDate || '').split('T')[0].trim();
+    const endDate = String(bulletin.endDate || '').split('T')[0].trim();
+    const startMatch = startDate.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    const endMatch = endDate.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+
+    if (!Number.isInteger(weekday) || weekday < 0 || weekday > 6 || !startMatch || !endMatch) {
+        return [];
+    }
+
+    const startTime = String(bulletin.startTime || '').trim();
+    const endTime = String(bulletin.endTime || '').trim();
+
+    const cursor = new Date(Number(startMatch[1]), Number(startMatch[2]) - 1, Number(startMatch[3]));
+    const end = new Date(Number(endMatch[1]), Number(endMatch[2]) - 1, Number(endMatch[3]));
+    if (Number.isNaN(cursor.getTime()) || Number.isNaN(end.getTime()) || cursor > end) return [];
+
+    const dayOffset = (weekday - cursor.getDay() + 7) % 7;
+    cursor.setDate(cursor.getDate() + dayOffset);
+
+    /** @type {EventSession[]} */
+    const sessions = [];
+    while (cursor <= end && sessions.length < MAX_EVENT_SESSIONS) {
+        const y = cursor.getFullYear();
+        const m = String(cursor.getMonth() + 1).padStart(2, '0');
+        const d = String(cursor.getDate()).padStart(2, '0');
+        sessions.push({ date: `${y}-${m}-${d}`, startTime, endTime });
+        cursor.setDate(cursor.getDate() + 7);
+    }
+
+    return sessions;
+}
+
 /**
  * Parse a legacy date string or session object from Firestore.
  * @param {string | EventSession | null | undefined} entry

@@ -85,7 +85,7 @@ export class BoardCalendarMethods {
         const mergedBulletins = withSchoolCalendarAnchors(bulletins);
         const events = mergedBulletins
             .flatMap((bulletin) => {
-                if (bulletin.dateType === 'sessions') {
+                if (bulletin.dateType === 'sessions' || bulletin.dateType === 'recurring') {
                     return this.getBulletinEventSessions(bulletin).map((session) => ({
                         bulletin,
                         rawDate: session.date,
@@ -281,7 +281,7 @@ export class BoardCalendarMethods {
     }
 
     expandBulletinDateItems(bulletin) {
-        if (bulletin.dateType === 'sessions') {
+        if (bulletin.dateType === 'sessions' || bulletin.dateType === 'recurring') {
             const sessions = this.getBulletinEventSessions(bulletin);
             return sessions.map((session) => {
                 const date = this.parseDateOnly(session.date);
@@ -419,7 +419,7 @@ export class BoardCalendarMethods {
         // Group bulletins by date - use event date if available, otherwise deadline
         const bulletinsByDate = {};
         calendarBulletins.forEach((bulletin) => {
-            const rawDates = bulletin.dateType === 'sessions'
+            const rawDates = (bulletin.dateType === 'sessions' || bulletin.dateType === 'recurring')
                 ? this.getBulletinEventDates(bulletin)
                 : [bulletin.eventDate || bulletin.startDate || bulletin.deadline].filter(Boolean);
 

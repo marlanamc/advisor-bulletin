@@ -450,6 +450,7 @@
                                                 <option value="deadline">Deadline</option>
                                                 <option value="range">Date range</option>
                                                 <option value="sessions">Multiple sessions</option>
+                                                <option value="recurring">Repeats weekly</option>
                                             </select>
                                         </div>
                                         <div class="cx-field">
@@ -459,6 +460,18 @@
                                         <div class="cx-field cx-hidden" id="cxEvEndWrap">
                                             <label class="cx-label">End date</label>
                                             <input type="date" class="cx-input" id="cxEvEnd">
+                                        </div>
+                                        <div class="cx-field cx-hidden" id="cxEvWeekdayWrap">
+                                            <label class="cx-label">Which day of the week?</label>
+                                            <select class="cx-select" id="cxEvWeekday">
+                                                <option value="0">Sunday</option>
+                                                <option value="1">Monday</option>
+                                                <option value="2">Tuesday</option>
+                                                <option value="3" selected>Wednesday</option>
+                                                <option value="4">Thursday</option>
+                                                <option value="5">Friday</option>
+                                                <option value="6">Saturday</option>
+                                            </select>
                                         </div>
                                         <div class="cx-field">
                                             <label class="cx-label">Start time <span class="cx-opt-tag">optional</span></label>

@@ -779,6 +779,7 @@ document.addEventListener('DOMContentLoaded', function() {
             var endDateVal = getFormFieldValue('endDate');
             var startT = getFormFieldValue('startTime');
             var endT = getFormFieldValue('endTime');
+            var weekdayVal = getFormFieldValue('recurringWeekday');
             var fmtSel = getFormFieldValue('eventLocation');
             var addr = getFormFieldValue('location').trim();
             var evLink = getFormFieldValue('eventLink').trim();
@@ -794,6 +795,10 @@ document.addEventListener('DOMContentLoaded', function() {
             if (cxEvStart) startT = cxEvStart;
             var cxEvEndTime = document.getElementById('cxEvEndTime')?.value;
             if (cxEvEndTime) endT = cxEvEndTime;
+            var cxEvWeekday = document.getElementById('cxEvWeekday')?.value;
+            if (cxEvWeekday) weekdayVal = cxEvWeekday;
+
+            var WEEKDAY_NAMES_PREVIEW = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
             var whenLine = '';
             if (dateTypeEv === 'range') {
@@ -801,6 +806,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     whenLine = formatPreviewYmd(startDateVal || eventDateVal) + ' – ' + formatPreviewYmd(endDateVal || startDateVal);
                 } else {
                     whenLine = 'Add start and end dates';
+                }
+            } else if (dateTypeEv === 'recurring') {
+                var weekdayName = WEEKDAY_NAMES_PREVIEW[Number(weekdayVal)] || '';
+                if (weekdayName && (startDateVal || eventDateVal) && endDateVal) {
+                    whenLine = 'Every ' + weekdayName + ', ' + formatPreviewYmd(startDateVal || eventDateVal) + ' – ' + formatPreviewYmd(endDateVal);
+                } else {
+                    whenLine = 'Add a weekday and start/end dates';
                 }
             } else if (dateTypeEv === 'deadline' && eventDateVal) {
                 whenLine = 'Due by ' + formatPreviewYmd(eventDateVal);

@@ -33,6 +33,8 @@ import {
     formatSessionsDetailLines,
     getMultiSessionFeedSortMs,
     getNextSessionStartMs,
+    expandRecurringWeeklySessions,
+    WEEKDAY_NAMES,
 } from './event-sessions.js'
 import { initDescriptionFormatToolbars, refreshRichEditors, syncRichEditorsToForm, getRichTextFieldValue } from './description-format.js'
 import { collection, doc, query, where, orderBy, limit, onSnapshot, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, deleteField, serverTimestamp, writeBatch } from 'firebase/firestore'
@@ -670,7 +672,9 @@ class FirebaseAdminPanel {
     }
 
     getBulletinEventSessions(bulletin, fallbackStart = '', fallbackEnd = '') {
-        if (!bulletin || bulletin.dateType !== 'sessions') return [];
+        if (!bulletin) return [];
+        if (bulletin.dateType === 'recurring') return expandRecurringWeeklySessions(bulletin);
+        if (bulletin.dateType !== 'sessions') return [];
         if (Array.isArray(bulletin.eventDates) && bulletin.eventDates.length) {
             return normalizeEventSessions(
                 bulletin.eventDates,
@@ -695,7 +699,7 @@ class FirebaseAdminPanel {
 
     getManageSortTimestamp(bulletin) {
         const postedMs = this.getManagePostTimestamp(bulletin);
-        if (!bulletin || bulletin.dateType !== 'sessions') {
+        if (!bulletin || (bulletin.dateType !== 'sessions' && bulletin.dateType !== 'recurring')) {
             return postedMs;
         }
 
@@ -709,7 +713,9 @@ class FirebaseAdminPanel {
             return sortB - sortA;
         }
 
-        if (a.dateType === 'sessions' && b.dateType === 'sessions') {
+        const aIsMulti = a.dateType === 'sessions' || a.dateType === 'recurring';
+        const bIsMulti = b.dateType === 'sessions' || b.dateType === 'recurring';
+        if (aIsMulti && bIsMulti) {
             const nextA = getNextSessionStartMs(this.getBulletinEventSessions(a));
             const nextB = getNextSessionStartMs(this.getBulletinEventSessions(b));
             if (nextA !== nextB) {
@@ -1368,6 +1374,11 @@ class FirebaseAdminPanel {
                     set('startDate', bulletin.startDate || '');
                     set('endDate', bulletin.endDate || '');
                     set('eventDate', bulletin.startDate || bulletin.eventDate || '');
+                } else if (bulletin.dateType === 'recurring') {
+                    set('startDate', bulletin.startDate || '');
+                    set('endDate', bulletin.endDate || '');
+                    set('eventDate', bulletin.startDate || bulletin.eventDate || '');
+                    set('recurringWeekday', bulletin.recurringWeekday != null ? String(bulletin.recurringWeekday) : '');
                 } else if (bulletin.dateType === 'sessions') {
                     const sessionRows = this.getBulletinEventSessions(bulletin);
                     this.writeSessionMirrorInputs(
@@ -2266,6 +2277,13 @@ class FirebaseAdminPanel {
                 throw new Error('Please add at least two session dates.');
             }
         }
+        let recurringWeekday = '';
+        if (dateType === 'recurring') {
+            recurringWeekday = formData.get('recurringWeekday') || '';
+            if (recurringWeekday === '' || !formData.get('startDate') || !formData.get('endDate')) {
+                throw new Error('Please choose a weekday and a start and end date for the recurring event.');
+            }
+        }
 
         const bulletin = {
             type: 'post',
@@ -2279,6 +2297,7 @@ class FirebaseAdminPanel {
             dateType,
             eventDate: dateType === 'sessions' ? (eventDates[0]?.date || '') : (formData.get('eventDate') || ''),
             eventDates: dateType === 'sessions' ? eventDates : [],
+            recurringWeekday: dateType === 'recurring' ? recurringWeekday : '',
             startDate: dateType === 'sessions' ? '' : (formData.get('startDate') || ''),
             endDate: dateType === 'sessions' ? '' : (formData.get('endDate') || ''),
             deadline: this.getCompatibleDeadline(formData),
@@ -2470,10 +2489,13 @@ class FirebaseAdminPanel {
                 html = `<p><strong>Event Date:</strong> ${this.formatDateLocalAdmin(bulletin.eventDate)}${timeInfo ? ` at ${timeInfo}` : ''}</p>`;
             } else if (dateType === 'range' && bulletin.startDate && bulletin.endDate) {
                 html = `<p><strong>Event Dates:</strong> ${this.formatDateLocalAdmin(bulletin.startDate)} - ${this.formatDateLocalAdmin(bulletin.endDate)}${timeInfo ? ` at ${timeInfo}` : ''}</p>`;
+            } else if (dateType === 'recurring' && bulletin.startDate && bulletin.endDate) {
+                const weekdayName = WEEKDAY_NAMES[Number(bulletin.recurringWeekday)] || '';
+                html = `<p><strong>Recurring:</strong> Every ${weekdayName}, ${this.formatDateLocalAdmin(bulletin.startDate)} - ${this.formatDateLocalAdmin(bulletin.endDate)}${timeInfo ? ` at ${timeInfo}` : ''}</p>`;
             }
 
             // Add event location if specified
-            if (bulletin.eventLocation && (dateType === 'event' || dateType === 'range')) {
+            if (bulletin.eventLocation && (dateType === 'event' || dateType === 'range' || dateType === 'recurring')) {
                 const locationText = bulletin.eventLocation === 'in-person' ? 'In-Person' :
                                    bulletin.eventLocation === 'online' ? 'Online' :
                                    bulletin.eventLocation === 'hybrid' ? 'Hybrid (In-Person & Online)' : bulletin.eventLocation;
@@ -2640,7 +2662,7 @@ function toggleDateFields() {
         }
         const firstSessionInput = document.querySelector('#eventDatesList input[name="eventDates"]');
         if (firstSessionInput) firstSessionInput.required = true;
-    } else if (dateType === 'range') {
+    } else if (dateType === 'range' || dateType === 'recurring') {
         dateFields.style.display = 'grid';
         startDateGroup.style.display = 'block';
         endDateGroup.style.display = 'block';

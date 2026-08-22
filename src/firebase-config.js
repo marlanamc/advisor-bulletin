@@ -18,6 +18,8 @@ import {
     getNextSessionStartMs,
     getSessionEndMs,
     sessionsShareSameTime,
+    expandRecurringWeeklySessions,
+    WEEKDAY_NAMES,
 } from './event-sessions.js'
 import {
     applyInlineFormatting as applyRichTextInlineFormatting,
@@ -348,7 +350,9 @@ class FirebaseBulletinBoard {
     }
 
     getBulletinEventSessions(bulletin) {
-        if (!bulletin || bulletin.dateType !== 'sessions') return [];
+        if (!bulletin) return [];
+        if (bulletin.dateType === 'recurring') return expandRecurringWeeklySessions(bulletin);
+        if (bulletin.dateType !== 'sessions') return [];
         const fallbackStart = bulletin.startTime || '';
         const fallbackEnd = bulletin.endTime || '';
         if (Array.isArray(bulletin.eventDates) && bulletin.eventDates.length) {
@@ -363,7 +367,7 @@ class FirebaseBulletinBoard {
     getBulletinEventDates(bulletin) {
         if (!bulletin) return [];
 
-        if (bulletin.dateType === 'sessions') {
+        if (bulletin.dateType === 'sessions' || bulletin.dateType === 'recurring') {
             return this.getBulletinEventSessions(bulletin).map((session) => session.date);
         }
 
@@ -482,6 +486,14 @@ class FirebaseBulletinBoard {
             return `${sessions.length} sessions · ${timeLabel}`;
         }
         return `${sessions.length} sessions`;
+    }
+
+    formatRecurringDetailLabel(bulletin) {
+        const weekdayName = WEEKDAY_NAMES[Number(bulletin.recurringWeekday)] || '';
+        const timeLabel = this.formatTimeRange(bulletin.startTime, bulletin.endTime);
+        const parts = [weekdayName ? `Every ${weekdayName}` : ''].filter(Boolean);
+        if (timeLabel) parts.push(timeLabel);
+        return parts.join(' · ');
     }
 
     buildSessionDatesDetailHtml(bulletin) {
@@ -1581,7 +1593,7 @@ class FirebaseBulletinBoard {
 
     getFeedSortTimestamp(bulletin) {
         const postedMs = this.getTimestampValue(bulletin.datePosted || bulletin.createdAt);
-        if (!bulletin || bulletin.dateType !== 'sessions') {
+        if (!bulletin || (bulletin.dateType !== 'sessions' && bulletin.dateType !== 'recurring')) {
             return postedMs;
         }
 
@@ -1596,7 +1608,9 @@ class FirebaseBulletinBoard {
             return sortB - sortA;
         }
 
-        if (a.dateType === 'sessions' && b.dateType === 'sessions') {
+        const aIsMulti = a.dateType === 'sessions' || a.dateType === 'recurring';
+        const bIsMulti = b.dateType === 'sessions' || b.dateType === 'recurring';
+        if (aIsMulti && bIsMulti) {
             const nextA = getNextSessionStartMs(this.getBulletinEventSessions(a));
             const nextB = getNextSessionStartMs(this.getBulletinEventSessions(b));
             if (nextA !== nextB) {
@@ -2575,10 +2589,18 @@ class FirebaseBulletinBoard {
                     </div>
                 `;
             }
+        } else if (dateType === 'recurring' && bulletin.startDate && bulletin.endDate) {
+            const weekdayName = WEEKDAY_NAMES[Number(bulletin.recurringWeekday)] || '';
+            let timeInfo = this.formatTimeRange(bulletin.startTime, bulletin.endTime);
+            dateHtml = `
+                <div class="meta-item">
+                    <strong>Recurring:</strong> Every ${weekdayName}, ${this.formatDateLocal(bulletin.startDate)} - ${this.formatDateLocal(bulletin.endDate)}${timeInfo ? ` at ${timeInfo}` : ''}
+                </div>
+            `;
         }
 
         // Add event location if specified
-        if (bulletin.eventLocation && (dateType === 'event' || dateType === 'range' || dateType === 'sessions')) {
+        if (bulletin.eventLocation && (dateType === 'event' || dateType === 'range' || dateType === 'sessions' || dateType === 'recurring')) {
             const locationText = bulletin.eventLocation === 'in-person' ? 'In-Person' :
                                bulletin.eventLocation === 'online' ? 'Online' :
                                bulletin.eventLocation === 'hybrid' ? 'Hybrid (In-Person & Online)' : bulletin.eventLocation;
@@ -2618,10 +2640,14 @@ class FirebaseBulletinBoard {
                     );
                     dateHtml = `<div><strong>Session Dates:</strong> ${lines.map((line) => this.escapeHtml(line)).join('<br>')}</div>`;
                 }
+            } else if (dateType === 'recurring' && bulletin.startDate && bulletin.endDate) {
+                const weekdayName = WEEKDAY_NAMES[Number(bulletin.recurringWeekday)] || '';
+                let timeInfo = this.formatTimeRange(bulletin.startTime, bulletin.endTime);
+                dateHtml = `<div><strong>Recurring:</strong> Every ${weekdayName}, ${this.formatDateLocal(bulletin.startDate)} - ${this.formatDateLocal(bulletin.endDate)}${timeInfo ? ` at ${timeInfo}` : ''}</div>`;
             }
 
             // Add event location if specified
-            if (bulletin.eventLocation && (dateType === 'event' || dateType === 'range' || dateType === 'sessions')) {
+            if (bulletin.eventLocation && (dateType === 'event' || dateType === 'range' || dateType === 'sessions' || dateType === 'recurring')) {
                 const locationText = bulletin.eventLocation === 'in-person' ? 'In-Person' :
                                    bulletin.eventLocation === 'online' ? 'Online' :
                                    bulletin.eventLocation === 'hybrid' ? 'Hybrid (In-Person & Online)' : bulletin.eventLocation;

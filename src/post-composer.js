@@ -75,6 +75,7 @@ const BLOCK_DEFS = {
       <option value="event">Event date</option>
       <option value="range">Date range</option>
       <option value="sessions">Multiple sessions</option>
+      <option value="recurring">Repeats weekly</option>
     </select>
   </div>
   <div class="cx-field" style="margin-bottom:0">
@@ -85,6 +86,18 @@ const BLOCK_DEFS = {
 <div class="cx-field cx-hidden" id="cxBlkEndWrap" style="margin-top:10px;margin-bottom:0">
   <label class="cx-label">End date</label>
   <input type="date" class="cx-input" id="cxBlkEnd">
+</div>
+<div class="cx-field cx-hidden" id="cxBlkWeekdayWrap" style="margin-top:10px;margin-bottom:0">
+  <label class="cx-label">Which day of the week?</label>
+  <select class="cx-select" id="cxBlkWeekday">
+    <option value="0">Sunday</option>
+    <option value="1">Monday</option>
+    <option value="2">Tuesday</option>
+    <option value="3" selected>Wednesday</option>
+    <option value="4">Thursday</option>
+    <option value="5">Friday</option>
+    <option value="6">Saturday</option>
+  </select>
 </div>
 <div class="cx-row2" style="margin-top:10px">
   <div class="cx-field" style="margin-bottom:0">
@@ -788,6 +801,8 @@ ${htmlContent}`
         const dtSel     = block.querySelector('#cxBlkDateType')
         const dtLabel   = block.querySelector('#cxBlkDateLabel')
         const endWrap   = block.querySelector('#cxBlkEndWrap')
+        const weekdayWrap = block.querySelector('#cxBlkWeekdayWrap')
+        const weekdaySel  = block.querySelector('#cxBlkWeekday')
         const sesWrap   = block.querySelector('#cxBlkSessionsWrap')
         const sesList   = block.querySelector('#cxBlkSessionsList')
         const sesAddBtn = block.querySelector('#cxBlkAddSession')
@@ -800,12 +815,14 @@ ${htmlContent}`
         }
         function updateBlkDateType() {
             const v = dtSel?.value || 'event'
-            endWrap?.classList.toggle('cx-hidden', v !== 'range')
+            endWrap?.classList.toggle('cx-hidden', v !== 'range' && v !== 'recurring')
+            weekdayWrap?.classList.toggle('cx-hidden', v !== 'recurring')
             sesWrap?.classList.toggle('cx-hidden', v !== 'sessions')
             if (dtLabel) dtLabel.textContent =
-                v === 'deadline' ? 'Deadline date' :
-                v === 'range'    ? 'Start date'    :
-                v === 'sessions' ? 'First session'  : 'Date'
+                v === 'deadline'  ? 'Deadline date' :
+                v === 'range'     ? 'Start date'    :
+                v === 'sessions'  ? 'First session'  :
+                v === 'recurring' ? 'Start date'     : 'Date'
             if (v === 'sessions') ensureBlkSessions()
             syncBlkDateMirrors()
         }
@@ -815,11 +832,13 @@ ${htmlContent}`
             const endV   = block.querySelector('#cxBlkEnd')?.value || ''
             const startT = block.querySelector('#cxBlkStart')?.value || ''
             const endT   = block.querySelector('#cxBlkEndTime')?.value || ''
+            const weekdayV = weekdaySel?.value || ''
             const form   = document.getElementById('bulletinForm')
             if (!form) return
 
             // Clear previous session hidden inputs
             form.querySelectorAll('input[data-cx-session]').forEach(i => i.remove())
+            mirror('recurringWeekday', '')
 
             if (v === 'sessions') {
                 const rows = Array.from(sesList?.querySelectorAll('.cx-evmore-row') || [])
@@ -842,6 +861,12 @@ ${htmlContent}`
                 mirror('startDate', dateV); mirror('endDate', endV)
                 mirror('eventDate', dateV)
                 mirror('startTime', startT); mirror('endTime', endT)
+            } else if (v === 'recurring') {
+                mirror('dateType', 'recurring')
+                mirror('startDate', dateV); mirror('endDate', endV)
+                mirror('eventDate', dateV)
+                mirror('recurringWeekday', weekdayV)
+                mirror('startTime', startT); mirror('endTime', endT)
             } else if (v === 'deadline') {
                 mirror('dateType', 'deadline')
                 mirror('eventDate', dateV)
@@ -857,6 +882,7 @@ ${htmlContent}`
         }
 
         if (dtSel) dtSel.addEventListener('change', updateBlkDateType)
+        if (weekdaySel) weekdaySel.addEventListener('change', syncBlkDateMirrors)
         ;['cxBlkDate','cxBlkEnd','cxBlkStart','cxBlkEndTime'].forEach(id => {
             block.querySelector(`#${id}`)?.addEventListener('change', syncBlkDateMirrors)
         })
@@ -898,7 +924,7 @@ function removeBlock(key, blockEl) {
 function clearBlockMirrors(key) {
     const mirrorNames = {
         spanish:  ['titleEs', 'summaryEs', 'resourceTitleEs', 'resourceSummaryEs'],
-        dates:    ['dateType', 'eventDate', 'startTime', 'endTime'],
+        dates:    ['dateType', 'eventDate', 'startDate', 'endDate', 'startTime', 'endTime', 'recurringWeekday'],
         link:     ['eventLink'],
         contact:  ['company', 'eventLocation', 'contactPhone', 'contactPhoneMode'],
         audience: ['classType'],
@@ -931,7 +957,7 @@ function clearAllBlocks(options = {}) {
 
 const POST_EVENT_MIRROR_FIELDS = [
     'title', 'titleEs', 'description', 'summaryEs',
-    'category', 'classType', 'dateType', 'eventDate', 'startDate', 'endDate', 'startTime', 'endTime',
+    'category', 'classType', 'dateType', 'eventDate', 'startDate', 'endDate', 'startTime', 'endTime', 'recurringWeekday',
     'eventLink', 'eventLocation', 'eventFormat', 'company', 'contact', 'contactPhone', 'contactPhoneMode', 'contactHours', 'address',
 ]
 
@@ -1507,6 +1533,16 @@ export function hydrateFromForm() {
                         eventDates.forEach((d, i) => sesList.appendChild(buildSessionRow(d, startTimes[i] || '', endTimes[i] || '', blkSync)))
                     }
                 }
+                if (blkDateType.value === 'range' || blkDateType.value === 'recurring') {
+                    const datesBlock = document.querySelector('#cxBlocks [data-cx-block="dates"]')
+                    const endEl = datesBlock?.querySelector('#cxBlkEnd')
+                    if (endEl) endEl.value = gv('endDate')
+                    if (blkDateType.value === 'recurring') {
+                        const weekdayEl = datesBlock?.querySelector('#cxBlkWeekday')
+                        if (weekdayEl && gv('recurringWeekday') !== '') weekdayEl.value = gv('recurringWeekday')
+                    }
+                    datesBlock?._syncBlkDateMirrors?.()
+                }
             }
         }
         if (gv('eventLink')) insertBlock('link')
@@ -1546,11 +1582,17 @@ export function hydrateFromForm() {
         const evDateEl = document.getElementById('cxEvDate')
         if (evDateEl && primaryDate) evDateEl.value = primaryDate
 
-        if (dateType === 'range') {
+        if (dateType === 'range' || dateType === 'recurring') {
             const endDate = gv('endDate')
             const evEndEl = document.getElementById('cxEvEnd')
             if (evEndEl && endDate) evEndEl.value = endDate
             document.getElementById('cxEvEndWrap')?.classList.remove('cx-hidden')
+        }
+
+        if (dateType === 'recurring') {
+            const evWeekdayEl = document.getElementById('cxEvWeekday')
+            if (evWeekdayEl && gv('recurringWeekday') !== '') evWeekdayEl.value = gv('recurringWeekday')
+            document.getElementById('cxEvWeekdayWrap')?.classList.remove('cx-hidden')
         }
 
         const st = gv('startTime'), et = gv('endTime')
@@ -1626,6 +1668,7 @@ function syncEventDateMirrors() {
     const endVal   = document.getElementById('cxEvEnd')?.value || ''
     const startT   = document.getElementById('cxEvStart')?.value || ''
     const endT     = document.getElementById('cxEvEndTime')?.value || ''
+    const weekdayVal = document.getElementById('cxEvWeekday')?.value || ''
 
     if (evType === 'sessions') {
         // Collect session rows from the composer's repeater
@@ -1650,6 +1693,7 @@ function syncEventDateMirrors() {
         mirror('eventDate', sessions[0]?.date || '')
         mirror('startDate', '')
         mirror('endDate', '')
+        mirror('recurringWeekday', '')
         mirror('startTime', sessions[0]?.startTime || '')
         mirror('endTime', sessions[0]?.endTime || '')
     } else if (evType === 'range') {
@@ -1657,6 +1701,15 @@ function syncEventDateMirrors() {
         mirror('startDate', dateVal)
         mirror('endDate', endVal)
         mirror('eventDate', dateVal)
+        mirror('recurringWeekday', '')
+        mirror('startTime', startT)
+        mirror('endTime', endT)
+    } else if (evType === 'recurring') {
+        mirror('dateType', 'recurring')
+        mirror('startDate', dateVal)
+        mirror('endDate', endVal)
+        mirror('eventDate', dateVal)
+        mirror('recurringWeekday', weekdayVal)
         mirror('startTime', startT)
         mirror('endTime', endT)
     } else if (evType === 'deadline') {
@@ -1664,6 +1717,7 @@ function syncEventDateMirrors() {
         mirror('eventDate', dateVal)
         mirror('startDate', '')
         mirror('endDate', '')
+        mirror('recurringWeekday', '')
         mirror('startTime', startT)
         mirror('endTime', endT)
     } else {
@@ -1671,6 +1725,7 @@ function syncEventDateMirrors() {
         mirror('eventDate', dateVal)
         mirror('startDate', '')
         mirror('endDate', '')
+        mirror('recurringWeekday', '')
         mirror('startTime', startT)
         mirror('endTime', endT)
     }
@@ -1681,6 +1736,8 @@ function bindEventHero() {
     const evTypeEl     = document.getElementById('cxEvType')
     const evDateLabel  = document.getElementById('cxEvDateLabel')
     const evEndWrap    = document.getElementById('cxEvEndWrap')
+    const evWeekdayWrap = document.getElementById('cxEvWeekdayWrap')
+    const evWeekdayEl  = document.getElementById('cxEvWeekday')
     const evSessionsWrap = document.getElementById('cxEvSessionsWrap')
     const sessionsList = document.getElementById('cxEvSessionsList')
     const addSessionBtn = document.getElementById('cxEvAddSession')
@@ -1696,17 +1753,20 @@ function bindEventHero() {
 
     function updateEvType() {
         const v = evTypeEl?.value || 'event'
-        if (evEndWrap)      evEndWrap.classList.toggle('cx-hidden', v !== 'range')
+        if (evEndWrap)      evEndWrap.classList.toggle('cx-hidden', v !== 'range' && v !== 'recurring')
+        if (evWeekdayWrap)  evWeekdayWrap.classList.toggle('cx-hidden', v !== 'recurring')
         if (evSessionsWrap) evSessionsWrap.classList.toggle('cx-hidden', v !== 'sessions')
         if (evDateLabel)    evDateLabel.textContent =
-            v === 'deadline' ? 'Deadline date' :
-            v === 'range'    ? 'Start date'    :
-            v === 'sessions' ? 'First session' : 'Date'
+            v === 'deadline'  ? 'Deadline date' :
+            v === 'range'     ? 'Start date'    :
+            v === 'sessions'  ? 'First session' :
+            v === 'recurring' ? 'Start date'    : 'Date'
         if (v === 'sessions') ensureSessionRows()
         syncEventDateMirrors()
     }
 
     if (evTypeEl) evTypeEl.addEventListener('change', updateEvType)
+    if (evWeekdayEl) evWeekdayEl.addEventListener('change', syncEventDateMirrors)
     ;['cxEvDate', 'cxEvEnd', 'cxEvStart', 'cxEvEndTime'].forEach(id => {
         document.getElementById(id)?.addEventListener('change', syncEventDateMirrors)
     })

@@ -172,7 +172,7 @@ export class AdminComposerFormMethods {
         if (bulletin.hideFromMainFeed === true) return true;
 
         const dt = bulletin.dateType;
-        if (dt !== 'event' && dt !== 'range' && dt !== 'sessions') return false;
+        if (dt !== 'event' && dt !== 'range' && dt !== 'sessions' && dt !== 'recurring') return false;
 
         const hasBody = Boolean(
             (bulletin.description || '').trim()

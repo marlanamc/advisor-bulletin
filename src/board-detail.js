@@ -145,7 +145,7 @@ export class BoardDetailMethods {
     }
 
     getDetailImportantDate(bulletin) {
-        if (bulletin.dateType === 'sessions') {
+        if (bulletin.dateType === 'sessions' || bulletin.dateType === 'recurring') {
             const items = this.expandBulletinDateItems(bulletin);
             if (!items.length) return null;
 
@@ -160,7 +160,9 @@ export class BoardDetailMethods {
                 raw: item.rawDate,
                 date: item.date,
                 kind: item.kind,
-                label: this.formatSessionDatesDetailLabel(bulletin)
+                label: bulletin.dateType === 'recurring'
+                    ? this.formatRecurringDetailLabel(bulletin)
+                    : this.formatSessionDatesDetailLabel(bulletin)
             };
         }
 
