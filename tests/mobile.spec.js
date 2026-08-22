@@ -130,7 +130,7 @@ test.describe('Mobile app shell', () => {
   });
 
   test('resource story bubbles open the resources view with that category', async ({ page }) => {
-    await page.locator('#feedStoryCats [data-app-view-cat="health"]').click();
+    await page.locator('#feedStoryCats [data-resource-shortcut="health"]').click();
 
     await expect(page.locator('#resourcesView')).toHaveClass(/active/);
     await expect(page.locator('#resourceCategoryDetail')).toContainText('Health');
@@ -164,7 +164,7 @@ test.describe('Mobile app shell', () => {
       window.bulletinBoard.displayBulletins(window.bulletinBoard.bulletins);
     });
 
-    await page.locator('#feedStoryCats [data-app-view-cat="immigration"]').click();
+    await page.locator('#feedStoryCats [data-resource-shortcut="immigration"]').click();
 
     await expect(page.locator('#resourcesView')).toHaveClass(/active/);
     await expect(page.locator('#resourcesList .resource-service-chip').first()).toContainText(/Get immigration help/i);
@@ -200,7 +200,7 @@ test.describe('Mobile app shell', () => {
     });
 
     await page.locator('[data-lang-switch="ES"]').click();
-    await page.locator('#feedStoryCats [data-app-view-cat="health"]').click();
+    await page.locator('#feedStoryCats [data-resource-shortcut="health"]').click();
 
     await expect(page.locator('#resourcesView')).toHaveClass(/active/);
     const chip = page.locator('#resourcesList .resource-service-chip').first();
@@ -210,7 +210,7 @@ test.describe('Mobile app shell', () => {
   });
 
   test('resource category view shows the full list for a topic', async ({ page }) => {
-    await page.locator('#feedStoryCats [data-app-view-cat="health"]').click();
+    await page.locator('#feedStoryCats [data-resource-shortcut="health"]').click();
 
     await expect(page.locator('#resourcesView')).toHaveClass(/active/);
     await expect(page.locator('#resourcesList .mobile-resource-card, #resourcesList .help-sheet-row')).toHaveCount(4);
@@ -218,7 +218,7 @@ test.describe('Mobile app shell', () => {
   });
 
   test('resource category back from home shortcut returns to feed', async ({ page }) => {
-    await page.locator('#feedStoryCats [data-app-view-cat="health"]').click();
+    await page.locator('#feedStoryCats [data-resource-shortcut="health"]').click();
     await expect(page.locator('#resourceCategoryDetail')).toBeVisible();
 
     await page.locator('[data-resource-detail-back]').click();

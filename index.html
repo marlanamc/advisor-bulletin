@@ -206,26 +206,8 @@
                     </a>
                 </div>
                 <div class="story-row" id="feedStoryCats">
-                    <!-- Immigration -->
-                    <button class="story-bubble" data-app-view-cat="immigration" type="button">
-                        <div class="story-bubble-ring" style="background: conic-gradient(from 200deg, #0d8a7a, #ffc857, #0d8a7a)">
-                            <div class="story-bubble-inner">
-                                <div class="story-bubble-icon" style="background:#cfeee8">
-                                    <svg viewBox="0 0 80 80" width="52" height="52" xmlns="http://www.w3.org/2000/svg">
-                                        <rect width="80" height="80" rx="22" fill="#0d8a7a"/>
-                                        <circle cx="40" cy="40" r="18" fill="#fff"/>
-                                        <ellipse cx="40" cy="40" rx="9" ry="18" fill="none" stroke="#0d8a7a" stroke-width="2"/>
-                                        <line x1="22" y1="40" x2="58" y2="40" stroke="#0d8a7a" stroke-width="2"/>
-                                        <line x1="40" y1="22" x2="40" y2="58" stroke="#0d8a7a" stroke-width="2"/>
-                                    </svg>
-                                </div>
-                            </div>
-                        </div>
-                        <span class="story-bubble-label en-text">Immigration</span>
-                        <span class="story-bubble-label es-text">Inmigración</span>
-                    </button>
                     <!-- Job Help -->
-                    <button class="story-bubble" data-app-view-cat="job" type="button">
+                    <button class="story-bubble" data-resource-shortcut="jobs" type="button">
                         <div class="story-bubble-ring" style="background: conic-gradient(from 200deg, #1f3d7a, #ffc857, #1f3d7a)">
                             <div class="story-bubble-inner">
                                 <div class="story-bubble-icon" style="background:#e1e9f7">
@@ -242,8 +224,26 @@
                         <span class="story-bubble-label en-text">Job Help</span>
                         <span class="story-bubble-label es-text">Ayuda con empleo</span>
                     </button>
+                    <!-- Immigration -->
+                    <button class="story-bubble" data-resource-shortcut="immigration" type="button">
+                        <div class="story-bubble-ring" style="background: conic-gradient(from 200deg, #0d8a7a, #ffc857, #0d8a7a)">
+                            <div class="story-bubble-inner">
+                                <div class="story-bubble-icon" style="background:#cfeee8">
+                                    <svg viewBox="0 0 80 80" width="52" height="52" xmlns="http://www.w3.org/2000/svg">
+                                        <rect width="80" height="80" rx="22" fill="#0d8a7a"/>
+                                        <circle cx="40" cy="40" r="18" fill="#fff"/>
+                                        <ellipse cx="40" cy="40" rx="9" ry="18" fill="none" stroke="#0d8a7a" stroke-width="2"/>
+                                        <line x1="22" y1="40" x2="58" y2="40" stroke="#0d8a7a" stroke-width="2"/>
+                                        <line x1="40" y1="22" x2="40" y2="58" stroke="#0d8a7a" stroke-width="2"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                        <span class="story-bubble-label en-text">Immigration</span>
+                        <span class="story-bubble-label es-text">Inmigración</span>
+                    </button>
                     <!-- Housing -->
-                    <button class="story-bubble" data-app-view-cat="housing" type="button">
+                    <button class="story-bubble" data-resource-shortcut="housing" type="button">
                         <div class="story-bubble-ring" style="background: conic-gradient(from 200deg, #d96a4a, #ffc857, #d96a4a)">
                             <div class="story-bubble-inner">
                                 <div class="story-bubble-icon" style="background:#fbdcd1">
@@ -259,25 +259,8 @@
                         <span class="story-bubble-label en-text">Housing</span>
                         <span class="story-bubble-label es-text">Vivienda</span>
                     </button>
-                    <!-- Health -->
-                    <button class="story-bubble" data-app-view-cat="health" type="button">
-                        <div class="story-bubble-ring" style="background: conic-gradient(from 200deg, #e0497d, #ffc857, #e0497d)">
-                            <div class="story-bubble-inner">
-                                <div class="story-bubble-icon" style="background:#fbd6e3">
-                                    <svg viewBox="0 0 80 80" width="52" height="52" xmlns="http://www.w3.org/2000/svg">
-                                        <rect width="80" height="80" rx="22" fill="#e0497d"/>
-                                        <path d="M40 60 C18 46, 22 26, 32 24 C36 23, 39 26, 40 28 C41 26, 44 23, 48 24 C58 26, 62 46, 40 60 Z" fill="#fff"/>
-                                        <rect x="37" y="34" width="6" height="14" rx="1" fill="#e0497d"/>
-                                        <rect x="33" y="38" width="14" height="6" rx="1" fill="#e0497d"/>
-                                    </svg>
-                                </div>
-                            </div>
-                        </div>
-                        <span class="story-bubble-label en-text">Health</span>
-                        <span class="story-bubble-label es-text">Salud</span>
-                    </button>
                     <!-- Food -->
-                    <button class="story-bubble" data-app-view-cat="food" type="button">
+                    <button class="story-bubble" data-resource-shortcut="food" type="button">
                         <div class="story-bubble-ring" style="background: conic-gradient(from 200deg, #2d8a4a, #ffc857, #2d8a4a)">
                             <div class="story-bubble-inner">
                                 <div class="story-bubble-icon" style="background:#cfead9">
@@ -294,57 +277,25 @@
                         <span class="story-bubble-label en-text">Food</span>
                         <span class="story-bubble-label es-text">Comida</span>
                     </button>
-                    <!-- GED -->
-                    <button class="story-bubble" data-app-view-cat="hse" type="button">
-                        <div class="story-bubble-ring" style="background: conic-gradient(from 200deg, #2563eb, #ffc857, #2563eb)">
+                    <!-- Health -->
+                    <button class="story-bubble" data-resource-shortcut="health" type="button">
+                        <div class="story-bubble-ring" style="background: conic-gradient(from 200deg, #e0497d, #ffc857, #e0497d)">
                             <div class="story-bubble-inner">
-                                <div class="story-bubble-icon" style="background:#dbeafe">
+                                <div class="story-bubble-icon" style="background:#fbd6e3">
                                     <svg viewBox="0 0 80 80" width="52" height="52" xmlns="http://www.w3.org/2000/svg">
-                                        <rect width="80" height="80" rx="22" fill="#2563eb"/>
-                                        <rect x="18" y="22" width="44" height="36" rx="4" fill="#fff"/>
-                                        <text x="40" y="46" text-anchor="middle" font-size="16" font-weight="900" fill="#2563eb" font-family="Outfit, sans-serif">GED</text>
+                                        <rect width="80" height="80" rx="22" fill="#e0497d"/>
+                                        <path d="M40 60 C18 46, 22 26, 32 24 C36 23, 39 26, 40 28 C41 26, 44 23, 48 24 C58 26, 62 46, 40 60 Z" fill="#fff"/>
+                                        <rect x="37" y="34" width="6" height="14" rx="1" fill="#e0497d"/>
+                                        <rect x="33" y="38" width="14" height="6" rx="1" fill="#e0497d"/>
                                     </svg>
                                 </div>
                             </div>
                         </div>
-                        <span class="story-bubble-label en-text">GED / HSE</span>
-                        <span class="story-bubble-label es-text">GED / HSE</span>
+                        <span class="story-bubble-label en-text">Health</span>
+                        <span class="story-bubble-label es-text">Salud</span>
                     </button>
-                    <!-- College / Work training -->
-                    <button class="story-bubble" data-app-view-cat="college" type="button">
-                        <div class="story-bubble-ring" style="background: conic-gradient(from 200deg, #0a1d3a, #ffc857, #0a1d3a)">
-                            <div class="story-bubble-inner">
-                                <div class="story-bubble-icon" style="background:#dde2eb">
-                                    <svg viewBox="0 0 80 80" width="52" height="52" xmlns="http://www.w3.org/2000/svg">
-                                        <rect width="80" height="80" rx="22" fill="#0a1d3a"/>
-                                        <polygon points="40,20 66,34 40,42 14,34" fill="#fff"/>
-                                        <rect x="26" y="42" width="28" height="16" rx="3" fill="#fff" opacity="0.85"/>
-                                        <rect x="62" y="34" width="4" height="14" rx="2" fill="#ffc857"/>
-                                    </svg>
-                                </div>
-                            </div>
-                        </div>
-                        <span class="story-bubble-label en-text">College &amp; Careers</span>
-                        <span class="story-bubble-label es-text">Universidad y carreras</span>
-                    </button>
-                    <!-- Financial Help -->
-                    <button class="story-bubble" data-app-view-cat="money" type="button">
-                        <div class="story-bubble-ring" style="background: conic-gradient(from 200deg, #1aa37a, #ffc857, #1aa37a)">
-                            <div class="story-bubble-inner">
-                                <div class="story-bubble-icon" style="background:#cfeee0">
-                                    <svg viewBox="0 0 80 80" width="52" height="52" xmlns="http://www.w3.org/2000/svg">
-                                        <rect width="80" height="80" rx="22" fill="#1aa37a"/>
-                                        <circle cx="40" cy="40" r="20" fill="#fff"/>
-                                        <text x="40" y="47" text-anchor="middle" font-size="22" font-weight="800" fill="#1aa37a" font-family="Outfit, sans-serif">$</text>
-                                    </svg>
-                                </div>
-                            </div>
-                        </div>
-                        <span class="story-bubble-label en-text">Financial Help</span>
-                        <span class="story-bubble-label es-text">Ayuda financiera</span>
-                    </button>
-                    <!-- Childcare -->
-                    <button class="story-bubble" data-app-view-cat="childcare" type="button">
+                    <!-- Child Care -->
+                    <button class="story-bubble" data-resource-shortcut="family" type="button">
                         <div class="story-bubble-ring" style="background: conic-gradient(from 200deg, #c08a3e, #ffc857, #c08a3e)">
                             <div class="story-bubble-inner">
                                 <div class="story-bubble-icon" style="background:#f5e3c4">
@@ -361,8 +312,45 @@
                         <span class="story-bubble-label en-text">Child Care</span>
                         <span class="story-bubble-label es-text">Cuidado de niños</span>
                     </button>
+                    <!-- Family & Community -->
+                    <button class="story-bubble" data-resource-shortcut="family-community" type="button">
+                        <div class="story-bubble-ring" style="background: conic-gradient(from 200deg, #b3542c, #ffc857, #b3542c)">
+                            <div class="story-bubble-inner">
+                                <div class="story-bubble-icon" style="background:#f3ddd0">
+                                    <svg viewBox="0 0 80 80" width="52" height="52" xmlns="http://www.w3.org/2000/svg">
+                                        <rect width="80" height="80" rx="22" fill="#b3542c"/>
+                                        <path d="M40 16 60 30v6H20v-6L40 16Z" fill="#fff"/>
+                                        <path d="M27 32h26v28H27V32Z" fill="#fff"/>
+                                        <path d="M33 44a7 7 0 1 1 14 0 7 7 0 0 1-14 0Z" fill="#b3542c"/>
+                                        <circle cx="16" cy="52" r="6.5" fill="#fff"/>
+                                        <path d="M8 66c.6-7 4-11 8-11s7.4 4 8 11H8Z" fill="#fff"/>
+                                        <circle cx="64" cy="52" r="6.5" fill="#fff"/>
+                                        <path d="M56 66c.6-7 4-11 8-11s7.4 4 8 11H56Z" fill="#fff"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                        <span class="story-bubble-label en-text">Family &amp; Community</span>
+                        <span class="story-bubble-label es-text">Familia y comunidad</span>
+                    </button>
+                    <!-- Financial Help -->
+                    <button class="story-bubble" data-resource-shortcut="money" type="button">
+                        <div class="story-bubble-ring" style="background: conic-gradient(from 200deg, #1aa37a, #ffc857, #1aa37a)">
+                            <div class="story-bubble-inner">
+                                <div class="story-bubble-icon" style="background:#cfeee0">
+                                    <svg viewBox="0 0 80 80" width="52" height="52" xmlns="http://www.w3.org/2000/svg">
+                                        <rect width="80" height="80" rx="22" fill="#1aa37a"/>
+                                        <circle cx="40" cy="40" r="20" fill="#fff"/>
+                                        <text x="40" y="47" text-anchor="middle" font-size="22" font-weight="800" fill="#1aa37a" font-family="Outfit, sans-serif">$</text>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                        <span class="story-bubble-label en-text">Financial Help</span>
+                        <span class="story-bubble-label es-text">Ayuda financiera</span>
+                    </button>
                     <!-- Legal Help -->
-                    <button class="story-bubble" data-app-view-cat="legal-aid" type="button">
+                    <button class="story-bubble" data-resource-shortcut="legal-aid" type="button">
                         <div class="story-bubble-ring" style="background: conic-gradient(from 200deg, #7c3aed, #ffc857, #7c3aed)">
                             <div class="story-bubble-inner">
                                 <div class="story-bubble-icon" style="background:#ede9fe">
@@ -379,6 +367,39 @@
                         </div>
                         <span class="story-bubble-label en-text">Legal Help</span>
                         <span class="story-bubble-label es-text">Ayuda legal</span>
+                    </button>
+                    <!-- GED -->
+                    <button class="story-bubble" data-resource-shortcut="hse" type="button">
+                        <div class="story-bubble-ring" style="background: conic-gradient(from 200deg, #2563eb, #ffc857, #2563eb)">
+                            <div class="story-bubble-inner">
+                                <div class="story-bubble-icon" style="background:#dbeafe">
+                                    <svg viewBox="0 0 80 80" width="52" height="52" xmlns="http://www.w3.org/2000/svg">
+                                        <rect width="80" height="80" rx="22" fill="#2563eb"/>
+                                        <rect x="18" y="22" width="44" height="36" rx="4" fill="#fff"/>
+                                        <text x="40" y="46" text-anchor="middle" font-size="16" font-weight="900" fill="#2563eb" font-family="Outfit, sans-serif">GED</text>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                        <span class="story-bubble-label en-text">GED / HSE</span>
+                        <span class="story-bubble-label es-text">GED / HSE</span>
+                    </button>
+                    <!-- College / Work training -->
+                    <button class="story-bubble" data-resource-shortcut="college" type="button">
+                        <div class="story-bubble-ring" style="background: conic-gradient(from 200deg, #0a1d3a, #ffc857, #0a1d3a)">
+                            <div class="story-bubble-inner">
+                                <div class="story-bubble-icon" style="background:#dde2eb">
+                                    <svg viewBox="0 0 80 80" width="52" height="52" xmlns="http://www.w3.org/2000/svg">
+                                        <rect width="80" height="80" rx="22" fill="#0a1d3a"/>
+                                        <polygon points="40,20 66,34 40,42 14,34" fill="#fff"/>
+                                        <rect x="26" y="42" width="28" height="16" rx="3" fill="#fff" opacity="0.85"/>
+                                        <rect x="62" y="34" width="4" height="14" rx="2" fill="#ffc857"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                        <span class="story-bubble-label en-text">College &amp; Careers</span>
+                        <span class="story-bubble-label es-text">Universidad y carreras</span>
                     </button>
                 </div>
             </div>
