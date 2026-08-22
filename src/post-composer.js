@@ -7,6 +7,7 @@ import {
 } from './resource-chip-labels.js'
 import { MAX_RESOURCE_ACTION_LINKS } from './resource-action-links.js'
 import { AUTHORABLE_RESOURCE_CATEGORIES } from './resource-categories.js'
+import { RESOURCE_CATEGORY_CONFIG } from './board-shared.js'
 
 /**
  * Streamlined Post Composer — UI layer for the new Create-a-Post experience.
@@ -574,6 +575,17 @@ function positionFixedPopover(pop, anchor, gap = 6) {
     pop.style.top = `${Math.max(margin, top)}px`
 }
 
+// Resource-type chip labels must read exactly like the category does
+// everywhere else on the site (RESOURCE_CATEGORY_CONFIG is the source of
+// truth) — CATS[key].chip is used only for bulletin-post authoring, where
+// the same key can read differently (e.g. "Job" vs. "Job Help").
+function categoryChipLabel(key) {
+    if (state.type === 'resource' && RESOURCE_CATEGORY_CONFIG[key]) {
+        return RESOURCE_CATEGORY_CONFIG[key].labelEn
+    }
+    return CATS[key]?.chip || key
+}
+
 function buildCatPopover() {
     const pop = document.getElementById('cxCatPop')
     const host = document.getElementById('cxCatPopCats')
@@ -607,7 +619,7 @@ function buildCatPopover() {
                 btn.style.color = c.fg
                 btn.style.background = c.bg
             }
-            btn.innerHTML = `<span class="cx-cat-em">${c.em}</span>${c.chip}`
+            btn.innerHTML = `<span class="cx-cat-em">${c.em}</span>${categoryChipLabel(k)}`
             btn.addEventListener('click', () => {
                 pickCategory(k)
                 closeCatPopover({ restoreFocus: true })
@@ -663,7 +675,7 @@ function pickCategory(key) {
     const emEl   = document.getElementById('cxCatEm')
     const lblEl  = document.getElementById('cxCatLabel')
     if (emEl)  emEl.textContent  = c.em
-    if (lblEl) lblEl.textContent = c.chip
+    if (lblEl) lblEl.textContent = categoryChipLabel(key)
     if (catBtn) {
         catBtn.classList.add('set')
         catBtn.style.color       = c.fg
@@ -1249,7 +1261,7 @@ function updateChipSuggestLabel(categoryKey) {
     const resolved = resolveResourceChipCategory(categoryKey)
     const suggested = getSuggestedResourceChips(categoryKey)
     if (suggested.length && resolved) {
-        const name = CATS[categoryKey]?.chip || CHIP_BUCKET_LABELS[resolved] || resolved.replace(/-/g, ' ')
+        const name = categoryChipLabel(categoryKey) || CHIP_BUCKET_LABELS[resolved] || resolved.replace(/-/g, ' ')
         labelEl.textContent = `Suggested for ${name}`
     } else if (categoryKey) {
         labelEl.textContent = 'Suggestions'

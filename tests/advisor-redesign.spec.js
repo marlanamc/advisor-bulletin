@@ -595,7 +595,7 @@ test.describe('Advisor redesign', () => {
 
     await expect(page.locator('[data-cx-type="resource"]')).toHaveClass(/active/);
     await expect(page.locator('[data-cx-reskind="organization"]')).toHaveClass(/sel/);
-    await expect(page.locator('#cxCatBtn')).toContainText('Family');
+    await expect(page.locator('#cxCatBtn')).toContainText('Child Care');
     await expect(page.locator('#cxTitle')).toHaveValue('East Boston Family Center');
     await expect(page.locator('#cxDesc')).toHaveValue('Help with childcare, family support, and referrals.');
     await expect(page.locator('#bulletinForm [name="contentType"]')).toHaveValue('resource');
