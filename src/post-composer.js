@@ -35,7 +35,7 @@ const CATS = {
     food:          { em: '🍽️', chip: 'Food',          bg: '#f8e8cf', fg: '#b9741c' },
     jobs:          { em: '💼', chip: 'Job Help',      bg: '#e3eaf7', fg: '#1f3d7a' },
     family:        { em: '👨‍👩‍👧', chip: 'Family',   bg: '#f6dced', fg: '#a8386c' },
-    'family-community': { em: '🧑‍🤝‍🧑', chip: 'Family & Community', bg: '#f0dcee', fg: '#7d2f66' },
+    'family-community': { em: '🏘️', chip: 'Family & Community', bg: '#f0dcee', fg: '#7d2f66' },
     general:       { em: '❓', chip: 'General Help',  bg: '#e8ecf2', fg: '#566274' },
     esol:          { em: '🗣️', chip: 'ESOL',          bg: '#ece6f8', fg: '#8050d1' },
     hse:           { em: '📚', chip: 'GED / HSE',      bg: '#e6edfa', fg: '#2f5fb3' },
