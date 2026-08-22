@@ -776,7 +776,7 @@ class FirebaseAdminPanel {
      * @returns {{ day: Date, startTime: string, endTime: string } | null}
      */
     getNextUpcomingEventOccurrence(bulletin, today) {
-        if (bulletin.dateType === 'sessions') {
+        if (bulletin.dateType === 'sessions' || bulletin.dateType === 'recurring') {
             for (const session of this.getBulletinEventSessions(bulletin)) {
                 const day = new Date(`${session.date}T00:00:00`);
                 if (!Number.isNaN(day.getTime()) && day >= today) {
