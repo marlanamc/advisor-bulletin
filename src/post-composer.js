@@ -6,6 +6,7 @@ import {
     resolveResourceChipCategory,
 } from './resource-chip-labels.js'
 import { MAX_RESOURCE_ACTION_LINKS } from './resource-action-links.js'
+import { AUTHORABLE_RESOURCE_CATEGORIES } from './resource-categories.js'
 
 /**
  * Streamlined Post Composer — UI layer for the new Create-a-Post experience.
@@ -34,6 +35,8 @@ const CATS = {
     food:          { em: '🍽️', chip: 'Food',          bg: '#f8e8cf', fg: '#b9741c' },
     jobs:          { em: '💼', chip: 'Job Help',      bg: '#e3eaf7', fg: '#1f3d7a' },
     family:        { em: '👨‍👩‍👧', chip: 'Family',   bg: '#f6dced', fg: '#a8386c' },
+    'family-community': { em: '🧑‍🤝‍🧑', chip: 'Family & Community', bg: '#f0dcee', fg: '#7d2f66' },
+    general:       { em: '❓', chip: 'General Help',  bg: '#e8ecf2', fg: '#566274' },
     esol:          { em: '🗣️', chip: 'ESOL',          bg: '#ece6f8', fg: '#8050d1' },
     hse:           { em: '📚', chip: 'GED / HSE',      bg: '#e6edfa', fg: '#2f5fb3' },
     college:       { em: '🎓', chip: 'College',       bg: '#e1e6f0', fg: '#14315f' },
@@ -589,7 +592,10 @@ function buildCatPopover() {
 
     function render() {
         host.innerHTML = ''
-        const keys = showAll ? Object.keys(CATS) : PRIMARY_CATS
+        const isResource = state.type === 'resource'
+        const allKeys = isResource ? AUTHORABLE_RESOURCE_CATEGORIES.filter(k => CATS[k]) : Object.keys(CATS)
+        const primaryKeys = isResource ? allKeys.slice(0, 6) : PRIMARY_CATS
+        const keys = showAll ? allKeys : primaryKeys
         keys.forEach(k => {
             const c = CATS[k]
             const btn = document.createElement('button')
