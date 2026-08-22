@@ -23,23 +23,24 @@ import { MAX_RESOURCE_ACTION_LINKS } from './resource-action-links.js'
  * handleBulletinSubmit / buildBulletinObject reads via FormData.
  */
 
-// ── Category data (mirrors shared.js CATS for standalone use) ─────────────
+// Category chip colors — mirrors RESOURCE_CATEGORY_CONFIG / getCatMeta() so the
+// composer's chips match the colors advisors and students see everywhere else.
 const CATS = {
-    job:           { em: '💼', chip: 'Job',           bg: '#e8f0fe', fg: '#1e4db7' },
-    training:      { em: '📚', chip: 'Training',      bg: '#f0eeff', fg: '#7c3aed' },
-    immigration:   { em: '🌎', chip: 'Immigration',   bg: '#e6f7f0', fg: '#059669' },
-    housing:       { em: '🏠', chip: 'Housing',       bg: '#fff1ec', fg: '#c2410c' },
-    health:        { em: '❤️', chip: 'Health',        bg: '#ffe9ee', fg: '#be123c' },
-    food:          { em: '🍽️', chip: 'Food',          bg: '#fffbea', fg: '#b45309' },
-    jobs:          { em: '💼', chip: 'Job Help',      bg: '#e8f0fe', fg: '#1e4db7' },
-    family:        { em: '👨‍👩‍👧', chip: 'Family',   bg: '#fff7ed', fg: '#c2410c' },
-    esol:          { em: '🗣️', chip: 'ESOL',          bg: '#e8f0fe', fg: '#1e4db7' },
-    hse:           { em: '📚', chip: 'GED / HSE',      bg: '#f0eeff', fg: '#7c3aed' },
-    college:       { em: '🎓', chip: 'College',       bg: '#f0eeff', fg: '#7c3aed' },
-    money:         { em: '💵', chip: 'Money Help',    bg: '#e6f7f0', fg: '#059669' },
-    'legal-aid':   { em: '⚖️', chip: 'Legal Help',    bg: '#eef2ff', fg: '#4338ca' },
-    'career-fair': { em: '🤝', chip: 'Career Fair',   bg: '#fff1ec', fg: '#c2410c' },
-    announcement:  { em: '📣', chip: 'Announcement',  bg: '#f0f4f9', fg: '#3d5a80' },
+    job:           { em: '💼', chip: 'Job',           bg: '#e3eaf7', fg: '#1f3d7a' },
+    training:      { em: '📚', chip: 'Training',      bg: '#e6edfa', fg: '#2f5fb3' },
+    immigration:   { em: '🌎', chip: 'Immigration',   bg: '#ece6f8', fg: '#6d4aa8' },
+    housing:       { em: '🏠', chip: 'Housing',       bg: '#f8ded3', fg: '#c2542e' },
+    health:        { em: '❤️', chip: 'Health',        bg: '#fbdde7', fg: '#d63f6f' },
+    food:          { em: '🍽️', chip: 'Food',          bg: '#f8e8cf', fg: '#b9741c' },
+    jobs:          { em: '💼', chip: 'Job Help',      bg: '#e3eaf7', fg: '#1f3d7a' },
+    family:        { em: '👨‍👩‍👧', chip: 'Family',   bg: '#f6dced', fg: '#a8386c' },
+    esol:          { em: '🗣️', chip: 'ESOL',          bg: '#ece6f8', fg: '#8050d1' },
+    hse:           { em: '📚', chip: 'GED / HSE',      bg: '#e6edfa', fg: '#2f5fb3' },
+    college:       { em: '🎓', chip: 'College',       bg: '#e1e6f0', fg: '#14315f' },
+    money:         { em: '💵', chip: 'Money Help',    bg: '#d7f0e6', fg: '#1aa37a' },
+    'legal-aid':   { em: '⚖️', chip: 'Legal Help',    bg: '#e8e2f7', fg: '#55379e' },
+    'career-fair': { em: '🤝', chip: 'Career Fair',   bg: '#e3eaf7', fg: '#1f3d7a' },
+    announcement:  { em: '📣', chip: 'Announcement',  bg: '#dbeafe', fg: '#317dea' },
 }
 const PRIMARY_CATS = ['job', 'training', 'immigration', 'housing', 'health', 'announcement']
 

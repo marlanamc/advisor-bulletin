@@ -86,85 +86,99 @@ export const RESOURCE_CATEGORY_CONFIG = {
         labelEn: 'Immigration',
         labelEs: 'Inmigración',
         icon: 'globe',
-        color: '#0d9488'
+        color: '#6d4aa8',
+        tint: '#ece6f8'
     },
     jobs: {
         labelEn: 'Job Help',
         labelEs: 'Ayuda con empleo',
         icon: 'briefcase',
-        color: '#24498f'
+        color: '#1f3d7a',
+        tint: '#e3eaf7'
     },
     housing: {
         labelEn: 'Housing',
         labelEs: 'Vivienda',
         icon: 'home',
-        color: '#df6b4a'
+        color: '#c2542e',
+        tint: '#f8ded3'
     },
     health: {
         labelEn: 'Health',
         labelEs: 'Salud',
         icon: 'heart',
-        color: '#df477f'
+        color: '#d63f6f',
+        tint: '#fbdde7'
     },
     food: {
         labelEn: 'Food',
         labelEs: 'Comida',
         icon: 'food',
-        color: '#2f934f'
+        color: '#b9741c',
+        tint: '#f8e8cf'
     },
     family: {
         labelEn: 'Child Care',
         labelEs: 'Cuidado de niños',
         icon: 'family',
-        color: '#c99035'
+        color: '#a8386c',
+        tint: '#f6dced'
     },
     'family-community': {
         labelEn: 'Family & Community',
         labelEs: 'Familia y comunidad',
         icon: 'community',
-        color: '#b3542c'
+        color: '#7d2f66',
+        tint: '#f0dcee'
     },
     esol: {
         labelEn: 'English class',
         labelEs: 'Inglés',
         icon: 'abc',
-        color: '#8050d1'
+        color: '#8050d1',
+        tint: '#ece6f8'
     },
     hse: {
         labelEn: 'GED / HSE',
         labelEs: 'Equivalencia escolar',
         icon: 'abc',
-        color: '#2563eb'
+        color: '#2f5fb3',
+        tint: '#e6edfa'
     },
     college: {
         labelEn: 'College & Careers',
         labelEs: 'Universidad y carreras',
         icon: 'graduation',
-        color: '#0a1d3a'
+        color: '#14315f',
+        tint: '#e1e6f0'
     },
     'legal-aid': {
         labelEn: 'Legal Help',
         labelEs: 'Ayuda legal',
         icon: 'scale',
-        color: '#7c3aed'
+        color: '#55379e',
+        tint: '#e8e2f7'
     },
     money: {
         labelEn: 'Financial Help',
         labelEs: 'Ayuda financiera',
         icon: 'money',
-        color: '#1fa77e'
+        color: '#1aa37a',
+        tint: '#d7f0e6'
     },
     general: {
         labelEn: 'General Help',
         labelEs: 'Ayuda general',
         icon: 'handshake',
-        color: '#64748b'
+        color: '#566274',
+        tint: '#e8ecf2'
     },
     announcement: {
         labelEn: 'Announcements',
         labelEs: 'Anuncios',
         icon: 'megaphone',
-        color: '#317dea'
+        color: '#317dea',
+        tint: '#dbeafe'
     }
 };
 
@@ -289,40 +303,38 @@ export const RESOURCE_ICON_SVGS = {
         </svg>
     `,
     briefcase: `
-        <svg viewBox="0 0 64 64" aria-hidden="true">
-            <path fill="#fff" d="M18 22h28c5 0 8 3 8 8v18c0 5-3 8-8 8H18c-5 0-8-3-8-8V30c0-5 3-8 8-8Z"/>
-            <path fill="#fff" d="M24 20c0-5 3-8 8-8s8 3 8 8v4h-7v-4c0-1-.3-1.4-1-1.4s-1 .4-1 1.4v4h-7v-4Z"/>
-            <path fill="#dce3ec" d="M10 34h44v9H10z"/>
-            <circle cx="32" cy="39" r="4.2" fill="#ffc857"/>
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <rect x="2.5" y="7" width="19" height="13" rx="2.4"/>
+            <path d="M9 6.5A2.5 2.5 0 0 1 11.5 4h1A2.5 2.5 0 0 1 15 6.5V8h-2.2V6.6h-1.6V8H9Z"/>
+            <rect x="9.6" y="11.6" width="4.8" height="2.6" rx="1" fill="var(--icon-cut, #fff)"/>
         </svg>
     `,
     home: `
-        <svg viewBox="0 0 64 64" aria-hidden="true">
-            <path fill="#fff" d="M10 31 32 11l22 20v23H10V31Z"/>
-            <path fill="#df6b4a" d="M26 39c0-3.3 2.7-6 6-6s6 2.7 6 6v15H26V39Z"/>
-            <circle cx="34.5" cy="46" r="1.7" fill="#ffc857"/>
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M12 2.6 22 11l-1.6 1.9-1.4-1.2V21H5V11.7l-1.4 1.2L2 11Z"/>
+            <rect x="9.9" y="14" width="4.2" height="7" fill="var(--icon-cut, #fff)"/>
         </svg>
     `,
     heart: `
-        <svg viewBox="0 0 64 64" aria-hidden="true">
-            <path fill="#fff" d="M32 55C18 44 11 35.8 11 25.5 11 17 17.7 11 25.3 11c4.2 0 7.2 2 8.7 4.2C35.5 13 38.5 11 42.7 11 50.3 11 57 17 57 25.5 57 35.8 50 44 32 55Z"/>
-            <path fill="#df477f" d="M28 23h8v9h9v8h-9v9h-8v-9h-9v-8h9v-9Z"/>
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M12 21.5C4.2 15.6 1.8 9.6 1.8 6.6 1.8 3.6 4.2 1.6 7 1.6c2.1 0 3.8 1.2 4.6 2.9.1.3.3.7.4 1 .1-.3.3-.7.4-1 .8-1.7 2.5-2.9 4.6-2.9 2.8 0 5.2 2 5.2 5 0 3-2.4 9-10.2 14.9Z"/>
+            <rect x="10.3" y="8.4" width="3.4" height="8.8" rx="1.2" fill="var(--icon-cut, #fff)"/>
+            <rect x="7.6" y="11.1" width="8.8" height="3.4" rx="1.2" fill="var(--icon-cut, #fff)"/>
         </svg>
     `,
     food: `
-        <svg viewBox="0 0 64 64" aria-hidden="true">
-            <path fill="#fff" d="M17 22h30l-4 30H21l-4-30Z"/>
-            <path fill="#fff" d="M24 21c.6-6 4-9 8-9s7.4 3 8 9h-6c-.4-2.4-1-3-2-3s-1.6.6-2 3h-6Z"/>
-            <path fill="#2f934f" d="M21 22h22l-.8 6H21.8L21 22Z" opacity=".22"/>
-            <circle cx="32" cy="39" r="6.2" fill="#df6b4a"/>
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M4.6 7.5h14.8l-1.3 13.9H5.9Z"/>
+            <path d="M8.4 8.6V6.4a3.6 3.6 0 0 1 7.2 0v2.2h-2.2V6.4a1.4 1.4 0 0 0-2.8 0v2.2Z"/>
+            <circle cx="12" cy="14.4" r="2.6" fill="var(--icon-cut, #fff)"/>
         </svg>
     `,
     family: `
-        <svg viewBox="0 0 64 64" aria-hidden="true">
-            <circle cx="26" cy="18" r="8" fill="#fff"/>
-            <circle cx="47" cy="25" r="7" fill="#fff"/>
-            <path fill="#fff" d="M10 53c1-10.5 7.2-16.5 16-16.5S41 42.5 42 53H10Z"/>
-            <path fill="#fff" d="M39 53c.8-7.5 4.9-12 10.5-12S59.2 45.5 60 53H39Z"/>
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <circle cx="8" cy="6.2" r="3.4"/>
+            <path d="M2.8 21c0-4.2 2.3-7.4 5.2-7.4S13.2 16.8 13.2 21Z"/>
+            <circle cx="17.4" cy="11.6" r="2.4"/>
+            <path d="M13.6 21c0-3 1.7-5.2 3.8-5.2S21.2 18 21.2 21Z"/>
         </svg>
     `,
     abc: `
@@ -333,35 +345,34 @@ export const RESOURCE_ICON_SVGS = {
         </svg>
     `,
     community: `
-        <svg viewBox="0 0 64 64" aria-hidden="true">
-            <path fill="#fff" d="M32 9 50 22v6H14v-6L32 9Z"/>
-            <path fill="#fff" d="M20 28h24v25H20V28Z"/>
-            <path fill="#b3542c" d="M27 40a5 5 0 1 1 10 0 5 5 0 0 1-10 0Z"/>
-            <circle cx="10" cy="46" r="6" fill="#fff"/>
-            <path fill="#fff" d="M2 61c.6-6.6 3.8-10.4 8-10.4S17.4 54.4 18 61H2Z"/>
-            <circle cx="54" cy="46" r="6" fill="#fff"/>
-            <path fill="#fff" d="M46 61c.6-6.6 3.8-10.4 8-10.4S61.4 54.4 62 61H46Z"/>
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <circle cx="12" cy="6" r="3.2"/>
+            <circle cx="4.6" cy="9.4" r="2.6"/>
+            <circle cx="19.4" cy="9.4" r="2.6"/>
+            <path d="M6.2 21c0-3.7 2.6-6.4 5.8-6.4S17.8 17.3 17.8 21Z"/>
+            <path d="M.6 21c0-3 1.7-5 4-5 .7 0 1.3.2 1.9.5-1 1.2-1.6 2.7-1.7 4.5Z"/>
+            <path d="M23.4 21c0-3-1.7-5-4-5-.7 0-1.3.2-1.9.5 1 1.2 1.6 2.7 1.7 4.5Z"/>
         </svg>
     `,
     graduation: `
-        <svg viewBox="0 0 64 64" aria-hidden="true">
-            <path fill="#fff" d="M4 25 32 13l28 12-28 12L4 25Z"/>
-            <path fill="#fff" d="M17 33v13c8.5 5.4 21.5 5.4 30 0V33l-15 6.5L17 33Z"/>
-            <path fill="#ffc857" d="M53 28h5v19h-5z"/>
-            <circle cx="55.5" cy="29" r="4.2" fill="#ffc857"/>
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M12 3.4 23 9l-11 5.6L1 9Z"/>
+            <path d="M5.6 12.4 12 15.7l6.4-3.3v4.1c0 1.9-2.9 3.4-6.4 3.4s-6.4-1.5-6.4-3.4Z"/>
+            <rect x="21.2" y="9.8" width="1.8" height="6.4" rx=".9"/>
         </svg>
     `,
     handshake: `
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <circle cx="12" cy="12" r="9"/>
-            <path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/>
-            <path d="M12 17h.01"/>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">
+            <path d="M9.4 9.2a2.7 2.7 0 1 1 3.6 2.5c-.7.3-1 .9-1 1.6v.3"/>
+            <circle cx="12" cy="17.4" r="1.2" fill="currentColor" stroke="none"/>
         </svg>
     `,
     money: `
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M12 2v20"/>
-            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <rect x="1.6" y="5.4" width="20.8" height="13.2" rx="2.4"/>
+            <circle cx="12" cy="12" r="4" fill="var(--icon-cut, #fff)"/>
+            <text x="12" y="15" text-anchor="middle" font-size="8" font-weight="900"
+                  fill="currentColor" font-family="Outfit, sans-serif">$</text>
         </svg>
     `,
     megaphone: `
@@ -372,19 +383,27 @@ export const RESOURCE_ICON_SVGS = {
         </svg>
     `,
     scale: `
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 4v15.5"></path>
-            <path d="M7 7.5h10"></path>
-            <path d="m7 7.5-3 5h6l-3-5Z"></path>
-            <path d="m17 7.5-3 5h6l-3-5Z"></path>
-            <path d="M8.5 20.5h7"></path>
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <rect x="10.9" y="3" width="2.2" height="17" rx="1.1"/>
+            <rect x="4" y="5.6" width="16" height="2.2" rx="1.1"/>
+            <path d="M6.4 7.4 2.4 15.4h8Z"/>
+            <path d="M17.6 7.4l-4 8h8Z"/>
+            <rect x="6.6" y="19.4" width="10.8" height="2.2" rx="1.1"/>
         </svg>
     `,
     globe: `
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="8.5"></circle>
-            <path d="M3.75 12h16.5"></path>
-            <path d="M12 3.75c2.75 2.55 4.25 5.3 4.25 8.25S14.75 17.7 12 20.25c-2.75-2.55-4.25-5.3-4.25-8.25S9.25 6.3 12 3.75Z"></path>
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <rect x="4.5" y="2.5" width="15" height="19" rx="2.4"/>
+            <circle cx="12" cy="10" r="3.6" fill="var(--icon-cut, #fff)"/>
+            <rect x="8" y="16.4" width="8" height="1.9" rx=".95" fill="var(--icon-cut, #fff)"/>
+        </svg>
+    `,
+    'all-topics': `
+        <svg viewBox="0 0 24 24" fill="#fff" aria-hidden="true">
+            <rect x="3" y="3" width="7.5" height="7.5" rx="2"/>
+            <rect x="13.5" y="3" width="7.5" height="7.5" rx="2"/>
+            <rect x="3" y="13.5" width="7.5" height="7.5" rx="2"/>
+            <rect x="13.5" y="13.5" width="7.5" height="7.5" rx="2"/>
         </svg>
     `
 };

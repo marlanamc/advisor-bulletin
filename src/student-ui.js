@@ -105,7 +105,7 @@ if (mobileInlineInput) {
 var CAT_DATA = {
     immigration: {
         label: { en: 'Immigration', es: 'Inmigración' },
-        color: '#0d8a7a',
+        color: '#6d4aa8',
         iconSvg: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>',
         orgs: [
             {
@@ -179,7 +179,7 @@ var CAT_DATA = {
     },
     housing: {
         label: { en: 'Housing', es: 'Vivienda' },
-        color: '#d96a4a',
+        color: '#c2542e',
         iconSvg: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>',
         orgs: [
             {
@@ -206,7 +206,7 @@ var CAT_DATA = {
     },
     health: {
         label: { en: 'Health', es: 'Salud' },
-        color: '#e0497d',
+        color: '#d63f6f',
         iconSvg: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>',
         orgs: [
             {
@@ -233,7 +233,7 @@ var CAT_DATA = {
     },
     food: {
         label: { en: 'Food', es: 'Comida' },
-        color: '#2d8a4a',
+        color: '#b9741c',
         iconSvg: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>',
         orgs: [
             {
@@ -260,7 +260,7 @@ var CAT_DATA = {
     },
     esol: {
         label: { en: 'English Class', es: 'Inglés' },
-        color: '#7b4ec7',
+        color: '#8050d1',
         iconSvg: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
         orgs: [
             {
@@ -287,7 +287,7 @@ var CAT_DATA = {
     },
     college: {
         label: { en: 'College & GED', es: 'Universidad' },
-        color: '#0a1d3a',
+        color: '#14315f',
         iconSvg: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>',
         orgs: [
             {
@@ -331,7 +331,7 @@ var CAT_DATA = {
     },
     childcare: {
         label: { en: 'Childcare', es: 'Cuidado infantil' },
-        color: '#c08a3e',
+        color: '#a8386c',
         iconSvg: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/><circle cx="19" cy="11" r="2"/><path d="M23 21v-1a2 2 0 0 0-2-2h-2"/></svg>',
         orgs: [
             {
@@ -348,7 +348,7 @@ var CAT_DATA = {
     },
     'legal-aid': {
         label: { en: 'Legal Help', es: 'Ayuda legal' },
-        color: '#7c3aed',
+        color: '#55379e',
         iconSvg: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="M6 6h12"/><path d="m6 6-3 6h6L6 6Z"/><path d="m18 6-3 6h6l-3-6Z"/><path d="M8 21h8"/></svg>',
         orgs: [
             {

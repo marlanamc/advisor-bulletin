@@ -78,7 +78,7 @@ export class BoardResourcesMethods {
 
     getResourceCategoryTint(categoryKey) {
         const config = RESOURCE_CATEGORY_CONFIG[categoryKey];
-        return config && config.color ? config.color : '#0d9488';
+        return config && config.color ? config.color : '#566274';
     }
 
     renderResourceNeedChips(resources) {
@@ -331,7 +331,9 @@ export class BoardResourcesMethods {
                 const config = RESOURCE_CATEGORY_CONFIG[key];
                 if (!config) return '';
                 const count = resources.filter((resource) => this.getResourceCategoryKey(resource) === key).length;
-                const iconSvg = RESOURCE_ICON_SVGS[config.icon] || RESOURCE_ICON_SVGS.globe;
+                const iconSvg = key === 'hse'
+                    ? '<span class="cat-wordmark">GED</span>'
+                    : (RESOURCE_ICON_SVGS[config.icon] || RESOURCE_ICON_SVGS.globe);
                 const placesLabelEn = this.getResourceCountNoun(count, 'en');
                 const placesLabelEs = this.getResourceCountNoun(count, 'es');
                 return `
@@ -341,7 +343,7 @@ export class BoardResourcesMethods {
                 data-resource-category="${key}"
                 aria-label="${this.escapeAttribute(`${config.labelEn} / ${config.labelEs}, ${count} ${placesLabelEn}`)}"
             >
-                <span class="resource-category-tile-icon" style="background:${config.color}" aria-hidden="true">
+                <span class="resource-category-tile-icon" style="background:${config.color};--icon-cut:${config.color}" aria-hidden="true">
                     ${iconSvg}
                 </span>
                 <span class="resource-category-tile-copy">
@@ -401,13 +403,13 @@ export class BoardResourcesMethods {
                 .filter((resource) => this.resourceMatchesNeedChip(resource, needChip));
             const entries = this.buildResourceNeedChipIndex(this.getPublishedResources());
             const chipEntry = entries.find((entry) => entry.label.toLowerCase() === needChip.toLowerCase());
-            const accent = chipEntry ? this.getResourceCategoryTint(chipEntry.category) : '#0d9488';
+            const accent = chipEntry ? this.getResourceCategoryTint(chipEntry.category) : '#566274';
             const enLabel = chipEntry ? chipEntry.label : needChip;
             const esLabel = chipEntry ? translateResourceChipEs(chipEntry.source) : needChip;
             const chipCategoryConfig = chipEntry ? RESOURCE_CATEGORY_CONFIG[chipEntry.category] : null;
-            const iconSvg = chipCategoryConfig
-                ? (RESOURCE_ICON_SVGS[chipCategoryConfig.icon] || RESOURCE_ICON_SVGS.globe)
-                : RESOURCE_ICON_SVGS.globe;
+            const iconSvg = chipEntry && chipEntry.category === 'hse'
+                ? '<span class="cat-wordmark">GED</span>'
+                : (chipCategoryConfig ? (RESOURCE_ICON_SVGS[chipCategoryConfig.icon] || RESOURCE_ICON_SVGS.globe) : RESOURCE_ICON_SVGS.globe);
 
             header.hidden = false;
             header.style.removeProperty('display');
@@ -419,7 +421,7 @@ export class BoardResourcesMethods {
                     <span class="es-text">Atrás</span>
                 </button>
                 <div class="resource-category-detail-title">
-                    <span class="resource-category-detail-icon" style="background:${accent}" aria-hidden="true">${iconSvg}</span>
+                    <span class="resource-category-detail-icon" style="background:${accent};--icon-cut:${accent}" aria-hidden="true">${iconSvg}</span>
                     <div class="resource-category-detail-text">
                         <h2>
                             <span class="en-text">${this.escapeHtml(enLabel)}</span>
@@ -444,7 +446,9 @@ export class BoardResourcesMethods {
 
         const allResources = this.getPublishedResources()
             .filter((resource) => this.getResourceCategoryKey(resource) === category);
-        const iconSvg = RESOURCE_ICON_SVGS[config.icon] || RESOURCE_ICON_SVGS.globe;
+        const iconSvg = category === 'hse'
+            ? '<span class="cat-wordmark">GED</span>'
+            : (RESOURCE_ICON_SVGS[config.icon] || RESOURCE_ICON_SVGS.globe);
 
         header.hidden = false;
         header.style.removeProperty('display');
@@ -461,7 +465,7 @@ export class BoardResourcesMethods {
                        <span class="es-text">Atrás</span>`}
             </button>
             <div class="resource-category-detail-title">
-                <span class="resource-category-detail-icon" style="background:${config.color}" aria-hidden="true">${iconSvg}</span>
+                <span class="resource-category-detail-icon" style="background:${config.color};--icon-cut:${config.color}" aria-hidden="true">${iconSvg}</span>
                 <div class="resource-category-detail-text">
                     <h2>
                         <span class="en-text">${this.escapeHtml(config.labelEn)}</span>
@@ -706,15 +710,14 @@ export class BoardResourcesMethods {
                 type="button"
                 class="desktop-cat-btn desktop-cat-btn--all${activeTopic === 'all' ? ' active' : ''}"
                 data-desktop-cat="all"
-                style="--topic-color:#e0e7ff;--topic-text:#0a1d3a"
                 aria-label="All topics / Todos los temas"
             >
-                <span class="desktop-cat-icon desktop-cat-icon--all" style="background:#0a1d3a" aria-hidden="true">✨</span>
+                <span class="desktop-cat-icon desktop-cat-icon--all" aria-hidden="true">${RESOURCE_ICON_SVGS['all-topics']}</span>
                 <span class="desktop-cat-label">
-                    <span class="en-text">All</span>
-                    <span class="es-text">Todo</span>
+                    <span class="en-text">All topics</span>
+                    <span class="es-text">Todos los temas</span>
                 </span>
-                ${filtered.length > 0 ? `<span class="desktop-cat-count" style="background:#e0e7ff;color:#0a1d3a">${filtered.length}</span>` : ''}
+                ${filtered.length > 0 ? `<span class="desktop-cat-count" style="background:#0a1d3a;color:#fff">${filtered.length}</span>` : ''}
             </button>
         `;
 
@@ -722,21 +725,23 @@ export class BoardResourcesMethods {
             const config = RESOURCE_CATEGORY_CONFIG[key];
             if (!config) return '';
             const count = (catMap[key] || []).length;
-            const iconSvg = RESOURCE_ICON_SVGS[config.icon] || RESOURCE_ICON_SVGS.globe;
+            const iconSvg = key === 'hse'
+                ? '<span class="cat-wordmark">GED</span>'
+                : (RESOURCE_ICON_SVGS[config.icon] || RESOURCE_ICON_SVGS.globe);
             return `
                 <button
                     type="button"
                     class="desktop-cat-btn${activeTopic === key ? ' active' : ''}"
                     data-desktop-cat="${key}"
-                    style="--topic-color:${config.color}20;--topic-text:${config.color}"
+                    style="--topic-color:${config.color};--topic-tint:${config.tint}"
                     aria-label="${this.escapeAttribute(config.labelEn + ' / ' + config.labelEs)}"
                 >
-                    <span class="desktop-cat-icon" style="background:${config.color}" aria-hidden="true">${iconSvg}</span>
+                    <span class="desktop-cat-icon" aria-hidden="true">${iconSvg}</span>
                     <span class="desktop-cat-label">
                         <span class="en-text">${this.escapeHtml(config.labelEn)}</span>
                         <span class="es-text">${this.escapeHtml(config.labelEs)}</span>
                     </span>
-                    ${count > 0 ? `<span class="desktop-cat-count" style="background:${config.color}20;color:${config.color}">${count}</span>` : ''}
+                    ${count > 0 ? `<span class="desktop-cat-count">${count}</span>` : ''}
                 </button>
             `;
         }).join('');
@@ -792,14 +797,16 @@ export class BoardResourcesMethods {
             const config = RESOURCE_CATEGORY_CONFIG[key];
             if (!config) return '';
             const resources = catMap[key];
-            const iconSvg = RESOURCE_ICON_SVGS[config.icon] || RESOURCE_ICON_SVGS.globe;
+            const iconSvg = key === 'hse'
+                ? '<span class="cat-wordmark">GED</span>'
+                : (RESOURCE_ICON_SVGS[config.icon] || RESOURCE_ICON_SVGS.globe);
 
             const cardsHtml = resources.map(r => this.createHelpResourceCard(r, config)).join('');
 
             return `
                 <section class="desktop-resource-section" id="desktop-section-${key}" style="--cat-accent:${config.color}">
                     <div class="desktop-section-header">
-                        <span class="desktop-section-icon" style="background:${config.color}" aria-hidden="true">${iconSvg}</span>
+                        <span class="desktop-section-icon" style="background:${config.color};--icon-cut:${config.color}" aria-hidden="true">${iconSvg}</span>
                         <div class="desktop-section-title-group">
                             <h2 class="desktop-section-title">
                                 <span class="en-text">${this.escapeHtml(config.labelEn)}</span>
@@ -1041,7 +1048,9 @@ export class BoardResourcesMethods {
         const isMobileSheet = window.matchMedia('(max-width: 767px)').matches;
         const shouldLimit = !options.showAll;
         const visibleResources = shouldLimit ? resources.slice(0, 3) : resources;
-        const iconSvg = RESOURCE_ICON_SVGS[config.icon] || RESOURCE_ICON_SVGS.globe;
+        const iconSvg = category === 'hse'
+            ? '<span class="cat-wordmark">GED</span>'
+            : (RESOURCE_ICON_SVGS[config.icon] || RESOURCE_ICON_SVGS.globe);
 
         if (titleEl) {
             titleEl.innerHTML = `
@@ -1056,6 +1065,7 @@ export class BoardResourcesMethods {
 
         if (iconEl) {
             iconEl.style.background = config.color;
+            iconEl.style.setProperty('--icon-cut', config.color);
             iconEl.innerHTML = iconSvg;
         }
 

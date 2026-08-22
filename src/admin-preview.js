@@ -379,19 +379,21 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Mirrors FirebaseAdminPanel.getCatMeta() (firebase-config.js) so the admin
+    // preview matches what students actually see.
     var PREVIEW_CAT_META = {
-        job:          { accent: '#1e40af', tint: '#dbeafe', grad: 'linear-gradient(145deg,#bfdbfe,#dbeafe)', label: 'JOB HELP',    emoji: '💼' },
-        training:     { accent: '#7b4ec7', tint: '#ede9fe', grad: 'linear-gradient(145deg,#ddd6fe,#ede9fe)', label: 'TRAINING',    emoji: '📚' },
-        college:      { accent: '#4338ca', tint: '#e0e7ff', grad: 'linear-gradient(145deg,#c7d2fe,#e0e7ff)', label: 'COLLEGE',     emoji: '🎓' },
-        immigration:  { accent: '#0d8a7a', tint: '#ccfbf1', grad: 'linear-gradient(145deg,#99f6e4,#ccfbf1)', label: 'IMMIGRATION', emoji: '🌍' },
-        housing:      { accent: '#b91c1c', tint: '#fee2e2', grad: 'linear-gradient(145deg,#fca5a5,#fecaca)', label: 'HOUSING',     emoji: '🏠' },
-        health:       { accent: '#be185d', tint: '#fce7f3', grad: 'linear-gradient(145deg,#f9a8d4,#fce7f3)', label: 'HEALTH',      emoji: '❤️' },
-        food:         { accent: '#166534', tint: '#dcfce7', grad: 'linear-gradient(145deg,#86efac,#dcfce7)', label: 'FOOD',        emoji: '🍎' },
-        childcare:    { accent: '#92400e', tint: '#fef3c7', grad: 'linear-gradient(145deg,#fde68a,#fef3c7)', label: 'FAMILY',      emoji: '👨‍👩‍👧' },
-        esol:         { accent: '#6d28d9', tint: '#ede9fe', grad: 'linear-gradient(145deg,#c4b5fd,#ede9fe)', label: 'ESOL',        emoji: '🗣️' },
-        'career-fair':{ accent: '#b45309', tint: '#ffedd5', grad: 'linear-gradient(145deg,#fed7aa,#ffedd5)', label: 'CAREER FAIR', emoji: '🤝' },
-        money:        { accent: '#065f46', tint: '#d1fae5', grad: 'linear-gradient(145deg,#6ee7b7,#d1fae5)', label: 'MONEY HELP',  emoji: '💰' },
-        announcement: { accent: '#0284c7', tint: '#e0f2fe', grad: 'linear-gradient(145deg,#bae6fd,#e0f2fe)', label: 'ANNOUNCEMENT',emoji: '📢' }
+        job:          { accent: '#1f3d7a', tint: '#e3eaf7', grad: 'linear-gradient(145deg,color-mix(in srgb,#1f3d7a 12%,#fff),#e3eaf7)', label: 'JOB HELP',    emoji: '💼' },
+        training:     { accent: '#2f5fb3', tint: '#e6edfa', grad: 'linear-gradient(145deg,color-mix(in srgb,#2f5fb3 12%,#fff),#e6edfa)', label: 'TRAINING',    emoji: '📚' },
+        college:      { accent: '#14315f', tint: '#e1e6f0', grad: 'linear-gradient(145deg,color-mix(in srgb,#14315f 12%,#fff),#e1e6f0)', label: 'COLLEGE',     emoji: '🎓' },
+        immigration:  { accent: '#6d4aa8', tint: '#ece6f8', grad: 'linear-gradient(145deg,color-mix(in srgb,#6d4aa8 12%,#fff),#ece6f8)', label: 'IMMIGRATION', emoji: '🌍' },
+        housing:      { accent: '#c2542e', tint: '#f8ded3', grad: 'linear-gradient(145deg,color-mix(in srgb,#c2542e 12%,#fff),#f8ded3)', label: 'HOUSING',     emoji: '🏠' },
+        health:       { accent: '#d63f6f', tint: '#fbdde7', grad: 'linear-gradient(145deg,color-mix(in srgb,#d63f6f 12%,#fff),#fbdde7)', label: 'HEALTH',      emoji: '❤️' },
+        food:         { accent: '#b9741c', tint: '#f8e8cf', grad: 'linear-gradient(145deg,color-mix(in srgb,#b9741c 12%,#fff),#f8e8cf)', label: 'FOOD',        emoji: '🍎' },
+        childcare:    { accent: '#a8386c', tint: '#f6dced', grad: 'linear-gradient(145deg,color-mix(in srgb,#a8386c 12%,#fff),#f6dced)', label: 'FAMILY',      emoji: '👨‍👩‍👧' },
+        esol:         { accent: '#8050d1', tint: '#ece6f8', grad: 'linear-gradient(145deg,color-mix(in srgb,#8050d1 12%,#fff),#ece6f8)', label: 'ESOL',        emoji: '🗣️' },
+        'career-fair':{ accent: '#1f3d7a', tint: '#e3eaf7', grad: 'linear-gradient(145deg,color-mix(in srgb,#1f3d7a 12%,#fff),#e3eaf7)', label: 'CAREER FAIR', emoji: '🤝' },
+        money:        { accent: '#1aa37a', tint: '#d7f0e6', grad: 'linear-gradient(145deg,color-mix(in srgb,#1aa37a 12%,#fff),#d7f0e6)', label: 'MONEY HELP',  emoji: '💰' },
+        announcement: { accent: '#317dea', tint: '#dbeafe', grad: 'linear-gradient(145deg,color-mix(in srgb,#317dea 12%,#fff),#dbeafe)', label: 'ANNOUNCEMENT',emoji: '📢' }
     };
 
     function getPreviewCardIconSvg(category) {
@@ -461,18 +463,20 @@ document.addEventListener('DOMContentLoaded', function() {
         cardWrap.innerHTML = buildBulletinPreviewShell('', '', '', '', '');
     }
 
+    // Mirrors RESOURCE_CATEGORY_CONFIG (src/board-shared.js) so the admin preview
+    // matches the student-facing resource colors.
     var PREVIEW_RESOURCE_COLORS = {
-        immigration: '#0d9488',
-        jobs: '#24498f',
-        housing: '#df6b4a',
-        health: '#df477f',
-        food: '#2f934f',
-        family: '#c99035',
+        immigration: '#6d4aa8',
+        jobs: '#1f3d7a',
+        housing: '#c2542e',
+        health: '#d63f6f',
+        food: '#b9741c',
+        family: '#a8386c',
         esol: '#8050d1',
-        hse: '#2563eb',
-        college: '#0a1d3a',
-        'legal-aid': '#7c3aed',
-        money: '#1fa77e'
+        hse: '#2f5fb3',
+        college: '#14315f',
+        'legal-aid': '#55379e',
+        money: '#1aa37a'
     };
 
     function previewResourceIcon(category) {

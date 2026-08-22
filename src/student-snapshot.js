@@ -8,18 +8,21 @@ const SNAPSHOT_CACHE_TTL = 6 * 60 * 60 * 1000; // 6 hours
 const SNAPSHOT_NETWORK_TTL = 48 * 60 * 60 * 1000; // 48 hours
 const SNAPSHOT_MAX_STORED_ITEMS = 72;
 
+// Mirrors FirebaseAdminPanel.getCatMeta() in firebase-config.js — this drives the
+// cold-start snapshot rendered before Firebase loads, so it must match exactly or
+// cards visibly recolor once the live feed takes over.
 const CATEGORY_META = {
-    job: { label: 'Job Help', labelEs: 'Ayuda con empleo', emoji: '💼', accent: '#24498f', tint: '#eaf0ff', grad: 'linear-gradient(145deg,#dbeafe 0%,#f8fafc 100%)' },
-    training: { label: 'Training', labelEs: 'Capacitación', emoji: '📚', accent: '#8050d1', tint: '#f1eafe', grad: 'linear-gradient(145deg,#ede9fe 0%,#f8fafc 100%)' },
-    immigration: { label: 'Immigration', labelEs: 'Inmigración', emoji: '🌎', accent: '#0d9488', tint: '#dff7f3', grad: 'linear-gradient(145deg,#ccfbf1 0%,#f8fafc 100%)' },
-    housing: { label: 'Housing', labelEs: 'Vivienda', emoji: '🏠', accent: '#df6b4a', tint: '#fff0e8', grad: 'linear-gradient(145deg,#fed7aa 0%,#f8fafc 100%)' },
-    health: { label: 'Health', labelEs: 'Salud', emoji: '❤️', accent: '#df477f', tint: '#fde7ef', grad: 'linear-gradient(145deg,#fbcfe8 0%,#f8fafc 100%)' },
-    food: { label: 'Food', labelEs: 'Comida', emoji: '🍽️', accent: '#2f934f', tint: '#e8f7ed', grad: 'linear-gradient(145deg,#dcfce7 0%,#f8fafc 100%)' },
-    esol: { label: 'English class', labelEs: 'Inglés', emoji: '🗣️', accent: '#2563eb', tint: '#eaf0ff', grad: 'linear-gradient(145deg,#dbeafe 0%,#f8fafc 100%)' },
-    college: { label: 'College & GED', labelEs: 'Colegio', emoji: '🎓', accent: '#0a1d3a', tint: '#e7edf7', grad: 'linear-gradient(145deg,#dbeafe 0%,#f8fafc 100%)' },
-    money: { label: 'Money help', labelEs: 'Dinero', emoji: '💵', accent: '#1fa77e', tint: '#e8fff6', grad: 'linear-gradient(145deg,#d1fae5 0%,#f8fafc 100%)' },
-    'career-fair': { label: 'Career fair', labelEs: 'Feria', emoji: '🤝', accent: '#317dea', tint: '#eaf2ff', grad: 'linear-gradient(145deg,#bfdbfe 0%,#f8fafc 100%)' },
-    announcement: { label: 'News', labelEs: 'Anuncios', emoji: '📣', accent: '#317dea', tint: '#eaf2ff', grad: 'linear-gradient(145deg,#dbeafe 0%,#f8fafc 100%)' },
+    job: { label: 'Job Help', labelEs: 'Ayuda con empleo', emoji: '💼', accent: '#1f3d7a', tint: '#e3eaf7', grad: 'linear-gradient(145deg,color-mix(in srgb,#1f3d7a 12%,#fff) 0%,#e3eaf7 100%)' },
+    training: { label: 'Training', labelEs: 'Capacitación', emoji: '📚', accent: '#2f5fb3', tint: '#e6edfa', grad: 'linear-gradient(145deg,color-mix(in srgb,#2f5fb3 12%,#fff) 0%,#e6edfa 100%)' },
+    immigration: { label: 'Immigration', labelEs: 'Inmigración', emoji: '🌎', accent: '#6d4aa8', tint: '#ece6f8', grad: 'linear-gradient(145deg,color-mix(in srgb,#6d4aa8 12%,#fff) 0%,#ece6f8 100%)' },
+    housing: { label: 'Housing', labelEs: 'Vivienda', emoji: '🏠', accent: '#c2542e', tint: '#f8ded3', grad: 'linear-gradient(145deg,color-mix(in srgb,#c2542e 12%,#fff) 0%,#f8ded3 100%)' },
+    health: { label: 'Health', labelEs: 'Salud', emoji: '❤️', accent: '#d63f6f', tint: '#fbdde7', grad: 'linear-gradient(145deg,color-mix(in srgb,#d63f6f 12%,#fff) 0%,#fbdde7 100%)' },
+    food: { label: 'Food', labelEs: 'Comida', emoji: '🍽️', accent: '#b9741c', tint: '#f8e8cf', grad: 'linear-gradient(145deg,color-mix(in srgb,#b9741c 12%,#fff) 0%,#f8e8cf 100%)' },
+    esol: { label: 'English class', labelEs: 'Inglés', emoji: '🗣️', accent: '#8050d1', tint: '#ece6f8', grad: 'linear-gradient(145deg,color-mix(in srgb,#8050d1 12%,#fff) 0%,#ece6f8 100%)' },
+    college: { label: 'College & GED', labelEs: 'Colegio', emoji: '🎓', accent: '#14315f', tint: '#e1e6f0', grad: 'linear-gradient(145deg,color-mix(in srgb,#14315f 12%,#fff) 0%,#e1e6f0 100%)' },
+    money: { label: 'Money help', labelEs: 'Dinero', emoji: '💵', accent: '#1aa37a', tint: '#d7f0e6', grad: 'linear-gradient(145deg,color-mix(in srgb,#1aa37a 12%,#fff) 0%,#d7f0e6 100%)' },
+    'career-fair': { label: 'Career fair', labelEs: 'Feria', emoji: '🤝', accent: '#1f3d7a', tint: '#e3eaf7', grad: 'linear-gradient(145deg,color-mix(in srgb,#1f3d7a 12%,#fff) 0%,#e3eaf7 100%)' },
+    announcement: { label: 'News', labelEs: 'Anuncios', emoji: '📣', accent: '#317dea', tint: '#dbeafe', grad: 'linear-gradient(145deg,color-mix(in srgb,#317dea 12%,#fff) 0%,#dbeafe 100%)' },
 };
 
 function mark(name, detail) {
