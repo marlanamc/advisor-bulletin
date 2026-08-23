@@ -16,54 +16,34 @@ service cloud.firestore {
         && validateBulletinData(request.resource.data)
         && request.resource.data.postedBy == getUsername(request.auth.token.email);
 
-      // Any active advisor can update the display order of a resource (drag-to-reorder).
-      // Deliberately declared before the full-validation rule below: Firestore evaluates
-      // allow statements in order and shares one complexity budget across all of them for
-      // a single request, so putting this cheap, narrow check first lets a plain reorder
-      // grant immediately without ever paying for the cost of the full-validation rule below.
+      // Any active advisor can update ANY resource (title, description,
+      // hours, order, etc.) — resources aren't author-restricted the way
+      // posts are. Posts (bulletins) stay restricted to their original
+      // author or a privileged advisor. A single rule covers both, gated by
+      // resource.data.type so isActiveAdvisor() and validateBulletinData()
+      // are each evaluated exactly once per request.
       //
-      // Scalar fields (title/description/url/isPublished/isActive/postedBy) are checked
-      // for equality so this can't be used to sneak a content edit through as a fake
-      // "reorder" by a non-author, non-privileged advisor. serviceChips and actionLinks
-      // are deliberately NOT compared here: comparing either array (via .diff() or a direct
-      // == on the field) was empirically the expensive operation blowing the shared budget
-      // — not validateBulletinData's own array walk. With both rules attempting an
-      // array comparison on the same request (this rule failing to grant, then falling
-      // through to the rule below), a resource with actionLinks could exhaust the budget
-      // before either rule finished, denying an ordinary content edit outright.
-      //
-      // Residual risk: a non-author, non-privileged active advisor could in principle craft
-      // a raw request that changes serviceChips/actionLinks while satisfying this rule's
-      // other checks, bypassing the author/privileged restriction the rule below enforces
-      // for those two fields. The legitimate client (reorderResourcesInCategory in
-      // board-resources.js) never sends those fields here, so this is not exploitable
-      // through the app's UI — only by an authenticated staff account deliberately
-      // hand-crafting a request. Accepted given every other approach tried (full .diff(),
-      // per-field == including the arrays, element-wise array comparison) still exhausted
-      // the budget when both rules were evaluated for the same write; re-tighten this if
-      // Firestore's cost model changes or a cheaper array-equality path is found.
+      // History: this used to be two separate `allow update` statements — a
+      // cheap "reorder fast-path" declared before an expensive full-
+      // validation rule, on the theory that Firestore would grant on the
+      // first and skip the second. Firestore evaluates every `allow`
+      // statement for an operation (and every branch of a combined `||`)
+      // regardless of ordering or short-circuiting — verified empirically
+      // against the local emulator — so having two large statements/branches
+      // in play at once (previously: the reorder checks plus the full
+      // validateBulletinData() call) blew the shared ~1000-expression budget
+      // on an ordinary content edit (e.g. changing a resource's description)
+      // and denied it with a bare "permission-denied" unrelated to actual
+      // permissions. The fix here is a single, smaller rule rather than
+      // clever branch ordering.
       allow update: if isActiveAdvisor(request.auth)
-        && resource.data.type == 'resource'
-        && request.resource.data.type == 'resource'
-        && request.resource.data.titleEn == resource.data.titleEn
-        && request.resource.data.description == resource.data.description
-        && request.resource.data.url == resource.data.url
-        && request.resource.data.isPublished == resource.data.isPublished
-        && request.resource.data.isActive == resource.data.isActive
-        && request.resource.data.postedBy == resource.data.postedBy
-        && (request.resource.data.resourceOrder == null
-          || ((request.resource.data.resourceOrder is int || request.resource.data.resourceOrder is float)
-            && request.resource.data.resourceOrder >= 0
-            && request.resource.data.resourceOrder <= 100000));
-
-      // Original authors can update their own content; admin/leah may update any content.
-      allow update: if isActiveAdvisor(request.auth)
-        && (isPrivilegedAdvisor(request.auth.token.email)
-          || resource.data.postedBy == getUsername(request.auth.token.email))
         && validateBulletinData(request.resource.data)
         && (!('postedBy' in request.resource.data) || request.resource.data.postedBy == resource.data.postedBy)
         && (!('datePosted' in request.resource.data) || request.resource.data.datePosted == resource.data.datePosted)
-        && (!('createdAt' in request.resource.data) || !('createdAt' in resource.data) || request.resource.data.createdAt == resource.data.createdAt);
+        && (!('createdAt' in request.resource.data) || !('createdAt' in resource.data) || request.resource.data.createdAt == resource.data.createdAt)
+        && (resource.data.type == 'resource'
+          || isPrivilegedAdvisor(request.auth.token.email)
+          || resource.data.postedBy == getUsername(request.auth.token.email));
 
       // Privileged advisors can permanently delete any bulletin. Authors may delete
       // their own inactive placeholders (cancelled or failed publish drafts).
@@ -211,50 +191,30 @@ service cloud.firestore {
         && data.postedBy is string && data.postedBy.size() > 0
         && data.isActive is bool;
 
+      // Trimmed to only the fields that gate an authorization or visibility
+      // decision elsewhere (isPublished/isPinned/hideFromMainFeed feed the
+      // read rule above; resourceKind/actionLinks/resourceOrder/eventDates/
+      // lastVerified bound size or shape to prevent abuse). Every other
+      // field here (description, hours, address, phone, url, highlights,
+      // dates/times, images, etc.) is display-only text the client already
+      // constructs with the right shape (see buildBulletinObject in
+      // src/firebase-admin.js) — type-checking each one individually added
+      // ~35 evaluated expressions per write and, combined with the rest of
+      // this rule, was blowing Firestore's shared ~1000-expression budget
+      // and denying ordinary edits with a bare "permission-denied" that had
+      // nothing to do with actual permissions. A malformed value in one of
+      // the dropped fields is a rendering/data-quality issue, not a security
+      // one — every write here still requires an authenticated active
+      // advisor.
       let validOptionalFields =
-        (!('description' in data) || data.description is string)
-        && (!('company' in data) || data.company is string)
-        && (!('contact' in data) || data.contact is string)
-        && (!('deadline' in data) || data.deadline is string)
-        && (!('eventTime' in data) || data.eventTime is string)
-        && (!('eventLink' in data) || data.eventLink is string)
-        && (!('dateType' in data) || data.dateType is string)
-        && (!('eventDate' in data) || data.eventDate is string)
-        && (!('eventDates' in data) || (data.eventDates is list && data.eventDates.size() <= 20))
-        && (!('startDate' in data) || data.startDate is string)
-        && (!('endDate' in data) || data.endDate is string)
-        && (!('startTime' in data) || data.startTime is string)
-        && (!('endTime' in data) || data.endTime is string)
-        && (!('eventLocation' in data) || data.eventLocation is string)
-        && (!('classType' in data) || data.classType is string)
-        && (!('image' in data) || data.image == null || data.image is string)
-        && (!('imageEs' in data) || data.imageEs == null || data.imageEs is string)
-        && (!('resourceLogo' in data) || data.resourceLogo == null || data.resourceLogo is string)
+        (!('eventDates' in data) || (data.eventDates is list && data.eventDates.size() <= 20))
         && (!('hasResourceLogo' in data) || data.hasResourceLogo is bool)
-        && (!('pdfUrl' in data) || data.pdfUrl == null || data.pdfUrl is string)
-        && (!('createdAt' in data) || data.createdAt is timestamp)
-        && (!('updatedAt' in data) || data.updatedAt is timestamp)
         && (!('isPublished' in data) || data.isPublished is bool)
         && (!('isPinned' in data) || data.isPinned is bool)
         && (!('hideFromMainFeed' in data) || data.hideFromMainFeed is bool)
-        && (!('resourceCategory' in data) || data.resourceCategory is string)
-        && (!('resourceIcon' in data) || data.resourceIcon is string)
-        && (!('titleEn' in data) || data.titleEn is string)
-        && (!('titleEs' in data) || data.titleEs is string)
-        && (!('summaryEs' in data) || data.summaryEs is string)
-        && (!('url' in data) || data.url is string)
-        && (!('address' in data) || data.address is string)
-        && (!('phone' in data) || data.phone is string)
-        && (!('phoneMode' in data) || data.phoneMode is string)
-        && (!('hours' in data) || data.hours is string)
         && (!('lastVerified' in data) || (data.lastVerified is string && data.lastVerified.size() <= 20))
-        && (!('languages' in data) || data.languages is list)
-        && (!('highlights' in data) || data.highlights is string)
-        && (!('services' in data) || data.services is list)
-        && (!('serviceChips' in data) || data.serviceChips is list)
         && (!('resourceKind' in data) || data.resourceKind in ['organization', 'document'])
         && (!('actionLinks' in data) || validActionLinks(data.actionLinks))
-        && (!('datePosted' in data) || data.datePosted is timestamp)
         && (!('resourceOrder' in data) || data.resourceOrder == null
           || ((data.resourceOrder is int || data.resourceOrder is float)
             && data.resourceOrder >= 0 && data.resourceOrder <= 100000));
