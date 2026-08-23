@@ -3,7 +3,7 @@ export const MAX_RESOURCE_ACTION_LINKS = 5;
 export function normalizeActionLinkUrl(url) {
     const trimmed = String(url || '').trim();
     if (!trimmed) return '';
-    const withProtocol = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+    const withProtocol = /^(https?|mailto|tel):/i.test(trimmed) ? trimmed : `https://${trimmed}`;
     try {
         // eslint-disable-next-line no-new
         new URL(withProtocol);
