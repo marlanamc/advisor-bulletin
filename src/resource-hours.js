@@ -223,6 +223,30 @@ export function parseResourceHoursSegment(segment) {
         };
     }
 
+    // A location prefix before the day name, e.g. "East Boston meeting
+    // Wednesday 6:30pm-8pm" — common for orgs that run the same weekly
+    // meeting at multiple sites on different days. Requires the literal
+    // "meeting" word so this doesn't misfire on other prefixed hours text
+    // (e.g. "Seasonal: Friday 1pm-3pm").
+    const prefixedDayMatch = text.match(
+        /^(.+?)\s+meetings?\s+(sunday|monday|tuesday|wednesday|thursday|friday|saturday|sun|mon|tue|tues|wed|thu|thur|thurs|fri|sat)\s+(.+)$/i
+    );
+    if (prefixedDayMatch) {
+        const prefix = prefixedDayMatch[1].trim();
+        const dayLabel = formatDayLabelPair(prefixedDayMatch[2]);
+        const timesRaw = prefixedDayMatch[3].trim();
+        const embeddedRange = timesRaw.match(
+            /^([\d:]+\s*(?:a\.?m\.?|p\.?m\.?)?)\s*[-–]\s*([\d:]+\s*(?:a\.?m\.?|p\.?m\.?)?)$/i
+        );
+        const times = embeddedRange
+            ? formatTimeRange(embeddedRange[1], embeddedRange[2])
+            : parseTimeRangeText(timesRaw);
+        return {
+            days: prefix ? bilingual(`${prefix} – ${dayLabel.en}`, `${prefix} – ${dayLabel.es}`) : dayLabel,
+            times,
+        };
+    }
+
     const plain = text;
     return { plain: bilingual(plain, plain) };
 }
@@ -255,23 +279,28 @@ export function parseResourceHours(hoursText) {
 /**
  * @param {string} hoursText
  * @param {(value: string) => string} escapeHtml
+ * @param {string} [hoursTextEs] - Spanish translation used when the hours
+ *   text is free-form prose (day/time patterns are translated automatically
+ *   and don't need this).
  * @returns {string}
  */
-export function formatResourceHoursHtml(hoursText, escapeHtml) {
+export function formatResourceHoursHtml(hoursText, escapeHtml, hoursTextEs) {
     const normalized = (hoursText || '').trim();
     if (!normalized) return '';
+    const normalizedEs = (hoursTextEs || '').trim();
+    const label = normalizedEs ? bilingual(normalized, normalizedEs) : normalized;
 
     const rows = parseResourceHours(hoursText);
     if (rows.length === 0) {
-        return `<p class="mobile-resource-card__hours">${renderBilingualHoursLabel(normalized, escapeHtml)}</p>`;
+        return `<p class="mobile-resource-card__hours">${renderBilingualHoursLabel(label, escapeHtml)}</p>`;
     }
     if (rows.length === 1 && rows[0].plain) {
-        return `<p class="mobile-resource-card__hours">${renderBilingualHoursLabel(rows[0].plain, escapeHtml)}</p>`;
+        return `<p class="mobile-resource-card__hours">${renderBilingualHoursLabel(normalizedEs ? label : rows[0].plain, escapeHtml)}</p>`;
     }
 
     const structured = rows.filter((row) => row.days);
     if (structured.length === 0) {
-        return `<p class="mobile-resource-card__hours">${renderBilingualHoursLabel(normalized, escapeHtml)}</p>`;
+        return `<p class="mobile-resource-card__hours">${renderBilingualHoursLabel(label, escapeHtml)}</p>`;
     }
 
     const items = rows.map((row) => {

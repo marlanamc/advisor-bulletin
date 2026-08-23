@@ -105,7 +105,7 @@ export class BoardDetailMethods {
                             ${bulletin.hours ? `
                                 <div style="display: flex; gap: 12px; align-items: flex-start;">
                                     <div style="color: ${meta.accent}; margin-top: 2px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
-                                    <div><strong style="display: block; font-size: 0.8rem; color: #64748b; text-transform: uppercase; margin-bottom: 6px;">Hours</strong>${formatResourceHoursHtml(bulletin.hours, (value) => this.escapeHtml(value))}</div>
+                                    <div><strong style="display: block; font-size: 0.8rem; color: #64748b; text-transform: uppercase; margin-bottom: 6px;">Hours</strong>${formatResourceHoursHtml(bulletin.hours, (value) => this.escapeHtml(value), bulletin.hoursEs)}</div>
                                 </div>
                             ` : ''}
                         </div>

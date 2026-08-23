@@ -591,7 +591,7 @@ document.addEventListener('DOMContentLoaded', function() {
             : '';
 
         var hoursHtml = data.hours
-            ? formatResourceHoursHtml(data.hours, escPreview)
+            ? formatResourceHoursHtml(data.hours, escPreview, data.hoursEs)
             : '';
 
         var isDesktopPreview = window.matchMedia('(min-width: 768px)').matches;

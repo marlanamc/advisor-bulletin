@@ -1458,7 +1458,7 @@ export class BoardResourcesMethods {
         const servicesHtml = this.getResourceServiceChipsHtml(resource, { section: true });
         const hours = (resource.hours || '').trim();
         const hoursHtml = hours
-            ? formatResourceHoursHtml(hours, (value) => this.escapeHtml(value))
+            ? formatResourceHoursHtml(hours, (value) => this.escapeHtml(value), resource.hoursEs)
             : '';
 
         const badgesHtml = this.getResourceBadgesHtml(resource);
