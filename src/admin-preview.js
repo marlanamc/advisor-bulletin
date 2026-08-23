@@ -4,7 +4,7 @@ import {
     parseResourceServiceChips,
     translateResourceChipEs,
 } from './resource-chip-labels.js';
-import { formatResourceHoursHtml } from './resource-hours.js';
+import { formatResourceHoursHtml, formatResourceHoursRowsHtml } from './resource-hours.js';
 import {
     MAX_RESOURCE_ACTION_LINKS,
     normalizeResourceActionLinks,
@@ -590,9 +590,11 @@ document.addEventListener('DOMContentLoaded', function() {
             }).join('') + '</div></div>'
             : '';
 
-        var hoursHtml = data.hours
-            ? formatResourceHoursHtml(data.hours, escPreview, data.hoursEs)
-            : '';
+        var hoursHtml = (Array.isArray(data.hoursRows) && data.hoursRows.length)
+            ? formatResourceHoursRowsHtml(data.hoursRows, escPreview)
+            : data.hours
+                ? formatResourceHoursHtml(data.hours, escPreview, data.hoursEs)
+                : '';
 
         var isDesktopPreview = window.matchMedia('(min-width: 768px)').matches;
         var hasDirections = Boolean((data.address || '').trim());
@@ -706,7 +708,11 @@ document.addEventListener('DOMContentLoaded', function() {
             var url = getFormFieldValue('resourceUrl').trim();
             var phone = getFormFieldValue('resourcePhone').trim();
             var address = getFormFieldValue('resourceAddress').trim();
-            var hours = getFormFieldValue('resourceHours').trim();
+            var hoursDayEls = Array.from(document.querySelectorAll('#bulletinForm input[name="hoursRowDay"]'));
+            var hoursTimeEls = Array.from(document.querySelectorAll('#bulletinForm input[name="hoursRowTime"]'));
+            var hoursRows = hoursDayEls.map(function(el, i) {
+                return { day: el.value.trim(), time: (hoursTimeEls[i] ? hoursTimeEls[i].value : '').trim() };
+            }).filter(function(r) { return r.day || r.time; });
             var actionLinks = [];
             for (var linkIndex = 1; linkIndex <= MAX_RESOURCE_ACTION_LINKS; linkIndex += 1) {
                 var labelEn = getFormFieldValue('resourceActionLink' + linkIndex + 'LabelEn').trim();
@@ -753,7 +759,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 url: url,
                 phone: phone,
                 address: address,
-                hours: hours,
+                hoursRows: hoursRows,
                 actionLinks: actionLinks,
                 resourceKind: resourceKind,
                 pdfUrl: hasSelectedPdf ? 'preview://selected-pdf' : pdfUrl

@@ -14,7 +14,7 @@ import { normalizePostCategory } from './feed-categories.js'
 import { RESOURCE_TILE_CATEGORIES } from './resource-categories.js'
 import { getActionResourceChipLabel, MAX_RESOURCE_SERVICE_CHIPS, parseResourceServiceChips, translateResourceChipEs } from './resource-chip-labels.js'
 import { toRichTextPlainText } from './rich-text.js'
-import { formatResourceHoursHtml, isOpenNow } from './resource-hours.js'
+import { formatResourceHoursHtml, formatResourceHoursRowsHtml, isOpenNow } from './resource-hours.js'
 import { normalizeResourceActionLinks, RESOURCE_ACTION_LINK_ICON_SVG, RESOURCE_ACTION_LINK_PDF_ICON_SVG } from './resource-action-links.js'
 import { DOCUMENT_TILE_ICON_SVG, isDocumentResource, OPEN_FORM_ICON_SVG } from './resource-kinds.js'
 import { initResourceLogoTiles } from './resource-logo-tile.js'
@@ -1457,9 +1457,11 @@ export class BoardResourcesMethods {
         const postDescription = this.getPostDescription(resource);
         const servicesHtml = this.getResourceServiceChipsHtml(resource, { section: true });
         const hours = (resource.hours || '').trim();
-        const hoursHtml = hours
-            ? formatResourceHoursHtml(hours, (value) => this.escapeHtml(value), resource.hoursEs)
-            : '';
+        const hoursHtml = Array.isArray(resource.hoursRows) && resource.hoursRows.length
+            ? formatResourceHoursRowsHtml(resource.hoursRows, (value) => this.escapeHtml(value))
+            : hours
+                ? formatResourceHoursHtml(hours, (value) => this.escapeHtml(value), resource.hoursEs)
+                : '';
 
         const badgesHtml = this.getResourceBadgesHtml(resource);
 

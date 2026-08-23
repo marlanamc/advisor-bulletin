@@ -191,7 +191,10 @@ const BLOCK_DEFS = {
     hours: {
         icon: '🕒', label: 'Hours', sub: "When they're open", title: 'Hours of operation',
         html() {
-            return `<input class="cx-input" data-cx-mirror="resourceHours" placeholder="e.g. Mon–Fri 9am–5pm">`
+            return `
+<p class="cx-help" style="margin:0 0 10px">One row per day (or leave the day blank for a note like "Call ahead").</p>
+<div id="cxBlkHoursList"></div>
+<button type="button" class="cx-evmore-add" id="cxBlkAddHours">+ Add a day</button>`
         },
     },
     extras: {
@@ -809,6 +812,10 @@ ${htmlContent}`
         wireExtrasBlock(block, actionLinkSlot)
     }
 
+    if (key === 'hours') {
+        wireHoursBlock(block)
+    }
+
     // Wire all data-cx-mirror inputs in this block
     block.querySelectorAll('[data-cx-mirror]').forEach(el => {
         const ev = el.tagName === 'SELECT' ? 'change' : 'input'
@@ -950,8 +957,11 @@ function clearBlockMirrors(key) {
         weblink:  ['resourceUrl'],
         phone:    ['resourcePhone', 'resourcePhoneMode'],
         address:  ['resourceAddress'],
-        hours:    ['resourceHours'],
         format:   ['eventFormat', 'eventLocation'],
+    }
+    if (key === 'hours') {
+        document.getElementById('bulletinForm')?.querySelectorAll('input[data-cx-hours-row]').forEach(n => n.remove())
+        return
     }
     const extrasSlot = parseExtrasBlockKey(key)
     if (extrasSlot) {
@@ -982,7 +992,7 @@ const POST_EVENT_MIRROR_FIELDS = [
 
 const RESOURCE_MIRROR_FIELDS = [
     'resourceTitleEn', 'resourceTitleEs', 'resourceDescription', 'resourceSummaryEs',
-    'resourceUrl', 'resourcePhone', 'resourcePhoneMode', 'resourceAddress', 'resourceHours',
+    'resourceUrl', 'resourcePhone', 'resourcePhoneMode', 'resourceAddress',
     'resourceCategory', 'resourceHighlights',
 ]
 
@@ -990,6 +1000,7 @@ function clearComposerMirrors() {
     [...POST_EVENT_MIRROR_FIELDS, ...RESOURCE_MIRROR_FIELDS].forEach((name) => mirror(name, ''))
     const form = document.getElementById('bulletinForm')
     form?.querySelectorAll('input[data-cx-session]').forEach((node) => node.remove())
+    form?.querySelectorAll('input[data-cx-hours-row]').forEach((node) => node.remove())
 }
 
 function resetEventHeroFields() {
@@ -1107,13 +1118,14 @@ function applyMode(options = {}) {
 const OPTIONAL_DETAIL_MIRROR_FIELDS = [
     'eventLink', 'eventLocation', 'eventFormat', 'company', 'contact', 'contactPhone', 'contactPhoneMode', 'contactHours', 'address',
     'titleEs', 'summaryEs', 'classType',
-    'resourceUrl', 'resourcePhone', 'resourcePhoneMode', 'resourceAddress', 'resourceHours',
+    'resourceUrl', 'resourcePhone', 'resourcePhoneMode', 'resourceAddress',
     'resourceTitleEs', 'resourceSummaryEs', 'resourceHighlights',
 ]
 
 function clearOptionalDetailMirrors() {
     OPTIONAL_DETAIL_MIRROR_FIELDS.forEach((name) => mirror(name, ''))
     resetEventHeroFields()
+    document.getElementById('bulletinForm')?.querySelectorAll('input[data-cx-hours-row]').forEach((node) => node.remove())
 }
 
 function bindTypeTabs() {
@@ -1571,7 +1583,7 @@ export function hydrateFromForm() {
         if (gv('resourceUrl')) insertBlock('weblink')
         if (gv('resourcePhone')) insertBlock('phone')
         if (gv('resourceAddress')) insertBlock('address')
-        if (gv('resourceHours')) insertBlock('hours')
+        if (form.querySelector('input[name="hoursRowDay"], input[name="hoursRowTime"]')) insertBlock('hours')
         for (let slot = 1; slot <= MAX_RESOURCE_ACTION_LINKS; slot += 1) {
             if (gv(`resourceActionLink${slot}LabelEn`)
                 || gv(`resourceActionLink${slot}Url`)
@@ -1656,6 +1668,64 @@ export function hydrateFromForm() {
 
         syncMirrors()
         syncPreview()
+    })
+}
+
+// ── Hours block (Day | Time repeater) ──────────────────────────────────────
+
+function buildHoursRow(day = '', time = '', onSync = null) {
+    const row = document.createElement('div')
+    row.className = 'cx-evmore-row'
+    row.style.cssText = 'display:flex;gap:8px;align-items:center;margin-bottom:8px'
+    row.innerHTML = `
+<input class="cx-input" style="flex:1" placeholder="Day (e.g. Wednesday) — optional" aria-label="Day" value="${day}">
+<input class="cx-input" style="flex:1.4" placeholder="Hours (e.g. 3:00pm–5:00pm)" aria-label="Hours" value="${time}">
+<button type="button" class="cx-block-x" title="Remove" aria-label="Remove day">×</button>`
+    row.querySelector('.cx-block-x').addEventListener('click', () => {
+        row.remove()
+        onSync?.()
+    })
+    row.querySelectorAll('input').forEach(el => {
+        el.addEventListener('input', () => onSync?.())
+    })
+    return row
+}
+
+function wireHoursBlock(block) {
+    const list = block.querySelector('#cxBlkHoursList')
+    const addBtn = block.querySelector('#cxBlkAddHours')
+    if (!list) return
+
+    const onSync = () => { syncHoursRowMirrors(block); syncPreview() }
+
+    const form = document.getElementById('bulletinForm')
+    const existingDays = Array.from(form?.querySelectorAll('input[name="hoursRowDay"]') || []).map(el => el.value)
+    const existingTimes = Array.from(form?.querySelectorAll('input[name="hoursRowTime"]') || []).map(el => el.value)
+
+    if (existingDays.length) {
+        existingDays.forEach((day, i) => list.appendChild(buildHoursRow(day, existingTimes[i] || '', onSync)))
+    } else {
+        list.appendChild(buildHoursRow('', '', onSync))
+    }
+
+    addBtn?.addEventListener('click', () => {
+        list.appendChild(buildHoursRow('', '', onSync))
+    })
+}
+
+function syncHoursRowMirrors(block) {
+    const rows = Array.from(block.querySelectorAll('#cxBlkHoursList .cx-evmore-row'))
+    const entries = rows.map(r => {
+        const ins = r.querySelectorAll('input')
+        return { day: ins[0]?.value.trim() || '', time: ins[1]?.value.trim() || '' }
+    }).filter(e => e.day || e.time)
+
+    const form = document.getElementById('bulletinForm')
+    if (!form) return
+    form.querySelectorAll('input[data-cx-hours-row]').forEach(n => n.remove())
+    entries.forEach(e => {
+        const d = document.createElement('input'); d.type = 'hidden'; d.name = 'hoursRowDay'; d.value = e.day; d.setAttribute('data-cx-hours-row', '1'); form.appendChild(d)
+        const t = document.createElement('input'); t.type = 'hidden'; t.name = 'hoursRowTime'; t.value = e.time; t.setAttribute('data-cx-hours-row', '1'); form.appendChild(t)
     })
 }
 

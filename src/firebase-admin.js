@@ -58,6 +58,21 @@ import { AdminComposerFormMethods } from './admin-composer-form.js'
 import { AdminAttachmentMethods } from './admin-attachments.js'
 import { AdminManageMethods } from './admin-manage.js'
 
+// Reads the hoursRowDay/hoursRowTime hidden input pairs the composer's
+// hours block writes (see wireHoursBlock/syncHoursRowMirrors in
+// post-composer.js) into a [{ day, time }, ...] array, dropping empty rows.
+function parseHoursRowsFromForm(formData) {
+    const days = formData.getAll('hoursRowDay');
+    const times = formData.getAll('hoursRowTime');
+    const rows = [];
+    for (let i = 0; i < Math.max(days.length, times.length); i += 1) {
+        const day = (days[i] || '').trim();
+        const time = (times[i] || '').trim();
+        if (day || time) rows.push({ day, time });
+    }
+    return rows;
+}
+
 // Firebase-enabled Admin Panel
 class FirebaseAdminPanel {
     constructor() {
@@ -1324,7 +1339,10 @@ class FirebaseAdminPanel {
             set('resourceAddress', bulletin.address || '');
             set('resourcePhone', bulletin.phone || '');
             set('resourcePhoneMode', bulletin.phoneMode || 'call');
-            set('resourceHours', bulletin.hours || '');
+            const initialHoursRows = Array.isArray(bulletin.hoursRows) && bulletin.hoursRows.length
+                ? bulletin.hoursRows
+                : (bulletin.hours ? [{ day: '', time: bulletin.hours }] : []);
+            this.writeHoursRowMirrorInputs(initialHoursRows);
 
             const actionLinkValues = getResourceActionLinkFieldValues(bulletin.actionLinks);
             Object.entries(actionLinkValues).forEach(([fieldId, value]) => {
@@ -2246,7 +2264,8 @@ class FirebaseAdminPanel {
                 address: isDocument ? '' : (formData.get('resourceAddress') || '').trim(),
                 phone: isDocument ? '' : (formData.get('resourcePhone') || '').trim(),
                 phoneMode: isDocument ? 'call' : (formData.get('resourcePhoneMode') || 'call').trim(),
-                hours: isDocument ? '' : (formData.get('resourceHours') || '').trim(),
+                hours: '',
+                hoursRows: isDocument ? [] : parseHoursRowsFromForm(formData),
                 actionLinks: stripActionLinkUploadMeta(actionLinks),
                 isActive: true,
                 isPublished: formData.get('resourcePublished') === 'on',

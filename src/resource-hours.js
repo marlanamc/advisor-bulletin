@@ -303,6 +303,10 @@ export function formatResourceHoursHtml(hoursText, escapeHtml, hoursTextEs) {
         return `<p class="mobile-resource-card__hours">${renderBilingualHoursLabel(label, escapeHtml)}</p>`;
     }
 
+    return renderHoursRowsHtml(rows, escapeHtml);
+}
+
+function renderHoursRowsHtml(rows, escapeHtml) {
     const items = rows.map((row) => {
         if (row.header) {
             return `<li class="mobile-resource-card__hours-row mobile-resource-card__hours-row--header">${renderBilingualHoursLabel(row.header, escapeHtml)}</li>`;
@@ -322,6 +326,32 @@ export function formatResourceHoursHtml(hoursText, escapeHtml, hoursTextEs) {
     return `<div class="mobile-resource-card__hours" role="group" aria-label="Hours / Horario">
         <ul class="mobile-resource-card__hours-list">${items}</ul>
     </div>`;
+}
+
+/**
+ * Renders structured { day, time } rows (the admin's Day | Time editor)
+ * directly — no free-text parsing involved. A row with a recognized weekday
+ * name (English or Spanish, case-insensitive) auto-translates; anything
+ * else (a location label, "Seasonal", etc.) shows the same text in both
+ * languages. A row with no day is a plain note line (e.g. "Call ahead").
+ * @param {Array<{day?: string, time?: string}>} hoursRows
+ * @param {(value: string) => string} escapeHtml
+ * @returns {string}
+ */
+export function formatResourceHoursRowsHtml(hoursRows, escapeHtml) {
+    const rows = (hoursRows || [])
+        .map((row) => {
+            const day = (row?.day || '').trim();
+            const time = (row?.time || '').trim();
+            if (!day && !time) return null;
+            if (!day) return { plain: bilingual(time, time) };
+            const dayKey = day.toLowerCase().replace(/s$/, '');
+            const days = DAY_NAMES_EN[dayKey] ? formatDayLabelPair(day) : bilingual(day, day);
+            return time ? { days, times: time } : { days, times: '' };
+        })
+        .filter(Boolean);
+    if (rows.length === 0) return '';
+    return renderHoursRowsHtml(rows, escapeHtml);
 }
 
 // ─── Open-now evaluation ─────────────────────────────────────────────

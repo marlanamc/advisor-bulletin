@@ -288,6 +288,29 @@ export class AdminComposerFormMethods {
         });
     }
 
+    writeHoursRowMirrorInputs(rows = []) {
+        const form = document.getElementById('bulletinForm');
+        if (!form) return;
+        form.querySelectorAll('input[data-cx-hours-row]').forEach((node) => node.remove());
+        rows.forEach((row) => {
+            const day = row?.day || '';
+            const time = row?.time || '';
+            if (!day && !time) return;
+            const d = document.createElement('input');
+            d.type = 'hidden';
+            d.name = 'hoursRowDay';
+            d.value = day;
+            d.setAttribute('data-cx-hours-row', '1');
+            form.appendChild(d);
+            const t = document.createElement('input');
+            t.type = 'hidden';
+            t.name = 'hoursRowTime';
+            t.value = time;
+            t.setAttribute('data-cx-hours-row', '1');
+            form.appendChild(t);
+        });
+    }
+
     getComposerFormFieldValue(name, formData) {
         const rich = getRichTextFieldValue(name).trim();
         if (rich) return rich;

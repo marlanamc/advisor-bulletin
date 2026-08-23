@@ -170,6 +170,23 @@ service cloud.firestore {
             && (links.size() < 5 || validActionLinkItem(links[4]))));
     }
 
+    function validHoursRowItem(item) {
+      return (!('day' in item) || item.day is string)
+        && (!('time' in item) || item.time is string);
+    }
+
+    function validHoursRows(rows) {
+      return rows is list && rows.size() <= 7
+        && (rows.size() == 0
+          || (validHoursRowItem(rows[0])
+            && (rows.size() < 2 || validHoursRowItem(rows[1]))
+            && (rows.size() < 3 || validHoursRowItem(rows[2]))
+            && (rows.size() < 4 || validHoursRowItem(rows[3]))
+            && (rows.size() < 5 || validHoursRowItem(rows[4]))
+            && (rows.size() < 6 || validHoursRowItem(rows[5]))
+            && (rows.size() < 7 || validHoursRowItem(rows[6]))));
+    }
+
     function isDocumentResource(data) {
       return ('resourceKind' in data) && data.resourceKind == 'document';
     }
@@ -215,6 +232,7 @@ service cloud.firestore {
         && (!('lastVerified' in data) || (data.lastVerified is string && data.lastVerified.size() <= 20))
         && (!('resourceKind' in data) || data.resourceKind in ['organization', 'document'])
         && (!('actionLinks' in data) || validActionLinks(data.actionLinks))
+        && (!('hoursRows' in data) || validHoursRows(data.hoursRows))
         && (!('resourceOrder' in data) || data.resourceOrder == null
           || ((data.resourceOrder is int || data.resourceOrder is float)
             && data.resourceOrder >= 0 && data.resourceOrder <= 100000));
