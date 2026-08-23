@@ -267,7 +267,79 @@ const RESOURCE_CHIP_ES = {
     'join a workshop': 'Unirse a un taller',
     'get help finding a job': 'Ayuda para encontrar trabajo',
     'find help for an older adult': 'Buscar ayuda para un adulto mayor',
-    'get help with care at home': 'Ayuda con cuidado en casa'
+    'get help with care at home': 'Ayuda con cuidado en casa',
+
+    // Youth / mentorship chips
+    'find a mentor': 'Buscar un mentor',
+    'find an internship': 'Buscar una pasantía',
+    'explore college opportunities': 'Explorar oportunidades universitarias',
+    'explore science, technology & arts programs': 'Explorar programas de ciencia, tecnología y arte',
+
+    // Longer "I need…" phrasing used by the action-card resource set
+    'call someone to help me find food': 'Llamar para que me ayuden a encontrar comida',
+    'find a doctor or clinic': 'Buscar un médico o una clínica',
+    'find activities for young children': 'Buscar actividades para niños pequeños',
+    'find an affordable place to live': 'Buscar un lugar asequible para vivir',
+    'find an after-school program': 'Buscar un programa después de la escuela',
+    'find food near me': 'Buscar comida cerca de mí',
+    'find free or low-cost legal help': 'Buscar ayuda legal gratis o de bajo costo',
+    'find free preschool or child care': 'Buscar preescolar o cuidado infantil gratis',
+    'find health care': 'Buscar atención médica',
+    'find somewhere to stay because i may lose my home': 'Buscar dónde quedarme si puedo perder mi hogar',
+    'get a free hot meal': 'Conseguir una comida caliente gratis',
+    'get career training': 'Recibir capacitación para una carrera',
+    'get childcare licensing support': 'Ayuda con la licencia de cuidado infantil',
+    'get diapers and baby supplies': 'Conseguir pañales y cosas de bebé',
+    'get documents translated': 'Traducir mis documentos',
+    'get food help for pregnancy or young children': 'Ayuda con comida para el embarazo o niños pequeños',
+    'get free clothes': 'Conseguir ropa gratis',
+    'get free clothes and essentials': 'Conseguir ropa y artículos básicos gratis',
+    'get free diapers and wipes': 'Conseguir pañales y toallitas gratis',
+    'get free groceries': 'Conseguir comida gratis',
+    'get free groceries and baby supplies': 'Conseguir comida y cosas de bebé gratis',
+    'get free help with my taxes': 'Ayuda gratis con mis impuestos',
+    'get free or low-cost produce': 'Conseguir frutas y verduras gratis o económicas',
+    'get help applying for benefits': 'Ayuda para solicitar beneficios',
+    'get help applying for snap': 'Ayuda para solicitar SNAP',
+    'get help applying for snap or cash benefits': 'Ayuda para solicitar SNAP o ayuda en efectivo',
+    'get help for my family': 'Ayuda para mi familia',
+    'get help if someone at home is hurting or scaring me': 'Ayuda si alguien en casa me lastima o me da miedo',
+    'get help with basic needs': 'Ayuda con necesidades básicas',
+    'get help with bills': 'Ayuda con las cuentas',
+    'get help with food benefits': 'Ayuda con beneficios de comida',
+    'get help with health insurance': 'Ayuda con el seguro médico',
+    'get help with immigration papers': 'Ayuda con papeles de inmigración',
+    'get help with taxes': 'Ayuda con los impuestos',
+    'get immigration information': 'Información sobre inmigración',
+    'get legal help with discrimination': 'Ayuda legal por discriminación',
+    'get my foreign diploma evaluated': 'Evaluar mi diploma extranjero',
+    'get support after violence or trauma': 'Apoyo después de violencia o trauma',
+    'get support as a parent': 'Apoyo como padre o madre',
+    'get support for my family': 'Apoyo para mi familia',
+    'get unemployment benefits after losing my job': 'Solicitar desempleo si perdí mi trabajo',
+    'join community activities': 'Participar en actividades comunitarias',
+    'keep my utilities on': 'Mantener la luz y el gas conectados',
+    'learn how to get my high school credential': 'Aprender cómo obtener mi diploma de secundaria',
+    'learn my legal rights': 'Conocer mis derechos legales',
+    'learn my rights': 'Conocer mis derechos',
+    'learn my rights as a renter': 'Conocer mis derechos como inquilino',
+    'learn my rights as an immigrant': 'Conocer mis derechos como inmigrante',
+    'pay less for the t and bus': 'Pagar menos por el T y el autobús',
+    'practice for the citizenship test': 'Practicar para el examen de ciudadanía',
+    'practice speaking english': 'Practicar inglés hablado',
+    'report a problem with housing, work, or a business': 'Reportar un problema de vivienda, trabajo o un negocio',
+    'see a doctor or dentist': 'Ver a un médico o dentista',
+    'stop an eviction or stay in my home': 'Detener un desalojo o quedarme en mi hogar',
+    'take english or hse classes': 'Tomar clases de inglés o HSE',
+    'take free english or hse classes online': 'Tomar clases gratis de inglés o HSE en línea',
+    'talk to a free lawyer about a problem': 'Hablar gratis con un abogado sobre un problema',
+    'talk to someone about a housing problem': 'Hablar con alguien sobre un problema de vivienda',
+    'talk to someone about mental health or substance use': 'Hablar sobre salud mental o uso de sustancias',
+    'talk to someone now if i am in crisis': 'Hablar con alguien ahora si estoy en crisis',
+    'talk to someone when i do not know where to start': 'Hablar con alguien si no sé por dónde empezar',
+    'train for hotel or restaurant work': 'Capacitarse para trabajar en hoteles o restaurantes',
+    'use free computers and printers': 'Usar computadoras e impresoras gratis',
+    'use free computers, wifi, or printing': 'Usar computadoras, wifi o impresión gratis'
 };
 
 export const SUGGESTED_RESOURCE_CHIPS_BY_CATEGORY = {
@@ -429,6 +501,38 @@ export function getCanonicalResourceChipCatalog() {
 export const MAX_RESOURCE_SERVICE_CHIPS = 6;
 
 /**
+ * A fragment that opens with a lowercase word (or `&`) is the tail of the chip
+ * before it, not a chip of its own — chip labels always start with a capital
+ * verb. Lets a single chip carry commas ("Study health, business, or tech")
+ * through storage, which joins chips with ", ".
+ */
+const CHIP_CONTINUATION_PATTERN = /^[a-z0-9&(]/;
+
+/**
+ * @param {string} raw
+ * @returns {string[]}
+ */
+function splitResourceChipString(raw) {
+    const text = String(raw);
+    // Semicolons are unambiguous (CSV imports use them), so when they are
+    // present they are the only separator and commas stay inside their chip.
+    const usesSemicolons = text.includes(';');
+    const chips = [];
+
+    (usesSemicolons ? text.split(';') : text.split(',')).forEach((part) => {
+        const piece = part.trim();
+        if (!piece) return;
+        if (!usesSemicolons && chips.length && CHIP_CONTINUATION_PATTERN.test(piece)) {
+            chips[chips.length - 1] += `, ${piece}`;
+            return;
+        }
+        chips.push(piece);
+    });
+
+    return chips;
+}
+
+/**
  * @param {string | string[] | null | undefined} raw
  * @param {number} [max=MAX_RESOURCE_SERVICE_CHIPS]
  * @returns {string[]}
@@ -438,11 +542,7 @@ export function parseResourceServiceChips(raw, max = MAX_RESOURCE_SERVICE_CHIPS)
     if (Array.isArray(raw)) {
         return raw.map((part) => String(part || '').trim()).filter(Boolean).slice(0, max);
     }
-    return String(raw)
-        .split(/[,;]/)
-        .map((part) => part.trim())
-        .filter(Boolean)
-        .slice(0, max);
+    return splitResourceChipString(raw).slice(0, max);
 }
 
 /**

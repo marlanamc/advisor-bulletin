@@ -3,6 +3,7 @@ import {
     getCanonicalResourceChipCatalog,
     getSuggestedResourceChips,
     MAX_RESOURCE_SERVICE_CHIPS,
+    parseResourceServiceChips,
     resolveResourceChipCategory,
 } from './resource-chip-labels.js'
 import { MAX_RESOURCE_ACTION_LINKS } from './resource-action-links.js'
@@ -454,9 +455,8 @@ export function selectComposerType(type, options = {}) {
         setActiveResKindButtons(options.resourceKind)
     }
     if (type === 'resource' && options.resourceHighlights) {
-        state.helpTags = String(options.resourceHighlights)
-            .split(',')
-            .map(s => getActionResourceChipLabel(s.trim()))
+        state.helpTags = parseResourceServiceChips(options.resourceHighlights)
+            .map(s => getActionResourceChipLabel(s))
             .filter(Boolean)
         mirror('resourceHighlights', state.helpTags.join(', '))
     } else if (type !== 'resource') {
@@ -1594,9 +1594,8 @@ export function hydrateFromForm() {
         // help tags
         const highlights = restoredResourceHighlights || gv('resourceHighlights')
         if (highlights) {
-            state.helpTags = highlights
-                .split(',')
-                .map(s => getActionResourceChipLabel(s.trim()))
+            state.helpTags = parseResourceServiceChips(highlights)
+                .map(s => getActionResourceChipLabel(s))
                 .filter(Boolean)
             renderHelpTags()
             mirror('resourceHighlights', state.helpTags.join(', '))

@@ -20,7 +20,7 @@
  */
 
 import { normalizeSearchText } from './search-normalize.js';
-import { translateResourceChipEs } from './resource-chip-labels.js';
+import { parseResourceServiceChips, translateResourceChipEs } from './resource-chip-labels.js';
 
 /**
  * Field weights, highest signal first. `chips` covers the student-facing
@@ -71,8 +71,7 @@ export function tokenizeQuery(query) {
 /** The English chip labels, however this item happens to store them. */
 function chipList(item) {
     const raw = item.serviceChips || item.services || item.highlights || '';
-    const list = Array.isArray(raw) ? raw : String(raw).split(',');
-    return list.map((chip) => String(chip).trim()).filter(Boolean);
+    return parseResourceServiceChips(raw, Number.POSITIVE_INFINITY);
 }
 
 function chipText(item) {

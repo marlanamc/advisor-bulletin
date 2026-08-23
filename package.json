@@ -20,6 +20,7 @@
     "test:headed": "node scripts/run-with-emulator.mjs -- playwright test --headed",
     "export:industry-pdf": "node scripts/export-industry-report-pdf.mjs",
     "import:resources": "node scripts/import-resources.mjs",
+    "check:chips": "node scripts/check-chip-translations.mjs",
     "clear:analytics": "node scripts/clear-analytics-events.mjs --dry-run",
     "clear:analytics:confirm": "node scripts/clear-analytics-events.mjs --confirm",
     "prune:errors": "node scripts/prune-client-errors.mjs --dry-run",

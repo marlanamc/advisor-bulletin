@@ -13,7 +13,7 @@
  */
 
 import { searchItems } from './search.js';
-import { translateResourceChipEs } from './resource-chip-labels.js';
+import { parseResourceServiceChips, translateResourceChipEs } from './resource-chip-labels.js';
 import { getCachedSnapshotItems } from './student-snapshot.js';
 
 const RESULT_LIMIT_PER_GROUP = 12;
@@ -181,10 +181,7 @@ export class BoardSearchMethods {
     /** Up to three chips — the closest thing to a plain-language answer. */
     createSearchResultChipsHtml(resource) {
         const raw = resource.serviceChips || resource.services || resource.highlights || '';
-        const chips = (Array.isArray(raw) ? raw : String(raw).split(','))
-            .map((chip) => String(chip).trim())
-            .filter(Boolean)
-            .slice(0, 3);
+        const chips = parseResourceServiceChips(raw, 3);
 
         if (!chips.length) return '';
 
