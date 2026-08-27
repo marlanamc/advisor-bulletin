@@ -1,3 +1,5 @@
+import { expandRecurringWeeklySessions, normalizeEventSessions } from './event-sessions.js';
+
 const SNAPSHOT_URL = '/student-feed-snapshot.json';
 const SNAPSHOT_CACHE_KEY = 'ebhcs_student_feed_snapshot_v1';
 const SNAPSHOT_FETCH_TIMEOUT_MS = 2400;
@@ -154,13 +156,58 @@ function normalizeCategory(category) {
     return CATEGORY_META[raw] ? raw : 'announcement';
 }
 
+function formatTimeRange(startTime, endTime) {
+    const start = String(startTime || '').trim();
+    const end = String(endTime || '').trim();
+    if (!start && !end) return '';
+    const formatTime = (value) => {
+        const [hours, minutes] = value.split(':').map(Number);
+        if (Number.isNaN(hours)) return value;
+        const date = new Date();
+        date.setHours(hours, minutes || 0, 0, 0);
+        return date.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+    };
+    if (start && end) return `${formatTime(start)} - ${formatTime(end)}`;
+    return formatTime(start || end);
+}
+
+function getNextUpcomingSession(item) {
+    let sessions = [];
+    if (item.dateType === 'recurring') {
+        sessions = expandRecurringWeeklySessions(item);
+    } else if (item.dateType === 'sessions') {
+        const rawSessions = Array.isArray(item.eventDates) && item.eventDates.length
+            ? item.eventDates
+            : (item.eventDate ? [item.eventDate] : []);
+        sessions = normalizeEventSessions(rawSessions, item.startTime || '', item.endTime || '');
+    }
+    if (!sessions.length) return null;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return sessions.find((session) => {
+        const date = parseYmdLocal(session.date);
+        return date && date >= today;
+    }) || sessions[sessions.length - 1];
+}
+
 function getDateLabel(item) {
+    if (item.dateType === 'recurring' || item.dateType === 'sessions') {
+        const session = getNextUpcomingSession(item);
+        if (!session) return '';
+        const date = parseYmdLocal(session.date);
+        if (!date) return '';
+        const dayLabel = date.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' });
+        const timeRange = formatTimeRange(session.startTime, session.endTime);
+        return timeRange ? `${dayLabel} · ${timeRange}` : dayLabel;
+    }
+
     const raw = item.eventDate || item.startDate || item.deadline || item.eventDates?.[0]?.date || '';
     const timestamp = getTimestampValue(raw);
     if (!timestamp) return '';
     const label = new Date(timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
     if (item.deadline && !item.eventDate && !item.startDate) return `Deadline ${label}`;
-    if (item.startDate) return `From ${label}`;
+    if (item.startDate && item.dateType !== 'recurring') return `From ${label}`;
     return label;
 }
 
@@ -400,6 +447,7 @@ function serializeBulletinForSnapshot(item) {
         deadline: item.deadline || '',
         startTime: item.startTime || '',
         endTime: item.endTime || '',
+        recurringWeekday: item.recurringWeekday != null ? String(item.recurringWeekday) : '',
         eventDates: Array.isArray(item.eventDates) ? item.eventDates.slice(0, 20) : [],
         hideFromMainFeed: item.hideFromMainFeed === true,
         image: compactStoredUrl(item.image),

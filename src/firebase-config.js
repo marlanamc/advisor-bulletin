@@ -451,9 +451,10 @@ class FirebaseBulletinBoard {
     }
 
     formatFeedDateDisplayHtml(bulletin) {
-        if (bulletin.dateType === 'sessions') {
-            const label = this.formatEventDatesDisplay(bulletin);
-            return label ? this.escapeHtml(label) : '';
+        if (bulletin.dateType === 'sessions' || bulletin.dateType === 'recurring') {
+            const item = this.getNextUpcomingDateListItem(bulletin);
+            if (!item) return '';
+            return this.escapeHtml(item.label);
         }
 
         const item = this.getDatesListItem(bulletin);

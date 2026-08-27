@@ -302,6 +302,22 @@ export class BoardCalendarMethods {
         return item ? [item] : [];
     }
 
+    getNextUpcomingDateListItem(bulletin) {
+        if (bulletin.dateType === 'sessions' || bulletin.dateType === 'recurring') {
+            const items = this.expandBulletinDateItems(bulletin);
+            if (!items.length) return null;
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const upcoming = items
+                .filter((item) => item.date >= today)
+                .sort((a, b) => a.date.getTime() - b.date.getTime());
+            return upcoming[0] || items[items.length - 1];
+        }
+
+        return this.getDatesListItem(bulletin);
+    }
+
     getDatesListItem(bulletin) {
         let rawDate = '';
         let kind = 'date';
