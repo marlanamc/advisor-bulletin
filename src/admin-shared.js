@@ -21,6 +21,7 @@ export const ADMIN_RESOURCE_CATEGORY_DATA = {
     hse:         ['GED / HSE / Equivalencia escolar', '📚', 'abc'],
     college:     ['College & Careers / Universidad y carreras', '🎓', 'graduation'],
     general:     ['General Help / Ayuda general', '🤝', 'handshake'],
+    consulates:  ['Consulates / Consulados', '🛂', 'flag'],
 };
 
 // Sync assertion — fails fast at module load if the canonical list and the
@@ -57,7 +58,8 @@ export const ADMIN_RESOURCE_ICON_LABELS = {
     home: 'Home',
     heart: 'Health',
     scale: 'Legal Aid',
-    globe: 'Globe'
+    globe: 'Globe',
+    flag: 'Consulate'
 };
 
 export function isPdfFile(file) {

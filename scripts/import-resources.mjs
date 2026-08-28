@@ -60,7 +60,7 @@ const CHIP_ALIASES = new Map([
 
 const VALID_CATEGORIES = new Set([
   'immigration', 'jobs', 'housing', 'health', 'food', 'family',
-  'hse', 'college', 'legal-aid', 'money', 'general',
+  'hse', 'college', 'legal-aid', 'money', 'general', 'consulates',
 ]);
 
 const CATEGORY_ICONS = {
@@ -70,6 +70,7 @@ const CATEGORY_ICONS = {
   health: 'heart',
   'legal-aid': 'scale',
   general: 'handshake',
+  consulates: 'flag',
 };
 
 function prompt(question, { hidden = false } = {}) {

@@ -173,6 +173,13 @@ export const RESOURCE_CATEGORY_CONFIG = {
         color: '#566274',
         tint: '#e8ecf2'
     },
+    consulates: {
+        labelEn: 'Consulates',
+        labelEs: 'Consulados',
+        icon: 'flag',
+        color: '#0f6f7a',
+        tint: '#dbeff2'
+    },
     announcement: {
         labelEn: 'Announcements',
         labelEs: 'Anuncios',
@@ -396,6 +403,14 @@ export const RESOURCE_ICON_SVGS = {
             <rect x="4.5" y="2.5" width="15" height="19" rx="2.4"/>
             <circle cx="12" cy="10" r="3.6" fill="var(--icon-cut, #fff)"/>
             <rect x="8" y="16.4" width="8" height="1.9" rx=".95" fill="var(--icon-cut, #fff)"/>
+        </svg>
+    `,
+    flag: `
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <rect x="3.4" y="2.2" width="2.3" height="19.6" rx="1.15"/>
+            <path d="M7.4 3.6h11.9a.9.9 0 0 1 .73 1.43L17.4 8.4l2.63 3.37a.9.9 0 0 1-.73 1.43H7.4Z"/>
+            <rect x="9.6" y="6.4" width="6.4" height="1.6" rx=".8" fill="var(--icon-cut, #fff)"/>
+            <rect x="9.6" y="9.4" width="4.4" height="1.6" rx=".8" fill="var(--icon-cut, #fff)"/>
         </svg>
     `,
     'all-topics': `

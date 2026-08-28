@@ -44,6 +44,7 @@ const CATS = {
     college:       { em: '🎓', chip: 'College',       bg: '#e1e6f0', fg: '#14315f' },
     money:         { em: '💵', chip: 'Money Help',    bg: '#d7f0e6', fg: '#1aa37a' },
     'legal-aid':   { em: '⚖️', chip: 'Legal Help',    bg: '#e8e2f7', fg: '#55379e' },
+    consulates:    { em: '🛂', chip: 'Consulates',    bg: '#dbeff2', fg: '#0f6f7a' },
     'career-fair': { em: '🤝', chip: 'Career Fair',   bg: '#e3eaf7', fg: '#1f3d7a' },
     announcement:  { em: '📣', chip: 'Announcement',  bg: '#dbeafe', fg: '#317dea' },
 }
@@ -269,6 +270,7 @@ const CHIP_BUCKET_LABELS = {
     money: 'Money Help',
     esol: 'ESOL',
     hse: 'HSE',
+    consulates: 'Consulates',
 }
 
 // ── State ──────────────────────────────────────────────────────────────────

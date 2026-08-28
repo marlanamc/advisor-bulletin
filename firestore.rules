@@ -251,7 +251,7 @@ service cloud.firestore {
         // resourceCategory whitelist — mirrors AUTHORABLE_RESOURCE_CATEGORIES
         // in src/resource-categories.js. scripts/check-resource-categories-sync.mjs
         // (run in prebuild) fails the build if the two lists drift apart.
-        && data.resourceCategory in ['immigration', 'jobs', 'housing', 'health', 'food', 'family', 'family-community', 'hse', 'college', 'legal-aid', 'money', 'esol', 'general']
+        && data.resourceCategory in ['immigration', 'jobs', 'housing', 'health', 'food', 'family', 'family-community', 'hse', 'college', 'legal-aid', 'money', 'esol', 'general', 'consulates']
         && (!('url' in data) || data.url is string)
         && validResourceContact(data);
 

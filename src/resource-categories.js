@@ -17,6 +17,7 @@ export const RESOURCE_TILE_CATEGORIES = [
   'hse',
   'college',
   'general',
+  'consulates',
 ];
 
 // All categories an advisor may select when authoring a resource. Includes
@@ -41,6 +42,7 @@ export const AUTHORABLE_RESOURCE_CATEGORIES = [
   'money',
   'esol',
   'general',
+  'consulates',
 ];
 
 export const RESOURCE_TILE_CATEGORY_SET = new Set(RESOURCE_TILE_CATEGORIES);

@@ -261,6 +261,43 @@ const RESOURCE_CHIP_ES = {
     'get a salvadoran passport': 'Solicitar un pasaporte salvadoreño',
     'get or renew my dui': 'Solicitar o renovar mi DUI',
     'get help with salvadoran documents': 'Ayuda con documentos salvadoreños',
+
+    // Consulate chips — one passport / one national-ID / one catch-all per
+    // country, so every consulate card reads the same way in both languages.
+    'get a brazilian passport': 'Solicitar un pasaporte brasileño',
+    'get my cpf or brazilian id': 'Obtener mi CPF o identificación brasileña',
+    'get help with brazilian documents': 'Ayuda con documentos brasileños',
+    'get a cape verdean passport': 'Solicitar un pasaporte caboverdiano',
+    'get my cape verdean id': 'Obtener mi identificación caboverdiana',
+    'get help with cape verdean documents': 'Ayuda con documentos caboverdianos',
+    'get a colombian passport': 'Solicitar un pasaporte colombiano',
+    'get or renew my colombian cédula': 'Solicitar o renovar mi cédula colombiana',
+    'get help with colombian documents': 'Ayuda con documentos colombianos',
+    'get a dominican passport': 'Solicitar un pasaporte dominicano',
+    'get or renew my dominican cédula': 'Solicitar o renovar mi cédula dominicana',
+    'get help with dominican documents': 'Ayuda con documentos dominicanos',
+    'get a guatemalan passport': 'Solicitar un pasaporte guatemalteco',
+    'get or renew my dpi': 'Solicitar o renovar mi DPI',
+    'get help with guatemalan documents': 'Ayuda con documentos guatemaltecos',
+    'get a haitian passport': 'Solicitar un pasaporte haitiano',
+    'get my haitian id': 'Obtener mi identificación haitiana',
+    'get help with haitian documents': 'Ayuda con documentos haitianos',
+    'get a honduran passport': 'Solicitar un pasaporte hondureño',
+    'get or renew my dni': 'Solicitar o renovar mi DNI',
+    'get help with honduran documents': 'Ayuda con documentos hondureños',
+    'get a mexican passport': 'Solicitar un pasaporte mexicano',
+    'get my matrícula consular': 'Obtener mi matrícula consular',
+    'get help with mexican documents': 'Ayuda con documentos mexicanos',
+    'get a peruvian passport': 'Solicitar un pasaporte peruano',
+    'get help with peruvian documents': 'Ayuda con documentos peruanos',
+    'get help with venezuelan documents': 'Ayuda con documentos venezolanos',
+    // Generic consulate chips offered as suggestions in the advisor form.
+    'get a passport': 'Solicitar un pasaporte',
+    'renew my passport': 'Renovar mi pasaporte',
+    'get my country id': 'Obtener la identificación de mi país',
+    'register a birth': 'Registrar un nacimiento',
+    'sign official papers': 'Firmar documentos oficiales',
+    'get help with my country documents': 'Ayuda con documentos de mi país',
     'get help paying for child care': 'Ayuda para pagar el cuidado de niños',
     'learn your rights as a domestic worker': 'Conocer sus derechos como trabajadora del hogar',
     'get help with a work problem': 'Ayuda con un problema en el trabajo',
@@ -423,6 +460,14 @@ export const SUGGESTED_RESOURCE_CHIPS_BY_CATEGORY = {
         'Take English classes',
         'Get training',
         'Go to college'
+    ],
+    consulates: [
+        'Get a passport',
+        'Renew my passport',
+        'Get my country ID',
+        'Register a birth',
+        'Sign official papers',
+        'Get help with my country documents'
     ]
 };
 
