@@ -14,13 +14,16 @@
  *
  * Venezuela is here without an address on purpose — Venezuela has had no
  * consulate anywhere in the U.S. since 2019, and that fact is itself the
- * answer a Venezuelan student needs.
+ * answer a Venezuelan student needs. (The U.S. and Venezuela restored
+ * relations in March 2026 and the U.S. embassy in Caracas reopened, but no
+ * Venezuelan consulate in the U.S. has reopened.)
  *
- * Addresses, phones, and hours below were gathered from public listings and
- * consulate websites in August 2026 but could NOT be fetched from each
- * ministry's own site directly. New cards are therefore created UNPUBLISHED so
- * an advisor verifies each one before students see it — a wrong consulate
- * address costs a student a day off work. Pass --publish once verified.
+ * Addresses and phone numbers were re-checked against official and public
+ * listings in August 2026 and all matched. Hours are the least stable field
+ * and several consulates publish them only inside an appointment portal, so
+ * new cards are still created UNPUBLISHED — an advisor confirms hours by
+ * phone before students see them, because a wrong consulate hour costs a
+ * student a day off work. Pass --publish once verified.
  *
  * Usage:
  *   node scripts/add-consulates-2026-08.mjs                     # dry run
@@ -52,6 +55,7 @@ const NEW_RESOURCES = [
     phone: '617-542-4000',
     address: '175 Purchase St, Boston, MA 02110',
     hours: 'Monday-Friday 8:30am-12:30pm; every in-person service starts online in e-Consular',
+    hoursEs: 'Lunes-viernes 8:30am-12:30pm; todo trámite presencial empieza en línea en e-Consular',
     languages: ['POR', 'ENG'],
     services: ['Get a Brazilian passport', 'Get my CPF or Brazilian ID', 'Get help with Brazilian documents'],
     actionLinks: [
@@ -73,6 +77,7 @@ const NEW_RESOURCES = [
     phone: '617-353-0014',
     address: '300 Congress St, Suite 204, Quincy, MA 02169',
     hours: 'Monday-Friday 9am-1pm',
+    hoursEs: 'Lunes-viernes 9am-1pm',
     languages: ['POR', 'ENG'],
     services: ['Get a Cape Verdean passport', 'Get my Cape Verdean ID', 'Get help with Cape Verdean documents'],
     actionLinks: [],
@@ -81,12 +86,13 @@ const NEW_RESOURCES = [
     resourceOrder: 3,
     titleEn: 'Consulate General of Colombia — Boston',
     titleEs: 'Consulado General de Colombia — Boston',
-    description: "Colombia's own government office in Boston — this is not U.S. immigration. Get Colombian documents like passports, cédulas, and birth or marriage records. You need an appointment, and new appointments open online every Wednesday at 4:00 p.m.",
-    summaryEs: 'La oficina del gobierno de Colombia en Boston — no es inmigración de Estados Unidos. Obtenga documentos colombianos como pasaportes, cédulas y actas de nacimiento o matrimonio. Necesita una cita, y las citas nuevas se abren en línea todos los miércoles a las 4:00 p.m.',
+    description: "Colombia's own government office in Boston — this is not U.S. immigration. Get Colombian documents like passports, cédulas, and birth or marriage records. You can book an appointment online, or take a walk-in number in the morning between 8:00 and 12:00.",
+    summaryEs: 'La oficina del gobierno de Colombia en Boston — no es inmigración de Estados Unidos. Obtenga documentos colombianos como pasaportes, cédulas y actas de nacimiento o matrimonio. Puede reservar una cita en línea, o tomar un turno sin cita por la mañana entre las 8:00 y las 12:00.',
     url: 'https://boston.consulado.gov.co/',
     phone: '617-536-6222',
     address: '31 St James Ave, Suite 960, Boston, MA 02116',
-    hours: 'Monday-Friday 7:30am-1:30pm; new appointments open online Wednesdays at 4pm',
+    hours: 'Monday-Friday 7:30am-1:30pm; walk-in numbers given 8am-12pm, document pickup 9am-2pm',
+    hoursEs: 'Lunes-viernes 7:30am-1:30pm; turnos sin cita de 8am-12pm, entrega de documentos de 9am-2pm',
     languages: ['ESP', 'ENG'],
     services: ['Get a Colombian passport', 'Get or renew my Colombian cédula', 'Get help with Colombian documents'],
     actionLinks: [],
@@ -101,6 +107,7 @@ const NEW_RESOURCES = [
     phone: '617-482-8121',
     address: '20 Park Plaza, Suite 601, Boston, MA 02116',
     hours: 'Monday-Friday 9am-4:30pm',
+    hoursEs: 'Lunes-viernes 9am-4:30pm',
     languages: ['ESP', 'ENG'],
     services: ['Get a Dominican passport', 'Get or renew my Dominican cédula', 'Get help with Dominican documents'],
     actionLinks: [],
@@ -113,8 +120,9 @@ const NEW_RESOURCES = [
     summaryEs: 'No hay consulado de Guatemala en Boston. El más cercano está en Providence, Rhode Island, y atiende a todo Massachusetts. Obtenga documentos guatemaltecos como pasaportes y el DPI. Llame primero para hacer una cita, y pregunte si van a hacer un consulado móvil cerca de usted.',
     url: 'https://www.minex.gob.gt/din/3116-Consulado-General-de-Guatemala-en-Providence-Rhode-Island-Estados-Unidos',
     phone: '401-270-6345',
-    address: '555 Valley St, Providence, RI 02908',
-    hours: 'Monday-Friday 8am-4:30pm; serves Massachusetts, Rhode Island, New Hampshire, Vermont, and Maine',
+    address: '555 Valley St, Building 61-321, Providence, RI 02908',
+    hours: 'Monday-Friday 8am-3pm; appointment required; serves Massachusetts, Rhode Island, New Hampshire, Vermont, and Maine',
+    hoursEs: 'Lunes-viernes 8am-3pm; se necesita cita; atiende a Massachusetts, Rhode Island, New Hampshire, Vermont y Maine',
     languages: ['ESP', 'ENG'],
     services: ['Get a Guatemalan passport', 'Get or renew my DPI', 'Get help with Guatemalan documents'],
     actionLinks: [],
@@ -125,10 +133,11 @@ const NEW_RESOURCES = [
     titleEs: 'Consulado General de Haití — Boston',
     description: "Haiti's own government office in Boston — this is not U.S. immigration. Get Haitian documents like passports, national IDs, and birth or marriage records. Staff speak Haitian Creole and French. Call before you go to ask which papers to bring.",
     summaryEs: 'La oficina del gobierno de Haití en Boston — no es inmigración de Estados Unidos. Obtenga documentos haitianos como pasaportes, identificaciones nacionales y actas de nacimiento o matrimonio. El personal habla creole haitiano y francés. Llame antes de ir para preguntar qué papeles llevar.',
-    url: '',
+    url: 'https://www.cghaitiboston.org/',
     phone: '617-266-3660',
     address: '333 Washington St, Suite 851, Boston, MA 02108',
     hours: 'Monday-Friday 9am-4pm',
+    hoursEs: 'Lunes-viernes 9am-4pm',
     languages: ['HAT', 'FRA', 'ENG'],
     services: ['Get a Haitian passport', 'Get my Haitian ID', 'Get help with Haitian documents'],
     actionLinks: [],
@@ -143,8 +152,9 @@ const NEW_RESOURCES = [
     phone: '617-571-7974',
     address: '90 Everett Ave, 3rd Floor, Chelsea, MA 02150',
     hours: 'Monday-Friday 9am-3pm; appointment required',
+    hoursEs: 'Lunes-viernes 9am-3pm; se necesita cita',
     languages: ['ESP', 'ENG'],
-    services: ['Get a Honduran passport', 'Get or renew my DNI', 'Get help with Honduran documents'],
+    services: ['Get a Honduran passport', 'Get or renew my Honduran DNI', 'Get help with Honduran documents'],
     actionLinks: [],
   },
   {
@@ -157,6 +167,7 @@ const NEW_RESOURCES = [
     phone: '617-426-4181',
     address: '55 Franklin St, Boston, MA 02110',
     hours: 'Monday-Friday 9am-2pm; appointment required through MEXITEL',
+    hoursEs: 'Lunes-viernes 9am-2pm; se necesita cita por MEXITEL',
     languages: ['ESP', 'ENG'],
     services: ['Get a Mexican passport', 'Get my matrícula consular', 'Get help with Mexican documents'],
     actionLinks: [
@@ -177,17 +188,18 @@ const NEW_RESOURCES = [
     url: 'https://www.consulado.pe/es/Boston/Paginas/Inicio.aspx',
     phone: '617-338-2227',
     address: '20 Park Plaza, Suite 511, Boston, MA 02116',
-    hours: 'Monday-Friday 8:30am-3pm; Saturday 9am-1pm',
+    hours: 'Monday-Friday 8:30am-3pm; most services need an appointment',
+    hoursEs: 'Lunes-viernes 8:30am-3pm; la mayoría de los trámites necesitan cita',
     languages: ['ESP', 'ENG'],
-    services: ['Get a Peruvian passport', 'Get or renew my DNI', 'Get help with Peruvian documents'],
+    services: ['Get a Peruvian passport', 'Get or renew my Peruvian DNI', 'Get help with Peruvian documents'],
     actionLinks: [],
   },
   {
     resourceOrder: 11,
     titleEn: 'Venezuelan Documents — No Consulate in the U.S.',
     titleEs: 'Documentos venezolanos — no hay consulado en EE. UU.',
-    description: 'Venezuela closed every one of its consulates in the United States in 2019, so there is no Venezuelan consulate in Boston or anywhere else in the country. The two governments agreed to restore relations in 2026, but no consulate has reopened yet and no date has been announced. If you need Venezuelan documents, ask an immigration lawyer what your options are — the City of Boston gives free advice by phone.',
-    summaryEs: 'Venezuela cerró todos sus consulados en Estados Unidos en 2019, así que no hay consulado venezolano en Boston ni en ninguna otra parte del país. Los dos gobiernos acordaron restablecer relaciones en 2026, pero todavía no ha reabierto ningún consulado y no han anunciado una fecha. Si necesita documentos venezolanos, pregunte a un abogado de inmigración cuáles son sus opciones — la Ciudad de Boston da asesoría gratis por teléfono.',
+    description: 'Venezuela closed every one of its consulates in the United States in 2019, so there is no Venezuelan consulate in Boston or anywhere else in the country. The two governments restored relations in March 2026 and the U.S. embassy in Caracas reopened, but no Venezuelan consulate in the U.S. has reopened yet and no date has been announced. If you need Venezuelan documents, ask an immigration lawyer what your options are — the City of Boston gives free advice by phone.',
+    summaryEs: 'Venezuela cerró todos sus consulados en Estados Unidos en 2019, así que no hay consulado venezolano en Boston ni en ninguna otra parte del país. Los dos gobiernos restablecieron relaciones en marzo de 2026 y la embajada de Estados Unidos en Caracas reabrió, pero todavía no ha reabierto ningún consulado venezolano en Estados Unidos y no han anunciado una fecha. Si necesita documentos venezolanos, pregunte a un abogado de inmigración cuáles son sus opciones — la Ciudad de Boston da asesoría gratis por teléfono.',
     url: 'https://www.boston.gov/departments/immigrant-advancement/free-immigration-consultations',
     phone: '',
     address: '',
@@ -250,6 +262,7 @@ function buildDoc(r, isPublished) {
     phone: r.phone,
     phoneMode: 'call',
     hours: r.hours,
+    hoursEs: r.hoursEs || '',
     languages: r.languages,
     lastVerified: '2026-08',
     isActive: true,
