@@ -2080,10 +2080,15 @@ class FirebaseAdminPanel {
             }
             if (this.isResourceBulletin(bulletin)) {
                 bulletin.hasResourceLogo = existingBulletin.hasResourceLogo || false;
-                // If the form field is absent from the submission (hidden input missing or
-                // cleared), fall back to the existing published state rather than silently
-                // unpublishing the resource.
-                if (formData.get('resourcePublished') === null) {
+                // If the form field is absent from the submission (hidden input missing) or
+                // present but empty, fall back to the existing published state rather than
+                // silently unpublishing the resource. There is no visible publish control in
+                // the composer — the field is a hidden input pinned to 'on' — so an empty
+                // value never means "the advisor asked to hide this", only that the mirror
+                // was populated from an already-hidden doc. Treating it as intent would let
+                // an ordinary edit hide a resource with no way to bring it back.
+                const publishedField = formData.get('resourcePublished');
+                if (publishedField === null || publishedField === '') {
                     bulletin.isPublished = existingBulletin.isPublished !== false;
                 }
             }
