@@ -291,7 +291,6 @@ const RESOURCE_CHIP_ES = {
     'get a peruvian passport': 'Solicitar un pasaporte peruano',
     'get or renew my peruvian dni': 'Solicitar o renovar mi DNI peruano',
     'get help with peruvian documents': 'Ayuda con documentos peruanos',
-    'get help with venezuelan documents': 'Ayuda con documentos venezolanos',
     // Generic consulate chips offered as suggestions in the advisor form.
     'get a passport': 'Solicitar un pasaporte',
     'renew my passport': 'Renovar mi pasaporte',

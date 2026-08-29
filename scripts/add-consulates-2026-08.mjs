@@ -5,18 +5,17 @@
  * Two things happen here:
  *   1. The existing "Consulate General of El Salvador — East Boston" card moves
  *      from `immigration` to `consulates`. Nothing else about it changes.
- *   2. Ten more consulate cards are created, one per country, ordered
+ *   2. Nine more consulate cards are created, one per country, ordered
  *      alphabetically so no country reads as favored over another.
  *
  * Ecuador is deliberately absent: the Boston-area listing is an *honorary*
  * consulate in Needham, which generally cannot issue passports or cédulas.
  * Marlana is confirming where Ecuadorians in Massachusetts are actually served.
  *
- * Venezuela is here without an address on purpose — Venezuela has had no
- * consulate anywhere in the U.S. since 2019, and that fact is itself the
- * answer a Venezuelan student needs. (The U.S. and Venezuela restored
- * relations in March 2026 and the U.S. embassy in Caracas reopened, but no
- * Venezuelan consulate in the U.S. has reopened.)
+ * Every card is a consulate a student can physically reach: Massachusetts or
+ * Rhode Island only. Countries whose nearest consulate is in New York or
+ * Washington — and Venezuela, which has no U.S. consulate at all — are left
+ * out rather than shown as a card a student cannot act on.
  *
  * Addresses and phone numbers were re-checked against official and public
  * listings in August 2026 and all matched. Hours are the least stable field
@@ -192,20 +191,6 @@ const NEW_RESOURCES = [
     hoursEs: 'Lunes-viernes 8:30am-3pm; la mayoría de los trámites necesitan cita',
     languages: ['ESP', 'ENG'],
     services: ['Get a Peruvian passport', 'Get or renew my Peruvian DNI', 'Get help with Peruvian documents'],
-    actionLinks: [],
-  },
-  {
-    resourceOrder: 11,
-    titleEn: 'Venezuelan Documents — No Consulate in the U.S.',
-    titleEs: 'Documentos venezolanos — no hay consulado en EE. UU.',
-    description: 'Venezuela closed every one of its consulates in the United States in 2019, so there is no Venezuelan consulate in Boston or anywhere else in the country. The two governments restored relations in March 2026 and the U.S. embassy in Caracas reopened, but no Venezuelan consulate in the U.S. has reopened yet and no date has been announced. If you need Venezuelan documents, ask an immigration lawyer what your options are — the City of Boston gives free advice by phone.',
-    summaryEs: 'Venezuela cerró todos sus consulados en Estados Unidos en 2019, así que no hay consulado venezolano en Boston ni en ninguna otra parte del país. Los dos gobiernos restablecieron relaciones en marzo de 2026 y la embajada de Estados Unidos en Caracas reabrió, pero todavía no ha reabierto ningún consulado venezolano en Estados Unidos y no han anunciado una fecha. Si necesita documentos venezolanos, pregunte a un abogado de inmigración cuáles son sus opciones — la Ciudad de Boston da asesoría gratis por teléfono.',
-    url: 'https://www.boston.gov/departments/immigrant-advancement/free-immigration-consultations',
-    phone: '',
-    address: '',
-    hours: 'Status as of August 2026 — check again before you make plans',
-    languages: ['ESP', 'ENG'],
-    services: ['Get help with Venezuelan documents', 'Talk to an immigration lawyer'],
     actionLinks: [],
   },
 ];
