@@ -1,0 +1,317 @@
+/* ============================================================
+   EBHCS Advisor Portal & Admin Panel Modular CSS
+   This file consolidates all admin/advisor styling extracted
+   from style.css to keep student portal CSS fast & lightweight.
+   ============================================================ */
+
+/* ============================================================
+   PART 1: BASE DESIGN SYSTEM & ADVISOR LOGIN OVERRIDES
+   (Formerly style.css lines 1 - 1225)
+   ============================================================ */
+
+:root {
+    /* Color Palette - Dark background with light content (high contrast, accessible) */
+    --app-bg: #1e293b;
+    --app-surface: #ffffff;
+    --app-surface-hover: #f8fafc;
+    --app-border: #e2e8f0;
+    --app-border-bright: #cbd5e1;
+
+    --app-text: #1e293b;
+    --app-text-light: #f8fafc;
+    --app-muted: #475569;
+
+    --app-blue: #0284c7;
+    --app-blue-strong: #0369a1;
+    --app-blue-soft: rgba(2, 132, 199, 0.15);
+
+    --app-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    --app-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.2);
+
+    /* Resource Page Tokens */
+    --resource-card-padding: 24px;
+    --resource-card-gap: 18px;
+    --resource-grid-gap: 20px;
+    --resource-icon-size: 60px;
+    --touch-target-min: 44px;
+
+    /* Typography */
+    --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+
+    /* === ADVISOR PORTAL DESIGN TOKENS — Light Nautical === */
+    --adv-bg: #f4f7fb;
+    --adv-rail: #071d3b;
+    --adv-rail-border: rgba(0,0,0,0.08);
+    --adv-surface: #ffffff;
+    --adv-surface-2: #f0f4f9;
+    --adv-border: #dde3ec;
+    --adv-border-bright: #c8d2e0;
+    --adv-text: #0e1e35;
+    --adv-text-2: #4a6080;
+    --adv-text-3: #8da0b8;
+    --adv-cyan: #1a56db;
+    --adv-cyan-dim: rgba(26,86,219,0.08);
+    --adv-cyan-glow: rgba(26,86,219,0.2);
+    --adv-amber: #d97706;
+    --adv-amber-dim: rgba(217,119,6,0.1);
+    --adv-green: #059669;
+    --adv-green-dim: rgba(5,150,105,0.1);
+    --adv-purple: #7c3aed;
+    --adv-purple-dim: rgba(124,58,237,0.1);
+    --adv-red: #dc2626;
+    --adv-gold: #ffd55d;
+    --adv-navy: #071d3b;
+    --adv-font-display: 'Inter', system-ui, sans-serif;
+    --adv-font-body: 'Inter', system-ui, sans-serif;
+    --adv-font-mono: 'DM Mono', ui-monospace, monospace;
+}
+
+/* Advisor portal redesign */
+body:has(.advisor-redesign),
+body:has(#loginRequired),
+body:has(#authLoadingScreen) {
+    background: var(--adv-bg);
+    font-size: 16px;
+}
+
+body:has(.advisor-redesign) > header,
+body:has(#loginRequired) > header,
+body:has(#authLoadingScreen) > header {
+    background: var(--adv-navy);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 2px 12px rgba(7,29,59,0.2);
+}
+
+body:has(.advisor-redesign) .main-content {
+    padding: 0;
+    max-width: none;
+}
+
+.welcome-stat-block {
+    margin-bottom: 20px;
+    border-radius: 20px;
+    background: transparent;
+    overflow: visible;
+}
+
+.advisor-redesign {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.login-required {
+    min-height: calc(100vh - 132px);
+    display: grid;
+    align-items: center;
+    padding: 84px 24px;
+    background: linear-gradient(180deg, var(--adv-navy) 0% 40%, var(--adv-bg) 40% 100%);
+}
+
+.advisor-login-card {
+    width: min(420px, calc(100vw - 48px));
+    margin: 0 auto;
+    padding: 36px 32px;
+    border-radius: 20px;
+    text-align: center;
+    background: var(--adv-surface);
+    border: 1px solid var(--adv-border);
+    box-shadow: 0 20px 60px rgba(7,29,59,0.18);
+}
+
+.advisor-login-card > .advisor-app-icon {
+    margin: 0 auto 18px;
+}
+
+.advisor-login-card h3 {
+    margin: 0 0 8px;
+    color: var(--adv-text);
+    font: 700 1.75rem var(--adv-font-display);
+    letter-spacing: -0.02em;
+}
+
+.advisor-login-card p {
+    margin: 0 0 24px;
+    color: var(--adv-text-2);
+    font-weight: 400;
+    font-family: var(--adv-font-body);
+    line-height: 1.5;
+    font-size: 0.95rem;
+}
+
+.advisor-login-form {
+    text-align: left;
+    margin-bottom: 18px;
+}
+
+.advisor-login-form .form-group {
+    margin-bottom: 16px;
+}
+
+.advisor-login-form label {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--adv-text);
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-transform: none;
+    letter-spacing: 0;
+}
+
+.advisor-login-form input[type="text"],
+.advisor-login-form input[type="password"],
+.advisor-login-form input[type="email"] {
+    width: 100%;
+    min-height: 48px;
+    border-radius: 12px;
+    border: 1.5px solid var(--adv-border);
+    padding: 12px 14px;
+    font-size: 1rem;
+    background: #fff;
+}
+
+.advisor-login-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.advisor-login-actions .admin-btn,
+.advisor-login-actions .secondary-btn {
+    width: 100%;
+    min-height: 48px;
+    border-radius: 12px;
+}
+
+.advisor-login-error,
+.advisor-login-success {
+    text-align: left;
+    margin-bottom: 16px;
+}
+
+.auth-loading-screen {
+    min-height: calc(100vh - 132px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 24px;
+    background: linear-gradient(180deg, var(--adv-navy) 0% 40%, var(--adv-bg) 40% 100%);
+}
+
+.auth-loading-card {
+    width: min(360px, calc(100vw - 48px));
+    padding: 32px 28px;
+    border-radius: 20px;
+    text-align: center;
+    background: var(--adv-surface);
+    border: 1px solid var(--adv-border);
+    box-shadow: 0 20px 60px rgba(7,29,59,0.18);
+}
+
+.advisor-redesign .welcome-section {
+    padding: 24px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, var(--adv-surface) 0%, var(--adv-surface-2) 100%);
+    border: 1px solid var(--adv-border);
+    box-shadow: 0 4px 20px rgba(7,29,59,0.03);
+    margin-bottom: 24px;
+}
+
+.welcome-section-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.welcome-section-body {
+    margin-top: 12px;
+}
+
+.advisor-redesign .welcome-section h3 {
+    margin: 0 0 6px;
+    color: var(--adv-text);
+    font: 700 1.6rem var(--adv-font-display);
+}
+
+.advisor-redesign .welcome-section .advisor-eyebrow {
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: var(--adv-text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.advisor-redesign .welcome-section p:not(.advisor-eyebrow) {
+    margin: 0;
+    color: var(--adv-text-2);
+}
+
+/* Desktop action cards → clean tab bar */
+.advisor-redesign .form-section {
+    background: var(--adv-surface);
+    border: 1px solid var(--adv-border);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 20px rgba(7,29,59,0.02);
+}
+
+/* === Light theme form + UI overrides for advisor portal === */
+.advisor-redesign .form-section-title,
+.advisor-redesign .form-section-header h4 {
+    color: var(--adv-text);
+    font-family: var(--adv-font-display);
+    font-weight: 700;
+}
+
+.advisor-redesign .form-section-subtitle {
+    color: var(--adv-text-2);
+}
+
+/* Section headers in manage tab */
+.advisor-redesign .manage-section-header {
+    border-bottom: 2px solid var(--adv-border);
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+/* Manage card edit/delete buttons */
+.advisor-redesign .manage-actions {
+    display: flex;
+    gap: 8px;
+}
+
+/* Rail brand text */
+.advisor-redesign .rail-brand-text {
+    font-family: var(--adv-font-display);
+    color: var(--adv-text);
+    font-weight: 850;
+}
+
+/* Post form container — light */
+.advisor-redesign .post-form-container {
+    background: transparent;
+    padding: 0;
+    border: none;
+    box-shadow: none;
+}
+
+/* Advisor eyebrow in main workspace */
+.advisor-redesign .workspace-eyebrow {
+    font-family: var(--adv-font-display);
+    color: var(--adv-text-2);
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    margin-bottom: 2px;
+}
+
+
+/* ============================================================
+   PART 2: LEGACY ADMIN PANEL, TABS, VALIDATION & EYE-TOGGLE
+   (Formerly style.css lines 2841 - 3655)
+   ============================================================ */
+
+/* Admin Panel */

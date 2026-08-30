@@ -1,0 +1,394 @@
+/* Student-facing stylesheet generated from style.css with advisor/admin-only sections excluded. */
+/* Base Design System */
+:root {
+    /* Color Palette - Dark background with light content (high contrast, accessible) */
+    --app-bg: #1e293b;
+    --app-surface: #ffffff;
+    --app-surface-hover: #f8fafc;
+    --app-border: #e2e8f0;
+    --app-border-bright: #cbd5e1;
+
+    --app-text: #1e293b;
+    --app-text-light: #f8fafc;
+    --app-muted: #475569;
+
+    --app-blue: #0284c7;
+    --app-blue-strong: #0369a1;
+    --app-blue-soft: rgba(2, 132, 199, 0.15);
+
+    --app-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    --app-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.2);
+
+    /* Resource Page Tokens */
+    --resource-card-padding: 24px;
+    --resource-card-gap: 18px;
+    --resource-grid-gap: 20px;
+    --resource-icon-size: 60px;
+    --touch-target-min: 44px;
+
+    /* Typography */
+    --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+
+    /* === ADVISOR PORTAL DESIGN TOKENS — Light Nautical === */
+    --adv-bg: #f4f7fb;
+    --adv-rail: #071d3b;
+    --adv-rail-border: rgba(0,0,0,0.08);
+    --adv-surface: #ffffff;
+    --adv-surface-2: #f0f4f9;
+    --adv-border: #dde3ec;
+    --adv-border-bright: #c8d2e0;
+    --adv-text: #0e1e35;
+    --adv-text-2: #4a6080;
+    --adv-text-3: #8da0b8;
+    --adv-cyan: #1a56db;
+    --adv-cyan-dim: rgba(26,86,219,0.08);
+    --adv-cyan-glow: rgba(26,86,219,0.2);
+    --adv-amber: #d97706;
+    --adv-amber-dim: rgba(217,119,6,0.1);
+    --adv-green: #059669;
+    --adv-green-dim: rgba(5,150,105,0.1);
+    --adv-purple: #7c3aed;
+    --adv-purple-dim: rgba(124,58,237,0.1);
+    --adv-red: #dc2626;
+    --adv-gold: #ffd55d;
+    --adv-navy: #071d3b;
+    --adv-font-display: 'Inter', system-ui, sans-serif;
+    --adv-font-body: 'Inter', system-ui, sans-serif;
+    --adv-font-mono: 'DM Mono', ui-monospace, monospace;
+}
+
+/* Global Styles */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-body);
+    line-height: 1.6;
+    color: var(--app-text);
+    background: #f4f6fb;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    min-height: 100vh;
+    font-weight: 400;
+    font-size: 16px;
+}
+
+body.modal-open {
+    overflow: hidden;
+}
+
+/* Header */
+header {
+    background: var(--app-bg);
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+    padding: 16px 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    transition: padding 0.24s ease;
+}
+
+/* Search trigger button */
+.mobile-search-trigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    color: #93c5fd;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+}
+.mobile-search-trigger:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+header h1 {
+    font-family: var(--font-heading);
+    color: var(--app-text-light);
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 2px;
+    letter-spacing: -0.02em;
+    transition: font-size 0.24s ease, margin 0.24s ease;
+}
+
+header h2 {
+    font-family: var(--font-body);
+    color: #60a5fa;
+    font-size: 1rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    transition: font-size 0.24s ease;
+}
+
+.header-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 10px 20px;
+    max-width: 100%;
+}
+
+.header-resource-strip {
+    display: none;
+}
+
+.header-resource-strip-inline {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.admin-btn {
+    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+    color: white;
+    border: none;
+    padding: 16px 32px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 16px rgba(14, 165, 233, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    min-width: 140px;
+}
+
+.admin-btn:hover {
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(14, 165, 233, 0.4);
+}
+
+/* Filter/Search Section */
+.filter-section {
+    background: rgba(248, 250, 252, 0.98);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(203, 213, 225, 0.3);
+    border-radius: 16px;
+    padding: 18px;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 32px rgba(15, 23, 42, 0.1), 0 1px 4px rgba(15, 23, 42, 0.1);
+}
+
+@media (min-width: 640px) {
+    .filter-section {
+        padding: 24px 28px;
+        margin-bottom: 40px;
+    }
+}
+
+.search-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 14px;
+    align-items: center;
+}
+
+@media (min-width: 640px) {
+    .search-bar {
+        gap: 10px;
+        flex-wrap: nowrap;
+    }
+}
+
+.search-input {
+    flex: 1;
+    padding: 14px 20px;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 400;
+    background: white;
+    transition: all 0.3s ease;
+    font-family: inherit;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #0ea5e9;
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+    background: #fefefe;
+}
+
+.search-btn {
+    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+    color: white;
+    border: none;
+    padding: 14px 18px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    min-width: 50px;
+    box-shadow: 0 2px 8px rgba(14, 165, 233, 0.2);
+}
+
+.search-btn:hover {
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(14, 165, 233, 0.3);
+}
+
+/* Mobile-first responsive design */
+
+/* New Multi-Select Filter Chips */
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.filter-chip {
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    background: white;
+    color: #475569;
+    border-color: #e2e8f0;
+    font-family: inherit;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.filter-chip:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.filter-chip.active {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+    font-weight: 700;
+    border-width: 2px;
+}
+
+/* Category filter chip colors - darker, more prominent when active */
+.filter-chip.category-job.active {
+    background: linear-gradient(135deg, #0077b6 0%, #005a8d 100%);
+    color: white;
+    border-color: #0077b6;
+}
+
+.filter-chip.category-training.active {
+    background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+    color: white;
+    border-color: #d97706;
+}
+
+.filter-chip.category-college.active {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    color: white;
+    border-color: #2563eb;
+}
+
+.filter-chip.category-career-fair.active {
+    background: linear-gradient(135deg, #e11d48 0%, #be123c 100%);
+    color: white;
+    border-color: #e11d48;
+}
+
+.filter-chip.category-immigration.active {
+    background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%);
+    color: white;
+    border-color: #9333ea;
+}
+
+.filter-chip.category-announcement.active {
+    background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+    color: white;
+    border-color: #4f46e5;
+}
+
+.filter-chip.category-resource.active {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    color: white;
+    border-color: #059669;
+}
+
+/* Posted date chips */
+.filter-chip[data-posted].active {
+    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+    color: white;
+    border-color: #7c3aed;
+}
+
+/* Posted by advisor chips */
+.filter-chip.postedby-chip.active {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: white;
+    border-color: #f59e0b;
+}
+
+.active-filters-count {
+    background: #0ea5e9;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.active-filters-count span {
+    background: white;
+    color: #0ea5e9;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 700;
+}
+
+@media (max-width: 640px) {
+    .filter-chip {
+        font-size: 12px;
+        padding: 6px 12px;
+    }
+}
+
+.results-info {
+    background: rgba(14, 165, 233, 0.08);
+    border-left: 4px solid #0ea5e9;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    border-radius: 0 12px 12px 0;
+    font-size: 14px;
+    font-weight: 500;
+    color: #0284c7;
+    display: none;
+    backdrop-filter: blur(5px);
+}
+
+/* Bulletin Container */

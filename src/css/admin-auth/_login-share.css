@@ -1,0 +1,168 @@
+/* Login Modal Styles */
+.login-info {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(203, 213, 225, 0.4);
+    font-size: 14px;
+    color: #64748b;
+}
+
+.login-info p {
+    margin: 8px 0;
+    line-height: 1.5;
+}
+
+.login-info strong {
+    color: #0f172a;
+    font-weight: 600;
+}
+
+/* Share Modal */
+.share-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+}
+
+.share-modal-content {
+    background: white;
+    border-radius: 16px;
+    padding: 30px;
+    max-width: 400px;
+    width: 100%;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    text-align: center;
+}
+
+.share-modal-content h3 {
+    margin-bottom: 20px;
+    color: #0f172a;
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+.share-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.share-option {
+    padding: 12px 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    background: white;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.share-option:hover {
+    background: #f8fafc;
+    border-color: #0ea5e9;
+    transform: translateY(-2px);
+}
+
+.share-option.whatsapp:hover { border-color: #25d366; }
+.share-option.facebook:hover { border-color: #1877f2; }
+.share-option.email:hover { border-color: #ea4335; }
+.share-option.sms:hover { border-color: #0ea5e9; }
+
+.share-link {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    padding: 16px;
+    background: #f8fafc;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+}
+
+.share-link input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 14px;
+    color: #64748b;
+    outline: none;
+}
+
+.copy-btn {
+    background: #0ea5e9;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.copy-btn:hover {
+    background: #0284c7;
+}
+
+.close-share {
+    background: #6c757d;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background 0.3s ease;
+}
+
+.close-share:hover {
+    background: #5a6268;
+}
+
+/* Mobile share modal adjustments */
+@media (max-width: 480px) {
+    .share-modal {
+        padding: 16px;
+    }
+
+    .share-modal-content {
+        padding: 24px 20px;
+    }
+
+    .share-options {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .share-option {
+        padding: 14px;
+    }
+
+    .share-link {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .copy-btn {
+        align-self: stretch;
+        padding: 12px;
+    }
+}
+
+/* Management Section */

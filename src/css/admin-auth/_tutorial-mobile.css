@@ -1,0 +1,399 @@
+#notificationModal .modal-content {
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+/* Checkbox Groups */
+.checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: background-color 0.2s ease;
+    font-weight: 400;
+}
+
+.checkbox-label:hover {
+    background-color: rgba(14, 165, 233, 0.05);
+}
+
+.checkbox-label input[type="checkbox"] {
+    margin: 0;
+    width: 18px;
+    height: 18px;
+    accent-color: #0ea5e9;
+}
+
+/* Notification Status */
+.notification-status {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 20px;
+}
+
+.notification-status h4 {
+    color: #0f172a;
+    margin-bottom: 12px;
+    font-size: 1rem;
+}
+
+#currentSettings {
+    font-size: 0.9rem;
+    color: #64748b;
+    line-height: 1.6;
+}
+
+/* Tutorial Styles */
+.tutorial-content {
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.tutorial-steps {
+    margin: 20px 0;
+}
+
+.tutorial-step {
+    display: none;
+    padding: 20px;
+    background: #f8fafc;
+    border-radius: 12px;
+    margin-bottom: 16px;
+    border-left: 4px solid #0ea5e9;
+}
+
+.tutorial-step.active {
+    display: block;
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+.tutorial-step h4 {
+    color: #0f172a;
+    margin-bottom: 12px;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.tutorial-step p {
+    color: #64748b;
+    margin-bottom: 16px;
+    line-height: 1.6;
+}
+
+.tutorial-demo {
+    background: white;
+    padding: 16px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    margin-top: 12px;
+}
+
+.tutorial-demo input,
+.tutorial-demo select,
+.tutorial-demo button {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.tutorial-demo input:disabled,
+.tutorial-demo select:disabled,
+.tutorial-demo button:disabled {
+    background: #f3f4f6;
+    color: #6b7280;
+    cursor: not-allowed;
+}
+
+.phone-demo {
+    text-align: center;
+    padding: 20px;
+    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+    color: white;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: 500;
+}
+
+.tutorial-navigation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 20px 0;
+    padding: 16px;
+    background: #f1f5f9;
+    border-radius: 8px;
+}
+
+.tutorial-navigation span {
+    font-weight: 500;
+    color: #475569;
+}
+
+.tutorial-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.tutorial-actions {
+    text-align: center;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.tutorial-actions button {
+    margin: 0 8px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+/* Mobile Optimizations */
+@media (max-width: 768px) {
+    .header-right {
+        gap: 8px;
+    }
+
+
+    .help-btn,
+    .notification-btn {
+        padding: 10px 14px;
+        font-size: 16px;
+        min-width: 45px;
+        min-height: 45px;
+    }
+
+    #notificationModal .modal-content,
+    #helpModal .modal-content {
+        margin: 5% auto;
+        width: 95%;
+        padding: 20px;
+    }
+
+    .checkbox-group {
+        gap: 10px;
+    }
+
+    .checkbox-label {
+        padding: 6px 10px;
+        font-size: 14px;
+    }
+
+    .form-actions {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .form-actions button {
+        width: 100%;
+    }
+
+    .tutorial-navigation {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .tutorial-navigation span {
+        order: -1;
+    }
+
+    .tutorial-actions {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .tutorial-actions button {
+        width: 100%;
+        margin: 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .main-content {
+        padding: 0 15px;
+    }
+
+    .bulletin-card {
+        padding: 20px;
+    }
+
+    .admin-tabs {
+        flex-direction: column;
+    }
+}
+
+/* ========================================
+   MOBILE STABILITY IMPROVEMENTS
+   ======================================== */
+
+/* Prevent Double-Tap Zoom & Remove Tap Delays */
+button,
+.btn,
+.bulletin-card,
+.category-filter,
+.admin-tab,
+.close,
+a {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Mobile Touch Feedback - Only on Touch Devices */
+@media (hover: none) and (pointer: coarse) {
+    /* Button Press Feedback */
+    button:active,
+    .btn:active {
+        transform: scale(0.97);
+        opacity: 0.9;
+        transition: transform 0.1s ease, opacity 0.1s ease;
+    }
+
+    /* Card Tap Feedback */
+    .bulletin-card:active {
+        transform: scale(0.99);
+        transition: transform 0.15s ease;
+    }
+
+    /* Tab Press Feedback */
+    .admin-tab:active,
+    .category-filter:active {
+        transform: scale(0.98);
+        opacity: 0.9;
+        transition: transform 0.1s ease;
+    }
+
+    /* Link Press Feedback */
+    a:active {
+        opacity: 0.7;
+        transition: opacity 0.1s ease;
+    }
+}
+
+/* iOS Keyboard & Modal Fixes */
+@media (max-width: 768px) {
+    /* Use dynamic viewport height for iOS keyboard handling */
+    .modal {
+        height: 100dvh;
+        height: 100vh; /* Fallback for older browsers */
+    }
+
+    /* Make modal content scrollable on small screens */
+    .modal-content {
+        max-height: 85vh;
+        max-height: 85dvh;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+        margin: 2% auto;
+    }
+
+    /* Ensure form inputs stay visible when keyboard opens */
+    .modal-content input:focus,
+    .modal-content textarea:focus {
+        scroll-margin-top: 120px;
+        scroll-margin-bottom: 120px;
+    }
+
+    /* Prevent body scroll when modal is open */
+    body.modal-open {
+        position: fixed;
+        width: 100%;
+        overflow: hidden;
+        touch-action: none;
+    }
+
+    /* Better momentum scrolling */
+    .bulletin-grid,
+    .bulletin-detail-content,
+    .modal-content {
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+    }
+
+    /* Prevent text selection during scroll */
+    .bulletin-card,
+    .category-filter {
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-touch-callout: none;
+    }
+
+    /* But allow text selection in bulletin content */
+    .bulletin-description,
+    .detail-description,
+    .bulletin-title {
+        -webkit-user-select: text;
+        user-select: text;
+    }
+}
+
+/* Extra Small Screens - Additional Stability */
+@media (max-width: 480px) {
+    /* Larger tap targets on small screens */
+    button,
+    .btn {
+        min-height: 44px;
+        min-width: 44px;
+        padding: 12px 20px;
+    }
+
+    .close {
+        width: 44px;
+        height: 44px;
+        font-size: 36px;
+    }
+
+    /* More padding for easier scrolling */
+    .modal-content {
+        padding: 24px 16px;
+        max-height: 90vh;
+        max-height: 90dvh;
+    }
+
+    /* Prevent horizontal scroll */
+    body {
+        overflow-x: hidden;
+    }
+}
+
+/* Smooth Scrolling for All Mobile */
+@media (max-width: 768px) {
+    html {
+        scroll-behavior: smooth;
+        -webkit-text-size-adjust: 100%;
+    }
+
+    /* Prevent bounce effect on body */
+    body {
+        overscroll-behavior-y: none;
+    }
+}
