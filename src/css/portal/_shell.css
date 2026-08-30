@@ -1,0 +1,557 @@
+/* ============================================================
+   EBHCS Advisor Portal v2 — Community Publishing Design System
+   Warm, approachable, civic. Navy + pastel palette.
+   Fonts loaded via <link> in admin.html — no @import needed here.
+   ============================================================ */
+
+/* ── Portal shell resets (JS adds .ap-portal-active to body) ── */
+body.ap-portal-active > header,
+body.ap-portal-active > footer {
+  display: none !important;
+}
+
+body.ap-portal-active {
+  background: var(--ap-bg, #f5f7fb);
+}
+
+body.ap-portal-active .main-content {
+  padding: 0 !important;
+  max-width: none !important;
+}
+
+/* --- Design Tokens --- */
+:root {
+  /* Navy brand */
+  --ap-navy:        #0a1f44;
+  --ap-navy-mid:    #12306b;
+  --ap-navy-light:  #1e4db7;
+
+  /* Pastels */
+  --ap-sky:         #e8f0fe;
+  --ap-sky-mid:     #c7d9fd;
+  --ap-mint:        #e6f7f0;
+  --ap-mint-mid:    #a7e8cc;
+  --ap-coral:       #fff1ec;
+  --ap-coral-mid:   #ffc9b0;
+  --ap-lavender:    #f0eeff;
+  --ap-lavender-mid:#c8bcf8;
+  --ap-gold:        #fffbea;
+  --ap-gold-mid:    #fde68a;
+  --ap-gold-accent: #f59e0b;
+
+  /* Surfaces */
+  --ap-bg:          #f5f7fb;
+  --ap-surface:     #ffffff;
+  --ap-surface-2:   #f0f4f9;
+  --ap-border:      #e2e8f2;
+  --ap-border-mid:  #c8d4e8;
+
+  /* Text */
+  --ap-text:        #0d1b35;
+  --ap-text-2:      #3d5a80;
+  --ap-text-3:      #4d6d90;
+  --ap-text-inv:    #ffffff;
+
+  /* Accents */
+  --ap-blue:        #1a56db;
+  --ap-blue-dim:    rgba(26,86,219,.1);
+  --ap-green:       #059669;
+  --ap-green-dim:   rgba(5,150,105,.1);
+  --ap-amber:       #d97706;
+  --ap-amber-dim:   rgba(217,119,6,.1);
+  --ap-purple:      #7c3aed;
+  --ap-purple-dim:  rgba(124,58,237,.1);
+  --ap-red:         #dc2626;
+
+  /* Type */
+  --ap-font-head:   'Lexend', -apple-system, BlinkMacSystemFont, sans-serif;
+  --ap-font-body:   'Source Sans 3', -apple-system, BlinkMacSystemFont, sans-serif;
+
+  /* Radius */
+  --ap-r-sm:   8px;
+  --ap-r-md:   12px;
+  --ap-r-lg:   16px;
+  --ap-r-xl:   20px;
+  --ap-r-pill: 999px;
+
+  /* Shadow */
+  --ap-shadow-xs:  0 1px 3px rgba(10,31,68,.06);
+  --ap-shadow-sm:  0 2px 8px rgba(10,31,68,.08);
+  --ap-shadow-md:  0 4px 16px rgba(10,31,68,.1);
+  --ap-shadow-lg:  0 8px 32px rgba(10,31,68,.14);
+}
+
+/* ============================================================
+   LAYOUT SHELL
+   ============================================================ */
+
+.ap-portal {
+  display: flex;
+  min-height: 100vh;
+  min-height: 100svh;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  border-radius: 0;
+  background: var(--ap-bg);
+  box-shadow: none;
+  font-family: var(--ap-font-body);
+  color: var(--ap-text);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+.admin-panel.ap-portal,
+.advisor-redesign.ap-portal {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  border-radius: 0;
+  background: var(--ap-bg);
+  box-shadow: none;
+}
+
+/* ============================================================
+   SIDEBAR NAV
+   ============================================================ */
+
+.ap-sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  background: var(--ap-navy);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 200;
+  overflow-y: auto;
+  padding: 0 0 24px;
+}
+
+.ap-sidebar-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  padding: 18px 16px 16px;
+  border-bottom: 1px solid rgba(255,255,255,.07);
+}
+
+.ap-sidebar-brand [data-ebhcs-brand-lockup] {
+  min-width: 0;
+}
+
+.ap-brand-lockup {
+  min-width: 0;
+}
+
+.topbar-brand-lockup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.topbar-badge {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.topbar-brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+  min-width: 0;
+}
+
+.topbar-brand-eyebrow {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.topbar-brand-name {
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  color: #ffffff;
+  line-height: 1.15;
+}
+
+.topbar-brand-sub {
+  font-size: 10px;
+  font-weight: 500;
+  color: #c9a84c;
+  letter-spacing: 0.02em;
+}
+
+.ap-brand-lockup--sidebar .topbar-badge svg {
+  width: 32px;
+  height: 38px;
+}
+
+.ap-brand-lockup--sidebar .topbar-brand-eyebrow {
+  font-size: 8px;
+}
+
+.ap-brand-lockup--sidebar .topbar-brand-name {
+  font-size: 14px;
+}
+
+.ap-brand-lockup--sidebar .topbar-brand-sub {
+  font-size: 8px;
+}
+
+.ap-brand-portal-tag {
+  font-family: var(--ap-font-head);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.65);
+  padding-left: 2px;
+}
+
+.ap-brand-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(255,213,93,.15);
+  border: 1px solid rgba(255,213,93,.3);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.ap-brand-icon svg {
+  width: 22px;
+  height: 22px;
+  color: #ffd55d;
+}
+
+.ap-brand-text {
+  min-width: 0;
+}
+
+.ap-brand-school {
+  font-family: var(--ap-font-head);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: rgba(255,213,93,.8);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  line-height: 1;
+  margin-bottom: 3px;
+}
+
+.ap-brand-subtitle {
+  font-family: var(--ap-font-head);
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: rgba(255,255,255,.6);
+  line-height: 1;
+}
+
+.ap-nav {
+  flex: 1;
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ap-nav-section-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.65);
+  padding: 12px 8px 6px;
+  margin-top: 6px;
+}
+
+.ap-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--ap-r-md);
+  color: rgba(255,255,255,.6);
+  font-size: 0.88rem;
+  font-weight: 500;
+  font-family: var(--ap-font-head);
+  text-decoration: none;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  transition: all .15s ease;
+  position: relative;
+}
+
+.ap-nav-item:hover {
+  background: rgba(255,255,255,.07);
+  color: rgba(255,255,255,.9);
+}
+
+.ap-nav-item.active {
+  background: rgba(26,86,219,.2);
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.ap-nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  border-radius: 0 2px 2px 0;
+  background: #ffd55d;
+}
+
+.ap-nav-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(255,255,255,.06);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  transition: background .15s;
+}
+
+.ap-nav-item.active .ap-nav-icon {
+  background: rgba(26,86,219,.3);
+}
+
+.ap-nav-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.ap-nav-item.ap-nav-create {
+  background: linear-gradient(135deg, rgba(26,86,219,.3), rgba(26,86,219,.15));
+  color: #ffffff;
+  font-weight: 700;
+  border: 1px solid rgba(26,86,219,.4);
+  margin-bottom: 6px;
+}
+
+.ap-nav-item.ap-nav-create:hover {
+  background: linear-gradient(135deg, rgba(26,86,219,.45), rgba(26,86,219,.25));
+}
+
+.ap-nav-divider {
+  height: 1px;
+  background: rgba(255,255,255,.07);
+  margin: 10px 8px;
+}
+
+.ap-sidebar-footer {
+  padding: 12px 16px;
+  border-top: 1px solid rgba(255,255,255,.07);
+  margin-top: 8px;
+}
+
+.ap-advisor-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ap-advisor-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1a56db, #7c3aed);
+  display: grid;
+  place-items: center;
+  font-family: var(--ap-font-head);
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: #fff;
+  flex-shrink: 0;
+  letter-spacing: 0;
+}
+
+.ap-advisor-name {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: rgba(255,255,255,.85);
+  font-family: var(--ap-font-head);
+  line-height: 1.2;
+}
+
+.ap-advisor-role {
+  font-size: 0.72rem;
+  color: rgba(255,255,255,.65);
+}
+
+.ap-advisor-card:hover {
+  background: rgba(255,255,255,.06);
+  border-radius: 10px;
+}
+
+.ap-advisor-card--loading .ap-advisor-avatar,
+.ap-advisor-card--loading .ap-advisor-name {
+  animation: apAdvisorPulse 1.3s ease-in-out infinite;
+}
+
+@keyframes apAdvisorPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .45; }
+}
+
+.ap-user-menu {
+  margin-top: 6px;
+  background: rgba(255,255,255,.07);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.ap-user-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 14px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--ap-font-body);
+  font-size: 0.82rem;
+  text-align: left;
+  transition: background .15s;
+}
+
+.ap-user-menu-logout {
+  color: #fc8181;
+}
+
+.ap-user-menu-logout:hover {
+  background: rgba(252,129,129,.12);
+}
+
+/* ============================================================
+   MAIN CONTENT AREA
+   ============================================================ */
+
+.ap-main {
+  flex: 1;
+  margin-left: 240px;
+  min-height: 100vh;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* ============================================================
+   TOP BAR
+   ============================================================ */
+
+.ap-topbar {
+  height: 64px;
+  background: var(--ap-surface);
+  border-bottom: 1px solid var(--ap-border);
+  display: flex;
+  align-items: center;
+  padding: 0 28px;
+  gap: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--ap-shadow-xs);
+}
+
+.ap-topbar-title {
+  font-family: var(--ap-font-head);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--ap-text);
+  flex: 1;
+  letter-spacing: -0.01em;
+}
+
+.ap-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ap-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 16px;
+  border-radius: var(--ap-r-md);
+  font-family: var(--ap-font-head);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all .15s ease;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.ap-btn svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.ap-btn-ghost {
+  background: transparent;
+  color: var(--ap-text-2);
+  border: 1px solid var(--ap-border);
+}
+
+.ap-btn-ghost:hover {
+  background: var(--ap-surface-2);
+  color: var(--ap-text);
+  cursor: pointer;
+}
+
+.ap-btn-primary {
+  background: var(--ap-navy);
+  color: #fff;
+}
+
+.ap-btn-primary:hover {
+  background: var(--ap-navy-mid);
+  cursor: pointer;
+}
+
+.ap-btn-blue {
+  background: var(--ap-blue);
+  color: #fff;
+}
+
+.ap-btn-blue:hover {
+  background: #1648c4;
+  cursor: pointer;
+}
+
+.ap-btn-danger {
+  background: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.ap-btn-danger:hover {
+  background: #fecaca;
+  cursor: pointer;
+}

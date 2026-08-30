@@ -1,0 +1,48 @@
+/* ============================================================
+   TOAST NOTIFICATION
+   ============================================================ */
+
+.ap-toast {
+  position: fixed;
+  bottom: max(24px, env(safe-area-inset-bottom));
+  right: max(24px, env(safe-area-inset-right));
+  background: var(--ap-navy);
+  color: #fff;
+  padding: 12px 18px;
+  border-radius: var(--ap-r-lg);
+  box-shadow: var(--ap-shadow-lg);
+  font-family: var(--ap-font-head);
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 999;
+  transform: translateY(80px);
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+  transition: transform .3s ease, opacity .3s ease, visibility 0s linear .3s;
+}
+
+.ap-toast.show {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+.ap-toast-icon {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.12);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.ap-toast-icon svg {
+  width: 14px; height: 14px;
+  color: #34d399;
+}
