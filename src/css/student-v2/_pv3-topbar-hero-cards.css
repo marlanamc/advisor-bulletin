@@ -1,0 +1,783 @@
+/* ═══════════════════════════════════════════════════════════════════
+   PROTOTYPE V3 — Hero, Category Bar, Proto Cards
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Topbar desktop expansion ──────────────────────────────────── */
+@media (min-width: 768px) {
+    .topbar-inner { max-width: 1280px; gap: 24px; }
+    .topbar-search-btn.mobile-search-trigger { display: none; }
+
+    .desktop-topnav {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 6px;
+        flex: 0 0 auto;
+        min-width: 0;
+    }
+
+    .desktop-topnav-btn {
+        border: 1px solid transparent;
+        border-radius: 999px;
+        background: transparent;
+        color: rgba(255, 255, 255, 0.78);
+        cursor: pointer;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 13px;
+        font-weight: 800;
+        line-height: 1;
+        padding: 10px 14px;
+        transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+        white-space: nowrap;
+    }
+
+    .desktop-topnav-btn:hover,
+    .desktop-topnav-btn:focus-visible {
+        background: rgba(255, 255, 255, 0.12);
+        border-color: rgba(255, 255, 255, 0.16);
+        color: #fff;
+        outline: none;
+    }
+
+    .desktop-topnav-btn.active {
+        background: #ffffff;
+        border-color: #ffffff;
+        color: #0a1d3a;
+        box-shadow: 0 10px 24px rgba(1, 10, 25, 0.18);
+    }
+}
+
+/* 768–1099px: desktop shell + top nav, but inline topbar search is still hidden—keep search usable */
+@media (min-width: 768px) and (max-width: 1099px) {
+    .topbar-search-btn.mobile-search-trigger {
+        display: flex !important;
+    }
+}
+
+/* ── Feed Hero — hidden; search lives in sticky nav header ─────── */
+
+.feed-popular-chip {
+    background: rgba(255,255,255,0.08);
+    border: 1.5px solid rgba(255,255,255,0.18);
+    color: #e2e8f0;
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.feed-popular-chip:hover {
+    background: rgba(255,255,255,0.16);
+    border-color: rgba(255,255,255,0.35);
+    color: #fff;
+}
+
+/* ── Category Bar ───────────────────────────────────────────────── */
+/* old standalone cat-bar-wrap — hidden, post filters now live with the feed */
+
+@media (min-width: 768px) {
+    .story-row-wrap--mobile {
+        display: none !important;
+    }
+}
+
+/* ── Bilingual story row (HELP · AYUDA section) ─────────────────── */
+.story-row-wrap--bilingual .story-row-label {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    width: 100%;
+}
+
+.story-row-wrap--bilingual .story-row-label-text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.story-row-wrap--bilingual .story-row-kicker {
+    color: #1f3d7a;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+}
+
+.story-row-wrap--bilingual .story-row-see-all {
+    color: #1f3d7a;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: color 0.15s;
+}
+
+.story-row-wrap--bilingual .story-row-see-all:hover {
+    color: #0a1d3a;
+    text-decoration: underline;
+}
+
+.story-row-wrap--bilingual .story-row-see-all-arrow {
+    font-size: 16px;
+    line-height: 1;
+}
+
+/* Show one language at a time (matching the site's global toggle) instead of
+   stacking EN + ES — the stacked version squeezed the Spanish line to 11px
+   and forced 2-line wraps ("Ayuda con / empleo"), the exact small-icon-label
+   pattern flagged as hard to read on mobile. The active language keeps the
+   label's normal size/weight since it's no longer sharing space with a
+   second line. */
+body:not([data-lang="ES"]) .story-row-wrap--bilingual .story-bubble-label.en-text,
+body[data-lang="ES"] .story-row-wrap--bilingual .story-bubble-label.es-text {
+    display: -webkit-box;
+}
+
+/* Collapse the inline desktop search into an icon trigger at all sizes.
+   Search is rarely used by students; reclaim the topbar row for the nav. */
+.desktop-topbar-search { display: none !important; }
+.topbar-search-btn.mobile-search-trigger { display: inline-flex !important; }
+
+/* ── Shared back-to-home button arrow ──────────────────────────── */
+.back-home-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.back-home-arrow {
+    font-size: 16px;
+    line-height: 1;
+    transition: transform 0.15s ease;
+}
+
+.back-home-btn:hover .back-home-arrow {
+    transform: translateX(-2px);
+}
+
+/* Back-to-home bar removed — Home lives in the top nav (and logo lockup). */
+.page-back-bar {
+    display: none;
+}
+
+/* Unified hero card across Calendar / Find Help / Advisors / About */
+#calendarView > .view-hero,
+#resourcesView > .view-hero,
+#advisorsView > .view-hero,
+#aboutView > .view-hero {
+    max-width: 1180px;
+    margin-left: auto;
+    margin-right: auto;
+    box-sizing: border-box;
+    border-radius: 20px;
+    border: 2px solid rgba(148, 163, 184, 0.28);
+    box-shadow: 0 18px 44px rgba(15, 23, 42, 0.16);
+    background: linear-gradient(180deg, #0a1d3a 0%, #15315e 100%);
+}
+
+#calendarView,
+#resourcesView,
+#advisorsView,
+#aboutView {
+    background: #f4f6fb;
+}
+
+#calendarView > .view-hero {
+    padding-bottom: 14px;
+}
+
+#calendarView .dates-view-toggle {
+    display: grid;
+    width: max-content;
+    max-width: calc(100% - 40px);
+    margin: 10px auto 2px;
+}
+
+@media (max-width: 767px) {
+    #calendarView > .view-hero {
+        padding: 14px 16px 10px;
+        margin-bottom: 0;
+    }
+
+    #calendarView > .view-hero h1 {
+        margin-bottom: 0;
+    }
+
+    #calendarView .dates-view-toggle {
+        margin: 8px auto 0;
+    }
+}
+
+/* ── Calendar page: list + month-grid split at desktop sizes ───── */
+.calendar-split {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 24px 40px;
+}
+
+.calendar-split-grid {
+    display: none;
+}
+
+@media (min-width: 1024px) {
+    .calendar-split {
+        display: grid;
+        grid-template-columns: minmax(0, 1.05fr) minmax(520px, 620px);
+        gap: 32px;
+        align-items: start;
+    }
+
+    /* Inside the split, list pane fills its column with single-column cards */
+    .calendar-split #bulletinCalendar {
+        max-width: 100% !important;
+        padding: 0 !important;
+    }
+
+    .calendar-split .dates-list-view {
+        padding: 4px 0 24px;
+    }
+
+    .calendar-split .dates-list-items {
+        grid-template-columns: minmax(0, 1fr) !important;
+    }
+
+    .calendar-split-grid {
+        display: block;
+        position: sticky;
+        top: calc(var(--app-header-offset, 70px) + 16px);
+    }
+
+    .calendar-split .monthly-calendar {
+        max-width: 100%;
+        width: 100%;
+    }
+
+    /* Calendar view toggle is unnecessary when both panes are visible */
+    #calendarView .dates-view-toggle {
+        display: none !important;
+    }
+}
+
+@media (min-width: 1280px) {
+    .calendar-split {
+        grid-template-columns: minmax(0, 1fr) 600px;
+    }
+}
+
+@media (max-width: 1023px) {
+    .calendar-split {
+        padding: 0 14px 32px;
+    }
+}
+
+/* Brief highlight when a list card is scrolled to from a calendar day click */
+.dates-list-card.list-card-pulse {
+    animation: list-card-pulse 1.4s ease;
+}
+
+@keyframes list-card-pulse {
+    0%, 100% { box-shadow: 0 2px 0 rgba(0,0,0,0.04), 0 8px 24px rgba(10,29,58,0.07); }
+    30% { box-shadow: 0 0 0 4px rgba(47, 111, 237, 0.35), 0 8px 24px rgba(10,29,58,0.12); }
+}
+
+
+.page-back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 14px;
+    border: 1px solid rgba(10, 29, 58, 0.16);
+    border-radius: 999px;
+    background: #fff;
+    color: #1f3d7a;
+    font: 800 13px var(--font-jakarta);
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.page-back-btn:hover {
+    background: #f1f5fb;
+    border-color: rgba(10, 29, 58, 0.28);
+}
+
+.page-back-btn:focus-visible {
+    outline: 3px solid rgba(126, 177, 255, 0.55);
+    outline-offset: 2px;
+}
+
+/* Mobile: hide the "Find Help by Topic" title, keep only the HELP · AYUDA kicker */
+@media (max-width: 767px) {
+    .story-row-wrap--bilingual .story-row-title {
+        display: none;
+    }
+
+    .story-row-wrap--bilingual .story-row-kicker {
+        font-size: 11px;
+        letter-spacing: 0.16em;
+    }
+
+    .story-row-wrap--bilingual .story-row-see-all {
+        font-size: 13px;
+    }
+
+    /* Wider bubbles so bilingual EN/ES labels can wrap without clipping */
+    .story-row-wrap--bilingual .story-bubble {
+        width: 74px;
+    }
+
+    .story-row-wrap--bilingual .story-bubble-label {
+        max-width: 74px;
+    }
+}
+
+.cat-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    overflow-x: auto;
+    padding: 12px 20px;
+    max-width: 1280px;
+    margin: 0 auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+}
+
+.cat-bar::-webkit-scrollbar { display: none; }
+
+.cat-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    border: 1.5px solid #e2e8f0;
+    background: #fff;
+    color: #475569;
+    border-radius: 999px;
+    padding: 7px 14px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+    flex-shrink: 0;
+}
+
+.cat-chip:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+}
+
+.cat-chip.active {
+    background: #0a1d3a;
+    color: #fff;
+    border-color: #0a1d3a;
+}
+
+.cat-chip--all.active .cat-chip-count {
+    background: #fff;
+    color: #0a1d3a;
+}
+
+/* ── Hide story bubbles on desktop ─────────────────────────────── */
+@media (min-width: 768px) {
+
+    .story-row-wrap--mobile {
+        display: block !important;
+        max-width: none !important;
+        margin: 0;
+        background: #ffffff;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 22px 24px 20px;
+    }
+
+    .story-row-wrap--mobile .story-row-label {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 0 0 12px;
+    }
+
+    .story-row-wrap--mobile .story-row {
+        max-width: 1280px;
+        margin: 0 auto;
+        gap: 32px;
+        padding: 0;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+    }
+
+    .story-row-wrap--mobile .story-bubble {
+        width: 112px;
+        gap: 12px;
+    }
+
+    .story-row-wrap--mobile .story-bubble-disc {
+        width: 112px;
+        height: 112px;
+    }
+
+    .story-row-wrap--mobile .story-bubble-disc svg {
+        width: 63px;
+        height: 63px;
+    }
+
+    .story-row-wrap--mobile .story-bubble-disc .cat-wordmark {
+        font-size: 28px;
+    }
+
+    .story-row-wrap--mobile .story-bubble-label {
+        max-width: 126px;
+        font-size: 20px;
+        font-weight: 900;
+        line-height: 1.08;
+        white-space: normal;
+    }
+
+    body[data-current-view="feed"] #feedView > .story-row-wrap.story-row-wrap--compact.story-row-wrap--mobile {
+        padding: 8px 20px 10px;
+        margin: 0;
+        border-radius: 0;
+    }
+
+    body[data-current-view="feed"] #feedView > .story-row-wrap.story-row-wrap--compact.story-row-wrap--mobile .story-bubble {
+        width: 88px;
+        gap: 6px;
+    }
+
+    body[data-current-view="feed"] #feedView > .story-row-wrap.story-row-wrap--compact.story-row-wrap--mobile .story-bubble-disc {
+        width: 72px;
+        height: 72px;
+    }
+
+    body[data-current-view="feed"] #feedView > .story-row-wrap.story-row-wrap--compact.story-row-wrap--mobile .story-bubble-disc svg {
+        width: 40px;
+        height: 40px;
+    }
+
+    body[data-current-view="feed"] #feedView > .story-row-wrap.story-row-wrap--compact.story-row-wrap--mobile .story-bubble-label {
+        max-width: 88px;
+        font-size: 14px;
+        -webkit-line-clamp: 1;
+        line-clamp: 1;
+    }
+
+    body[data-current-view="feed"] #feedView > .story-row-wrap.story-row-wrap--compact.story-row-wrap--mobile .story-row {
+        gap: 20px;
+    }
+
+    .story-row-wrap--bilingual .story-row-kicker {
+        font-size: 11px;
+    }
+
+    .story-row-wrap--bilingual .story-row-title {
+        font-size: 15px;
+    }
+
+    .story-row-wrap--bilingual .story-row-see-all {
+        font-size: 14px;
+    }
+
+    .bulletin-container {
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 28px 24px 40px;
+    }
+
+    .bulletin-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 22px;
+        max-width: 1120px;
+        margin: 0 auto;
+    }
+}
+
+/* ── Proto Cards (pc) ───────────────────────────────────────────── */
+.pc {
+    background: #fff;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 2px 0 rgba(0,0,0,0.04), 0 8px 24px rgba(10,29,58,0.07);
+    transition: transform 0.18s, box-shadow 0.18s;
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    outline: none;
+    content-visibility: auto;
+    contain-intrinsic-size: 0 450px;
+}
+
+.pc:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 36px rgba(10,29,58,0.13);
+}
+
+.pc:focus-visible {
+    outline: 3px solid #2e7af0;
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pc {
+        transition: box-shadow 0.18s;
+    }
+
+    .pc:hover {
+        transform: none;
+    }
+}
+
+.pc--expired { opacity: 0.62; }
+
+/* Top colored section */
+.pc__top {
+    position: relative;
+    height: 200px;
+    display: flex;
+    flex-direction: column;
+    padding: 14px 14px 0;
+    overflow: hidden;
+}
+
+.pc__top--image {
+    height: clamp(320px, 60vw, 520px);
+    padding: 12px;
+}
+
+@media (min-width: 768px) {
+    .pc__top--image {
+        height: 390px;
+    }
+}
+
+.pc__chip-bar {
+    padding: 14px 16px 4px;
+    background: #fff;
+}
+
+.pc__chip-bar .pc__chips {
+    margin: 0;
+    justify-content: flex-end;
+}
+
+.pc__chip-bar .pc__chip--expired {
+    margin-right: auto;
+}
+
+.pc__chips {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 10px;
+}
+
+.pc__chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    min-height: 26px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    line-height: 1.2;
+    border: 1px solid transparent;
+    box-shadow: none;
+}
+
+.pc__chip-emoji {
+    font-size: 13px;
+    line-height: 1;
+    letter-spacing: 0;
+    text-transform: none;
+    opacity: 0.9;
+}
+
+.pc__chip--category {
+    background: var(--chip-tint, #eef4ff);
+    color: var(--chip-accent, #1d4ed8);
+    border-color: color-mix(in srgb, var(--chip-accent, #1d4ed8) 14%, #ffffff);
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.pc__chip--expired {
+    background: #fff7ed;
+    color: #c2410c;
+    border-color: rgba(251, 146, 60, 0.2);
+    box-shadow: 0 1px 2px rgba(234, 88, 12, 0.05);
+}
+
+/* Centered icon */
+.pc__icon-wrap {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pc__icon-box {
+    width: 88px;
+    height: 88px;
+    border-radius: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+}
+
+.pc__image-stage {
+    position: absolute;
+    inset: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 16px;
+    background: #fff;
+    overflow: hidden;
+}
+
+.pc__poster-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    cursor: zoom-in;
+}
+
+/* Title overlay at bottom of colored area */
+.pc__title-overlay {
+    font-family: 'Outfit', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: rgba(15,23,42,0.6);
+    padding: 10px 2px 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* White body */
+.pc__body {
+    padding: 14px 16px 16px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.pc__title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    color: #0a1d3a;
+    line-height: 1.2;
+    margin: 0 0 6px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.pc__desc {
+    font-size: 14px;
+    color: #475569;
+    line-height: 1.45;
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    flex: 1;
+}
+
+.pc__desc strong,
+.pc__desc u,
+.pc__desc em {
+    color: inherit;
+}
+
+.pc__desc strong {
+    font-weight: 700;
+}
+
+.pc__desc u {
+    text-underline-offset: 0.12em;
+}
+
+.pc__date {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 12px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    color: #334155;
+    font-size: 12.5px;
+    font-weight: 500;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.date-label-prefix {
+    font-weight: 800;
+}
+
+.pc__date--urgent {
+    background: #fff7ed;
+    border-color: #fed7aa;
+    color: #9a3412;
+}
+
+.pc__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid #f1f5f9;
+}
+
+.pc__foot-left {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    min-width: 0;
+}
+
+.pc__foot-name {
+    font-size: 12px;
+    color: #64748b;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pc__open-btn {
+    font-size: 13px;
+    font-weight: 800;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+/* ── App main padding reset for new hero ───────────────────────── */
+.app-main { padding-top: 0 !important; }
+
+/* ── Mobile: hide big hero, show compact inline search ─────────── */
+@media (max-width: 639px) {
+    .mobile-inline-search { display: flex; }
+}
