@@ -5,6 +5,7 @@ const RECENT_ERRORS = new Map()
 const DEDUPE_MS = 60_000
 const MAX_MESSAGE = 500
 const MAX_STACK = 2000
+const DAILY_LOG_LIMIT = 20
 
 function getDayKey(date = new Date()) {
     const year = date.getFullYear()
@@ -27,6 +28,24 @@ function shouldLog(fingerprint) {
     return true
 }
 
+function getDailyCounterKey(source, date = new Date()) {
+    return `ebhcs_error_logs_${source}_${getDayKey(date)}`
+}
+
+function canUseDailyBudget(source) {
+    try {
+        const key = getDailyCounterKey(source)
+        const current = Number(localStorage.getItem(key) || '0')
+        if (current >= DAILY_LOG_LIMIT) {
+            return false
+        }
+        localStorage.setItem(key, String(current + 1))
+        return true
+    } catch {
+        return true
+    }
+}
+
 function writeClientError(event) {
     if (typeof db === 'undefined') {
         return
@@ -42,6 +61,9 @@ function writeClientError(event) {
 function logClientError(source, payload) {
     const message = String(payload.message || 'Unknown error').slice(0, MAX_MESSAGE)
     if (!shouldLog(getFingerprint(source, message))) {
+        return
+    }
+    if (!canUseDailyBudget(source)) {
         return
     }
 

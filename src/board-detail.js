@@ -2,6 +2,7 @@
 // Extracted verbatim from firebase-config.js; methods are merged onto
 // FirebaseBulletinBoard.prototype by applyMethods() in firebase-config.js.
 import { formatResourceHoursHtml, formatResourceHoursRowsHtml } from './resource-hours.js'
+import { normalizeWebUrl } from './url-safety.js'
 
 export class BoardDetailMethods {
     renderBulletinDetail(bulletin) {
@@ -40,7 +41,7 @@ export class BoardDetailMethods {
         const resourceUrl = this.isResourceBulletin(bulletin) ? this.getResourceUrl(bulletin) : '';
         const detailExternalLink = resourceUrl && resourceUrl !== '#'
             ? resourceUrl
-            : (bulletin.eventLink || '');
+            : normalizeWebUrl(bulletin.eventLink || '');
         const currentLang = document.body.getAttribute('data-lang') || 'EN';
         const displayImage = (currentLang === 'ES' && bulletin.imageEs) ? bulletin.imageEs : bulletin.image;
 

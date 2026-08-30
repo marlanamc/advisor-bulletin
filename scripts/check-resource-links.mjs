@@ -21,6 +21,12 @@ import { readFileSync, existsSync, writeFileSync } from 'node:fs';
 const PROJECT_ID = 'ebhcs-bulletin-board';
 const COLLECTION = 'bulletins';
 const TIMEOUT_MS = 10_000;
+const REQUEST_HEADERS = {
+  'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36 EBHCS-LinkCheck/1.0',
+  Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+  'Accept-Language': 'en-US,en;q=0.9',
+};
+const BOT_CHALLENGE_HOSTS = new Set(['validate.perfdrive.com']);
 
 // Resources whose description states a dollar figure that the org sets
 // independently and can change without breaking any link (so the link
@@ -33,6 +39,15 @@ const PRICE_CHECK_REMINDERS = [
   { id: 'uegVzotHOvMeJ2fmHVQt', title: 'Center for Educational Documentation', checkUrl: 'https://cedevaluations.com/' },
   { id: '0eVYeSFI5mYzoSfBwGnW', title: 'World Education Services (WES)', checkUrl: 'https://www.wes.org/' },
 ];
+
+const STATUS_ACTIONS = {
+  broken: 'Replace URL, archive the card, or confirm the resource should stay live.',
+  'warn-forbidden': 'Open in a browser; if the page works, no card edit is needed.',
+  'warn-rate-limited': 'Open in a browser; if the page works, no card edit is needed.',
+  'warn-server-error': 'Recheck in a browser; update the card only if the page is still down.',
+  'warn-unreachable': 'Open in a browser; if it works, treat this as automation blocking.',
+  'warn-bot-challenge': 'Open in a browser; if the official page works, no card edit is needed.',
+};
 
 function parseArgs(argv) {
   const args = { json: null, concurrency: 5, credentials: null };
@@ -68,7 +83,7 @@ async function fetchWithTimeout(url, method) {
       method,
       redirect: 'follow',
       signal: controller.signal,
-      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; EBHCS-LinkCheck/1.0)' },
+      headers: REQUEST_HEADERS,
     });
     return res;
   } finally {
@@ -79,6 +94,21 @@ async function fetchWithTimeout(url, method) {
 async function checkOne(url) {
   if (!url) return { url, status: 'skipped', reason: 'empty url' };
   try {
+    const parsed = new URL(url);
+    if (parsed.protocol === 'mailto:') {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(parsed.pathname)
+        ? { url, status: 'ok', protocol: 'mailto' }
+        : { url, status: 'broken', reason: 'invalid email address' };
+    }
+    if (parsed.protocol === 'tel:') {
+      return /^[+()\d\s.-]{3,}$/.test(parsed.pathname)
+        ? { url, status: 'ok', protocol: 'tel' }
+        : { url, status: 'broken', reason: 'invalid phone number' };
+    }
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+      return { url, status: 'broken', reason: `unsupported protocol: ${parsed.protocol}` };
+    }
+
     let res;
     try {
       res = await fetchWithTimeout(url, 'HEAD');
@@ -89,9 +119,13 @@ async function checkOne(url) {
       res = await fetchWithTimeout(url, 'GET');
     }
 
-    const finalHost = new URL(res.url || url).hostname;
-    const originalHost = new URL(url).hostname;
+    const finalHost = normalizeHost(new URL(res.url || url).hostname);
+    const originalHost = normalizeHost(parsed.hostname);
     const domainChanged = finalHost !== originalHost;
+
+    if (BOT_CHALLENGE_HOSTS.has(finalHost)) {
+      return { url, status: 'warn-bot-challenge', httpStatus: res.status, reason: `Automation was redirected to bot challenge host ${finalHost}.` };
+    }
 
     if (res.status >= 200 && res.status < 400) {
       return { url, status: 'ok', httpStatus: res.status, domainChanged, finalUrl: domainChanged ? res.url : undefined };
@@ -99,10 +133,30 @@ async function checkOne(url) {
     if (res.status === 403) {
       return { url, status: 'warn-forbidden', httpStatus: res.status, reason: 'Often a bot-block (e.g. mass.gov), not necessarily dead — verify manually.' };
     }
+    if (res.status === 429) {
+      return { url, status: 'warn-rate-limited', httpStatus: res.status, reason: 'Rate-limited by the site; verify manually if it persists.' };
+    }
+    if (res.status >= 500 && res.status < 600) {
+      return { url, status: 'warn-server-error', httpStatus: res.status, reason: 'Remote site returned a server error; verify manually if it persists.' };
+    }
     return { url, status: 'broken', httpStatus: res.status };
   } catch (error) {
-    return { url, status: 'broken', reason: error.name === 'AbortError' ? 'timeout' : (error.message || String(error)) };
+    const reason = error.name === 'AbortError' ? 'timeout' : (error.message || String(error));
+    return { url, status: 'warn-unreachable', reason: `${reason}; verify manually if it persists.` };
   }
+}
+
+function normalizeHost(hostname) {
+  return String(hostname || '').replace(/^www\./i, '').toLowerCase();
+}
+
+function decorateResult(result) {
+  const issueKey = `${result.id || 'unknown'}|${result.kind || 'unknown'}|${result.url || ''}`;
+  return {
+    ...result,
+    issueKey,
+    advisorAction: STATUS_ACTIONS[result.status] || '',
+  };
 }
 
 async function mapWithConcurrency(items, limit, fn) {
@@ -131,8 +185,10 @@ async function main() {
       url: d.url || '',
       actionLinks: Array.isArray(d.actionLinks) ? d.actionLinks : [],
       description: d.description || '',
+      isActive: d.isActive !== false,
+      isPublished: d.isPublished !== false,
     };
-  });
+  }).filter((resource) => resource.isActive && resource.isPublished);
 
   const priceReminders = PRICE_CHECK_REMINDERS.map((r) => {
     const match = resources.find((res) => res.id === r.id);
@@ -152,25 +208,26 @@ async function main() {
 
   const results = await mapWithConcurrency(checks, args.concurrency, async (c) => {
     const outcome = await checkOne(c.url);
-    return { ...c, ...outcome };
+    return decorateResult({ ...c, ...outcome });
   });
 
   const broken = results.filter((r) => r.status === 'broken');
-  const warned = results.filter((r) => r.status === 'warn-forbidden');
+  const warned = results.filter((r) => r.status && r.status.startsWith('warn-'));
   const moved = results.filter((r) => r.status === 'ok' && r.domainChanged);
   const ok = results.filter((r) => r.status === 'ok' && !r.domainChanged);
 
   const report = {
     checkedAt: new Date().toISOString(),
-    totals: { checked: results.length, ok: ok.length, movedDomain: moved.length, forbidden: warned.length, broken: broken.length },
+    totals: { checked: results.length, ok: ok.length, movedDomain: moved.length, needsManualCheck: warned.length, broken: broken.length },
     broken,
     movedDomain: moved,
-    forbidden: warned,
+    needsManualCheck: warned,
     priceReminders,
   };
 
-  console.log(`\nDone: ${ok.length} ok, ${moved.length} domain-moved (still resolving), ${warned.length} forbidden/possible-bot-block, ${broken.length} broken.\n`);
+  console.log(`\nDone: ${ok.length} ok, ${moved.length} domain-moved (still resolving), ${warned.length} needs manual check, ${broken.length} broken.\n`);
   for (const b of broken) console.log(`BROKEN: [${b.resource}] ${b.kind} → ${b.url} (${b.reason || b.httpStatus})`);
+  for (const w of warned) console.log(`CHECK: [${w.resource}] ${w.kind} → ${w.url} (${w.reason || w.httpStatus})`);
   for (const m of moved) console.log(`MOVED: [${m.resource}] ${m.kind} → ${m.url} now resolves to ${m.finalUrl}`);
   if (priceReminders.length) {
     console.log('\nPrice recheck reminders:');

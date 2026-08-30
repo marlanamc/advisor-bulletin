@@ -5,6 +5,7 @@ import {
     scrollWindowTo,
     withSchoolCalendarAnchors,
 } from './board-shared.js'
+import { normalizeWebUrl } from './url-safety.js'
 
 export class BoardCalendarMethods {
     renderCalendar(bulletins) {
@@ -186,9 +187,9 @@ export class BoardCalendarMethods {
                             </div>
                         ` : ''}
 
-                        ${bulletin.eventLink ? `
+                        ${normalizeWebUrl(bulletin.eventLink) ? `
                             <div class="bulletin-list-meta-item">
-                                <strong>Link:</strong> <a href="${this.escapeAttribute(bulletin.eventLink)}" target="_blank" rel="noopener">${this.escapeHtml(this.formatLinkLabel(bulletin.eventLink, bulletin.category))}</a>
+                                <strong>Link:</strong> <a href="${this.escapeAttribute(normalizeWebUrl(bulletin.eventLink))}" target="_blank" rel="noopener">${this.escapeHtml(this.formatLinkLabel(bulletin.eventLink, bulletin.category))}</a>
                             </div>
                         ` : ''}
 

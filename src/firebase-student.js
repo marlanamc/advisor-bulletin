@@ -3,6 +3,7 @@
 // Saves ~30KB JS + a network roundtrip on cold student loads.
 import { initializeApp } from 'firebase/app'
 import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore'
+import { initFirebaseAppCheck } from './firebase-app-check.js'
 
 const firebaseConfig = {
   apiKey: "AIzaSyBGaONCeB5MQCYdp3Gv8eUKPvLsBGFnXgY",
@@ -14,6 +15,7 @@ const firebaseConfig = {
 }
 
 const app = initializeApp(firebaseConfig)
+initFirebaseAppCheck(app)
 export const db = getFirestore(app)
 
 // Route to the local emulator when explicitly opted in — tests/CI only,

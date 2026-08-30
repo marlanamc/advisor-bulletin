@@ -11,6 +11,9 @@ const firebaseConfig = {
   appId: "1:556649154585:web:3a3f49d2056aa507088288"
 };
 
+// Optional hardening: set VITE_FIREBASE_APPCHECK_SITE_KEY in the build
+// environment after registering this web app in Firebase App Check.
+
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 

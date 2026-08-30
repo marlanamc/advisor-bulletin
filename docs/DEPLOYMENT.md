@@ -49,6 +49,21 @@ The rules in `firestore.rules` are the real security boundary of the site (the F
 - Rules changes ship automatically with every push to `main` (the deploy job runs `firebase deploy --only firestore:rules,storage:uploads`). For an emergency rules-only deploy without a code change, run `firebase deploy --only firestore:rules,storage:uploads` manually (see below).
 - **Student advisor directory:** the doc `config/studentDirectory` (publicly readable, admin-writable) is republished automatically whenever an admin adds/edits/removes an advisor in the portal. The student site falls back to the static list in `src/advisor-directory.js` if the doc is missing.
 
+## Firebase App Check
+
+The web app is wired for Firebase App Check, but it only initializes when `VITE_FIREBASE_APPCHECK_SITE_KEY` is present at build time. This lets you deploy the code first, watch App Check metrics, and only then enforce App Check for Firestore and Storage in Firebase Console.
+
+Setup:
+
+1. Firebase Console → **Security → App Check → Apps**.
+2. Register the web app with a reCAPTCHA v3 site key.
+3. Add the public site key to local/CI build environment as `VITE_FIREBASE_APPCHECK_SITE_KEY`.
+4. Deploy normally. The client will begin sending App Check tokens, but Firestore/Storage will keep accepting requests until enforcement is enabled.
+5. Watch App Check request metrics for student feed load, admin login, PDF opening, and uploads.
+6. After normal traffic is healthy, enable App Check enforcement for **Cloud Firestore** and **Cloud Storage**.
+
+For local debugging after enforcement, create an App Check debug token in Firebase Console and set `VITE_FIREBASE_APPCHECK_DEBUG_TOKEN` locally. Never commit that token and never add `localhost` as an allowed reCAPTCHA domain.
+
 ## Service account (for maintenance scripts)
 
 Some scripts in `scripts/` write to Firestore and need admin credentials:
@@ -77,6 +92,7 @@ The project uses four Firebase products: **Firestore** (post data), **Authentica
 
 - On the free **Spark** plan the relevant limits are roughly: 50K Firestore reads/day, 20K writes/day, 1 GB Firestore storage, 5 GB file storage, 10 GB hosting transfer/month. A single school's bulletin board sits comfortably inside these — now that CI runs against the emulator instead of production (see above), real usage should mostly come from actual site visitors and admin activity, not test runs.
 - Check usage: Firebase Console → the **Usage and billing** page (gear icon). If students ever see "quota exceeded" errors late in the day, that's the daily read limit — the snapshot-first loading was designed specifically to keep reads low, so investigate before paying for anything.
+- If billing is ever enabled, set budget alerts immediately. A low monthly alert is enough for this site; the point is early warning, not automatic scaling.
 - If the project is ever moved to the pay-as-you-go **Blaze** plan, set a budget alert in the same screen.
 
 ## Daily snapshot refresh
@@ -84,6 +100,42 @@ The project uses four Firebase products: **Firestore** (post data), **Authentica
 A separate workflow (`.github/workflows/refresh-snapshot.yml`) rebuilds and redeploys hosting **once per day at 09:00 UTC** (and on manual trigger via **Actions → Refresh Student Feed Snapshot → Run workflow**). This keeps `student-feed-snapshot.json` from going stale between code pushes — without it, students can briefly see bulletins that were deleted or expired since the last deploy.
 
 The refresh workflow runs `npm run build` (which regenerates the snapshot) and deploys hosting only. It does **not** redeploy security rules.
+
+## Incident runbook
+
+### Quota exceeded
+
+1. Firebase Console → **Usage and billing**: identify Firestore reads, writes, Storage, or Hosting transfer as the limiting product.
+2. Check GitHub Actions for recent production health failures and client-error digest issues.
+3. If Firestore writes spiked, inspect the `errors` collection first; the client caps logs per browser per day, but a broad outage can still create real volume.
+4. If reads spiked, confirm CI is still using the emulator and that no maintenance script is reading production in a loop.
+5. If students need immediate access while investigating, rely on the cached `student-feed-snapshot.json` behavior and avoid unnecessary redeploys.
+
+### Bad or stale student resource
+
+1. In the admin portal, unpublish or edit the resource immediately.
+2. Run the **Refresh Student Feed Snapshot** workflow manually so the first-paint snapshot stops showing stale content.
+3. If the issue came from a bad link or stale hours/eligibility, leave the weekly tracking issue open until the resource is verified and `lastVerified` is updated.
+
+### Broken deploy
+
+1. Firebase Console → **Hosting → Release history → Rollback** to the last healthy release.
+2. Check the failed GitHub Action report, especially Playwright output, `npm audit --audit-level=high`, and build logs.
+3. Fix on a branch and let the normal `main` deploy path publish it.
+
+### Compromised advisor account
+
+1. Remove the advisor in the portal's **Advisors** tab. This immediately revokes Firestore/Storage access through security rules.
+2. Ask the Google Workspace admin to suspend or reset the account.
+3. Review recent Firestore changes by that username and unpublish suspicious bulletins/resources.
+4. If the account was privileged, remove it from `firestore.rules`, `storage.rules`, and `src/admin-roles.js`, then deploy rules immediately.
+
+### Service account secret rotation
+
+1. Firebase Console → Project settings → **Service accounts**: create a new private key.
+2. GitHub repository → **Settings → Secrets and variables → Actions**: replace `FIREBASE_SERVICE_ACCOUNT`.
+3. Run the deploy workflow manually or push a harmless docs change to confirm the new secret works.
+4. Delete the old service account key in Firebase/Google Cloud.
 
 ## Things a future maintainer should know
 

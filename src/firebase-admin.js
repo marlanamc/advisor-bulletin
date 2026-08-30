@@ -37,6 +37,7 @@ import {
     WEEKDAY_NAMES,
 } from './event-sessions.js'
 import { initDescriptionFormatToolbars, refreshRichEditors, syncRichEditorsToForm, getRichTextFieldValue } from './description-format.js'
+import { normalizeWebUrl } from './url-safety.js'
 import { collection, doc, query, where, orderBy, limit, onSnapshot, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, deleteField, serverTimestamp, writeBatch } from 'firebase/firestore'
 
 // Caps Firestore reads on the admin dashboard listener. Reorder validation falls back
@@ -2212,13 +2213,8 @@ class FirebaseAdminPanel {
             }
 
             if (url) {
-                if (!/^https?:\/\//i.test(url)) {
-                    url = `https://${url}`;
-                }
-
-                try {
-                    new URL(url);
-                } catch (error) {
+                url = normalizeWebUrl(url);
+                if (!url) {
                     throw new Error('Please enter a valid resource URL.');
                 }
             }
@@ -2341,8 +2337,11 @@ class FirebaseAdminPanel {
             pdfUrl: null
         };
 
-        if (bulletin.eventLink && !/^https?:\/\//i.test(bulletin.eventLink)) {
-            bulletin.eventLink = `https://${bulletin.eventLink}`;
+        if (bulletin.eventLink) {
+            bulletin.eventLink = normalizeWebUrl(bulletin.eventLink);
+            if (!bulletin.eventLink) {
+                throw new Error('Please enter a valid information link.');
+            }
         }
 
         if (!bulletin.category) {

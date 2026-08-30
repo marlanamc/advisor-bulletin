@@ -1,16 +1,9 @@
+import { normalizeActionUrl, normalizePdfUrl } from './url-safety.js'
+
 export const MAX_RESOURCE_ACTION_LINKS = 5;
 
 export function normalizeActionLinkUrl(url) {
-    const trimmed = String(url || '').trim();
-    if (!trimmed) return '';
-    const withProtocol = /^(https?|mailto|tel):/i.test(trimmed) ? trimmed : `https://${trimmed}`;
-    try {
-        // eslint-disable-next-line no-new
-        new URL(withProtocol);
-        return withProtocol;
-    } catch {
-        return '';
-    }
+    return normalizeActionUrl(url);
 }
 
 export function getActionLinkType(link) {
@@ -31,7 +24,7 @@ export function normalizeResourceActionLinks(raw) {
         const labelEn = String(item.labelEn || item.label || '').trim();
         const labelEs = String(item.labelEs || labelEn).trim();
         const url = normalizeActionLinkUrl(item.url);
-        const pdfUrl = String(item.pdfUrl || '').trim();
+        const pdfUrl = normalizePdfUrl(item.pdfUrl);
         if (!labelEn || (!url && !pdfUrl)) return;
 
         const key = (pdfUrl || url).toLowerCase();

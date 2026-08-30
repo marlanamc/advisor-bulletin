@@ -21,6 +21,8 @@
     "export:industry-pdf": "node scripts/export-industry-report-pdf.mjs",
     "import:resources": "node scripts/import-resources.mjs",
     "check:chips": "node scripts/check-chip-translations.mjs",
+    "check:resource-content": "node scripts/check-resource-content-risk.mjs",
+    "check:resource-links": "node scripts/check-resource-links.mjs",
     "clear:analytics": "node scripts/clear-analytics-events.mjs --dry-run",
     "clear:analytics:confirm": "node scripts/clear-analytics-events.mjs --confirm",
     "prune:errors": "node scripts/prune-client-errors.mjs --dry-run",
@@ -28,7 +30,7 @@
   },
   "dependencies": {
     "firebase": "^12.13.0",
-    "pdfjs-dist": "^5.7.284"
+    "pdfjs-dist": "^6.3.289"
   },
   "devDependencies": {
     "@playwright/test": "^1.40.0",

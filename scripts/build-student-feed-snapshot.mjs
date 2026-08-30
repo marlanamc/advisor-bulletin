@@ -14,7 +14,7 @@ const MAX_POST_ITEMS = 120;
 // Pre-hydration snapshot cap for resources. Keep this comfortably above the real
 // resource count so students don't see a partial list before Firestore hydrates;
 // the live query corrects it on load. Bump if the resource directory keeps growing.
-const MAX_RESOURCE_ITEMS = 80;
+const MAX_RESOURCE_ITEMS = 120;
 
 function parseArgs(argv) {
   const args = { credentials: null, allowClient: true };

@@ -3,8 +3,9 @@ name: Check Resource Links
 # Weekly liveness check for every resource link on the student board (main
 # url + all actionLinks). Reads Firestore directly, not the (potentially
 # stale) student-feed-snapshot.json — see "Never audit against the
-# snapshot" in docs/DEPLOYMENT.md. This only flags what's dead/broken; it
-# does not judge whether a *better* page exists (see scripts/README.md).
+# snapshot" in docs/DEPLOYMENT.md. This flags broken links, stale redirect
+# targets, and links that need a manual browser check; it does not judge
+# whether a *better* page exists (see scripts/README.md).
 #
 # Keeps a single tracking issue (label: link-check) up to date instead of
 # opening a new issue every week: updates the body when problems are
@@ -17,6 +18,7 @@ on:
   workflow_dispatch:
 
 permissions:
+  contents: read
   issues: write
 
 jobs:
@@ -43,13 +45,47 @@ jobs:
           GOOGLE_APPLICATION_CREDENTIALS: /tmp/service-account.json
         run: node scripts/check-resource-links.mjs --json=/tmp/link-check-report.json
 
+      - name: Check resource content review risk
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: /tmp/service-account.json
+        run: node scripts/check-resource-content-risk.mjs --json=/tmp/resource-content-risk-report.json
+
       - name: Update or close the tracking issue
         uses: actions/github-script@v7
         with:
           script: |
             const fs = require('fs');
             const report = JSON.parse(fs.readFileSync('/tmp/link-check-report.json', 'utf8'));
-            const { broken, movedDomain, forbidden, totals } = report;
+            const { broken, movedDomain, needsManualCheck, forbidden, totals } = report;
+            const manualCheck = needsManualCheck || forbidden || [];
+            const stateMarker = '<!-- link-check-state:';
+
+            function readPriorState(body = '') {
+              const match = body.match(/<!-- link-check-state:([A-Za-z0-9+/=]+) -->/);
+              if (!match) return {};
+              try {
+                return JSON.parse(Buffer.from(match[1], 'base64').toString('utf8'));
+              } catch {
+                return {};
+              }
+            }
+
+            function writeState(state) {
+              return `${stateMarker}${Buffer.from(JSON.stringify(state)).toString('base64')} -->`;
+            }
+
+            function withHistory(items, type, priorState) {
+              return items.map((item) => {
+                const key = item.issueKey || `${item.id}|${item.kind}|${item.url}`;
+                const prior = priorState[key];
+                return {
+                  ...item,
+                  issueKey: key,
+                  type,
+                  seenWeeks: prior ? prior.seenWeeks + 1 : 1,
+                };
+              });
+            }
 
             const label = 'link-check';
             try {
@@ -65,11 +101,12 @@ jobs:
               labels: label,
             });
             const existing = issues.data[0];
+            const priorState = readPriorState(existing?.body || '');
 
-            const hasProblems = broken.length > 0;
+            const hasProblems = broken.length > 0 || movedDomain.length > 0 || manualCheck.length > 0;
 
             if (!hasProblems) {
-              console.log(`Clean run: ${totals.ok} ok, ${totals.movedDomain} moved, ${totals.forbidden} forbidden, 0 broken.`);
+              console.log(`Clean run: ${totals.ok} ok, 0 moved, 0 needs manual check, 0 broken.`);
               if (existing) {
                 await github.rest.issues.createComment({
                   owner: context.repo.owner,
@@ -87,29 +124,54 @@ jobs:
               return;
             }
 
+            const brokenWithHistory = withHistory(broken, 'broken', priorState);
+            const movedWithHistory = withHistory(movedDomain, 'moved', priorState);
+            const manualWithHistory = withHistory(manualCheck, 'manual-check', priorState);
+            const nextState = {};
+            for (const item of [...brokenWithHistory, ...movedWithHistory, ...manualWithHistory]) {
+              nextState[item.issueKey] = {
+                seenWeeks: item.seenWeeks,
+                type: item.type,
+                url: item.url,
+                resource: item.resource,
+                lastSeen: report.checkedAt,
+              };
+            }
+
+            function historyText(item) {
+              return item.seenWeeks === 1 ? 'first week seen' : `seen ${item.seenWeeks} weeks in a row`;
+            }
+
             const lines = [];
             lines.push(`**Weekly resource-link check — ${report.checkedAt}**`);
             lines.push('');
-            lines.push(`Checked ${totals.checked} links across all resources. ${broken.length} broken, ${movedDomain.length} domain-moved (still resolving, may want the main url updated), ${forbidden.length} forbidden/possible-bot-block.`);
+            lines.push(`Checked ${totals.checked} links across all resources. ${brokenWithHistory.length} broken, ${movedWithHistory.length} domain-moved (still resolving, may want the main url updated), ${manualWithHistory.length} needs manual check.`);
             lines.push('');
-            lines.push('### Broken — needs a look');
-            for (const b of broken) {
-              lines.push(`- **${b.resource}** (${b.kind}): ${b.url} — ${b.reason || `HTTP ${b.httpStatus}`}`);
+            if (brokenWithHistory.length) {
+              lines.push('### Broken — needs a fix');
+              for (const b of brokenWithHistory) {
+                lines.push(`- **${b.resource}** (${b.kind}): ${b.url} — ${b.reason || `HTTP ${b.httpStatus}`} (${historyText(b)})`);
+                lines.push(`  Action: ${b.advisorAction || 'Replace URL, archive the card, or confirm it should stay live.'}`);
+              }
             }
-            if (movedDomain.length) {
+            if (movedWithHistory.length) {
               lines.push('');
               lines.push('### Domain moved (still resolving via redirect — safe for now, worth updating the url field)');
-              for (const m of movedDomain) {
-                lines.push(`- **${m.resource}** (${m.kind}): ${m.url} → ${m.finalUrl}`);
+              for (const m of movedWithHistory) {
+                lines.push(`- **${m.resource}** (${m.kind}): ${m.url} → ${m.finalUrl} (${historyText(m)})`);
+                lines.push('  Action: Update the resource URL to the final destination when it is clearly the same official page.');
               }
             }
-            if (forbidden.length) {
+            if (manualWithHistory.length) {
               lines.push('');
-              lines.push('### Forbidden (403) — often a bot-block, not necessarily dead; verify manually in a browser');
-              for (const f of forbidden) {
-                lines.push(`- **${f.resource}** (${f.kind}): ${f.url}`);
+              lines.push('### Needs manual check — often bot-blocking, rate limiting, timeouts, or temporary server errors');
+              for (const f of manualWithHistory) {
+                lines.push(`- **${f.resource}** (${f.kind}): ${f.url} — ${f.reason || `HTTP ${f.httpStatus}`} (${historyText(f)})`);
+                lines.push(`  Action: ${f.advisorAction || 'Open in a browser; update only if it is actually unavailable.'}`);
               }
             }
+            lines.push('');
+            lines.push(writeState(nextState));
             const body = lines.join('\n');
 
             if (existing) {
@@ -123,13 +185,93 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: existing.number,
-                body: `Updated — ${broken.length} broken as of this run.`,
+                body: `Updated — ${brokenWithHistory.length} broken, ${movedWithHistory.length} moved, ${manualWithHistory.length} needs manual check as of this run.`,
               });
             } else {
               await github.rest.issues.create({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                title: 'Weekly resource link check found broken links',
+                title: 'Weekly resource link check found links to review',
+                body,
+                labels: [label],
+              });
+            }
+
+      - name: Update resource content review issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = JSON.parse(fs.readFileSync('/tmp/resource-content-risk-report.json', 'utf8'));
+            const label = 'resource-review';
+
+            try {
+              await github.rest.issues.getLabel({ owner: context.repo.owner, repo: context.repo.repo, name: label });
+            } catch {
+              await github.rest.issues.createLabel({ owner: context.repo.owner, repo: context.repo.repo, name: label, color: '5319e7', description: 'Weekly resource content freshness review' });
+            }
+
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: label,
+            });
+            const existing = issues.data[0];
+
+            if (!report.reviews.length) {
+              if (existing) {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: existing.number,
+                  body: `All clear as of ${report.checkedAt} — no resource content review risks found. Closing.`,
+                });
+                await github.rest.issues.update({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: existing.number,
+                  state: 'closed',
+                });
+              }
+              return;
+            }
+
+            const lines = [];
+            lines.push(`**Weekly resource content review — ${report.checkedAt}**`);
+            lines.push('');
+            lines.push(`Checked ${report.totals.resources} live resources. Review queue: ${report.totals.high} high, ${report.totals.medium} medium, ${report.totals.low} low.`);
+            lines.push('');
+            for (const priority of ['high', 'medium', 'low']) {
+              const items = report.reviews.filter((item) => item.priority === priority);
+              if (!items.length) continue;
+              lines.push(`### ${priority[0].toUpperCase()}${priority.slice(1)} priority`);
+              for (const item of items.slice(0, priority === 'low' ? 15 : 30)) {
+                const reasons = item.reasons.map((reason) => reason.reason).join(' ');
+                const actions = [...new Set(item.reasons.map((reason) => reason.advisorAction))].join(' ');
+                lines.push(`- **${item.resource}** (${item.category}, verified: ${item.lastVerified || 'not set'}): ${reasons}`);
+                lines.push(`  Action: ${actions}`);
+                if (item.url) lines.push(`  URL: ${item.url}`);
+              }
+              if (items.length > (priority === 'low' ? 15 : 30)) {
+                lines.push(`- ...and ${items.length - (priority === 'low' ? 15 : 30)} more ${priority}-priority item(s).`);
+              }
+              lines.push('');
+            }
+
+            const body = lines.join('\n');
+            if (existing) {
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existing.number,
+                body,
+              });
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: 'Weekly resource content review queue',
                 body,
                 labels: [label],
               });

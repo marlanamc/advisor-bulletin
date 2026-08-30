@@ -31,6 +31,7 @@ import {
     truncateRichText,
 } from './rich-text.js'
 import { formatResourceHoursHtml } from './resource-hours.js'
+import { normalizePdfUrl, normalizeWebUrl } from './url-safety.js'
 import {
     normalizeResourceActionLinks,
     RESOURCE_ACTION_LINK_ICON_SVG,
@@ -1710,12 +1711,7 @@ class FirebaseBulletinBoard {
     }
 
     getResourceUrl(resource) {
-        const rawUrl = (resource.url || resource.eventLink || '').trim();
-        if (!rawUrl) {
-            return '#';
-        }
-
-        return /^https?:\/\//i.test(rawUrl) ? rawUrl : `https://${rawUrl}`;
+        return normalizeWebUrl(resource?.url || resource?.eventLink || '') || '#';
     }
 
     getResourceIconSvg(resource) {
@@ -2355,16 +2351,17 @@ class FirebaseBulletinBoard {
     }
 
     async openResourcePdf(pdfUrl) {
-        if (!pdfUrl) {
+        const safePdfUrl = normalizePdfUrl(pdfUrl);
+        if (!safePdfUrl) {
             throw new Error('PDF not found.');
         }
 
-        if (pdfUrl.startsWith('data:')) {
+        if (safePdfUrl.startsWith('data:')) {
             if (!window.fetch || !window.URL || !window.URL.createObjectURL) {
                 throw new Error('Your browser does not support PDF viewing. Please try a modern browser.');
             }
 
-            const response = await fetch(pdfUrl);
+            const response = await fetch(safePdfUrl);
             const blob = await response.blob();
             const blobUrl = URL.createObjectURL(blob);
             const newWindow = window.open(blobUrl, '_blank');
@@ -2377,7 +2374,7 @@ class FirebaseBulletinBoard {
             return;
         }
 
-        const newWindow = window.open(pdfUrl, '_blank');
+        const newWindow = window.open(safePdfUrl, '_blank');
         if (!newWindow) {
             throw new Error('Popup blocked. Please allow popups for this site.');
         }

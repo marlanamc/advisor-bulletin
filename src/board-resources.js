@@ -18,6 +18,7 @@ import { formatResourceHoursHtml, formatResourceHoursRowsHtml, isOpenNow } from 
 import { normalizeResourceActionLinks, RESOURCE_ACTION_LINK_ICON_SVG, RESOURCE_ACTION_LINK_PDF_ICON_SVG } from './resource-action-links.js'
 import { DOCUMENT_TILE_ICON_SVG, isDocumentResource, OPEN_FORM_ICON_SVG } from './resource-kinds.js'
 import { initResourceLogoTiles } from './resource-logo-tile.js'
+import { normalizePdfUrl } from './url-safety.js'
 
 export class BoardResourcesMethods {
     renderResourcesSections(resources) {
@@ -1565,7 +1566,7 @@ export class BoardResourcesMethods {
         const config = categoryConfig || this.getResourceCategoryConfig(resource);
         const accent = config?.color || '#0a1d3a';
 
-        const pdfUrl = (resource.pdfUrl || '').trim();
+        const pdfUrl = normalizePdfUrl(resource.pdfUrl);
         const url = this.getResourceUrl(resource);
         const hasUrl = url && url !== '#';
         const formUrl = pdfUrl || (hasUrl ? url : '');

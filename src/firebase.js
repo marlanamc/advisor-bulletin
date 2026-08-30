@@ -2,6 +2,7 @@ import { getApp, getApps, initializeApp } from 'firebase/app'
 import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore'
 import { getAuth, connectAuthEmulator } from 'firebase/auth'
 import { getStorage, connectStorageEmulator } from 'firebase/storage'
+import { initFirebaseAppCheck } from './firebase-app-check.js'
 
 const firebaseConfig = {
   apiKey: "AIzaSyBGaONCeB5MQCYdp3Gv8eUKPvLsBGFnXgY",
@@ -13,6 +14,7 @@ const firebaseConfig = {
 }
 
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig)
+initFirebaseAppCheck(app)
 export const db = getFirestore(app)
 export const auth = getAuth(app)
 export const storage = getStorage(app)
