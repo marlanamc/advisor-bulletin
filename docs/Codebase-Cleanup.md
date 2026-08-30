@@ -122,4 +122,51 @@ or `expect.poll` the assertion. Not urgent (CI retries twice) but they cause noi
 
 ---
 
+## 7. Deduplicate the Firebase config object
+
+**Status: TODO** · **Size: small–medium**
+
+The same 7-key `firebaseConfig` literal (apiKey, authDomain, projectId, storageBucket,
+messagingSenderId, appId) is copy-pasted in:
+- `src/firebase.js` (admin app — Firestore + Auth + Storage)
+- `src/firebase-auth.js` (auth-only app — used by `admin.js`, `google-auth.js`)
+- `src/firebase-student.js` (student app — Firestore only, keeps Storage/Auth SDK out of the student bundle)
+- `config/firebase-config-template.js` (the "template" — but has real values except apiKey)
+- **~8 scripts** (`build-student-feed-snapshot`, `import-resources`, `update-roles`,
+  `cleanup-*-bulletins`, `patch-calendar-events`, `check-advisor-auth-sync`,
+  `delete-imported-resources`) each embed it inline
+
+Three separate client `initializeApp` calls are **intentional** (bundle-size isolation —
+don't collapse the files). The **config object** is not — it should be a single export.
+
+**Approach:**
+1. `src/firebase-shared-config.js` exports the plain config object. The 3 client files
+   import it instead of inlining. (~10 min, zero behavior change — verify build + suite.)
+2. Scripts: `scripts/lib/firebase-config.mjs` (or reuse the src one if the import path
+   works under plain Node). Point the ~8 scripts at it.
+3. `config/firebase-config-template.js` — either delete (it's stale — real values, fake
+   apiKey, and nothing uses it) or regenerate it from the shared module with the apiKey
+   blanked. Check `docs/FIREBASE_SETUP.md` for references first.
+
+Note: the apiKey is not a secret for a Firebase web app (it's shipped to every browser),
+so this is a DRY / maintainability fix, not a security one.
+
+## 8. Deduplicate the CSP string
+
+**Status: TODO** · **Size: small** · **Pairs with item 2**
+
+The full ~600-character Content-Security-Policy is triplicated:
+- `index.html:9` — `<meta http-equiv="Content-Security-Policy">`
+- `admin.html:7` — same meta
+- `firebase.json` — **4 header blocks** (lines ~65, 78, 91, 104) with the identical value
+
+Six copies to keep in sync. `vite.config.mjs:66` already does one regex patch on it for
+local dev (`+ http://localhost:8400` to script-src), which hints the maintenance pain.
+
+**Approach:** single source of truth — e.g. `config/csp.js` exports the policy string;
+a small Vite plugin injects it into the HTML `<meta>` at build time, and `firebase.json`
+is generated (or a build step asserts the 4 blocks match the source and fails otherwise,
+like the existing `check-*-sync.mjs` scripts do for other config). Do this **with** item 2
+(dropping `unsafe-inline`) so the policy only has to be edited once.
+
 ## Add new items below as you find them.
