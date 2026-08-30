@@ -6892,39 +6892,62 @@ body[data-lang="ES"] .story-row-wrap--bilingual .story-bubble-label.es-text {
 }
 
 @media (min-width: 768px) {
+    /* Sidebar sits beside the hero so later topics are on-screen, not below it. */
+    #resourcesView.active {
+        display: grid;
+        grid-template-columns: 280px minmax(0, 1fr);
+        grid-template-areas:
+            "sidebar hero"
+            "sidebar main";
+        column-gap: 32px;
+        row-gap: 20px;
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 16px 32px 32px;
+        align-items: start;
+        min-height: calc(100vh - var(--app-header-offset, 70px));
+    }
+
+    #resourcesView.active > .view-hero {
+        grid-area: hero;
+        max-width: none;
+        width: 100%;
+        margin: 0;
+    }
+
     .resources-mobile-layout {
         display: none;
     }
 
     .resources-desktop-layout {
-        display: grid;
-        grid-template-columns: 280px 1fr;
-        gap: 32px;
-        max-width: 1280px;
-        margin: 0 auto;
-        padding: 24px 32px;
-        align-items: start;
-        min-height: calc(100vh - 120px);
+        display: contents;
     }
 
-    /* Left Sidebar */
+    /* Left Sidebar — cap height so later topics stay reachable while stuck */
     .resources-desktop-sidebar {
+        grid-area: sidebar;
+        align-self: start;
         position: sticky;
-        top: calc(var(--app-header-offset, 70px) + 24px);
+        top: calc(var(--app-header-offset, 70px) + 12px);
+        max-height: calc(100vh - var(--app-header-offset, 70px) - 24px);
         display: flex;
         flex-direction: column;
-        gap: 28px;
+        gap: 12px;
+        min-height: 0;
         background: #fff;
         border-radius: 20px;
         border: 1px solid #e2e8f0;
-        padding: 24px;
+        padding: 16px 14px 12px;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+        overflow: hidden;
     }
 
     .resources-sidebar-group {
         display: flex;
         flex-direction: column;
-        gap: 12px;
+        flex: 1 1 auto;
+        gap: 8px;
+        min-height: 0;
     }
 
     .resources-sidebar-title {
@@ -6932,14 +6955,32 @@ body[data-lang="ES"] .story-row-wrap--bilingual .story-bubble-label.es-text {
         font-weight: 800;
         letter-spacing: 0.08em;
         color: #64748b;
-        margin: 0 0 4px 0;
+        margin: 0;
         text-transform: uppercase;
+        flex-shrink: 0;
     }
 
     .resources-desktop-nav {
         display: flex;
         flex-direction: column;
-        gap: 6px;
+        flex: 1 1 auto;
+        gap: 2px;
+        min-height: 0;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(15, 23, 42, 0.22) transparent;
+        padding-right: 4px;
+        margin-right: -4px;
+    }
+
+    .resources-desktop-nav::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .resources-desktop-nav::-webkit-scrollbar-thumb {
+        background: rgba(15, 23, 42, 0.18);
+        border-radius: 999px;
     }
 
     /* Sidebar Navigation Topic Buttons */
@@ -7066,8 +7107,10 @@ body[data-lang="ES"] .story-row-wrap--bilingual .story-bubble-label.es-text {
 
     /* Main Content Area */
     .resources-desktop-main {
+        grid-area: main;
         display: flex;
         flex-direction: column;
+        min-width: 0;
     }
 
     /* Premium Advisor helper box */
@@ -7168,9 +7211,9 @@ body[data-lang="ES"] .story-row-wrap--bilingual .story-bubble-label.es-text {
 .desktop-cat-btn {
     display: flex;
     align-items: center;
-    gap: 11px;
+    gap: 10px;
     width: 100%;
-    padding: 8px 12px;
+    padding: 6px 10px;
     background: transparent;
     border: 0;
     border-radius: 12px;
@@ -7198,9 +7241,9 @@ body[data-lang="ES"] .story-row-wrap--bilingual .story-bubble-label.es-text {
 .desktop-cat-icon {
     display: grid;
     place-items: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 9px;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
     overflow: hidden;
     flex-shrink: 0;
     color: var(--topic-color);
@@ -7210,8 +7253,8 @@ body[data-lang="ES"] .story-row-wrap--bilingual .story-bubble-label.es-text {
 }
 
 .desktop-cat-icon svg {
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
 }
 
 .desktop-cat-icon--all {

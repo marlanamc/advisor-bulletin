@@ -81,6 +81,31 @@ test.describe('Desktop resource shortcuts', () => {
     await expect(page.locator('#desktop-section-food .mobile-resource-card')).toHaveCount(4);
   });
 
+  test('topic sidebar keeps later categories inside the viewport', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await page.evaluate(() => window.bulletinBoard.openResourceShortcut('food'));
+
+    const sidebar = page.locator('.resources-desktop-sidebar');
+    const lastTopic = page.locator('#desktopCategoryNav .desktop-cat-btn').last();
+    await expect(sidebar).toBeVisible();
+    await expect(lastTopic).toBeVisible();
+
+    await page.evaluate(() => {
+      const el = document.querySelector('.resources-desktop-sidebar');
+      if (!el) return;
+      const stickyTop = parseFloat(getComputedStyle(el).top) || 0;
+      const y = window.scrollY + el.getBoundingClientRect().top - stickyTop;
+      window.scrollTo(0, Math.max(0, y));
+    });
+
+    const box = await sidebar.boundingBox();
+    expect(box).toBeTruthy();
+    expect(box.y + box.height).toBeLessThanOrEqual(720 + 2);
+
+    await lastTopic.evaluate((el) => el.scrollIntoView({ block: 'nearest' }));
+    await expect(lastTopic).toBeInViewport();
+  });
+
   test('header nav starts each page at the top', async ({ page }) => {
     await page.evaluate(() => {
       window.bulletinBoard.switchView('resources');
