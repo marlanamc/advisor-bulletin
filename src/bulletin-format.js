@@ -50,3 +50,24 @@ export function formatEventTime(timeString) {
         return timeString;
     }
 }
+
+// 24h "HH:MM" -> 12h "H:MM AM/PM". Was FirebaseBulletinBoard.formatTime and
+// FirebaseAdminPanel.formatTimeAdmin — identical bodies.
+export function formatTime(timeString) {
+    if (!timeString) return '';
+    const [hours, minutes] = timeString.split(':');
+    const hour = parseInt(hours);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const hour12 = hour % 12 || 12;
+    return `${hour12}:${minutes} ${ampm}`;
+}
+
+export function formatTimeRange(startTime, endTime) {
+    if (!startTime && !endTime) return '';
+    if (startTime && endTime) {
+        return `${formatTime(startTime)} - ${formatTime(endTime)}`;
+    } else if (startTime) {
+        return formatTime(startTime);
+    }
+    return '';
+}

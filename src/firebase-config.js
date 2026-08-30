@@ -2662,26 +2662,11 @@ class FirebaseBulletinBoard {
     }
 
     formatTimeRange(startTime, endTime) {
-        if (!startTime && !endTime) return '';
-
-        if (startTime && endTime) {
-            return `${this.formatTime(startTime)} - ${this.formatTime(endTime)}`;
-        } else if (startTime) {
-            return this.formatTime(startTime);
-        }
-
-        return '';
+        return bulletinFormat.formatTimeRange(startTime, endTime);
     }
 
     formatTime(timeString) {
-        if (!timeString) return '';
-
-        // Convert 24-hour format to 12-hour format
-        const [hours, minutes] = timeString.split(':');
-        const hour = parseInt(hours);
-        const ampm = hour >= 12 ? 'PM' : 'AM';
-        const hour12 = hour % 12 || 12;
-        return `${hour12}:${minutes} ${ampm}`;
+        return bulletinFormat.formatTime(timeString);
     }
 
     checkAutoLogin() {

@@ -2519,55 +2519,16 @@ class FirebaseAdminPanel {
     }
 
     formatTimeRangeAdmin(startTime, endTime) {
-        if (!startTime && !endTime) return '';
-
-        if (startTime && endTime) {
-            return `${this.formatTimeAdmin(startTime)} - ${this.formatTimeAdmin(endTime)}`;
-        } else if (startTime) {
-            return this.formatTimeAdmin(startTime);
-        }
-
-        return '';
+        return bulletinFormat.formatTimeRange(startTime, endTime);
     }
 
     formatTimeAdmin(timeString) {
-        if (!timeString) return '';
-
-        // Convert 24-hour format to 12-hour format
-        const [hours, minutes] = timeString.split(':');
-        const hour = parseInt(hours);
-        const ampm = hour >= 12 ? 'PM' : 'AM';
-        const hour12 = hour % 12 || 12;
-        return `${hour12}:${minutes} ${ampm}`;
+        return bulletinFormat.formatTime(timeString);
     }
 
-    formatDateLocal(dateString) {
-        if (!dateString) return '';
-        // Create date object and format in local timezone to prevent shifting
-        const date = new Date(dateString + 'T00:00:00');
-        return date.toLocaleDateString();
-    }
-
-    formatTimeRange(startTime, endTime) {
-        if (!startTime && !endTime) return '';
-
-        const formatTime = (timeString) => {
-            if (!timeString) return '';
-            const [hours, minutes] = timeString.split(':');
-            const hour = parseInt(hours);
-            const ampm = hour >= 12 ? 'PM' : 'AM';
-            const hour12 = hour % 12 || 12;
-            return `${hour12}:${minutes} ${ampm}`;
-        };
-
-        if (startTime && endTime) {
-            return `${formatTime(startTime)} - ${formatTime(endTime)}`;
-        } else if (startTime) {
-            return formatTime(startTime);
-        }
-
-        return '';
-    }
+    // formatDateLocal / formatTimeRange / formatTime (unsuffixed) removed —
+    // they were dead code. The portal's date rendering uses the *Admin
+    // variants above.
 }
 
 applyMethods(FirebaseAdminPanel, AdminComposerFormMethods)
