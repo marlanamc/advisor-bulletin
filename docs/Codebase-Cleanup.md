@@ -169,4 +169,88 @@ is generated (or a build step asserts the 4 blocks match the source and fails ot
 like the existing `check-*-sync.mjs` scripts do for other config). Do this **with** item 2
 (dropping `unsafe-inline`) so the policy only has to be edited once.
 
+## 9. Review & simplify advisor permissions in `firestore.rules`
+
+**Status: TODO** · **Size: medium** · **Owner: Marlie (needs product judgment, not just code)**
+
+`firestore.rules` is 283 lines; `storage.rules` 47. Marlie's read: the advisor write rules
+were made **too strict** in an earlier hardening pass and should be loosened where it's
+creating friction, without opening real holes.
+
+**What's there now (from a quick read — re-inspect before changing):**
+- `isAdvisor` = verified Google `@ebhcs.org` account (Workspace-issued, `firebase.sign_in_provider == 'google.com'`)
+- `isActiveAdvisor` = `isAdvisor` **AND** an `advisors/{username}` doc exists (or is privileged)
+- `isPrivilegedAdvisor` = hardcoded `mcreed@ebhcs.org` / `lgregory@ebhcs.org`
+- Bulletins: any active advisor can **update any** bulletin; only the author or a privileged
+  advisor can **change ownership fields / delete** (`bulletins` block, ~lines 14–53)
+- Heavy per-field validation in `validateBulletinData` / `validActionLinks` / `validHoursRows` /
+  `validResourceContact` (~lines 150–283) — hardcoded unrolled loops for list items
+  (`links.size() < 2 || validActionLinkItem(links[1])` … up to [4]), size caps, required-key
+  checks. This is the most likely source of "the portal won't let me save" friction.
+
+**Approach:**
+1. **Deploy-inspect first.** Pull the *live* rules from Firebase Console and diff against
+   `firestore.rules` in the repo — confirm they're actually in sync (the CI deploy pipeline
+   deploys rules, but verify). Note: memory says rules were last deployed manually 2026-07-09
+   and a Rules-Admin-role grant was needed for CI to deploy them.
+2. **Identify the actual friction.** What specifically failed / felt over-restrictive?
+   Candidates: the unrolled list validators rejecting valid input, size caps too low
+   (labels ≤60, urls ≤500, ≤5 action links, ≤7 hours rows), required-key lists too rigid,
+   the `postedBy == getUsername(email)` check on create blocking co-authoring.
+3. **Loosen deliberately, keep the boundary.** The security boundary that must NOT weaken:
+   `isAdvisor` (real @ebhcs.org Google account) + `isActiveAdvisor` (on the advisor list).
+   Everything past that — which advisor can edit which post, field-level validation strictness —
+   is a UX tuning knob. Reasonable target: any active advisor can create/edit/delete any
+   bulletin (small trusted team), keep the type/size sanity checks but relax the exact-shape
+   validation, keep privileged-only for the `advisors/` collection and role changes.
+4. **Test with the emulator.** There's `scripts/run-with-emulator.mjs` and the Playwright
+   suite already runs against it. Add rules-unit-tests (`@firebase/rules-unit-testing`) for
+   the key allow/deny cases if there aren't any — this is worth doing before loosening.
+5. Deploy rules, then re-run the advisor portal walkthrough from
+   `docs/Refactor-Test-Checklist.md` section C against production.
+6. Update `docs/FIREBASE_SECURITY_RULES.md` to match whatever the rules end up saying.
+
+## 10. Verify authentication is fully wired end-to-end
+
+**Status: TODO** · **Size: small (mostly verification)** · **Owner: Marlie**
+
+Marlie wants confidence the auth flow works completely. From a read it looks intact but
+should be exercised deliberately, especially the edge cases.
+
+**The flow (as built):**
+- `admin.html` → `src/admin.js` imports `auth` from `firebase-auth.js`, registers
+  `onAuthStateChanged`
+- Sign-in button → `google-auth.js` `signInWithPopup(auth, GoogleAuthProvider)` (hosted-domain
+  hint `hd: ebhcs.org`)
+- `onAuthStateChanged(user)` fires → `verifyAdvisorAccess(user)` reads `advisors/{username}`
+  → if the doc exists, dispatches `userAuthenticated` event → `admin.js` calls
+  `mountAdvisorPortal(userDetails)` (lazy-loads `firebase-admin.js` + portal CSS + composer)
+- No advisor doc → `rejectSignIn` with a "ask an admin to add you" message
+- Sign-out → `signOut(auth)` → `onAuthStateChanged(null)` → `handleSignedOut()` →
+  `window.adminPanel.handleSignedOut()` (in `admin-auth.js` after the refactor)
+
+**Checklist:**
+- [ ] Happy path: @ebhcs.org account **on** the advisor list → portal opens, correct name/role
+- [ ] @ebhcs.org account **not** on the list → clean rejection message, no half-open portal
+- [ ] Non-@ebhcs.org Google account → rejected (rules deny the `advisors/` read → treated as "not an advisor")
+- [ ] Privileged admin (`mcreed@` / `lgregory@`) with **no** `advisors/` doc → still gets in
+      (the `isPrivilegedAdvisor` bypass in `isActiveAdvisor`)
+- [ ] Advisor removed from the list mid-session → next write is denied by rules; next sign-in is rejected
+- [ ] Sign out → back to login screen, `adminPanel` torn down, no stale listeners
+      (check `bulletinsUnsubscribe` is called)
+- [ ] Page refresh while signed in → session restored, portal re-mounts without a re-login
+- [ ] `verifyAdvisorAccess` error path (offline / timeout, NOT permission-denied) → surfaces
+      "check your connection" instead of silently locking out a real advisor
+- [ ] App Check: `firebase-app-check.js` — is `VITE_FIREBASE_APPCHECK_SITE_KEY` set in the
+      deploy env? If App Check is enforced server-side but the site key is missing at build,
+      every request 403s. Confirm it's configured (or intentionally not enforced yet).
+- [ ] `recordAdvisorLogin` — writes a last-login timestamp; confirm it's not throwing and
+      not blocking the mount if it fails
+- [ ] The `admin-roles.js` privileged-email list vs. `isPrivilegedAdvisor` in `firestore.rules`
+      — there's a `scripts/check-admin-emails-sync.mjs` that gates the build on these matching;
+      confirm it's still passing and the lists are right (`mcreed@ebhcs.org`, `lgregory@ebhcs.org`)
+
+**Note:** items 9 and 10 are related — do the auth verification (10) first so you have a
+known-good baseline, then loosen the rules (9) and re-verify.
+
 ## Add new items below as you find them.
