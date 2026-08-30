@@ -60,6 +60,9 @@ import { AdminComposerFormMethods } from './admin-composer-form.js'
 import { AdminAttachmentMethods } from './admin-attachments.js'
 import { AdminManageMethods } from './admin-manage.js'
 import { AdminUploadMethods } from './admin-uploads.js'
+import { AdminOfflineMethods } from './admin-offline.js'
+import { AdminToastMethods } from './admin-toasts.js'
+import { AdminValidationMethods } from './admin-validation.js'
 
 // Reads the hoursRowDay/hoursRowTime hidden input pairs the composer's
 // hours block writes (see wireHoursBlock/syncHoursRowMirrors in
@@ -158,36 +161,8 @@ class FirebaseAdminPanel {
         return this._resourceLogoFetchPromise;
     }
 
-    setupOfflineHandling() {
-        // Monitor online/offline status
-        window.addEventListener('online', () => {
-            this.hideOfflineMessage();
-            this.showTemporaryMessage('Connection restored! 🌊', 'success');
-        });
-
-        window.addEventListener('offline', () => {
-            this.showOfflineMessage('You\'re offline. Some features may not work until connection is restored.');
-        });
-    }
-
-    showOfflineMessage(message) {
-        let offlineBar = document.getElementById('offlineBar');
-        if (!offlineBar) {
-            offlineBar = document.createElement('div');
-            offlineBar.id = 'offlineBar';
-            offlineBar.className = 'offline-bar';
-            document.body.appendChild(offlineBar);
-        }
-        offlineBar.textContent = message;
-        offlineBar.style.display = 'block';
-    }
-
-    hideOfflineMessage() {
-        const offlineBar = document.getElementById('offlineBar');
-        if (offlineBar) {
-            offlineBar.style.display = 'none';
-        }
-    }
+    // setupOfflineHandling / showOfflineMessage / hideOfflineMessage moved
+    // to ./admin-offline.js (AdminOfflineMethods).
 
     bindEvents() {
         document.getElementById('logoutBtn').addEventListener('click', () => this.logout());
@@ -1508,253 +1483,12 @@ class FirebaseAdminPanel {
         return bulletinFormat.escapeHtml(text);
     }
 
-    showSuccessMessage(message) {
-        this.showTemporaryMessage(message, 'success');
-    }
+    // showSuccessMessage / showToast / showTemporaryMessage moved to
+    // ./admin-toasts.js (AdminToastMethods).
 
-    // Alias used throughout advisor management; without it every
-    // this.showToast(...) call throws and kills the calling flow.
-    showToast(message, type = 'info') {
-        this.showTemporaryMessage(message, type);
-    }
-
-    showTemporaryMessage(message, type = 'info') {
-        // Remove any existing messages
-        const existingMessages = document.querySelectorAll('.toast-message');
-        existingMessages.forEach(msg => msg.remove());
-
-        const messageDiv = document.createElement('div');
-        messageDiv.className = 'toast-message';
-        messageDiv.setAttribute('role', 'status');
-        messageDiv.setAttribute('aria-live', type === 'error' ? 'assertive' : 'polite');
-
-        const icons = {
-            success: '✅',
-            error: '❌',
-            warning: '⚠️',
-            info: 'ℹ️'
-        };
-
-        const colors = {
-            success: '#27ae60',
-            error: '#e74c3c',
-            warning: '#f39c12',
-            info: '#3498db'
-        };
-
-        messageDiv.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: ${colors[type] || colors.info};
-            color: white;
-            padding: 16px 20px;
-            border-radius: 12px;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-            z-index: 1001;
-            font-weight: 500;
-            max-width: 350px;
-            font-size: 14px;
-            line-height: 1.4;
-            animation: slideInRight 0.3s ease-out;
-            cursor: pointer;
-        `;
-
-        messageDiv.innerHTML = `
-            <span style="margin-right: 8px; font-size: 16px;">${icons[type] || icons.info}</span>
-            ${message}
-        `;
-
-        // Click to dismiss
-        messageDiv.addEventListener('click', () => {
-            messageDiv.style.animation = 'slideOutRight 0.3s ease-in';
-            setTimeout(() => messageDiv.remove(), 300);
-        });
-
-        document.body.appendChild(messageDiv);
-
-        // Auto-remove after delay
-        const delay = type === 'error' ? 6000 : 4000; // Longer for errors
-        setTimeout(() => {
-            if (messageDiv.parentNode) {
-                messageDiv.style.animation = 'slideOutRight 0.3s ease-in';
-                setTimeout(() => messageDiv.remove(), 300);
-            }
-        }, delay);
-    }
-
-    setupFormValidation() {
-        const titleInput = document.getElementById('title');
-        const descriptionTextarea = document.getElementById('description');
-        if (!titleInput || !descriptionTextarea) return;
-
-        // Title validation
-        titleInput.addEventListener('input', (e) => {
-            this.validateField(e.target, 'titleFeedback', {
-                required: true,
-                minLength: 3,
-                maxLength: 200,
-                label: 'Title'
-            });
-        });
-
-        titleInput.addEventListener('blur', (e) => {
-            this.validateField(e.target, 'titleFeedback', {
-                required: true,
-                minLength: 3,
-                maxLength: 200,
-                label: 'Title'
-            });
-        });
-
-        // Description validation (optional)
-        descriptionTextarea.addEventListener('input', (e) => {
-            this.validateField(e.target, 'descriptionFeedback', {
-                required: false,
-                minLength: 1,
-                maxLength: 2000,
-                label: 'Description'
-            });
-        });
-
-        descriptionTextarea.addEventListener('blur', (e) => {
-            this.validateField(e.target, 'descriptionFeedback', {
-                required: false,
-                minLength: 1,
-                maxLength: 2000,
-                label: 'Description'
-            });
-        });
-    }
-
-    validateField(field, feedbackId, rules) {
-        const feedback = document.getElementById(feedbackId);
-        const value = field.value.trim();
-        let message = '';
-        let isValid = true;
-        let type = 'success';
-
-        // Required check
-        if (rules.required && !value) {
-            message = `${rules.label} is required`;
-            isValid = false;
-            type = 'error';
-        }
-        // Length checks
-        else if (value && rules.minLength && value.length < rules.minLength) {
-            message = `${rules.label} must be at least ${rules.minLength} characters`;
-            isValid = false;
-            type = 'error';
-        }
-        else if (value && rules.maxLength && value.length > rules.maxLength) {
-            message = `${rules.label} cannot exceed ${rules.maxLength} characters`;
-            isValid = false;
-            type = 'error';
-        }
-        // Success state
-        else if (value) {
-            if (rules.maxLength) {
-                const remaining = rules.maxLength - value.length;
-                if (remaining < 50) {
-                    message = `${remaining} characters remaining`;
-                    type = 'warning';
-                } else {
-                    message = '✓ Looks good!';
-                    type = 'success';
-                }
-            } else {
-                message = '✓ Looks good!';
-                type = 'success';
-            }
-        }
-
-        // Apply feedback
-        feedback.textContent = message;
-        feedback.className = `field-feedback ${type}`;
-
-        // Apply field styling
-        field.classList.remove('valid', 'invalid');
-        if (value) {
-            field.classList.add(isValid ? 'valid' : 'invalid');
-        }
-
-        return isValid;
-    }
-
-    // Content moderation
-    moderateContent(text) {
-        const inappropriateWords = [
-            // Basic inappropriate content filters
-            'spam', 'scam', 'fake', 'fraud', 'illegal', 'drugs', 'weapons',
-            // Add more as needed
-        ];
-
-        const suspiciousPatterns = [
-            /\$\d+.*per.*hour.*work.*home/i, // Work from home scams
-            /click.*here.*now.*money/i, // Clickbait scams
-            /urgent.*respond.*immediately/i, // Urgent response scams
-            /guaranteed.*income/i, // Get rich quick
-            /no.*experience.*required.*\$\d+/i, // Too good to be true jobs
-        ];
-
-        const content = text.toLowerCase();
-        const warnings = [];
-
-        // Check for inappropriate words
-        for (const word of inappropriateWords) {
-            if (content.includes(word.toLowerCase())) {
-                warnings.push(`Contains potentially inappropriate word: "${word}"`);
-            }
-        }
-
-        // Check for suspicious patterns
-        for (const pattern of suspiciousPatterns) {
-            if (pattern.test(content)) {
-                warnings.push('Content matches suspicious pattern (possible scam)');
-                break;
-            }
-        }
-
-        // Check for excessive caps
-        const capsRatio = (text.match(/[A-Z]/g) || []).length / text.length;
-        if (capsRatio > 0.5 && text.length > 20) {
-            warnings.push('Excessive use of capital letters');
-        }
-
-        // Check for excessive punctuation
-        const exclamationCount = (text.match(/!/g) || []).length;
-        if (exclamationCount > 5) {
-            warnings.push('Excessive use of exclamation marks');
-        }
-
-        return {
-            isClean: warnings.length === 0,
-            warnings: warnings,
-            riskLevel: warnings.length === 0 ? 'low' : warnings.length < 3 ? 'medium' : 'high'
-        };
-    }
-
-    validateBulletinContent(bulletin) {
-        const titleModeration = this.moderateContent(bulletin.title);
-        const descriptionModeration = this.moderateContent(bulletin.description);
-        const companyModeration = bulletin.company ? this.moderateContent(bulletin.company) : { isClean: true, warnings: [] };
-
-        const allWarnings = [
-            ...titleModeration.warnings.map(w => `Title: ${w}`),
-            ...descriptionModeration.warnings.map(w => `Description: ${w}`),
-            ...companyModeration.warnings.map(w => `Company: ${w}`)
-        ];
-
-        return {
-            isClean: titleModeration.isClean && descriptionModeration.isClean && companyModeration.isClean,
-            warnings: allWarnings,
-            riskLevel: Math.max(
-                titleModeration.warnings.length,
-                descriptionModeration.warnings.length,
-                companyModeration.warnings.length
-            ) < 3 ? 'medium' : 'high'
-        };
-    }
+    // setupFormValidation / validateField / moderateContent /
+    // validateBulletinContent moved to ./admin-validation.js
+    // (AdminValidationMethods).
 
     getAuthPostedBy() {
         const email = auth.currentUser?.email || this.currentUser?.email || '';
@@ -2379,6 +2113,9 @@ applyMethods(FirebaseAdminPanel, AdminComposerFormMethods)
 applyMethods(FirebaseAdminPanel, AdminAttachmentMethods)
 applyMethods(FirebaseAdminPanel, AdminManageMethods)
 applyMethods(FirebaseAdminPanel, AdminUploadMethods)
+applyMethods(FirebaseAdminPanel, AdminOfflineMethods)
+applyMethods(FirebaseAdminPanel, AdminToastMethods)
+applyMethods(FirebaseAdminPanel, AdminValidationMethods)
 
 // showTab / handleTabKeydown / toggleDateFields moved to
 // ./admin-tab-globals.js — mountAdvisorPortal assigns them onto window for
