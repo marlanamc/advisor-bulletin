@@ -1,5 +1,6 @@
 import { db, auth, storage } from './firebase.js'
 import { showTab, handleTabKeydown, toggleDateFields } from './admin-tab-globals.js'
+import * as bulletinFormat from './bulletin-format.js'
 import { applyResourceLogos, deleteResourceLogo, fetchAllResourceLogos, setResourceLogo } from './resource-logos.js'
 import { getPublicAdvisorEmail, STUDENT_ADVISOR_DIRECTORY } from './advisor-directory.js'
 import { isPrivilegedAdminEmail } from './admin-roles.js'
@@ -1550,38 +1551,15 @@ class FirebaseAdminPanel {
     }
 
     getClassTypeDisplay(classType) {
-        const classTypes = {
-            'esol': 'ESOL (English for Speakers of Other Languages)',
-            'hse': 'HSE (High School Equivalency)',
-            'famlit': 'FamLit (Family Literacy)'
-        };
-        return classTypes[classType] || classType;
+        return bulletinFormat.getClassTypeDisplay(classType);
     }
 
     escapeAttribute(text) {
-        const div = document.createElement('div');
-        div.textContent = text || '';
-        return div.innerHTML
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#39;');
+        return bulletinFormat.escapeAttribute(text);
     }
 
     formatEventTime(timeString) {
-        if (!timeString) return '';
-        try {
-            const [hourStr, minuteStr] = timeString.split(':');
-            let hour = parseInt(hourStr, 10);
-            const minute = minuteStr || '00';
-            if (isNaN(hour)) {
-                return timeString;
-            }
-            const period = hour >= 12 ? 'PM' : 'AM';
-            hour = hour % 12;
-            if (hour === 0) hour = 12;
-            return `${hour}:${minute.padStart(2, '0')} ${period}`;
-        } catch (error) {
-            return timeString;
-        }
+        return bulletinFormat.formatEventTime(timeString);
     }
 
     formatLinkLabel(url, category) {
@@ -1683,9 +1661,7 @@ class FirebaseAdminPanel {
     }
 
     escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = String(text ?? '');
-        return div.innerHTML;
+        return bulletinFormat.escapeHtml(text);
     }
 
     showSuccessMessage(message) {

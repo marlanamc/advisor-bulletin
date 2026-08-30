@@ -2,6 +2,7 @@ import { db } from './firebase-student.js'
 import { applyResourceLogos, fetchAllResourceLogos } from './resource-logos.js'
 import { STUDENT_ADVISOR_DIRECTORY } from './advisor-directory.js'
 import { installClientErrorLogger } from './error-logger.js'
+import * as bulletinFormat from './bulletin-format.js'
 import { normalizePostCategory, getPostCategoryDisplay, getPostCategoryMeta, bulletinMatchesPostCategory, POST_CATEGORIES } from './feed-categories.js'
 import { RESOURCE_TILE_CATEGORIES } from './resource-categories.js'
 import {
@@ -2263,12 +2264,7 @@ class FirebaseBulletinBoard {
     }
 
     getClassTypeDisplay(classType) {
-        const classTypes = {
-            'esol': 'ESOL (English for Speakers of Other Languages)',
-            'hse': 'HSE (High School Equivalency)',
-            'famlit': 'FamLit (Family Literacy)'
-        };
-        return classTypes[classType] || classType;
+        return bulletinFormat.getClassTypeDisplay(classType);
     }
 
     isDeadlineClose(deadline) {
@@ -2325,9 +2321,7 @@ class FirebaseBulletinBoard {
     }
 
     escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = String(text ?? '');
-        return div.innerHTML;
+        return bulletinFormat.escapeHtml(text);
     }
 
     // Open PDF from bulletin ID by looking up the bulletin data
@@ -2412,11 +2406,7 @@ class FirebaseBulletinBoard {
     }
 
     escapeAttribute(text) {
-        const div = document.createElement('div');
-        div.textContent = text || '';
-        return div.innerHTML
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#39;');
+        return bulletinFormat.escapeAttribute(text);
     }
 
     formatLinkLabel(url, category) {
@@ -2435,19 +2425,7 @@ class FirebaseBulletinBoard {
     }
 
     formatEventTime(timeString) {
-        if (!timeString) return '';
-        try {
-            const [hourStr, minuteStr] = timeString.split(':');
-            let hour = parseInt(hourStr, 10);
-            const minute = minuteStr || '00';
-            if (isNaN(hour)) return timeString;
-            const period = hour >= 12 ? 'PM' : 'AM';
-            hour = hour % 12;
-            if (hour === 0) hour = 12;
-            return `${hour}:${minute.padStart(2, '0')} ${period}`;
-        } catch (error) {
-            return timeString;
-        }
+        return bulletinFormat.formatEventTime(timeString);
     }
 
     getPostDescription(bulletin) {
