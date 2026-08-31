@@ -2,8 +2,7 @@
  * Global functions for the advisor portal's inline HTML onclick / onkeydown
  * handlers: showTab, handleTabKeydown, toggleDateFields.
  *
- * Lifted verbatim out of firebase-admin.js (Stage 1 of the file-split
- * refactor). They were already module-level functions; they delegate to
+ * These module-level functions delegate to
  * window.adminPanel, which mountAdvisorPortal sets before assigning these
  * onto window.
  */

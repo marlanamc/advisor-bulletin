@@ -16,8 +16,8 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { createInterface } from 'node:readline';
 import { stdin, stdout } from 'node:process';
+import { PROJECT_ID, firebaseConfig } from './lib/firebase-config.mjs';
 
-const PROJECT_ID = 'ebhcs-bulletin-board';
 const COLLECTION = 'bulletins';
 const IMPORT_SOURCE = 'csv-import';
 const BATCH_SIZE = 400;
@@ -73,15 +73,6 @@ async function initClientDb() {
   const { initializeApp } = await import('firebase/app');
   const { getAuth, signInWithEmailAndPassword } = await import('firebase/auth');
   const { getFirestore } = await import('firebase/firestore');
-
-  const firebaseConfig = {
-    apiKey: 'AIzaSyBGaONCeB5MQCYdp3Gv8eUKPvLsBGFnXgY',
-    authDomain: 'ebhcs-bulletin-board.firebaseapp.com',
-    projectId: PROJECT_ID,
-    storageBucket: 'ebhcs-bulletin-uploads-us',
-    messagingSenderId: '556649154585',
-    appId: '1:556649154585:web:3a3f49d2056aa507088288',
-  };
 
   const password = await prompt('Password for mcreed@ebhcs.org: ', { hidden: true });
   const app = initializeApp(firebaseConfig);

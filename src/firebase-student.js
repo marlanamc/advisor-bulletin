@@ -4,15 +4,7 @@
 import { initializeApp } from 'firebase/app'
 import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore'
 import { initFirebaseAppCheck } from './firebase-app-check.js'
-
-const firebaseConfig = {
-  apiKey: "AIzaSyBGaONCeB5MQCYdp3Gv8eUKPvLsBGFnXgY",
-  authDomain: "ebhcs-bulletin-board.firebaseapp.com",
-  projectId: "ebhcs-bulletin-board",
-  storageBucket: "ebhcs-bulletin-uploads-us",
-  messagingSenderId: "556649154585",
-  appId: "1:556649154585:web:3a3f49d2056aa507088288"
-}
+import { firebaseConfig } from './firebase-shared-config.js'
 
 const app = initializeApp(firebaseConfig)
 initFirebaseAppCheck(app)

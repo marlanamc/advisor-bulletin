@@ -1,6 +1,5 @@
 // Advisor management, the Manage list, and resource reordering.
-// Extracted verbatim from firebase-admin.js; methods are merged onto
-// FirebaseAdminPanel.prototype by applyMethods() in firebase-admin.js.
+// Merged onto FirebaseAdminPanel.prototype by applyMethods() in firebase-admin.js.
 import { db } from './firebase.js'
 import { getPublicAdvisorEmail } from './advisor-directory.js'
 import { isPrivilegedAdminEmail } from './admin-roles.js'
@@ -45,8 +44,8 @@ export class AdminManageMethods {
                 </div>
                 <div class="manage-actions advisor-manage-actions">
                     <div class="manage-actions-primary">
-                        <button type="button" class="edit-btn" onclick="adminPanel.openEditAdvisor('${this.escapeHtml(a.username)}')">Edit</button>
-                        ${a.username !== this.currentUser.username ? `<button type="button" class="delete-btn" onclick="adminPanel.deleteAdvisor('${this.escapeHtml(a.username)}')">Remove</button>` : ''}
+                        <button type="button" class="edit-btn" data-manage-action="edit-advisor" data-username="${this.escapeAttribute(a.username)}">Edit</button>
+                        ${a.username !== this.currentUser.username ? `<button type="button" class="delete-btn" data-manage-action="delete-advisor" data-username="${this.escapeAttribute(a.username)}">Remove</button>` : ''}
                     </div>
                 </div>
             </div>
@@ -382,10 +381,10 @@ export class AdminManageMethods {
                 ` : ''}
                 ${this.renderManageDateInfo(bulletin)}
                 <div class="manage-actions">
-                    <button class="edit-btn" onclick="adminPanel.editBulletin('${bulletin.id}')">
+                    <button type="button" class="edit-btn" data-manage-action="edit-bulletin" data-bulletin-id="${this.escapeAttribute(bulletin.id)}">
                         Edit
                     </button>
-                    <button class="delete-btn" onclick="adminPanel.deleteBulletin('${bulletin.id}')">
+                    <button type="button" class="delete-btn" data-manage-action="delete-bulletin" data-bulletin-id="${this.escapeAttribute(bulletin.id)}">
                         Delete
                     </button>
                 </div>

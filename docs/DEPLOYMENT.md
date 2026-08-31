@@ -11,10 +11,13 @@ The GitHub Action (`.github/workflows/deploy.yml`) does this on each push:
 1. **Test job** — installs dependencies and runs the full Playwright suite (`npm test`) against a local dev server **and a local Firebase emulator** (see "Tests run against an emulator, not production" below). If any test fails, **the deploy is blocked** and the live site stays on its previous version. A failure report is attached to the workflow run as an artifact.
 2. **Deploy job** — runs `npm run build`, publishes `dist/` to Firebase Hosting, and deploys `firestore.rules` and `storage.rules` using the `FIREBASE_SERVICE_ACCOUNT` repository secret.
 
-`npm run build` automatically runs two pre-steps (`prebuild` in package.json):
+`npm run build` automatically runs these pre-steps (`prebuild` in package.json):
 
 - `scripts/build-student-feed-snapshot.mjs` — regenerates `public/student-feed-snapshot.json`, the static copy of the feed that students see instantly before Firebase loads. In CI it uses the client SDK fallback (no credentials needed). **If it can't reach Firestore, the build still succeeds and reuses the last committed snapshot** — students just see slightly older cards for the first second of their visit.
 - `scripts/check-resource-categories-sync.mjs` — fails the build on purpose if the resource category list in `src/resource-categories.js` has drifted from the whitelist in `firestore.rules`. If your build fails with a category-sync message, make those two lists match again.
+- `scripts/check-admin-emails-sync.mjs` — fails the build if privileged admin emails drift across the client role list, Firestore rules, and Storage rules.
+- `scripts/check-csp-sync.mjs` — fails the build if the CSP in either HTML file or Firebase Hosting header drifts from `config/csp.mjs`.
+- `scripts/check-resource-freshness.mjs` — fails the build if the resource CSV has blocking freshness or source-data problems.
 
 **Where to look when a deploy fails:** GitHub repository → **Actions** tab → click the failed run. A failed *test* job means the code change broke something (download the `playwright-report` artifact to see what). A failed *deploy* job usually means a Firebase permission/secret problem. Either way, **the live site is unaffected** — it simply keeps running the previous version.
 
@@ -25,8 +28,8 @@ You only need this if GitHub Actions is unavailable or you're doing something un
 One-time setup:
 
 ```bash
-npm install -g firebase-tools
-firebase login          # opens a browser; sign in with an account that has access
+npm install
+npx firebase login      # opens a browser; sign in with an account that has access
                         # to the "ebhcs-bulletin-board" project in Firebase Console
 ```
 
@@ -35,18 +38,19 @@ Your Google account must be added as a member of the Firebase project first: Fir
 Then:
 
 ```bash
-npm install
-npm run deploy          # = npm run build + firebase deploy
+npm run deploy          # = npm run build + npx firebase deploy
 ```
 
-`firebase deploy` also publishes `firestore.rules` and `storage.rules`, so a manual deploy is the way to ship security-rule changes.
+`npm run deploy` uses the project-pinned Firebase CLI from `devDependencies` and publishes
+`firestore.rules` and `storage.rules`, so a manual deploy is the way to ship security-rule
+changes.
 
 ## Firestore security rules
 
 The rules in `firestore.rules` are the real security boundary of the site (the Firebase API key in the source code is public by design — that is normal for Firebase web apps).
 
-- **Who is an admin:** the `isPrivilegedAdvisor` function near the bottom of `firestore.rules` lists the admin emails (currently `mcreed@ebhcs.org` and `lgregory@ebhcs.org`). To change admins, edit that function, then deploy rules (`firebase deploy --only firestore:rules` or a full deploy). Also update `src/admin-roles.js` (the build fails if it drifts from the rules) and `docs/FIREBASE_SECURITY_RULES.md` so code, rules, and docs stay in sync.
-- Rules changes ship automatically with every push to `main` (the deploy job runs `firebase deploy --only firestore:rules,storage:uploads`). For an emergency rules-only deploy without a code change, run `firebase deploy --only firestore:rules,storage:uploads` manually (see below).
+- **Who is an admin:** the `isPrivilegedAdvisor` function near the bottom of `firestore.rules` lists the admin emails (currently `mcreed@ebhcs.org` and `lgregory@ebhcs.org`). To change admins, edit that function, then deploy rules (`npx firebase deploy --only firestore:rules` or a full deploy). Also update `src/admin-roles.js` (the build fails if it drifts from the rules) and `docs/FIREBASE_SECURITY_RULES.md` so code, rules, and docs stay in sync.
+- Rules changes ship automatically with every push to `main` (the deploy job runs `npx firebase-tools deploy --only firestore:rules,storage:uploads`). For an emergency rules-only deploy without a code change, run `npx firebase deploy --only firestore:rules,storage:uploads` manually (see below).
 - **Student advisor directory:** the doc `config/studentDirectory` (publicly readable, admin-writable) is republished automatically whenever an admin adds/edits/removes an advisor in the portal. The student site falls back to the static list in `src/advisor-directory.js` if the doc is missing.
 
 ## Firebase App Check

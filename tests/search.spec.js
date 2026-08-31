@@ -90,7 +90,7 @@ async function seedSearchData(page) {
 async function openSearch(page, query) {
   await page.evaluate(() => window.bulletinBoard.openSearchLayer({ focusInput: false }));
   await page.locator('#searchInput').fill(query);
-  await page.waitForTimeout(200);
+  await expect(page.locator('#searchResultsStatus')).not.toHaveText('');
 }
 
 function resultTitles(page) {
@@ -156,7 +156,6 @@ test.describe('Unified search', () => {
     await expect(page.locator('#searchResults')).toBeVisible();
 
     await page.locator('#searchInput').fill('');
-    await page.waitForTimeout(200);
     await expect(page.locator('#searchResults')).toBeHidden();
   });
 
@@ -209,21 +208,16 @@ test.describe('Unified search', () => {
     await expect(card).toBeVisible();
     await expect(card.locator('.mobile-resource-card__title')).toContainText('East Boston Soup Kitchen');
 
-    await page.waitForTimeout(200);
-    const clearance = await page.evaluate((id) => {
-      const visibleCard = [...document.querySelectorAll(`[data-resource-id="${id}"]`)]
-        .find((el) => el.getBoundingClientRect().height > 0);
-      const header = document.querySelector('.app-topbar');
-      const title = visibleCard?.querySelector('.mobile-resource-card__title');
-      if (!visibleCard || !header || !title) return null;
-      return {
-        titleTop: title.getBoundingClientRect().top,
-        headerBottom: header.getBoundingClientRect().bottom,
-      };
-    }, resourceId);
-
-    expect(clearance).not.toBeNull();
-    expect(clearance.titleTop).toBeGreaterThanOrEqual(clearance.headerBottom - 2);
+    await expect.poll(async () => {
+      return page.evaluate((id) => {
+        const visibleCard = [...document.querySelectorAll(`[data-resource-id="${id}"]`)]
+          .find((el) => el.getBoundingClientRect().height > 0);
+        const header = document.querySelector('.app-topbar');
+        const title = visibleCard?.querySelector('.mobile-resource-card__title');
+        if (!visibleCard || !header || !title) return null;
+        return title.getBoundingClientRect().top - header.getBoundingClientRect().bottom;
+      }, resourceId);
+    }).toBeGreaterThanOrEqual(-2);
   });
 
   test('closing search restores browsing and clears every box', async ({ page }) => {

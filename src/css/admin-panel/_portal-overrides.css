@@ -1,12 +1,9 @@
 /* ============================================================
    EBHCS Advisor Portal & Admin Panel Modular CSS
-   This file consolidates all admin/advisor styling extracted
-   from style.css to keep student portal CSS fast & lightweight.
    ============================================================ */
 
 /* ============================================================
-   PART 1: BASE DESIGN SYSTEM & ADVISOR LOGIN OVERRIDES
-   (Formerly style.css lines 1 - 1225)
+   BASE DESIGN SYSTEM & ADVISOR LOGIN OVERRIDES
    ============================================================ */
 
 :root {
@@ -310,8 +307,7 @@ body:has(.advisor-redesign) .main-content {
 
 
 /* ============================================================
-   PART 2: LEGACY ADMIN PANEL, TABS, VALIDATION & EYE-TOGGLE
-   (Formerly style.css lines 2841 - 3655)
+   LEGACY ADMIN PANEL, TABS, VALIDATION & EYE-TOGGLE
    ============================================================ */
 
 /* Admin Panel */

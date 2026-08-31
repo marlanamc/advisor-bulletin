@@ -35,7 +35,7 @@ Then:
 
 1. Create the Firebase Auth account for the new admin (Authentication → Users) if they don't have one.
 2. Run `npm run build` locally — `scripts/check-admin-emails-sync.mjs` fails if rules and `admin-roles.js` drift.
-3. Merge to `main` so CI deploys the updated rules (or run `firebase deploy --only firestore:rules` manually).
+3. Merge to `main` so CI deploys the updated rules (or run `npx firebase deploy --only firestore:rules` manually).
 4. Optionally run `node scripts/update-roles.mjs` to write the `users/{username}` profile doc.
 
 ## 4. Replace student-facing contact email

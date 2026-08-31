@@ -178,6 +178,24 @@ class FirebaseAdminPanel {
                 else if (e.target.name === 'imageEs') this.handleImagePreview(e, 'imageEs');
                 else if (e.target.name === 'resourceLogo') this.handleImagePreview(e, 'resourceLogo');
             });
+            bulletinFormEl.addEventListener('click', (event) => {
+                const button = event.target.closest('[data-attachment-action]');
+                if (!button || !bulletinFormEl.contains(button)) return;
+
+                const action = button.getAttribute('data-attachment-action');
+                const slot = Number(button.getAttribute('data-slot') || 0);
+                if (action === 'choose-action-link-pdf' && slot) {
+                    document.getElementById(`resourceActionLink${slot}Pdf`)?.click();
+                } else if (action === 'remove-action-link-pdf' && slot) {
+                    this.removeActionLinkPdfPreview(slot);
+                } else if (action === 'remove-image') {
+                    this.removeImagePreview(button.getAttribute('data-field-name') || 'image');
+                } else if (action === 'remove-pdf') {
+                    this.removePdfPreview();
+                } else if (action === 'remove-resource-pdf') {
+                    this.removeResourcePdfPreview();
+                }
+            });
         }
         const resourceLogoInput = document.getElementById('resourceLogo');
         if (resourceLogoInput && !bulletinFormEl?.contains(resourceLogoInput)) {
@@ -190,6 +208,15 @@ class FirebaseAdminPanel {
         const addEventDateBtn = document.getElementById('addEventDateBtn');
         if (addEventDateBtn) {
             addEventDateBtn.addEventListener('click', () => this.addEventDateRow());
+        }
+        const eventDatesList = document.getElementById('eventDatesList');
+        if (eventDatesList) {
+            eventDatesList.addEventListener('click', (event) => {
+                const button = event.target.closest('[data-event-date-action="remove"]');
+                if (button && eventDatesList.contains(button)) {
+                    this.removeEventDateRow(button);
+                }
+            });
         }
 
         const sessionSameTimeToggle = document.getElementById('sessionSameTimeToggle');
@@ -263,6 +290,30 @@ class FirebaseAdminPanel {
             }
             this.updateReorderToggleUI();
             rerender();
+        });
+        const runManageAction = (button) => {
+            const action = button.getAttribute('data-manage-action');
+            const username = button.getAttribute('data-username') || '';
+            const bulletinId = button.getAttribute('data-bulletin-id') || '';
+            if (action === 'edit-advisor' && username) {
+                this.openEditAdvisor(username);
+            } else if (action === 'delete-advisor' && username) {
+                this.deleteAdvisor(username);
+            } else if (action === 'edit-bulletin' && bulletinId) {
+                this.editBulletin(bulletinId);
+            } else if (action === 'delete-bulletin' && bulletinId) {
+                this.deleteBulletin(bulletinId);
+            }
+        };
+        ['advisorsList', 'manageBulletins'].forEach((id) => {
+            const container = document.getElementById(id);
+            if (!container) return;
+            container.addEventListener('click', (event) => {
+                const button = event.target.closest('[data-manage-action]');
+                if (button && container.contains(button)) {
+                    runManageAction(button);
+                }
+            });
         });
         this.updateReorderToggleUI();
 
@@ -867,7 +918,7 @@ applyMethods(FirebaseAdminPanel, AdminBulletinWriteMethods)
 
 // showTab / handleTabKeydown / toggleDateFields moved to
 // ./admin-tab-globals.js — mountAdvisorPortal assigns them onto window for
-// the portal's inline onclick= / onkeydown= handlers.
+// legacy generated handlers and existing admin portal integrations.
 
 // Initialize the admin panel
 let adminPanel;

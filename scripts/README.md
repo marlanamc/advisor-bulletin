@@ -1,15 +1,22 @@
 # Maintenance Scripts
 
-One-off and recurring maintenance tools. Run them from the repository root with Node 20 (`nvm use`).
+One-off and recurring maintenance tools. Run them from the repository root with Node 22 (`nvm use`).
 
 **Credentials:** scripts marked 🔑 write to (or read privileged data from) Firestore and need a service-account key — see "Service account" in [DEPLOYMENT.md](../docs/DEPLOYMENT.md). Pass it as `GOOGLE_APPLICATION_CREDENTIALS=./service-account.json node scripts/<name>.mjs` (most also accept `--credentials=./service-account.json`).
 
 **Safety:** every destructive script supports `--dry-run`. Always dry-run first.
 
+**Archive convention:** dated scripts in `scripts/archive/` are single-use production fixes,
+imports, or copy edits that already ran. Keep reusable, recurring, npm-script, and workflow
+entrypoints at the top level.
+
 ## Used automatically by the build
 
 - **build-student-feed-snapshot.mjs** — regenerates `public/student-feed-snapshot.json` (the instant-loading static feed). Runs in `prebuild`. Uses a service account if available, otherwise falls back to the public client SDK; if Firestore is unreachable it keeps the existing snapshot so the build never breaks. Flags: `--credentials=…`, `--no-client`.
 - **check-resource-categories-sync.mjs** — fails the build if the resource category list in `src/resource-categories.js` drifts from the whitelist in `firestore.rules`. No credentials. If it fails, make the two lists match.
+- **check-admin-emails-sync.mjs** — fails the build if privileged admin emails drift across `src/admin-roles.js`, `firestore.rules`, and `storage.rules`.
+- **check-csp-sync.mjs** — fails the build if either HTML CSP meta tag or any Firebase Hosting CSP header drifts from `config/csp.mjs`.
+- **check-resource-freshness.mjs** — fails the build if the CSV resource source has blocking data freshness problems.
 
 ## Used automatically by tests
 

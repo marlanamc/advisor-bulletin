@@ -2,12 +2,14 @@ import { defineConfig } from 'vite'
 import { resolve } from 'path'
 import { writeFileSync, readFileSync, readdirSync } from 'fs'
 
+const rootDir = import.meta.dirname
+
 function emitDeployVersionFile() {
   return {
     name: 'emit-deploy-version-file',
     closeBundle() {
       const payload = JSON.stringify({ v: new Date().toISOString() })
-      writeFileSync(resolve(__dirname, 'dist/version.json'), payload)
+      writeFileSync(resolve(rootDir, 'dist/version.json'), payload)
     },
   }
 }
@@ -28,7 +30,7 @@ function emitAssetManifest() {
         }
       }
       try {
-        const html = readFileSync(resolve(__dirname, 'dist/index.html'), 'utf8')
+        const html = readFileSync(resolve(rootDir, 'dist/index.html'), 'utf8')
         for (const m of html.matchAll(/(?:href|src)="(\/assets\/[^"]+)"/g)) {
           add(m[1])
         }
@@ -40,7 +42,7 @@ function emitAssetManifest() {
       // import hits a warm HTTP cache.
       const deferred = []
       try {
-        for (const file of readdirSync(resolve(__dirname, 'dist/assets'))) {
+        for (const file of readdirSync(resolve(rootDir, 'dist/assets'))) {
           if (/^firebase-(config|vendor)-.+\.js$/.test(file)) {
             deferred.push(`/assets/${file}`)
           }
@@ -49,7 +51,7 @@ function emitAssetManifest() {
         console.warn('[emit-asset-manifest] could not read dist/assets:', err)
       }
       const payload = JSON.stringify({ assets, deferred })
-      writeFileSync(resolve(__dirname, 'dist/asset-manifest.json'), payload)
+      writeFileSync(resolve(rootDir, 'dist/asset-manifest.json'), payload)
     },
   }
 }
@@ -76,8 +78,8 @@ export default defineConfig({
     },
     rollupOptions: {
       input: {
-        main: resolve(__dirname, 'index.html'),
-        admin: resolve(__dirname, 'admin.html'),
+        main: resolve(rootDir, 'index.html'),
+        admin: resolve(rootDir, 'admin.html'),
       },
       output: {
         // Keep shared utilities (rich-text, event-sessions, etc.) in their own

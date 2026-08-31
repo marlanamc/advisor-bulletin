@@ -1,14 +1,15 @@
 // Firebase Configuration Template
-// Replace the values below with your actual Firebase config
-// IMPORTANT: Never commit real API keys to version control!
+// Copy these values into src/firebase-shared-config.js and
+// scripts/lib/firebase-config.mjs when creating a new Firebase project.
+// Firebase web apiKey values are public identifiers, not service-account secrets.
 
 const firebaseConfig = {
   apiKey: "YOUR_API_KEY_HERE",
-  authDomain: "ebhcs-bulletin-board.firebaseapp.com",
-  projectId: "ebhcs-bulletin-board",
-  storageBucket: "ebhcs-bulletin-uploads-us",
-  messagingSenderId: "556649154585",
-  appId: "1:556649154585:web:3a3f49d2056aa507088288"
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_STORAGE_BUCKET",
+  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+  appId: "YOUR_APP_ID"
 };
 
 // Optional hardening: set VITE_FIREBASE_APPCHECK_SITE_KEY in the build

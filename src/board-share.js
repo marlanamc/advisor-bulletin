@@ -2,11 +2,9 @@
  * Share modal for the student board — the "Share This Opportunity" sheet
  * with WhatsApp / Facebook / Email / SMS buttons and a copy-link field.
  *
- * Lifted verbatim out of firebase-config.js (Stage 1 of the file-split
- * refactor). These were already module-level functions with no dependency
- * on the FirebaseBulletinBoard instance. Importing this module for its side
- * effect installs the window.* globals that the modal's inline onclick=
- * handlers resolve against.
+ * These module-level functions have no dependency on the
+ * FirebaseBulletinBoard instance. Importing this module for its side effect
+ * installs the window.* globals used by existing board renderers.
  */
 
 function shareBulletin(bulletinId, bulletinTitle) {
@@ -26,6 +24,7 @@ function fallbackShare(title, url) {
     // Ensure any existing share modal is closed before opening a new one
     closeShareModal();
 
+    const titleAttr = escapeHtmlAttributeValue(title);
     const urlAttr = escapeHtmlAttributeValue(url);
 
     // Create share modal
@@ -35,39 +34,63 @@ function fallbackShare(title, url) {
         <div class="share-modal-content">
             <h3>Share This Opportunity</h3>
             <div class="share-options">
-                <button onclick="shareVia('whatsapp', '${encodeURIComponent(title)}', '${encodeURIComponent(url)}')" class="share-option whatsapp">
+                <button type="button" data-share-platform="whatsapp" data-share-title="${titleAttr}" data-share-url="${urlAttr}" class="share-option whatsapp">
                     📱 WhatsApp
                 </button>
-                <button onclick="shareVia('facebook', '${encodeURIComponent(title)}', '${encodeURIComponent(url)}')" class="share-option facebook">
+                <button type="button" data-share-platform="facebook" data-share-title="${titleAttr}" data-share-url="${urlAttr}" class="share-option facebook">
                     📘 Facebook
                 </button>
-                <button onclick="shareVia('email', '${encodeURIComponent(title)}', '${encodeURIComponent(url)}')" class="share-option email">
+                <button type="button" data-share-platform="email" data-share-title="${titleAttr}" data-share-url="${urlAttr}" class="share-option email">
                     ✉️ Email
                 </button>
-                <button onclick="shareVia('sms', '${encodeURIComponent(title)}', '${encodeURIComponent(url)}')" class="share-option sms">
+                <button type="button" data-share-platform="sms" data-share-title="${titleAttr}" data-share-url="${urlAttr}" class="share-option sms">
                     💬 Text Message
                 </button>
             </div>
             <div class="share-link">
                 <input type="text" value="${urlAttr}" id="shareLink" readonly>
-                <button onclick="copyLink()" class="copy-btn">Copy Link</button>
+                <button type="button" data-share-action="copy" class="copy-btn">Copy Link</button>
             </div>
-            <button onclick="closeShareModal()" class="close-share">Close</button>
+            <button type="button" data-share-action="close" class="close-share">Close</button>
         </div>
     `;
 
+    modal.addEventListener('click', (event) => {
+        const platformButton = event.target.closest('[data-share-platform]');
+        if (platformButton) {
+            shareVia(
+                platformButton.getAttribute('data-share-platform'),
+                platformButton.getAttribute('data-share-title') || '',
+                platformButton.getAttribute('data-share-url') || '',
+            );
+            return;
+        }
+
+        const actionButton = event.target.closest('[data-share-action]');
+        if (actionButton?.getAttribute('data-share-action') === 'copy') {
+            copyLink();
+        } else if (actionButton?.getAttribute('data-share-action') === 'close') {
+            closeShareModal();
+        }
+    });
     document.body.appendChild(modal);
 }
 
 function shareVia(platform, title, url) {
+    const encodedTitle = encodeURIComponent(title);
+    const encodedUrl = encodeURIComponent(url);
+    const encodedEmailBody = encodeURIComponent(`Check out this opportunity: ${url}`);
+    const encodedSmsBody = encodeURIComponent(`${title} ${url}`);
     const shareUrls = {
-        whatsapp: `https://wa.me/?text=${title}%20${url}`,
-        facebook: `https://www.facebook.com/sharer/sharer.php?u=${url}`,
-        email: `mailto:?subject=${title}&body=Check out this opportunity: ${url}`,
-        sms: `sms:?body=${title} ${url}`
+        whatsapp: `https://wa.me/?text=${encodedTitle}%20${encodedUrl}`,
+        facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
+        email: `mailto:?subject=${encodedTitle}&body=${encodedEmailBody}`,
+        sms: `sms:?body=${encodedSmsBody}`
     };
 
-    window.open(shareUrls[platform], '_blank');
+    if (shareUrls[platform]) {
+        window.open(shareUrls[platform], '_blank');
+    }
     closeShareModal();
 }
 
@@ -95,7 +118,6 @@ function closeShareModal() {
     if (modal) modal.remove();
 }
 
-// Inline handlers (onclick="...") resolve on `window`; this file is an ES module, so export explicitly.
 window.shareBulletin = shareBulletin;
 window.shareVia = shareVia;
 window.copyLink = copyLink;

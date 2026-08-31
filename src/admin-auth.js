@@ -3,8 +3,7 @@
  * post-sign-in bootstrap, sign-out, and the advisor-directory lookups used
  * for post attribution.
  *
- * Extracted verbatim from firebase-admin.js (Stage 3 of the file-split
- * refactor); merged onto FirebaseAdminPanel.prototype by applyMethods().
+ * Merged onto FirebaseAdminPanel.prototype by applyMethods().
  */
 import { db, auth } from './firebase.js'
 import { collection, getDocs } from 'firebase/firestore'

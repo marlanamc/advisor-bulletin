@@ -1,9 +1,8 @@
 /**
  * Image and PDF upload to Firebase Storage for the advisor composer.
  *
- * Extracted verbatim from firebase-admin.js (Stage 3 of the file-split
- * refactor); methods are merged onto FirebaseAdminPanel.prototype by
- * applyMethods() in firebase-admin.js. The image-processing helpers these
+ * Merged onto FirebaseAdminPanel.prototype by applyMethods() in
+ * firebase-admin.js. The image-processing helpers these
  * call (getImageFieldConfig, getFileSignature, prepareImageForUpload,
  * prepareFlyerSourceFile, saveBulletin, loadManageBulletins,
  * showTemporaryMessage) live on other parts of the merged prototype.

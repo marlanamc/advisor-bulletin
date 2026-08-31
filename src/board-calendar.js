@@ -1,6 +1,5 @@
 // Calendar, dates list, and upcoming-events rendering for the student board.
-// Extracted verbatim from firebase-config.js; methods are merged onto
-// FirebaseBulletinBoard.prototype by applyMethods() in firebase-config.js.
+// Merged onto FirebaseBulletinBoard.prototype by applyMethods() in firebase-config.js.
 import {
     scrollWindowTo,
     withSchoolCalendarAnchors,
@@ -33,17 +32,70 @@ export class BoardCalendarMethods {
         if (isDesktopSplit) {
             // Two-pane: list left, month grid right (toggle ignored)
             calendar.innerHTML = this.createDatesListView(datedBulletins);
+            this.bindCalendarActions(calendar);
             if (desktopGrid) {
                 desktopGrid.innerHTML = this.createCalendarView(mergedBulletins, { navigatorMode: true });
                 this.bindCalendarDayScroll(desktopGrid);
+                this.bindCalendarActions(desktopGrid);
             }
         } else {
             // Single-pane: respect toggle
             calendar.innerHTML = this.datesViewMode === 'calendar'
                 ? this.createCalendarView(mergedBulletins)
                 : this.createDatesListView(datedBulletins);
+            this.bindCalendarActions(calendar);
             if (desktopGrid) desktopGrid.innerHTML = '';
         }
+    }
+
+    bindCalendarActions(container) {
+        if (!container || container.__calendarActionsBound) {
+            return;
+        }
+
+        const activate = (target) => {
+            const action = target.getAttribute('data-calendar-action');
+            if (action === 'open-detail') {
+                const bulletinId = target.getAttribute('data-bulletin-id') || '';
+                if (bulletinId) this.showBulletinDetail(bulletinId);
+            } else if (action === 'open-pdf') {
+                const bulletinId = target.getAttribute('data-bulletin-id') || '';
+                if (bulletinId) this.openPdfFromBulletin(bulletinId);
+            } else if (action === 'share') {
+                const bulletinId = target.getAttribute('data-bulletin-id') || '';
+                if (bulletinId) window.shareBulletin?.(bulletinId, target.getAttribute('data-bulletin-title') || '');
+            } else if (action === 'previous-month') {
+                this.previousMonth();
+            } else if (action === 'next-month') {
+                this.nextMonth();
+            } else if (action === 'show-day-events') {
+                const ids = (target.getAttribute('data-bulletin-ids') || '')
+                    .split(',')
+                    .map((id) => id.trim())
+                    .filter(Boolean);
+                if (ids.length) this.showDayEventsByIds(ids);
+            }
+        };
+
+        container.addEventListener('click', (event) => {
+            const target = event.target.closest('[data-calendar-action]');
+            if (target && container.contains(target)) {
+                activate(target);
+            }
+        });
+
+        container.addEventListener('keydown', (event) => {
+            if (event.key !== 'Enter' && event.key !== ' ') {
+                return;
+            }
+            const target = event.target.closest('[data-calendar-action]');
+            if (target && container.contains(target)) {
+                event.preventDefault();
+                activate(target);
+            }
+        });
+
+        container.__calendarActionsBound = true;
     }
 
     bindCalendarDayScroll(gridEl) {
@@ -124,7 +176,7 @@ export class BoardCalendarMethods {
             const meta = [weekday, timeLabel].filter(Boolean).join(' · ');
 
             return `
-                <button class="side-event" type="button" onclick="window.bulletinBoard && window.bulletinBoard.showBulletinDetail('${this.escapeAttribute(bulletin.id)}')">
+                <button class="side-event" type="button" data-calendar-action="open-detail" data-bulletin-id="${this.escapeAttribute(bulletin.id)}">
                     <div class="side-date"><span>${month}</span><strong>${day}</strong></div>
                     <div>
                         <p class="side-event-title">${this.escapeHtml(this.getPostTitle(bulletin) || (this.getCurrentLang() === 'ES' ? 'Próximo evento' : 'Upcoming event'))}</p>
@@ -134,6 +186,7 @@ export class BoardCalendarMethods {
                 </button>
             `;
         }).join('');
+        this.bindCalendarActions(container);
     }
 
     updateDatesViewToggle() {
@@ -213,11 +266,11 @@ export class BoardCalendarMethods {
 
                     <div class="bulletin-list-actions">
                         ${bulletin.pdfUrl ? `
-                            <button type="button" class="pdf-btn" aria-label="View PDF document for ${this.escapeHtml(bulletin.title)}" onclick="window.bulletinBoard.openPdfFromBulletin('${this.escapeAttribute(bulletin.id)}')">
+                            <button type="button" class="pdf-btn" aria-label="View PDF document for ${this.escapeAttribute(bulletin.title)}" data-calendar-action="open-pdf" data-bulletin-id="${this.escapeAttribute(bulletin.id)}">
                                 📄 View PDF
                             </button>
                         ` : ''}
-                        <button type="button" class="share-btn" onclick="shareBulletin('${this.escapeAttribute(bulletin.id)}', '${this.escapeAttribute(this.getPostTitle(bulletin) || '')}')">
+                        <button type="button" class="share-btn" data-calendar-action="share" data-bulletin-id="${this.escapeAttribute(bulletin.id)}" data-bulletin-title="${this.escapeAttribute(this.getPostTitle(bulletin) || '')}">
                             📤 Share
                         </button>
                     </div>
@@ -408,8 +461,8 @@ export class BoardCalendarMethods {
                 style="--date-accent:${meta.accent};--date-tint:${meta.tint};--date-dot:${dotColor}"
                 role="button"
                 tabindex="0"
-                onclick="window.bulletinBoard && window.bulletinBoard.showBulletinDetail('${this.escapeAttribute(bulletin.id)}')"
-                onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();window.bulletinBoard && window.bulletinBoard.showBulletinDetail('${this.escapeAttribute(bulletin.id)}')}"
+                data-calendar-action="open-detail"
+                data-bulletin-id="${this.escapeAttribute(bulletin.id)}"
             >
                 <div class="dates-list-badge" aria-hidden="true">
                     <span>${this.escapeHtml(badgeTop)}</span>
@@ -475,13 +528,13 @@ export class BoardCalendarMethods {
         let calendarHTML = `
             <div class="monthly-calendar">
                 <div class="calendar-header">
-                    <button class="calendar-nav-btn" onclick="bulletinBoard.previousMonth()" title="Previous Month">
+                    <button class="calendar-nav-btn" data-calendar-action="previous-month" title="Previous Month">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <polyline points="15,18 9,12 15,6"></polyline>
                         </svg>
                     </button>
                     <h2 class="calendar-month">${monthNames[currentMonth]} ${currentYear}</h2>
-                    <button class="calendar-nav-btn" onclick="bulletinBoard.nextMonth()" title="Next Month">
+                    <button class="calendar-nav-btn" data-calendar-action="next-month" title="Next Month">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <polyline points="9,18 15,12 9,6"></polyline>
                         </svg>
@@ -523,8 +576,8 @@ export class BoardCalendarMethods {
         const hasBulletins = bulletinCount > 0;
         // In navigator mode (desktop split), click scrolls the list (bound separately).
         // In popup mode (mobile), click opens the day's events.
-        const clickHandler = hasBulletins && !navigatorMode
-            ? `onclick='window.bulletinBoard && window.bulletinBoard.showDayEventsByIds(${JSON.stringify(bulletins.map(b => b.id))})' onkeydown='if(event.key==="Enter"||event.key===" "){event.preventDefault();window.bulletinBoard && window.bulletinBoard.showDayEventsByIds(${JSON.stringify(bulletins.map(b => b.id))})}'`
+        const actionAttr = hasBulletins && !navigatorMode
+            ? `data-calendar-action="show-day-events" data-bulletin-ids="${this.escapeAttribute(bulletins.map(b => b.id).join(','))}"`
             : '';
         const dayAttr = hasBulletins && navigatorMode ? `data-calendar-day="${isoDate}"` : '';
         const interactiveAttrs = hasBulletins ? 'role="button" tabindex="0"' : '';
@@ -534,7 +587,7 @@ export class BoardCalendarMethods {
                  data-bulletin-count="${bulletinCount}"
                  ${dayAttr}
                  ${interactiveAttrs}
-                 ${clickHandler}
+                 ${actionAttr}
                  style="${hasBulletins ? 'cursor: pointer;' : ''}">
                 <div class="calendar-day-number">
                     <span>${day}</span>
@@ -584,7 +637,7 @@ export class BoardCalendarMethods {
         }
         
         return `
-            <div class="monthly-bulletin-item" role="button" tabindex="0" onclick="bulletinBoard.showBulletinDetail('${this.escapeAttribute(bulletin.id)}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();bulletinBoard.showBulletinDetail('${this.escapeAttribute(bulletin.id)}')}">
+            <div class="monthly-bulletin-item" role="button" tabindex="0" data-calendar-action="open-detail" data-bulletin-id="${this.escapeAttribute(bulletin.id)}">
                 <div class="monthly-bulletin-category category-${bulletin.category}"></div>
                 <div class="monthly-bulletin-title">${this.escapeHtml(this.getPostTitle(bulletin))}</div>
                 ${displayDate ? `

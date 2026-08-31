@@ -219,3 +219,118 @@
 }
 
 /* Form Validation States */
+
+.confirm-dialog-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(4px);
+}
+
+.confirm-dialog-card {
+    width: 100%;
+    max-width: 360px;
+    padding: 28px 24px;
+    border-radius: 20px;
+    background: #fff;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+    text-align: center;
+}
+
+.confirm-dialog-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 68px;
+    height: 30px;
+    margin-bottom: 12px;
+    border-radius: 999px;
+    background: #fee2e2;
+    color: #991b1b;
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.confirm-dialog-title {
+    margin: 0 0 8px;
+    color: #0a1d3a;
+    font-family: 'Outfit', sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.confirm-dialog-body {
+    margin: 0 0 24px;
+    color: #475569;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.confirm-dialog-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.confirm-dialog-button {
+    flex: 1;
+    padding: 12px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.confirm-dialog-button--cancel {
+    border: 1.5px solid #e2e8f0;
+    background: #fff;
+    color: #475569;
+}
+
+.confirm-dialog-button--danger {
+    border: none;
+    background: #dc2626;
+    color: #fff;
+}
+
+.edit-mode-banner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    margin-bottom: 16px;
+    border: 1.5px solid #f59e0b;
+    border-radius: 12px;
+    background: linear-gradient(90deg, #fffbeb, #fef3c7);
+    color: #92400e;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.edit-mode-banner__label {
+    min-width: 0;
+}
+
+.edit-mode-banner__title {
+    color: #78350f;
+    font-weight: 500;
+}
+
+.edit-mode-banner__cancel {
+    margin-left: auto;
+    border: none;
+    background: none;
+    color: #b45309;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: underline;
+    white-space: nowrap;
+}

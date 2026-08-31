@@ -320,7 +320,7 @@ class FirebaseBulletinBoard {
                 if (grid.getAttribute('data-snapshot-rendered') === 'true') {
                     return;
                 }
-                grid.innerHTML = '<div class="feed-load-error" role="alert"><p>Could not load posts. Check your connection and try again.</p><p class="empty-state-bilingual">No se pudieron cargar las publicaciones. Comprueba tu conexión.</p><button type="button" class="feed-load-retry" onclick="window.location.reload()">Try again / Intentar de nuevo</button></div>';
+                grid.innerHTML = '<div class="feed-load-error" role="alert"><p>Could not load posts. Check your connection and try again.</p><p class="empty-state-bilingual">No se pudieron cargar las publicaciones. Comprueba tu conexión.</p><button type="button" class="feed-load-retry" data-feed-action="reload">Try again / Intentar de nuevo</button></div>';
             }
         });
     }
@@ -761,6 +761,14 @@ class FirebaseBulletinBoard {
         const feedCategoryClear = document.getElementById('feedCategoryClear');
         if (feedCategoryClear) {
             feedCategoryClear.addEventListener('click', () => this.setFeedCategory('all'));
+        }
+        const bulletinGrid = document.getElementById('bulletinGrid');
+        if (bulletinGrid) {
+            bulletinGrid.addEventListener('click', (event) => {
+                if (event.target.closest('[data-feed-action="reload"]')) {
+                    window.location.reload();
+                }
+            });
         }
 
         this.setupResourceDetailSheet();
@@ -1781,6 +1789,7 @@ class FirebaseBulletinBoard {
             body.innerHTML = `<div class="detail-card"><p>This bulletin is no longer available.</p></div>`;
         } else {
             body.innerHTML = this.renderBulletinDetail(bulletin);
+            this.bindBulletinDetailActions?.(body);
         }
 
         modal.style.display = 'flex';
@@ -1819,7 +1828,7 @@ class FirebaseBulletinBoard {
         const bulletinsList = bulletins.map(bulletin => {
             const isExpired = this.isBulletinExpired(bulletin);
             return `
-                <div class="day-event-item ${isExpired ? 'expired' : ''}" role="button" tabindex="0" onclick="event.stopPropagation(); bulletinBoard.showBulletinDetail('${this.escapeAttribute(bulletin.id)}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();bulletinBoard.showBulletinDetail('${this.escapeAttribute(bulletin.id)}')}">
+                <div class="day-event-item ${isExpired ? 'expired' : ''}" role="button" tabindex="0" data-day-event-id="${this.escapeAttribute(bulletin.id)}">
                     <div class="day-event-header">
                         <h3 class="day-event-title">${this.escapeHtml(this.getPostTitle(bulletin))}</h3>
                         <span class="category-badge category-${bulletin.category}">${this.getCategoryDisplay(bulletin.category)}</span>
@@ -1838,10 +1847,11 @@ class FirebaseBulletinBoard {
                     ${bulletinsList}
                 </div>
                 <div class="detail-actions" style="margin-top: 24px;">
-                    <button type="button" class="close-btn" onclick="window.bulletinBoard.closeBulletinDetail()">Close</button>
+                    <button type="button" class="close-btn" data-detail-action="close">Close</button>
                 </div>
             </div>
         `;
+        this.bindBulletinDetailActions?.(body);
 
         modal.style.display = 'flex';
         modal.setAttribute('aria-hidden', 'false');
@@ -2556,7 +2566,7 @@ applyMethods(FirebaseBulletinBoard, BoardDateRenderMethods)
 
 // Share modal moved to ./board-share.js — importing it installs the
 // window.shareBulletin / shareVia / copyLink / closeShareModal globals that
-// the modal's inline onclick= handlers resolve against.
+// existing board renderers still call while the inline handlers are retired.
 import './board-share.js'
 
 // Initialize the bulletin board when page loads

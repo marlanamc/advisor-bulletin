@@ -3,15 +3,7 @@ import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 import { getFirestore, doc, getDoc, setDoc } from 'firebase/firestore';
 import { createInterface } from 'node:readline';
 import { stdin, stdout } from 'node:process';
-
-const firebaseConfig = {
-  apiKey: 'AIzaSyBGaONCeB5MQCYdp3Gv8eUKPvLsBGFnXgY',
-  authDomain: 'ebhcs-bulletin-board.firebaseapp.com',
-  projectId: 'ebhcs-bulletin-board',
-  storageBucket: 'ebhcs-bulletin-uploads-us',
-  messagingSenderId: '556649154585',
-  appId: '1:556649154585:web:3a3f49d2056aa507088288',
-};
+import { firebaseConfig } from './lib/firebase-config.mjs';
 
 const TARGETS = [
   { id: 'lgregory', displayName: 'Leah',   email: 'lgregory@ebhcs.org', isAdmin: true },

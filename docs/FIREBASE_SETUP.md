@@ -57,17 +57,17 @@ const firebaseConfig = {
 
 ## Step 6: Update Your Website Files
 
-Replace the configuration in `src/firebase.js`, `src/firebase-student.js`, and `src/firebase-auth.js` with your actual Firebase config (a blank starting template is in `config/firebase-config-template.js`).
+Replace the configuration in `src/firebase-shared-config.js` and `scripts/lib/firebase-config.mjs` with your actual Firebase config. A blank starting template is in `config/firebase-config-template.js`.
 
 ## Step 7: Deploy to Firebase Hosting (Optional but Recommended)
 
-1. Install Firebase CLI: `npm install -g firebase-tools`
-2. In your project folder: `firebase login`
-3. `firebase init hosting`
+1. Use the project-pinned Firebase CLI with `npx firebase`, or install the CLI globally with `npm install -g firebase-tools`
+2. In your project folder: `npx firebase login`
+3. `npx firebase init hosting`
 4. Select your project
 5. Set public directory to current folder
 6. Choose "No" for single-page app
-7. `firebase deploy`
+7. `npx firebase deploy`
 
 ## Benefits of This Setup:
 

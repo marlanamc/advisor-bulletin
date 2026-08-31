@@ -79,6 +79,9 @@ async function seedLargeResourceDirectory(page) {
     window.bulletinBoard.bulletins = resources;
     window.bulletinBoard.displayBulletins(resources);
   }, { categories: RESOURCE_CATEGORIES, counts: CATEGORY_COUNTS });
+  await expect.poll(async () => {
+    return page.evaluate(() => window.bulletinBoard.getPublishedResources().length);
+  }).toBe(EXPECTED_RESOURCE_TOTAL);
 }
 
 test.describe('Resource directory smoke coverage', () => {

@@ -2,8 +2,7 @@
  * Date/time blocks rendered into bulletin feed cards and the detail sheet
  * on the student board.
  *
- * Extracted verbatim from firebase-config.js (Stage 4 of the file-split
- * refactor); merged onto FirebaseBulletinBoard.prototype by applyMethods().
+ * Merged onto FirebaseBulletinBoard.prototype by applyMethods().
  * The this.* helpers these call (isDeadlineClose, formatTimeRange,
  * getBulletinEventSessions, escapeHtml, parseStoredYmdLocal) live on other
  * parts of the merged prototype.

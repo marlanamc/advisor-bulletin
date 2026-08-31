@@ -3,8 +3,7 @@
  * the form-data -> bulletin-doc mapper, the size-guarded save, and the
  * post-submit form reset.
  *
- * Extracted verbatim from firebase-admin.js (Stage 3 of the file-split
- * refactor); merged onto FirebaseAdminPanel.prototype by applyMethods().
+ * Merged onto FirebaseAdminPanel.prototype by applyMethods().
  * The many this.* helpers these call (buildBulletinObject aside) live on
  * other parts of the merged prototype.
  */
@@ -595,7 +594,7 @@ export class AdminBulletinWriteMethods {
 
         // Hide edit banner
         const banner = document.getElementById('editModeBanner');
-        if (banner) banner.style.display = 'none';
+        if (banner) banner.hidden = true;
 
         // Clear form
         document.getElementById('bulletinForm').reset();

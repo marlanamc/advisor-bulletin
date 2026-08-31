@@ -1,6 +1,5 @@
 // Composer form machinery: event date rows, composer mirror, content type, category pickers.
-// Extracted verbatim from firebase-admin.js; methods are merged onto
-// FirebaseAdminPanel.prototype by applyMethods() in firebase-admin.js.
+// Merged onto FirebaseAdminPanel.prototype by applyMethods() in firebase-admin.js.
 import {
     ADMIN_RESOURCE_CATEGORIES,
     ADMIN_RESOURCE_CATEGORY_ICONS,
@@ -90,7 +89,6 @@ export class AdminComposerFormMethods {
         const safeDate = this.escapeAttribute(dateValue);
         const safeStart = this.escapeAttribute(startValue);
         const safeEnd = this.escapeAttribute(endValue);
-        const previewHandler = 'window.syncAdminStudentPreview && window.syncAdminStudentPreview()';
 
         const timeFields = sameTime ? '' : `
                 <input
@@ -99,8 +97,6 @@ export class AdminComposerFormMethods {
                     class="recommended event-session-start"
                     value="${safeStart}"
                     aria-label="Session ${index + 1} start time"
-                    onchange="${previewHandler}"
-                    oninput="${previewHandler}"
                 >
                 <input
                     type="time"
@@ -108,8 +104,6 @@ export class AdminComposerFormMethods {
                     class="recommended event-session-end"
                     value="${safeEnd}"
                     aria-label="Session ${index + 1} end time"
-                    onchange="${previewHandler}"
-                    oninput="${previewHandler}"
                 >`;
 
         return `
@@ -121,11 +115,9 @@ export class AdminComposerFormMethods {
                     value="${safeDate}"
                     aria-label="Session date ${index + 1}"
                     ${index === 0 ? 'data-session-first="true"' : ''}
-                    onchange="${previewHandler}"
-                    oninput="${previewHandler}"
                 >
                 ${timeFields}
-                ${canRemove ? `<button type="button" class="event-date-remove-btn" onclick="adminPanel.removeEventDateRow(this)" aria-label="Remove session">&times;</button>` : ''}
+                ${canRemove ? '<button type="button" class="event-date-remove-btn" data-event-date-action="remove" aria-label="Remove session">&times;</button>' : ''}
             </div>
         `;
     }

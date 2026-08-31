@@ -94,7 +94,7 @@ test.describe('Student board — refactor safety net', () => {
     await expect(modal.locator('.share-option.whatsapp')).toBeVisible();
     await expect(modal.locator('.close-share')).toBeVisible();
 
-    await page.evaluate(() => window.closeShareModal());
+    await modal.locator('.close-share').click();
     await expect(page.locator('.share-modal')).toHaveCount(0);
   });
 
@@ -102,9 +102,26 @@ test.describe('Student board — refactor safety net', () => {
     await seedStudentFeed(page);
     await page.evaluate(() => window.shareBulletin('sn-post-1', 'Resume workshop this Friday'));
 
-    await page.evaluate(() => window.copyLink());
-    // copyLink() reads #shareLink, selects it, and relabels the copy button.
+    await page.locator('.share-modal .copy-btn').click();
     await expect(page.locator('.share-modal .copy-btn')).toHaveText('Copied!');
+  });
+
+  test('share option buttons use the delegated share handler', async ({ page }) => {
+    await seedStudentFeed(page);
+    await page.evaluate(() => {
+      window.__lastShareOpen = null;
+      window.open = (url, target) => {
+        window.__lastShareOpen = { url, target };
+      };
+      window.shareBulletin('sn-post-1', 'Resume workshop this Friday');
+    });
+
+    await page.locator('.share-modal .share-option.email').click();
+
+    const opened = await page.evaluate(() => window.__lastShareOpen);
+    expect(opened.target).toBe('_blank');
+    expect(opened.url).toContain('mailto:?subject=Resume%20workshop%20this%20Friday');
+    await expect(page.locator('.share-modal')).toHaveCount(0);
   });
 
   test('opening a PDF resource invokes the PDF viewer path', async ({ page }) => {

@@ -14,11 +14,11 @@
  *     node scripts/check-advisor-auth-sync.mjs
  *
  * Option B — no key file (admin password + Firebase CLI):
- *   firebase login
+ *   npx firebase-tools login
  *   node scripts/check-advisor-auth-sync.mjs --email=mcreed@ebhcs.org
  *
  * Option C — no key file, manual Auth export:
- *   firebase auth:export /tmp/auth-users.json --format=json --project ebhcs-bulletin-board
+ *   npx firebase-tools auth:export /tmp/auth-users.json --format=json --project ebhcs-bulletin-board
  *   node scripts/check-advisor-auth-sync.mjs --email=mcreed@ebhcs.org --auth-export=/tmp/auth-users.json
  *
  * NOTE: the portal now uses Google sign-in only. Option B relies on
@@ -32,18 +32,9 @@ import { tmpdir } from 'node:os';
 import { createInterface } from 'node:readline';
 import { execFileSync } from 'node:child_process';
 import { stdin, stdout } from 'node:process';
+import { PROJECT_ID, firebaseConfig as FIREBASE_CONFIG } from './lib/firebase-config.mjs';
 
-const PROJECT_ID = 'ebhcs-bulletin-board';
 const PRIVILEGED_EMAILS = new Set(['mcreed@ebhcs.org', 'lgregory@ebhcs.org']);
-
-const FIREBASE_CONFIG = {
-  apiKey: 'AIzaSyBGaONCeB5MQCYdp3Gv8eUKPvLsBGFnXgY',
-  authDomain: 'ebhcs-bulletin-board.firebaseapp.com',
-  projectId: PROJECT_ID,
-  storageBucket: 'ebhcs-bulletin-uploads-us',
-  messagingSenderId: '556649154585',
-  appId: '1:556649154585:web:3a3f49d2056aa507088288',
-};
 
 function parseArgs(argv) {
   const args = { credentials: null, email: null, authExport: null };
@@ -163,7 +154,8 @@ function tryFirebaseAuthExport() {
   const dir = mkdtempSync(resolve(tmpdir(), 'advisor-auth-export-'));
   const exportPath = resolve(dir, 'users.json');
   try {
-    execFileSync('firebase', [
+    execFileSync('npx', [
+      'firebase-tools',
       'auth:export',
       exportPath,
       '--format=json',
@@ -235,10 +227,10 @@ async function main() {
         '  1. Service account key:\n' +
         '     GOOGLE_APPLICATION_CREDENTIALS=./service-account.json node scripts/check-advisor-auth-sync.mjs\n\n' +
         '  2. Admin password + Firebase CLI (no key file):\n' +
-        '     firebase login\n' +
+        '     npx firebase-tools login\n' +
         '     node scripts/check-advisor-auth-sync.mjs --email=mcreed@ebhcs.org\n\n' +
         '  3. Admin password + manual Auth export:\n' +
-        '     firebase auth:export /tmp/auth-users.json --format=json --project ebhcs-bulletin-board\n' +
+        '     npx firebase-tools auth:export /tmp/auth-users.json --format=json --project ebhcs-bulletin-board\n' +
         '     node scripts/check-advisor-auth-sync.mjs --email=mcreed@ebhcs.org --auth-export=/tmp/auth-users.json'
     );
     process.exit(1);
@@ -250,15 +242,15 @@ async function main() {
   if (args.authExport) {
     authUsernames = loadAuthUsernamesFromExport(args.authExport);
   } else {
-    console.log('Trying firebase auth:export (requires "firebase login" with project access)…');
+    console.log('Trying firebase auth:export (requires "npx firebase-tools login" with project access)…');
     authUsernames = tryFirebaseAuthExport();
   }
 
   if (!authUsernames) {
     console.error(
       '\nCould not list Auth users without a service account key.\n' +
-        'Run "firebase login", then re-run this script, or pass an export file:\n' +
-        '  firebase auth:export /tmp/auth-users.json --format=json --project ebhcs-bulletin-board\n' +
+        'Run "npx firebase-tools login", then re-run this script, or pass an export file:\n' +
+        '  npx firebase-tools auth:export /tmp/auth-users.json --format=json --project ebhcs-bulletin-board\n' +
         `  node scripts/check-advisor-auth-sync.mjs --email=${args.email} --auth-export=/tmp/auth-users.json`
     );
     process.exit(1);

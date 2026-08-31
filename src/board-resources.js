@@ -1,6 +1,5 @@
 // Find Help resource rendering: sections, chips, sheets, cards, story row.
-// Extracted verbatim from firebase-config.js; methods are merged onto
-// FirebaseBulletinBoard.prototype by applyMethods() in firebase-config.js.
+// Merged onto FirebaseBulletinBoard.prototype by applyMethods() in firebase-config.js.
 import {
     scrollWindowTo,
     getAppHeaderOffset,
@@ -35,6 +34,37 @@ export class BoardResourcesMethods {
         if (document.querySelector('.resources-desktop-layout')) {
             this.renderResourcesDesktop(resources);
         }
+    }
+
+    bindResourceCardActions(container) {
+        if (!container || container.__resourceCardActionsBound) {
+            return;
+        }
+
+        container.addEventListener('click', (event) => {
+            const button = event.target.closest('[data-resource-action]');
+            if (!button || !container.contains(button)) {
+                return;
+            }
+
+            const action = button.getAttribute('data-resource-action');
+            const resourceId = button.getAttribute('data-resource-id') || '';
+            if (action === 'share' && resourceId) {
+                window.shareBulletin?.(resourceId, button.getAttribute('data-resource-title') || '');
+            } else if (action === 'open-pdf' && resourceId) {
+                this.openPdfFromBulletin(resourceId);
+            } else if (action === 'open-action-pdf') {
+                const pdfUrl = button.getAttribute('data-pdf-url') || '';
+                if (pdfUrl) {
+                    this.openResourcePdf(pdfUrl, {
+                        postId: resourceId,
+                        category: button.getAttribute('data-resource-category') || '',
+                    });
+                }
+            }
+        });
+
+        container.__resourceCardActionsBound = true;
     }
 
     buildResourceNeedChipIndex(resources) {
@@ -575,6 +605,7 @@ export class BoardResourcesMethods {
             })
             .join('');
         initResourceLogoTiles(container);
+        this.bindResourceCardActions(container);
     }
 
     // ─── Quick-Filter helpers ────────────────────────────────────────
@@ -826,6 +857,7 @@ export class BoardResourcesMethods {
             `;
         }).join('');
         initResourceLogoTiles(sectionsContainer);
+        this.bindResourceCardActions(sectionsContainer);
     }
 
     // ─── Speech Synthesis ────────────────────────────────────────────
@@ -1090,6 +1122,7 @@ export class BoardResourcesMethods {
         if (visibleResources.length > 0 && !isMobileSheet) {
             initResourceLogoTiles(listEl);
         }
+        this.bindResourceCardActions(listEl);
 
         // Place the "See all" button in the sticky footer (outside the scroll area)
         const footerEl = document.getElementById('catSheetFooter');
@@ -1452,7 +1485,7 @@ export class BoardResourcesMethods {
 
         const logo = resource.resourceLogo || '';
         const logoTile = logo
-            ? `<img src="${this.escapeAttribute(logo)}" alt="${this.escapeAttribute(titleEn)} logo" loading="lazy" decoding="async" onload="window.applyResourceLogoTileLayout&&window.applyResourceLogoTileLayout(this)">`
+            ? `<img src="${this.escapeAttribute(logo)}" alt="${this.escapeAttribute(titleEn)} logo" loading="lazy" decoding="async">`
             : `<span class="mobile-resource-card__icon-fallback" style="background:${accent}" aria-hidden="true">${this.getResourceIconSvg(resource)}</span>`;
 
         const postDescription = this.getPostDescription(resource);
@@ -1528,14 +1561,17 @@ export class BoardResourcesMethods {
             : '';
 
         const shareTitle = this.escapeHtml(titleEn).replace(/'/g, '&#39;');
+        const safeResourceId = this.escapeAttribute(resource.id || '');
 
         return `
             <article class="mobile-resource-card mobile-resource-card--${categoryKey}"
                      style="--cat-accent:${accent}"
-                     data-resource-id="${this.escapeAttribute(resource.id || '')}">
+                     data-resource-id="${safeResourceId}">
                 <button type="button"
                         class="mobile-resource-card__share"
-                        onclick="shareBulletin('${resource.id || ''}','${shareTitle}')"
+                        data-resource-action="share"
+                        data-resource-id="${safeResourceId}"
+                        data-resource-title="${shareTitle}"
                         aria-label="Share ${this.escapeAttribute(titleEn)}">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4"/><path d="m15.4 6.5-6.8 4"/></svg>
                 </button>
@@ -1574,13 +1610,15 @@ export class BoardResourcesMethods {
         const servicesHtml = this.getResourceServiceChipsHtml(resource, { section: true });
         const badgesHtml = this.getResourceBadgesHtml(resource);
         const actionLinksHtml = this.getResourceActionLinksHtml(resource, categoryKey, titleEn);
+        const safeResourceId = this.escapeAttribute(resource.id || '');
 
         const openFormBtn = formUrl
             ? (pdfUrl
                 ? `<button type="button"
                         class="mobile-resource-card__btn mobile-resource-card__btn--primary"
                         aria-label="Open ${this.escapeAttribute(titleEn)} form"
-                        onclick="window.bulletinBoard.openPdfFromBulletin('${this.escapeAttribute(resource.id || '')}')">
+                        data-resource-action="open-pdf"
+                        data-resource-id="${safeResourceId}">
                     ${OPEN_FORM_ICON_SVG}
                     <span class="en-text">Open form</span>
                     <span class="es-text">Abrir formulario</span>
@@ -1620,10 +1658,12 @@ export class BoardResourcesMethods {
         return `
             <article class="mobile-resource-card mobile-resource-card--document mobile-resource-card--${categoryKey}"
                      style="--cat-accent:${accent}"
-                     data-resource-id="${this.escapeAttribute(resource.id || '')}">
+                     data-resource-id="${safeResourceId}">
                 <button type="button"
                         class="mobile-resource-card__share"
-                        onclick="shareBulletin('${resource.id || ''}','${shareTitle}')"
+                        data-resource-action="share"
+                        data-resource-id="${safeResourceId}"
+                        data-resource-title="${shareTitle}"
                         aria-label="Share ${this.escapeAttribute(titleEn)}">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4"/><path d="m15.4 6.5-6.8 4"/></svg>
                 </button>
@@ -1656,11 +1696,15 @@ export class BoardResourcesMethods {
 
             if (link.pdfUrl) {
                 const pdfUrl = this.escapeAttribute(link.pdfUrl);
+                const safeResourceId = this.escapeAttribute(resource.id || '');
                 return `
             <button type="button"
                     class="mobile-resource-card__btn mobile-resource-card__btn--secondary mobile-resource-card__btn--action-link"
                     aria-label="${ariaLabel}"
-                    onclick="window.bulletinBoard.openResourcePdf('${pdfUrl}', { postId: '${this.escapeAttribute(resource.id || '')}', category: '${this.escapeAttribute(categoryKey)}' })">
+                    data-resource-action="open-action-pdf"
+                    data-resource-id="${safeResourceId}"
+                    data-resource-category="${this.escapeAttribute(categoryKey)}"
+                    data-pdf-url="${pdfUrl}">
                 ${RESOURCE_ACTION_LINK_PDF_ICON_SVG}
                 <span class="en-text">${labelEn}</span>
                 <span class="es-text">${labelEs}</span>

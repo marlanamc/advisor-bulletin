@@ -81,17 +81,13 @@ test.describe('PWA service worker', () => {
     await resetPwaState(page);
 
     await page.goto('/', { waitUntil: 'domcontentloaded' });
-    await page.waitForFunction(async () => {
-      const registration = await navigator.serviceWorker.getRegistration();
-      return registration?.updateViaCache === 'none';
-    });
-
-    const updateViaCache = await page.evaluate(async () => {
-      const registration = await navigator.serviceWorker.getRegistration();
-      return registration?.updateViaCache;
-    });
-
-    expect(updateViaCache).toBe('none');
+    await expect.poll(async () => {
+      return page.evaluate(async () => {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        const registration = registrations.find((candidate) => candidate.scope === `${window.location.origin}/`);
+        return registration?.updateViaCache || null;
+      });
+    }, { timeout: 10000 }).toBe('none');
   });
 
   test('deploy version check records first version without reloading', async ({ page }) => {

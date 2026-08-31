@@ -1,9 +1,8 @@
 /**
  * Editing an existing bulletin (populate the composer from a saved doc) and
- * deleting one (with the inline confirm dialog).
+ * deleting one (with the confirm dialog).
  *
- * Extracted verbatim from firebase-admin.js (Stage 3 of the file-split
- * refactor); merged onto FirebaseAdminPanel.prototype by applyMethods().
+ * Merged onto FirebaseAdminPanel.prototype by applyMethods().
  */
 import { db } from './firebase.js'
 import { doc, updateDoc } from 'firebase/firestore'
@@ -38,20 +37,15 @@ export class AdminEditMethods {
         dialog.setAttribute('role', 'alertdialog');
         dialog.setAttribute('aria-modal', 'true');
         dialog.setAttribute('aria-label', title);
-        dialog.style.cssText = `
-            position: fixed; inset: 0; z-index: 2000;
-            display: flex; align-items: center; justify-content: center;
-            background: rgba(15,23,42,0.55); backdrop-filter: blur(4px);
-            padding: 20px;
-        `;
+        dialog.className = 'confirm-dialog-backdrop';
         dialog.innerHTML = `
-            <div style="background:#fff;border-radius:20px;padding:28px 24px;max-width:360px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.2);text-align:center">
-                <div style="font-size:32px;margin-bottom:12px">🗑️</div>
-                <h3 style="font-family:'Outfit',sans-serif;font-size:18px;font-weight:800;color:#0a1d3a;margin:0 0 8px">${title}</h3>
-                <p style="font-size:14px;color:#475569;margin:0 0 24px;line-height:1.5">${body}</p>
-                <div style="display:flex;gap:10px">
-                    <button id="confirmDialogCancel" style="flex:1;padding:12px;border:1.5px solid #e2e8f0;background:#fff;border-radius:12px;font-size:14px;font-weight:700;color:#475569;cursor:pointer">Keep it</button>
-                    <button id="confirmDialogOk" style="flex:1;padding:12px;border:none;background:#dc2626;border-radius:12px;font-size:14px;font-weight:700;color:#fff;cursor:pointer">Yes, delete</button>
+            <div class="confirm-dialog-card" role="document">
+                <div class="confirm-dialog-icon" aria-hidden="true">Delete</div>
+                <h3 class="confirm-dialog-title">${this.escapeHtml(title)}</h3>
+                <p class="confirm-dialog-body">${this.escapeHtml(body)}</p>
+                <div class="confirm-dialog-actions">
+                    <button id="confirmDialogCancel" type="button" class="confirm-dialog-button confirm-dialog-button--cancel">Keep it</button>
+                    <button id="confirmDialogOk" type="button" class="confirm-dialog-button confirm-dialog-button--danger">Yes, delete</button>
                 </div>
             </div>
         `;
@@ -165,8 +159,8 @@ export class AdminEditMethods {
                 if (bulletin.resourceLogo) {
                     resourceLogoPreview.innerHTML = `
                         <div class="preview-container">
-                            <img src="${bulletin.resourceLogo}" alt="Logo preview" class="preview-image">
-                            <button type="button" class="remove-image" onclick="adminPanel.removeImagePreview('resourceLogo')" aria-label="Remove logo">&times;</button>
+                            <img src="${this.escapeAttribute(bulletin.resourceLogo)}" alt="Logo preview" class="preview-image">
+                            <button type="button" class="remove-image" data-attachment-action="remove-image" data-field-name="resourceLogo" aria-label="Remove logo">&times;</button>
                         </div>
                     `;
                 } else {
@@ -251,18 +245,20 @@ export class AdminEditMethods {
             if (!banner) {
                 banner = document.createElement('div');
                 banner.id = 'editModeBanner';
-                banner.style.cssText = `
-                    display:flex;align-items:center;gap:10px;
-                    background:linear-gradient(90deg,#fffbeb,#fef3c7);
-                    border:1.5px solid #f59e0b;border-radius:12px;
-                    padding:10px 14px;margin-bottom:16px;font-size:13px;
-                    font-weight:700;color:#92400e;font-family:'Plus Jakarta Sans',sans-serif;
-                `;
+                banner.className = 'edit-mode-banner';
                 formHeader.insertAdjacentElement('afterend', banner);
+                banner.addEventListener('click', (event) => {
+                    if (event.target.closest('[data-edit-action="cancel"]')) {
+                        this.resetForm();
+                    }
+                });
             }
             const shortTitle = (bulletin.title || bulletin.titleEn || 'this item').slice(0, 50);
-            banner.innerHTML = `✏️ Editing: <span style="font-weight:500;color:#78350f">"${shortTitle}"</span> &nbsp;<button type="button" onclick="adminPanel.resetForm()" style="margin-left:auto;background:none;border:none;color:#b45309;font-size:12px;font-weight:700;cursor:pointer;text-decoration:underline">Cancel edit</button>`;
-            banner.style.display = 'flex';
+            banner.innerHTML = `
+                <span class="edit-mode-banner__label">Editing: <span class="edit-mode-banner__title">"${this.escapeHtml(shortTitle)}"</span></span>
+                <button type="button" class="edit-mode-banner__cancel" data-edit-action="cancel">Cancel edit</button>
+            `;
+            banner.hidden = false;
         }
 
         // Scroll form into view

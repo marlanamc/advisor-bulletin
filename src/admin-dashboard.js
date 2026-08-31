@@ -2,8 +2,7 @@
  * Advisor portal tab switching and the dashboard overview (stat tiles +
  * upcoming-events list).
  *
- * Extracted verbatim from firebase-admin.js (Stage 3 of the file-split
- * refactor); merged onto FirebaseAdminPanel.prototype by applyMethods().
+ * Merged onto FirebaseAdminPanel.prototype by applyMethods().
  * Pure in-memory work over this.bulletins — no Firebase reads.
  */
 

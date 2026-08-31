@@ -70,8 +70,8 @@ document.addEventListener('DOMContentLoaded', function() {
         resources: { el: 'apPagePosts',     nav: 'apNavResources',  title: 'My Resources' },
         events:    { el: 'apPagePosts',     nav: 'apNavEvents',     title: 'My Events' },
         stats:     { el: 'apPageStats',     nav: 'apNavStats',      title: 'Stats' },
-        advisors:  { el: 'apPageAdvisors',  nav: 'apNavAdvisors',   title: 'Advisors' },
-        workforce: { el: 'apPageWorkforce', nav: 'apNavWorkforce',  title: 'Workforce Report' },
+        advisors:  { el: 'apPageAdvisors',  nav: 'advisorsRailBtn',  title: 'Advisors' },
+        workforce: { el: 'apPageWorkforce', nav: 'workforceRailBtn', title: 'Workforce Report' },
     };
 
     var POSTS_PAGE_FILTERS = {
@@ -207,6 +207,64 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         syncPreview();
     };
+
+    function runAdminAction(action) {
+        var panel = window.adminPanel;
+        switch (action) {
+            case 'toggle-user-menu':
+                window.apToggleUserMenu();
+                return true;
+            case 'toggle-resource-reorder':
+                if (panel && typeof panel.toggleResourceReorderMode === 'function') {
+                    panel.toggleResourceReorderMode();
+                }
+                return true;
+            case 'add-advisor':
+                if (panel && typeof panel.addAdvisor === 'function') {
+                    panel.addAdvisor();
+                }
+                return true;
+            case 'save-edit-advisor':
+                if (panel && typeof panel.saveEditAdvisor === 'function') {
+                    panel.saveEditAdvisor();
+                }
+                return true;
+            case 'close-edit-advisor':
+                if (panel && typeof panel.closeEditAdvisor === 'function') {
+                    panel.closeEditAdvisor();
+                }
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    document.addEventListener('click', function(event) {
+        var pageTarget = event.target.closest('[data-ap-page]');
+        if (pageTarget) {
+            event.preventDefault();
+            window.apShowPage(pageTarget.getAttribute('data-ap-page'));
+            var type = pageTarget.getAttribute('data-ap-type');
+            if (type) {
+                window.apSelectType(type);
+            }
+            return;
+        }
+
+        var actionTarget = event.target.closest('[data-ap-action]');
+        if (actionTarget && runAdminAction(actionTarget.getAttribute('data-ap-action'))) {
+            event.preventDefault();
+        }
+    });
+
+    document.addEventListener('keydown', function(event) {
+        if (event.key !== 'Enter' && event.key !== ' ') return;
+        var actionTarget = event.target.closest('[data-ap-action]');
+        if (!actionTarget) return;
+        if (runAdminAction(actionTarget.getAttribute('data-ap-action'))) {
+            event.preventDefault();
+        }
+    });
 
     // ── Live preview sync ─────────────────────────────────────────
     function escPreview(s) {

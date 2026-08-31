@@ -1,8 +1,7 @@
 /**
  * Transient toast / success messages for the advisor portal.
  *
- * Extracted verbatim from firebase-admin.js (Stage 3 of the file-split
- * refactor); merged onto FirebaseAdminPanel.prototype by applyMethods().
+ * Merged onto FirebaseAdminPanel.prototype by applyMethods().
  */
 
 export class AdminToastMethods {
@@ -26,6 +25,7 @@ export class AdminToastMethods {
         messageDiv.setAttribute('role', 'status');
         messageDiv.setAttribute('aria-live', type === 'error' ? 'assertive' : 'polite');
 
+        const toastType = ['success', 'error', 'warning', 'info'].includes(type) ? type : 'info';
         const icons = {
             success: '✅',
             error: '❌',
@@ -33,39 +33,16 @@ export class AdminToastMethods {
             info: 'ℹ️'
         };
 
-        const colors = {
-            success: '#27ae60',
-            error: '#e74c3c',
-            warning: '#f39c12',
-            info: '#3498db'
-        };
-
-        messageDiv.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: ${colors[type] || colors.info};
-            color: white;
-            padding: 16px 20px;
-            border-radius: 12px;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-            z-index: 1001;
-            font-weight: 500;
-            max-width: 350px;
-            font-size: 14px;
-            line-height: 1.4;
-            animation: slideInRight 0.3s ease-out;
-            cursor: pointer;
-        `;
+        messageDiv.className = `toast-message toast-message--${toastType}`;
 
         messageDiv.innerHTML = `
-            <span style="margin-right: 8px; font-size: 16px;">${icons[type] || icons.info}</span>
-            ${message}
+            <span class="toast-message__icon" aria-hidden="true">${icons[toastType]}</span>
+            <span class="toast-message__body">${this.escapeHtml(message)}</span>
         `;
 
         // Click to dismiss
         messageDiv.addEventListener('click', () => {
-            messageDiv.style.animation = 'slideOutRight 0.3s ease-in';
+            messageDiv.classList.add('toast-message--exiting');
             setTimeout(() => messageDiv.remove(), 300);
         });
 
@@ -75,7 +52,7 @@ export class AdminToastMethods {
         const delay = type === 'error' ? 6000 : 4000; // Longer for errors
         setTimeout(() => {
             if (messageDiv.parentNode) {
-                messageDiv.style.animation = 'slideOutRight 0.3s ease-in';
+                messageDiv.classList.add('toast-message--exiting');
                 setTimeout(() => messageDiv.remove(), 300);
             }
         }, delay);

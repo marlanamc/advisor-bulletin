@@ -2,8 +2,7 @@
  * Composer field validation and lightweight content moderation for the
  * advisor portal.
  *
- * Extracted verbatim from firebase-admin.js (Stage 3 of the file-split
- * refactor); merged onto FirebaseAdminPanel.prototype by applyMethods().
+ * Merged onto FirebaseAdminPanel.prototype by applyMethods().
  * Pure DOM + string work, no Firebase.
  */
 
