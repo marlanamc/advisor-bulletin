@@ -12,33 +12,34 @@ stop — don't continue to the cleanup plan until the branch is green.
 
 ## A. Automated — run these first (~5 min)
 
-- [ ] `npm run build` — succeeds, no errors
-- [ ] `npm run test:unit` — 38 pass, 0 fail
-- [ ] `npm test -- --project=desktop --project=mobile` — 114 pass, 5 skipped, 0 fail
-      - Known flaky under parallel load (re-run isolated if they fail):
-        `search.spec.js` "jumps to its card" / "card title below the header";
-        `mobile.spec.js` "need chip filter shows cross-category";
-        `resource-smoke.spec.js` "mobile category navigation".
-        These fail on `main` too — only a problem if they ALSO fail on isolated rerun:
-        `npm test -- --project=desktop <specfile>`
-- [ ] `git diff --stat main..HEAD` — shows line *movement* (roughly equal +/−), not big net-new logic
+_(2026-08-30 — all green, run by Claude)_
+
+- [x] `npm run build` — succeeds, no errors
+- [x] `npm run test:unit` — 38 pass, 0 fail
+- [x] `npm test -- --project=desktop --project=mobile` — **116 pass**, 5 skipped, 0 fail
+      (114 → 116: the 2 extra are new tests in `refactor-safety-net.spec.js`). No flakes on this run.
+- [x] `git diff --stat main..HEAD` — 21,329 ins / 23,935 del; ~2,600 net *reduction* from
+      dedup + dead-file deletion. Line movement, no big net-new logic.
 
 ---
 
 ## B. Student board (`index.html`) — `npm run dev`, open http://localhost:5173
 
-- [ ] Feed loads and shows bulletin cards
-- [ ] Category filter dropdown (`#feedCategorySelect`) — pick a category, feed filters, header updates
-- [ ] Search: open the search layer (magnifier / Filters), type a query, results group with Help first
-- [ ] Language toggle: click **Español** — page switches to Spanish, chips/labels translate; click **English** — switches back
-- [ ] Open a bulletin: click a card → detail modal opens with title, description, **dates rendered correctly** (this is the `board-date-render.js` extraction — check an event with a date, a deadline post, and a multi-session post if you have one)
-- [ ] Close the bulletin modal (X and click-outside)
-- [ ] Resources: open a resource detail sheet, then close it
-- [ ] "Find Help by need" chips — click one, resources filter across categories, "clear" resets
-- [ ] Open a PDF resource — the PDF viewer opens (this is `openPdfFromBulletin` → `openResourcePdf`)
-- [ ] Share: open the share modal on a bulletin → shows the deep link + WhatsApp/FB/Email/SMS buttons; **Copy Link** relabels to "Copied!"; Close works
-- [ ] Calendar view — switch to it, click a day with events, a bulletin opens from there
-- [ ] Do the above at **mobile width** (dev tools ~390px) and **desktop width** — the CSS split touched `student-v2.css` and `student-legacy.css`; watch for layout breaks, missing styles, wrong colors
+_(2026-08-30 — driven by Claude via browser automation against a local dev server. All green.)_
+
+- [x] Feed loads and shows bulletin cards
+- [x] Category filter dropdown (`#feedCategorySelect`) — picked Food, feed + upcoming-events rail filtered, "Showing: Food" header + "Show all" reset shown; Show all restores
+- [x] Search: opened the search layer, typed "food" → "20 results for food", "HELP 12" group rendered first
+- [x] Language toggle: **Español** translated nav / chips / category labels / card bodies / weekday names; **English** switched back
+- [x] Open a bulletin: card → detail modal with title, description, author; **recurring date rendered correctly** ("Every Wednesday · 3:00 PM – 6:00 PM"). Card-level dates also correct ("Wednesday, Sep 2 · 12:00 PM – 3:00 PM", "From Mon, Jun 15 · …"). _Deadline + multi-session variants not separately exercised — worth a glance in C._
+- [x] Close the bulletin modal — both X ("Close bulletin detail") and click-outside work; URL hash clears
+- [x] Resources: desktop resource cards render inline with hours/phone/Website/Directions/action chips; mobile category view ("Food / 10 resources" + Back) renders cards
+- [x] "Find Help by need" chips — "Get food help" filtered resources across categories (sidebar 89 → 11, Food 10 + Family & Community 1), "Clear" resets to 89
+- [x] Open a PDF resource — document resource "Open form" (`data-resource-action="open-pdf"`) opened the PDF (Firebase Storage URL) in a new tab. _In-app flyer PDF viewer (`openResourcePdf`) not separately hit — check via a bulletin PDF flyer in C._
+- [x] Share: share modal shows deep link + WhatsApp/FB/Email/SMS; **Copy Link** → "Copied!"; Close works
+- [x] Calendar view — month grid + event-count badges + This/Next week lists render; clicking a calendar side-event card opens the bulletin detail
+- [x] Mobile width (~430px) and desktop width (1400px) — bottom tab bar (Home/Help/Dates/About), chip scroller, single-column feed, full-screen detail modal all held; no layout breaks or missing styles. Hard reload at both widths → PWA shell serves, no white screen.
+- [x] Browser console clean after fresh reload — only Service Worker + Vite HMR logs, no errors / CSP violations
 
 ---
 
