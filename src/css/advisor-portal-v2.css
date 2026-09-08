@@ -2547,6 +2547,12 @@ body.ap-portal-active .main-content {
   color: #fff;
 }
 
+/* .ap-workforce-tabs/.ap-workforce-tab set display, so [hidden] needs an explicit override. */
+.ap-workforce-tabs[hidden],
+.ap-workforce-tab[hidden] {
+  display: none !important;
+}
+
 .ap-workforce-panel {
   display: block;
 }
