@@ -813,9 +813,11 @@
                                 <a id="workforcePrintBtn" class="ap-workforce-print-btn" href="/data/workforce/industry-report-print.html" target="_blank" rel="noopener">Print industry PDF</a>
                             </header>
 
-                            <div class="ap-workforce-tabs" role="tablist" aria-label="Workforce report sections">
+                            <!-- Program fit is hidden for now. To bring it back: drop the `hidden` attribute
+                                 from the tabs container and from the Program fit button below. -->
+                            <div class="ap-workforce-tabs" role="tablist" aria-label="Workforce report sections" hidden>
                                 <button id="workforceTabAnalysis" class="ap-workforce-tab active" type="button" role="tab" aria-selected="true" aria-controls="workforcePanelAnalysis" data-tab="analysis">Industry snapshot</button>
-                                <button id="workforceTabProgramFit" class="ap-workforce-tab" type="button" role="tab" aria-selected="false" aria-controls="workforcePanelProgramFit" data-tab="program-fit">Program fit</button>
+                                <button id="workforceTabProgramFit" class="ap-workforce-tab" type="button" role="tab" aria-selected="false" aria-controls="workforcePanelProgramFit" data-tab="program-fit" hidden>Program fit</button>
                             </div>
 
                             <div id="workforcePanelAnalysis" class="ap-workforce-panel" role="tabpanel" aria-labelledby="workforceTabAnalysis">
