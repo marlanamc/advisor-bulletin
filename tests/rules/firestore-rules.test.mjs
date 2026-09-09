@@ -20,7 +20,8 @@ import {
     assertFails,
     assertSucceeds,
 } from '@firebase/rules-unit-testing';
-import { doc, getDoc, setDoc, deleteDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, deleteDoc, updateDoc, addDoc, collection } from 'firebase/firestore';
+import { POST_CATEGORIES } from '../../src/feed-categories.js';
 
 let testEnv;
 
@@ -169,6 +170,29 @@ describe('the heaviest legitimate write stays inside the rule budget', () => {
             await setDoc(doc(c.firestore(), 'bulletins/heavy3'), heavyResource('rocha'));
         });
         await assertSucceeds(deleteDoc(doc(ctx('vlalin@ebhcs.org'), 'bulletins/heavy3')));
+    });
+});
+
+describe('every category the post composer offers can actually be posted', () => {
+    // The composer's category picker is built from POST_CATEGORIES
+    // (src/post-composer.js -> POST_CAT_KEYS), so every id in that list must be
+    // accepted by the rules' data.category whitelist. It was not: the picker
+    // used to be built from the CATS colour map, which it shares with resource
+    // authoring, so "+ More topics" offered seven resource-tile categories the
+    // rules reject — choosing "Family & Community" failed the submit with a
+    // bare "Missing or insufficient permissions" that had nothing to do with
+    // the advisor's permissions. scripts/check-post-categories-sync.mjs guards
+    // the lists at build time; this guards the actual rule behaviour.
+    for (const { id } of POST_CATEGORIES) {
+        test(`an advisor can post a "${id}" bulletin`, async () => {
+            const db = ctx('vlalin@ebhcs.org');
+            await assertSucceeds(addDoc(collection(db, 'bulletins'), post('vlalin', { category: id })));
+        });
+    }
+
+    test('a category outside the whitelist is still rejected', async () => {
+        const db = ctx('vlalin@ebhcs.org');
+        await assertFails(addDoc(collection(db, 'bulletins'), post('vlalin', { category: 'not-a-category' })));
     });
 });
 

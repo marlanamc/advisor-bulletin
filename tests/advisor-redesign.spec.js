@@ -366,6 +366,30 @@ test.describe('Advisor redesign', () => {
     await expect(page.locator('#statsPostCatChart')).toContainText('Housing / Vivienda');
   });
 
+  test('the post category picker only offers categories a post can be saved with', async ({ page }) => {
+    // The picker used to be built from the CATS colour map it shares with
+    // resource authoring, so "+ More topics" offered seven resource-tile
+    // categories (jobs, family, family-community, general, hse, legal-aid,
+    // consulates) that firestore.rules rejects — picking "Family & Community"
+    // failed the post with a bare "Missing or insufficient permissions".
+    await showSeededAdvisorDashboard(page);
+
+    await page.locator('#apNavCreate').click();
+    await page.locator('#cxCatBtn').click();
+    await page.locator('#cxCatPop .cx-cat', { hasText: 'More topics' }).click();
+
+    const offered = await page.locator('#cxCatPop .cx-cat[data-cat]').evaluateAll(
+      (els) => els.map((el) => el.dataset.cat)
+    );
+    expect(offered).toEqual([
+      'job', 'training', 'immigration', 'housing', 'health', 'food',
+      'esol', 'college', 'money', 'career-fair', 'announcement',
+    ]);
+    for (const dead of ['jobs', 'family', 'family-community', 'general', 'hse', 'legal-aid', 'consulates']) {
+      expect(offered).not.toContain(dead);
+    }
+  });
+
   test('category picker stays in sync with bulletin category field', async ({ page }) => {
     await showSeededAdvisorDashboard(page);
 

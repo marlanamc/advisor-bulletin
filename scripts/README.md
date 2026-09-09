@@ -10,6 +10,7 @@ One-off and recurring maintenance tools. Run them from the repository root with 
 
 - **build-student-feed-snapshot.mjs** — regenerates `public/student-feed-snapshot.json` (the instant-loading static feed). Runs in `prebuild`. Uses a service account if available, otherwise falls back to the public client SDK; if Firestore is unreachable it keeps the existing snapshot so the build never breaks. Flags: `--credentials=…`, `--no-client`.
 - **check-resource-categories-sync.mjs** — fails the build if the resource category list in `src/resource-categories.js` drifts from the whitelist in `firestore.rules`. No credentials. If it fails, make the two lists match.
+- **check-post-categories-sync.mjs** — fails the build if the three lists governing a **bulletin post's** category disagree: `POST_CATEGORIES` in `src/feed-categories.js` (canonical — drives the student filter chips), the picker in `src/post-composer.js` (the `CATS` colour map and the `PRIMARY_CATS` front row), and the `data.category` whitelist in `firestore.rules`. No credentials. Added after the picker, built from `Object.keys(CATS)`, offered seven resource-tile categories (`jobs`, `family`, `family-community`, `general`, `hse`, `legal-aid`, `consulates`) that the rules reject — picking "Family & Community" failed the post with a bare "Missing or insufficient permissions" unrelated to the advisor's permissions, and the student feed had no filter for them either. Values only legacy docs carry live in `LEGACY_RULES_VALUES` inside the script.
 
 ## Used automatically by tests
 
