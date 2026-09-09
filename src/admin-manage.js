@@ -5,6 +5,7 @@ import { db } from './firebase.js'
 import { getPublicAdvisorEmail, isLeadershipRole } from './advisor-directory.js'
 import { isDocumentResource } from './resource-kinds.js'
 import { doc, setDoc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore'
+import { currentVerificationStamp, verificationStatus } from './resource-verification.js'
 
 export class AdminManageMethods {
     // Content permissions are equal for every advisor (Sep 2026): anyone on
@@ -16,6 +17,17 @@ export class AdminManageMethods {
     }
 
     // ── Resource re-verification ──────────────────────────────────────
+
+    // Is this card past its category's recheck window? Shares its definition
+    // of "due" with scripts/check-resource-content-risk.mjs via
+    // src/resource-verification.js, so the "Needs verification" filter below
+    // shows exactly the cards the monthly GitHub issue asks about.
+    getResourceVerificationStatus(bulletin) {
+        return verificationStatus(
+            bulletin.resourceCategory || 'general',
+            bulletin.lastVerified || '',
+        );
+    }
 
     // Stamps lastVerified to the current YYYY-MM. This is the only way an
     // advisor can clear an item from the monthly re-verification queue
@@ -29,8 +41,7 @@ export class AdminManageMethods {
         if (this.verifyingResourceIds.has(bulletinId)) return;
         this.verifyingResourceIds.add(bulletinId);
 
-        const now = new Date();
-        const lastVerified = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        const lastVerified = currentVerificationStamp();
 
         try {
             // Partial update: Firestore rules validate the merged document, so
@@ -307,6 +318,11 @@ export class AdminManageMethods {
             });
         } else if (filterMode === 'expired') {
             userBulletins = userBulletins.filter(b => !this.isResourceBulletin(b) && this.isBulletinExpiredAdmin(b));
+        } else if (filterMode === 'needs-verification') {
+            userBulletins = userBulletins.filter(b =>
+                this.isResourceBulletin(b)
+                && b.isPublished !== false
+                && this.getResourceVerificationStatus(b).isDue);
         }
 
         if (contentKind === 'bulletin') {
@@ -348,6 +364,16 @@ export class AdminManageMethods {
 
         // Apply sort
         userBulletins.sort((a, b) => {
+            // Working the re-verification queue: worst first, regardless of the
+            // sort dropdown. Never-verified and unreadable dates come before
+            // anything with a real date (see overdueBy in resource-verification).
+            if (filterMode === 'needs-verification') {
+                const byOverdue = this.getResourceVerificationStatus(b).overdueBy
+                    - this.getResourceVerificationStatus(a).overdueBy;
+                if (byOverdue !== 0) return byOverdue;
+                return (a.resourceCategory || '').localeCompare(b.resourceCategory || '')
+                    || (this.getManageCardTitle(a) || '').localeCompare(this.getManageCardTitle(b) || '');
+            }
             if (sortMode === 'category') {
                 return (a.category || a.resourceCategory || '').localeCompare(b.category || b.resourceCategory || '');
             }
@@ -367,6 +393,8 @@ export class AdminManageMethods {
                 container.innerHTML = `<p>No posts match "<strong>${this.escapeHtml(searchQuery)}</strong>". Try a different search.</p>`;
             } else if (filterMode === 'expired') {
                 container.innerHTML = '<p>No expired posts. Great — everything is still active!</p>';
+            } else if (filterMode === 'needs-verification') {
+                container.innerHTML = '<p>Nothing needs verifying — every published resource is inside its recheck window. Nice.</p>';
             } else if (filterMode === 'active') {
                 container.innerHTML = '<p>No active posts right now.</p>';
             } else if (contentKind === 'event') {
@@ -383,7 +411,14 @@ export class AdminManageMethods {
             return;
         }
 
-        container.innerHTML = userBulletins.map(bulletin => {
+        const queueBanner = filterMode === 'needs-verification'
+            ? `<div class="verify-queue-banner">
+                    <strong>${userBulletins.length} resource${userBulletins.length === 1 ? '' : 's'} due for a check.</strong>
+                    Confirm each card's details, then press <strong>Verified today</strong> on it. Worst first.
+               </div>`
+            : '';
+
+        container.innerHTML = queueBanner + userBulletins.map(bulletin => {
             const isResource = this.isResourceBulletin(bulletin);
             const kind = this.getManageContentKind(bulletin);
             const typeLabel = kind === 'resource'
@@ -415,9 +450,13 @@ export class AdminManageMethods {
                     ${bulletin.address ? `<p><strong>Address:</strong> ${this.escapeHtml(bulletin.address)}</p>` : ''}
                     ${bulletin.phone ? `<p><strong>Phone:</strong> ${this.escapeHtml(bulletin.phone)} (${this.escapeHtml(bulletin.phoneMode || 'call')})</p>` : ''}
                     ${bulletin.resourceOrder !== '' && bulletin.resourceOrder !== undefined && bulletin.resourceOrder !== null ? `<p><strong>Display Order:</strong> ${this.escapeHtml(String(bulletin.resourceOrder))}</p>` : ''}
-                    <p><strong>Last verified:</strong> ${bulletin.lastVerified
-                        ? this.escapeHtml(String(bulletin.lastVerified))
-                        : '<em>never — this card is in the re-verification queue</em>'}</p>
+                    <p><strong>Last verified:</strong> ${(() => {
+                        const v = this.getResourceVerificationStatus(bulletin);
+                        if (v.status === 'never-verified') return '<em>never — due for a check</em>';
+                        if (v.status === 'bad-date') return `${this.escapeHtml(String(bulletin.lastVerified))} <em>(unreadable date — due for a check)</em>`;
+                        if (v.status === 'overdue') return `${this.escapeHtml(String(bulletin.lastVerified))} <em>(${v.monthsOld} months ago — due for a check)</em>`;
+                        return this.escapeHtml(String(bulletin.lastVerified));
+                    })()}</p>
                 ` : ''}
                 ${this.renderManageDateInfo(bulletin)}
                 <div class="manage-actions">

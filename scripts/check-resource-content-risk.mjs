@@ -28,31 +28,16 @@
 
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
+// Shared with the advisor portal's "Needs verification" filter so the queue
+// here and the list in the portal can never disagree about what "due" means.
+import {
+  monthsSince,
+  recheckWindowFor,
+  verificationStatus,
+} from '../src/resource-verification.js';
 
 const PROJECT_ID = 'ebhcs-bulletin-board';
 const COLLECTION = 'bulletins';
-
-// How long a card in each category may go unverified. The 3-month tier IS the
-// "high-risk category" concept — food/housing/health/legal-aid/immigration are
-// where a stale hour or eligibility rule sends a student to a closed door — so
-// there is no separate high-risk signal on top of it.
-const CATEGORY_RECHECK_MONTHS = {
-  food: 3,
-  housing: 3,
-  health: 3,
-  'legal-aid': 3,
-  immigration: 3,
-  money: 4,
-  jobs: 4,
-  family: 4,
-  'family-community': 4,
-  consulates: 4,
-  hse: 6,
-  college: 6,
-  general: 6,
-  esol: 6,
-};
-const DEFAULT_RECHECK_MONTHS = 6;
 
 // Not findings — just "while you have this card open, look at these".
 const CHECK_HINTS = [
@@ -104,15 +89,7 @@ async function initAdminDb(credentialsPath) {
   return admin.default.firestore();
 }
 
-export function monthsSince(yearMonth, now) {
-  const match = /^(\d{4})-(\d{2})$/.exec(String(yearMonth || '').trim());
-  if (!match) return null;
-  return (now.getFullYear() - Number(match[1])) * 12 + (now.getMonth() + 1 - Number(match[2]));
-}
-
-export function recheckWindowFor(category) {
-  return CATEGORY_RECHECK_MONTHS[category] || DEFAULT_RECHECK_MONTHS;
-}
+export { monthsSince, recheckWindowFor };
 
 function textForHints(resource) {
   return [
@@ -137,22 +114,10 @@ export function checkHintsFor(resource) {
  */
 export function reviewForResource(resource, now) {
   const category = resource.resourceCategory || resource.category || 'general';
-  const window = recheckWindowFor(category);
-  const age = monthsSince(resource.lastVerified, now);
+  const { status, window, monthsOld, overdueBy, isDue } =
+    verificationStatus(category, resource.lastVerified, now);
+  if (!isDue) return null;
   const hints = checkHintsFor(resource);
-
-  let status;
-  let monthsOld = null;
-  if (!resource.lastVerified) {
-    status = 'never-verified';
-  } else if (age === null) {
-    status = 'bad-date';
-  } else if (age >= window) {
-    status = 'overdue';
-    monthsOld = age;
-  } else {
-    return null;
-  }
 
   const reason = status === 'never-verified'
     ? 'Never verified — no date on record.'
@@ -174,8 +139,7 @@ export function reviewForResource(resource, now) {
     status,
     window,
     monthsOld,
-    // How far past due, used for ordering. Never-verified sorts to the top.
-    overdueBy: status === 'overdue' ? monthsOld - window : Number.MAX_SAFE_INTEGER,
+    overdueBy,
     checkHints: hints,
     reason,
     advisorAction,
