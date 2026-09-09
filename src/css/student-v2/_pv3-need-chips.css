@@ -135,6 +135,8 @@
 
     #resourcesView .resource-need__top {
         order: 2;
+        flex-wrap: wrap;
+        overflow-x: visible;
     }
 
     #resourcesView .resource-need__header {

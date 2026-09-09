@@ -60,6 +60,23 @@ test.describe('Quick mobile checks', () => {
     await expect(page.locator('#resourcesList')).toContainText('Legal Help');
   });
 
+  test('Help chips do not create a horizontal scroller on mobile', async ({ page }) => {
+    await page.locator('.mobile-tab[data-app-view="resources"]').click();
+
+    const layout = await page.evaluate(() => {
+      const chipRail = document.querySelector('#resourcesView .resource-need__top');
+      return {
+        pageWidth: document.documentElement.scrollWidth,
+        viewportWidth: window.innerWidth,
+        chipRailWidth: chipRail?.scrollWidth ?? 0,
+        chipRailViewport: chipRail?.clientWidth ?? 0
+      };
+    });
+
+    expect(layout.pageWidth).toBeLessThanOrEqual(layout.viewportWidth + 1);
+    expect(layout.chipRailWidth).toBeLessThanOrEqual(layout.chipRailViewport + 1);
+  });
+
   test('feed bulletin detail modal still opens on mobile', async ({ page }) => {
     await page.evaluate(() => {
       window.bulletinBoard.showBulletinDetail('post-quick');
