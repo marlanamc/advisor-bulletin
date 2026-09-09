@@ -10,7 +10,7 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { isOpenNow } from '../../src/resource-hours.js';
+import { formatResourceHoursRowsHtml, isOpenNow } from '../../src/resource-hours.js';
 
 // August 2026 reference days:
 //   9th Sun · 10th Mon · 11th Tue · 12th Wed (2nd of month) · 13th Thu
@@ -98,6 +98,18 @@ test('multiple windows on the same day', () => {
 test('ranges that wrap past midnight', () => {
     assert.equal(isOpenNow('Friday 8pm-2am', at('2026-08-14T23:00:00')), true);
     assert.equal(isOpenNow('Friday 8pm-2am', at('2026-08-14T19:00:00')), false);
+});
+
+test('multiple location schedules render as a scannable pickup list', () => {
+    const html = formatResourceHoursRowsHtml([
+        { day: 'Revival Church, 965 Bennington St: Tuesday', time: '9am-10am' },
+        { day: 'Church Faro de Luz, 282 Meridian St: every other Tuesday', time: '12pm-1pm' },
+        { day: 'Paris Street BCYF, 112 Paris St: Tuesday & Friday', time: '12pm-2pm' },
+    ], (value) => value);
+
+    assert.match(html, /mobile-resource-card__hours--locations/);
+    assert.match(html, /Pickup locations/);
+    assert.match(html, /Lugares de recogida/);
 });
 
 test('minutes are respected', () => {

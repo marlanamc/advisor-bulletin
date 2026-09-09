@@ -307,6 +307,7 @@ export function formatResourceHoursHtml(hoursText, escapeHtml, hoursTextEs) {
 }
 
 function renderHoursRowsHtml(rows, escapeHtml) {
+    const locationSchedule = isLocationSchedule(rows);
     const items = rows.map((row) => {
         if (row.header) {
             return `<li class="mobile-resource-card__hours-row mobile-resource-card__hours-row--header">${renderBilingualHoursLabel(row.header, escapeHtml)}</li>`;
@@ -323,9 +324,26 @@ function renderHoursRowsHtml(rows, escapeHtml) {
         </li>`;
     }).join('');
 
-    return `<div class="mobile-resource-card__hours" role="group" aria-label="Hours / Horario">
+    const locationHeading = locationSchedule
+        ? `<p class="mobile-resource-card__hours-label"><span class="en-text">Pickup locations</span><span class="es-text">Lugares de recogida</span></p>`
+        : '';
+    const modifier = locationSchedule ? ' mobile-resource-card__hours--locations' : '';
+
+    return `<div class="mobile-resource-card__hours${modifier}" role="group" aria-label="Hours / Horario">
+        ${locationHeading}
         <ul class="mobile-resource-card__hours-list">${items}</ul>
     </div>`;
+}
+
+function isLocationSchedule(rows) {
+    const timedRows = rows.filter((row) => row.days && row.times);
+    if (timedRows.length < 2) return false;
+
+    return timedRows.every((row) => {
+        const label = typeof row.days === 'string' ? row.days : row.days.en;
+        return /[:,]/.test(label)
+            && /\b(?:sunday|monday|tuesday|wednesday|thursday|friday|saturday|sun|mon|tue|wed|thu|fri|sat)\b/i.test(label);
+    });
 }
 
 /**

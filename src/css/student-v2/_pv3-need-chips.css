@@ -306,6 +306,15 @@
     gap: 5px;
 }
 
+.mobile-resource-card__hours-label {
+    margin: 0 0 7px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #64748b;
+}
+
 .mobile-resource-card__hours-row {
     display: grid;
     grid-template-columns: minmax(0, 1fr) max-content;
@@ -340,6 +349,35 @@
     font-weight: 600;
     color: #64748b;
     text-align: right;
+}
+
+.mobile-resource-card__hours--locations {
+    margin-top: 2px;
+    padding: 12px 0 0;
+    border-top: 1px solid #e2e8f0;
+}
+
+.mobile-resource-card__hours--locations .mobile-resource-card__hours-list {
+    gap: 10px;
+}
+
+.mobile-resource-card__hours--locations .mobile-resource-card__hours-row {
+    display: block;
+    padding-left: 14px;
+    border-left: 3px solid color-mix(in srgb, var(--cat-accent, #0a1d3a) 55%, #ffffff);
+}
+
+.mobile-resource-card__hours--locations .mobile-resource-card__hours-days {
+    display: block;
+    line-height: 1.35;
+}
+
+.mobile-resource-card__hours--locations .mobile-resource-card__hours-times {
+    display: block;
+    margin-top: 2px;
+    color: color-mix(in srgb, var(--cat-accent, #0a1d3a) 72%, #334155);
+    font-weight: 800;
+    text-align: left;
 }
 
 .post-detail-panel .mobile-resource-card__hours {
