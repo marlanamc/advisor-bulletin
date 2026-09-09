@@ -33,7 +33,10 @@ export class BoardDetailMethods {
         const resourceNotesHtml = isResource && formattedDescription
             ? `<div class="post-detail-description post-detail-description--notes"><p class="post-detail-notes-label"><span class="en-text">Additional notes</span><span class="es-text">Notas adicionales</span></p>${formattedDescription}</div>`
             : '';
-        const tagValues = [bulletin.classType ? this.getClassTypeDisplay(bulletin.classType) : '', bulletin.company || '', bulletin.eventLocation || '']
+        // Prefer the Location row in the info grid; skip eventLocation tag when address already covers it.
+        const addressShown = Boolean((bulletin.address || '').trim());
+        const eventLocationTag = addressShown ? '' : (bulletin.eventLocation || '');
+        const tagValues = [bulletin.classType ? this.getClassTypeDisplay(bulletin.classType) : '', bulletin.company || '', eventLocationTag]
             .filter(Boolean)
             .slice(0, 3);
         const contactAction = this.getDetailContactAction(bulletin);
