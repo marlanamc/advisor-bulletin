@@ -306,6 +306,13 @@ export class AdminManageMethods {
         const sortMode = document.getElementById('manageSortSelect')?.value || 'newest';
         const filterMode = document.getElementById('manageFilterSelect')?.value || 'all';
         const contentKind = document.getElementById('manageContentTypeSelect')?.value || 'all';
+        // Two controls can ask for the queue: the dedicated verification filter on
+        // My Resources (where the status dropdown is hidden — resources are never
+        // "expired", they go stale) and the status dropdown's "Needs verification"
+        // on the mixed views. Read whichever one is actually on screen.
+        const verificationMode = contentKind === 'resource'
+            ? (document.getElementById('manageVerificationSelect')?.value || 'all')
+            : (filterMode === 'needs-verification' ? 'needs-verification' : 'all');
 
         let userBulletins = this.bulletins
             .filter(b => (this.canManageAllPosts() || b.postedBy === this.currentUser.username) && b.isActive);
@@ -318,11 +325,16 @@ export class AdminManageMethods {
             });
         } else if (filterMode === 'expired') {
             userBulletins = userBulletins.filter(b => !this.isResourceBulletin(b) && this.isBulletinExpiredAdmin(b));
-        } else if (filterMode === 'needs-verification') {
+        }
+
+        // Only a published resource carries a lastVerified stamp, so both sides of
+        // this filter drop bulletins, events, and drafts.
+        if (verificationMode === 'needs-verification' || verificationMode === 'verified') {
+            const wantDue = verificationMode === 'needs-verification';
             userBulletins = userBulletins.filter(b =>
                 this.isResourceBulletin(b)
                 && b.isPublished !== false
-                && this.getResourceVerificationStatus(b).isDue);
+                && this.getResourceVerificationStatus(b).isDue === wantDue);
         }
 
         if (contentKind === 'bulletin') {
@@ -367,11 +379,22 @@ export class AdminManageMethods {
             // Working the re-verification queue: worst first, regardless of the
             // sort dropdown. Never-verified and unreadable dates come before
             // anything with a real date (see overdueBy in resource-verification).
-            if (filterMode === 'needs-verification') {
+            if (verificationMode === 'needs-verification') {
                 const byOverdue = this.getResourceVerificationStatus(b).overdueBy
                     - this.getResourceVerificationStatus(a).overdueBy;
                 if (byOverdue !== 0) return byOverdue;
                 return (a.resourceCategory || '').localeCompare(b.resourceCategory || '')
+                    || (this.getManageCardTitle(a) || '').localeCompare(this.getManageCardTitle(b) || '');
+            }
+            // Verified list: soonest to fall out of its window first, so an advisor
+            // working ahead sees what is about to go stale. Windows differ by
+            // category, so compare months left, not the raw date.
+            if (verificationMode === 'verified') {
+                const monthsLeft = (item) => {
+                    const v = this.getResourceVerificationStatus(item);
+                    return v.window - (v.monthsOld || 0);
+                };
+                return monthsLeft(a) - monthsLeft(b)
                     || (this.getManageCardTitle(a) || '').localeCompare(this.getManageCardTitle(b) || '');
             }
             if (sortMode === 'category') {
@@ -393,8 +416,10 @@ export class AdminManageMethods {
                 container.innerHTML = `<p>No posts match "<strong>${this.escapeHtml(searchQuery)}</strong>". Try a different search.</p>`;
             } else if (filterMode === 'expired') {
                 container.innerHTML = '<p>No expired posts. Great — everything is still active!</p>';
-            } else if (filterMode === 'needs-verification') {
+            } else if (verificationMode === 'needs-verification') {
                 container.innerHTML = '<p>Nothing needs verifying — every published resource is inside its recheck window. Nice.</p>';
+            } else if (verificationMode === 'verified') {
+                container.innerHTML = '<p>No resource has been verified inside its recheck window yet. Switch to <strong>Needs checking</strong> to start the queue.</p>';
             } else if (filterMode === 'active') {
                 container.innerHTML = '<p>No active posts right now.</p>';
             } else if (contentKind === 'event') {
@@ -411,12 +436,19 @@ export class AdminManageMethods {
             return;
         }
 
-        const queueBanner = filterMode === 'needs-verification'
-            ? `<div class="verify-queue-banner">
-                    <strong>${userBulletins.length} resource${userBulletins.length === 1 ? '' : 's'} due for a check.</strong>
+        const plural = userBulletins.length === 1 ? '' : 's';
+        let queueBanner = '';
+        if (verificationMode === 'needs-verification') {
+            queueBanner = `<div class="verify-queue-banner">
+                    <strong>${userBulletins.length} resource${plural} due for a check.</strong>
                     Confirm each card's details, then press <strong>Verified today</strong> on it. Worst first.
-               </div>`
-            : '';
+               </div>`;
+        } else if (verificationMode === 'verified') {
+            queueBanner = `<div class="verify-queue-banner verify-queue-banner-ok">
+                    <strong>${userBulletins.length} resource${plural} verified and still inside ${userBulletins.length === 1 ? 'its' : 'their'} recheck window.</strong>
+                    Soonest due first — press <strong>Verified today</strong> to re-stamp one early.
+               </div>`;
+        }
 
         container.innerHTML = queueBanner + userBulletins.map(bulletin => {
             const isResource = this.isResourceBulletin(bulletin);
@@ -452,10 +484,17 @@ export class AdminManageMethods {
                     ${bulletin.resourceOrder !== '' && bulletin.resourceOrder !== undefined && bulletin.resourceOrder !== null ? `<p><strong>Display Order:</strong> ${this.escapeHtml(String(bulletin.resourceOrder))}</p>` : ''}
                     <p><strong>Last verified:</strong> ${(() => {
                         const v = this.getResourceVerificationStatus(bulletin);
-                        if (v.status === 'never-verified') return '<em>never — due for a check</em>';
-                        if (v.status === 'bad-date') return `${this.escapeHtml(String(bulletin.lastVerified))} <em>(unreadable date — due for a check)</em>`;
-                        if (v.status === 'overdue') return `${this.escapeHtml(String(bulletin.lastVerified))} <em>(${v.monthsOld} months ago — due for a check)</em>`;
-                        return this.escapeHtml(String(bulletin.lastVerified));
+                        // The chip carries the verdict so a card reads the same way
+                        // as the verification filter that would select it.
+                        const chip = v.isDue
+                            ? '<span class="verify-chip verify-chip-due">Needs checking</span>'
+                            : '<span class="verify-chip verify-chip-ok">Verified</span>';
+                        const stamp = this.escapeHtml(String(bulletin.lastVerified));
+                        if (v.status === 'never-verified') return `${chip} <em>never checked</em>`;
+                        if (v.status === 'bad-date') return `${chip} ${stamp} <em>(unreadable date)</em>`;
+                        if (v.status === 'overdue') return `${chip} ${stamp} <em>(${v.monthsOld} months ago)</em>`;
+                        const left = v.window - v.monthsOld;
+                        return `${chip} ${stamp} <em>(next check due in ${left} month${left === 1 ? '' : 's'})</em>`;
                     })()}</p>
                 ` : ''}
                 ${this.renderManageDateInfo(bulletin)}

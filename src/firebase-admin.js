@@ -294,6 +294,7 @@ class FirebaseAdminPanel {
         const manageSearch = document.getElementById('manageSearchInput');
         const manageSort = document.getElementById('manageSortSelect');
         const manageFilter = document.getElementById('manageFilterSelect');
+        const manageVerification = document.getElementById('manageVerificationSelect');
         const rerender = () => this.loadManageBulletins();
         let manageSearchDebounceTimer = null;
         const rerenderDebounced = () => {
@@ -304,6 +305,7 @@ class FirebaseAdminPanel {
         if (manageSearch) manageSearch.addEventListener('input', rerenderDebounced);
         if (manageSort) manageSort.addEventListener('change', rerender);
         if (manageFilter) manageFilter.addEventListener('change', rerender);
+        if (manageVerification) manageVerification.addEventListener('change', rerender);
         if (manageContentType) manageContentType.addEventListener('change', () => {
             if (manageContentType.value !== 'resource' && this.resourceReorderMode) {
                 this.resourceReorderMode = false;
