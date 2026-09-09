@@ -8,6 +8,7 @@ import {
 } from './resource-chip-labels.js'
 import { MAX_RESOURCE_ACTION_LINKS } from './resource-action-links.js'
 import { AUTHORABLE_RESOURCE_CATEGORIES } from './resource-categories.js'
+import { POST_CATEGORIES } from './feed-categories.js'
 import { RESOURCE_CATEGORY_CONFIG } from './board-shared.js'
 
 /**
@@ -49,6 +50,18 @@ const CATS = {
     announcement:  { em: '📣', chip: 'Announcement',  bg: '#dbeafe', fg: '#317dea' },
 }
 const PRIMARY_CATS = ['job', 'training', 'immigration', 'housing', 'health', 'announcement']
+
+// The categories a BULLETIN POST may be filed under. CATS above is only a
+// chip-colour map shared with resource authoring, so it holds resource-tile
+// categories (jobs, family, family-community, general, hse, legal-aid,
+// consulates) that are not valid post categories. Offering those in the post
+// picker produced a card that firestore.rules rejects outright — a bare
+// "Missing or insufficient permissions" on submit — and that the student feed
+// has no filter for. POST_CATEGORIES (src/feed-categories.js) is the canonical
+// list: it feeds the student filter chips and the firestore.rules whitelist,
+// and scripts/check-post-categories-sync.mjs (prebuild) fails the build if the
+// three ever drift apart again.
+const POST_CAT_KEYS = POST_CATEGORIES.map(c => c.id).filter(k => CATS[k])
 
 // ── Add-detail menu definitions ───────────────────────────────────────────
 const BLOCK_DEFS = {
@@ -610,7 +623,7 @@ function buildCatPopover() {
     function render() {
         host.innerHTML = ''
         const isResource = state.type === 'resource'
-        const allKeys = isResource ? AUTHORABLE_RESOURCE_CATEGORIES.filter(k => CATS[k]) : Object.keys(CATS)
+        const allKeys = isResource ? AUTHORABLE_RESOURCE_CATEGORIES.filter(k => CATS[k]) : POST_CAT_KEYS
         const primaryKeys = isResource ? allKeys.slice(0, 6) : PRIMARY_CATS
         const keys = showAll ? allKeys : primaryKeys
         keys.forEach(k => {

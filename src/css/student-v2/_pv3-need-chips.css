@@ -306,8 +306,8 @@
 
 .mobile-resource-card__hours-row {
     display: grid;
-    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
-    gap: 4px 12px;
+    grid-template-columns: minmax(0, max-content) minmax(0, 1fr);
+    gap: 0 6px;
     align-items: baseline;
 }
 
@@ -339,21 +339,6 @@
 
 .post-detail-panel .mobile-resource-card__hours {
     margin-top: 2px;
-}
-
-.post-detail-panel .mobile-resource-card__hours-times {
-    text-align: left;
-}
-
-@media (max-width: 420px) {
-    .mobile-resource-card__hours-row {
-        grid-template-columns: 1fr;
-        gap: 2px;
-    }
-
-    .mobile-resource-card__hours-times {
-        text-align: left;
-    }
 }
 
 .post-detail-panel .resource-service-chips {
@@ -412,6 +397,10 @@
     line-height: 1.4;
     font-weight: 600;
     color: #64748b;
+}
+
+@media (max-width: 767px) {
+    .mobile-resource-card__address { display: none; }
 }
 
 .mobile-resource-card__address svg,

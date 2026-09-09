@@ -14,6 +14,16 @@
     body[data-current-view="resources"].resource-category-detail-open #resourcesView .page-back-bar {
         display: none;
     }
+
+    body[data-current-view="resources"].resource-category-detail-open .resource-category-detail:not([hidden]) {
+        position: sticky;
+        top: calc(var(--app-header-offset, 56px) + 8px);
+        z-index: 140;
+    }
+
+    body[data-current-view="resources"].resource-category-detail-open .mobile-resource-card {
+        scroll-margin-top: calc(var(--app-header-offset, 56px) + 88px);
+    }
 }
 
 .resource-category-detail {

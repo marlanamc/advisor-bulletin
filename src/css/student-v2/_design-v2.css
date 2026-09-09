@@ -1022,6 +1022,22 @@ a.about-action-card {
 }
 
 /* ── Desktop: full-width student layout ─────────────────────────── */
+/* Back to top — current navy, not the old sky-cyan. */
+.back-to-top {
+    background: linear-gradient(180deg, var(--navy2) 0%, var(--navy) 100%);
+    box-shadow: 0 8px 20px rgba(10, 29, 58, 0.32);
+}
+
+.back-to-top:hover,
+.back-to-top:focus-visible {
+    box-shadow: 0 10px 24px rgba(10, 29, 58, 0.42);
+}
+
+.back-to-top:focus-visible {
+    outline: 2px solid var(--sky);
+    outline-offset: 3px;
+}
+
 @media (min-width: 768px) {
     :root {
         --app-header-offset: 100px;

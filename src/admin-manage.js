@@ -1,21 +1,66 @@
 // Advisor management, the Manage list, and resource reordering.
-// Merged onto FirebaseAdminPanel.prototype by applyMethods() in firebase-admin.js.
+// Extracted verbatim from firebase-admin.js; methods are merged onto
+// FirebaseAdminPanel.prototype by applyMethods() in firebase-admin.js.
 import { db } from './firebase.js'
-import { getPublicAdvisorEmail } from './advisor-directory.js'
-import { isPrivilegedAdminEmail } from './admin-roles.js'
+import { getPublicAdvisorEmail, isLeadershipRole } from './advisor-directory.js'
 import { isDocumentResource } from './resource-kinds.js'
 import { doc, setDoc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore'
+import { currentVerificationStamp, verificationStatus } from './resource-verification.js'
 
 export class AdminManageMethods {
+    // Content permissions are equal for every advisor (Sep 2026): anyone on
+    // the advisor list can see and manage every post and resource, including
+    // the legacy ones left over from the retired shared logins. Admin status
+    // only gates the Advisors tab (adding and removing people).
     canManageAllPosts() {
-        return this.currentUser?.isAdmin === true;
+        return true;
     }
 
-    /** Google account used for portal sign-in (matches google-auth.js). */
-    getAdvisorAuthEmail(username) {
-        const u = String(username || '').trim().toLowerCase();
-        if (!u) return '';
-        return `${u}@ebhcs.org`;
+    // ── Resource re-verification ──────────────────────────────────────
+
+    // Is this card past its category's recheck window? Shares its definition
+    // of "due" with scripts/check-resource-content-risk.mjs via
+    // src/resource-verification.js, so the "Needs verification" filter below
+    // shows exactly the cards the monthly GitHub issue asks about.
+    getResourceVerificationStatus(bulletin) {
+        return verificationStatus(
+            bulletin.resourceCategory || 'general',
+            bulletin.lastVerified || '',
+        );
+    }
+
+    // Stamps lastVerified to the current YYYY-MM. This is the only way an
+    // advisor can clear an item from the monthly re-verification queue
+    // (scripts/check-resource-content-risk.mjs): until this button existed the
+    // field was writable only by scripts, so 21 never-verified resources sat
+    // in the queue permanently with no action available to remove them.
+    // Deliberately one click and no confirm dialog — it is non-destructive and
+    // idempotent, and re-pressing it just refreshes the month.
+    async markResourceVerified(bulletinId) {
+        if (!this.verifyingResourceIds) this.verifyingResourceIds = new Set();
+        if (this.verifyingResourceIds.has(bulletinId)) return;
+        this.verifyingResourceIds.add(bulletinId);
+
+        const lastVerified = currentVerificationStamp();
+
+        try {
+            // Partial update: Firestore rules validate the merged document, so
+            // the required resource fields already present on the doc satisfy
+            // validateBulletinData() without resending the whole card.
+            await updateDoc(doc(db, 'bulletins', bulletinId), {
+                lastVerified,
+                updatedAt: serverTimestamp(),
+            });
+            this.showTemporaryMessage(`Marked verified for ${lastVerified}.`, 'success');
+        } catch (error) {
+            console.error('Error marking resource verified:', error);
+            this.showTemporaryMessage(
+                this.getFirestoreErrorMessage(error, 'mark this resource verified'),
+                'error',
+            );
+        } finally {
+            this.verifyingResourceIds.delete(bulletinId);
+        }
     }
 
     // ── Advisor Management ────────────────────────────────────────────
@@ -37,15 +82,17 @@ export class AdminManageMethods {
                 <div class="manage-card-header">
                     <h5>${this.escapeHtml(a.displayName)}</h5>
                     ${a.isAdmin ? '<span class="advisor-admin-badge">Admin</span>' : ''}
+                    ${a.showInDirectory === false ? '<span class="advisor-hidden-badge">Not on student site</span>' : ''}
                 </div>
                 <div class="manage-card-body">
+                    <p><strong>Title on student site:</strong> ${this.escapeHtml(a.publicRole || 'Advisor')}</p>
                     <p><strong>Username:</strong> ${this.escapeHtml(a.username)}</p>
                     <p><strong>Email:</strong> ${this.escapeHtml(getPublicAdvisorEmail(a))}</p>
                 </div>
                 <div class="manage-actions advisor-manage-actions">
                     <div class="manage-actions-primary">
-                        <button type="button" class="edit-btn" data-manage-action="edit-advisor" data-username="${this.escapeAttribute(a.username)}">Edit</button>
-                        ${a.username !== this.currentUser.username ? `<button type="button" class="delete-btn" data-manage-action="delete-advisor" data-username="${this.escapeAttribute(a.username)}">Remove</button>` : ''}
+                        <button type="button" class="edit-btn" onclick="adminPanel.openEditAdvisor('${this.escapeHtml(a.username)}')">Edit</button>
+                        ${a.username !== this.currentUser.username ? `<button type="button" class="delete-btn" onclick="adminPanel.deleteAdvisor('${this.escapeHtml(a.username)}')">Remove</button>` : ''}
                     </div>
                 </div>
             </div>
@@ -132,15 +179,15 @@ export class AdminManageMethods {
             }
             this.closeEditAdvisor();
             this.loadAdvisors();
-            // The Admin checkbox only unlocks admin screens in this portal.
-            // Server-side privileges (edit/delete anyone's posts) come from the
-            // isPrivilegedAdvisor email list in firestore.rules, which needs a
-            // developer to change — warn so the mismatch isn't a surprise.
-            if (isAdmin && !isPrivilegedAdminEmail(this.getAdvisorAuthEmail(username))) {
-                this.showToast('Saved. Note: full admin rights (managing other advisors’ posts) also require a developer to add this account to the security rules — see DEPLOYMENT.md.', 'info');
-            } else {
-                this.showToast('Advisor updated.', 'success');
-            }
+            // The Admin toggle is now the real switch on both sides: firestore.rules
+            // reads advisors/{username}.isAdmin directly, so no rules deploy is
+            // needed to promote or demote someone.
+            this.showToast(
+                isAdmin
+                    ? `${displayName} can now add and remove advisors.`
+                    : 'Advisor updated.',
+                'success'
+            );
         } catch (e) {
             this.showToast('Error saving advisor: ' + e.message, 'error');
         } finally {
@@ -149,28 +196,30 @@ export class AdminManageMethods {
     }
 
     async addAdvisor() {
-        const username = document.getElementById('newAdvisorUsername').value.trim().toLowerCase();
         const displayName = document.getElementById('newAdvisorDisplayName').value.trim();
         const email = document.getElementById('newAdvisorEmail').value.trim().toLowerCase();
         const isAdmin = document.getElementById('newAdvisorIsAdmin').checked;
         const publicRole = document.getElementById('newAdvisorPublicRole').value.trim() || 'Advisor';
         const showInDirectory = document.getElementById('newAdvisorShowInDirectory').checked;
-        if (!username || !displayName) {
-            this.showToast('Username and display name are required.', 'error'); return;
+        if (!email || !displayName) {
+            this.showToast('School Google email and display name are required.', 'error'); return;
         }
         // Access is granted by matching the Google sign-in email against
-        // advisors/{username}, so the username must be their real email prefix.
-        if (email && !email.endsWith('@ebhcs.org')) {
+        // advisors/{username}, so the username IS the email prefix — derived
+        // here rather than typed, because a typo in a separate field silently
+        // locks the advisor out of the portal.
+        if (!email.endsWith('@ebhcs.org')) {
             this.showToast('Email must be an @ebhcs.org address — it is what they sign in with.', 'error'); return;
         }
-        if (email && email.split('@')[0] !== username) {
-            this.showToast(`Username must match their email: use "${email.split('@')[0]}" for ${email}.`, 'error'); return;
+        const username = email.split('@')[0];
+        if (!username) {
+            this.showToast('That email is missing a name before the @ — check it and try again.', 'error'); return;
         }
         if (this.advisors.find(a => a.username === username)) {
-            this.showToast('An advisor with that username already exists.', 'error'); return;
+            this.showToast(`${email} is already on the advisor list.`, 'error'); return;
         }
         try {
-            const loginEmail = (email || `${username}@ebhcs.org`).trim().toLowerCase();
+            const loginEmail = email;
             await setDoc(doc(db, 'advisors', username), {
                 displayName,
                 email: loginEmail,
@@ -181,7 +230,6 @@ export class AdminManageMethods {
             });
             this.advisors.push({ username, displayName, email: loginEmail, isAdmin, publicRole, showInDirectory });
             await this.publishStudentDirectory();
-            document.getElementById('newAdvisorUsername').value = '';
             document.getElementById('newAdvisorDisplayName').value = '';
             document.getElementById('newAdvisorEmail').value = '';
             document.getElementById('newAdvisorIsAdmin').checked = false;
@@ -222,8 +270,8 @@ export class AdminManageMethods {
      * Write the student-facing advisor directory to config/studentDirectory.
      * The student site reads this doc (publicly readable) and falls back to
      * the static list in src/advisor-directory.js when it doesn't exist.
-     * Coordinators (any title other than "Advisor") sort first, matching the
-     * original hand-ordered list.
+     * Leadership titles (anything other than "Advisor" — Director,
+     * Coordinator/Educator) sort to the top, then everyone alphabetically.
      */
     async publishStudentDirectory() {
         const entries = this.advisors
@@ -235,9 +283,9 @@ export class AdminManageMethods {
                 loginUsername: a.username,
             }))
             .sort((a, b) => {
-                const aCoord = a.role === 'Advisor' ? 1 : 0;
-                const bCoord = b.role === 'Advisor' ? 1 : 0;
-                if (aCoord !== bCoord) return aCoord - bCoord;
+                const aLead = isLeadershipRole(a.role) ? 0 : 1;
+                const bLead = isLeadershipRole(b.role) ? 0 : 1;
+                if (aLead !== bLead) return aLead - bLead;
                 return a.name.localeCompare(b.name);
             });
         try {
@@ -258,6 +306,13 @@ export class AdminManageMethods {
         const sortMode = document.getElementById('manageSortSelect')?.value || 'newest';
         const filterMode = document.getElementById('manageFilterSelect')?.value || 'all';
         const contentKind = document.getElementById('manageContentTypeSelect')?.value || 'all';
+        // Two controls can ask for the queue: the dedicated verification filter on
+        // My Resources (where the status dropdown is hidden — resources are never
+        // "expired", they go stale) and the status dropdown's "Needs verification"
+        // on the mixed views. Read whichever one is actually on screen.
+        const verificationMode = contentKind === 'resource'
+            ? (document.getElementById('manageVerificationSelect')?.value || 'all')
+            : (filterMode === 'needs-verification' ? 'needs-verification' : 'all');
 
         let userBulletins = this.bulletins
             .filter(b => (this.canManageAllPosts() || b.postedBy === this.currentUser.username) && b.isActive);
@@ -270,6 +325,16 @@ export class AdminManageMethods {
             });
         } else if (filterMode === 'expired') {
             userBulletins = userBulletins.filter(b => !this.isResourceBulletin(b) && this.isBulletinExpiredAdmin(b));
+        }
+
+        // Only a published resource carries a lastVerified stamp, so both sides of
+        // this filter drop bulletins, events, and drafts.
+        if (verificationMode === 'needs-verification' || verificationMode === 'verified') {
+            const wantDue = verificationMode === 'needs-verification';
+            userBulletins = userBulletins.filter(b =>
+                this.isResourceBulletin(b)
+                && b.isPublished !== false
+                && this.getResourceVerificationStatus(b).isDue === wantDue);
         }
 
         if (contentKind === 'bulletin') {
@@ -311,6 +376,27 @@ export class AdminManageMethods {
 
         // Apply sort
         userBulletins.sort((a, b) => {
+            // Working the re-verification queue: worst first, regardless of the
+            // sort dropdown. Never-verified and unreadable dates come before
+            // anything with a real date (see overdueBy in resource-verification).
+            if (verificationMode === 'needs-verification') {
+                const byOverdue = this.getResourceVerificationStatus(b).overdueBy
+                    - this.getResourceVerificationStatus(a).overdueBy;
+                if (byOverdue !== 0) return byOverdue;
+                return (a.resourceCategory || '').localeCompare(b.resourceCategory || '')
+                    || (this.getManageCardTitle(a) || '').localeCompare(this.getManageCardTitle(b) || '');
+            }
+            // Verified list: soonest to fall out of its window first, so an advisor
+            // working ahead sees what is about to go stale. Windows differ by
+            // category, so compare months left, not the raw date.
+            if (verificationMode === 'verified') {
+                const monthsLeft = (item) => {
+                    const v = this.getResourceVerificationStatus(item);
+                    return v.window - (v.monthsOld || 0);
+                };
+                return monthsLeft(a) - monthsLeft(b)
+                    || (this.getManageCardTitle(a) || '').localeCompare(this.getManageCardTitle(b) || '');
+            }
             if (sortMode === 'category') {
                 return (a.category || a.resourceCategory || '').localeCompare(b.category || b.resourceCategory || '');
             }
@@ -330,6 +416,10 @@ export class AdminManageMethods {
                 container.innerHTML = `<p>No posts match "<strong>${this.escapeHtml(searchQuery)}</strong>". Try a different search.</p>`;
             } else if (filterMode === 'expired') {
                 container.innerHTML = '<p>No expired posts. Great — everything is still active!</p>';
+            } else if (verificationMode === 'needs-verification') {
+                container.innerHTML = '<p>Nothing needs verifying — every published resource is inside its recheck window. Nice.</p>';
+            } else if (verificationMode === 'verified') {
+                container.innerHTML = '<p>No resource has been verified inside its recheck window yet. Switch to <strong>Needs checking</strong> to start the queue.</p>';
             } else if (filterMode === 'active') {
                 container.innerHTML = '<p>No active posts right now.</p>';
             } else if (contentKind === 'event') {
@@ -346,7 +436,21 @@ export class AdminManageMethods {
             return;
         }
 
-        container.innerHTML = userBulletins.map(bulletin => {
+        const plural = userBulletins.length === 1 ? '' : 's';
+        let queueBanner = '';
+        if (verificationMode === 'needs-verification') {
+            queueBanner = `<div class="verify-queue-banner">
+                    <strong>${userBulletins.length} resource${plural} due for a check.</strong>
+                    Confirm each card's details, then press <strong>Verified today</strong> on it. Worst first.
+               </div>`;
+        } else if (verificationMode === 'verified') {
+            queueBanner = `<div class="verify-queue-banner verify-queue-banner-ok">
+                    <strong>${userBulletins.length} resource${plural} verified and still inside ${userBulletins.length === 1 ? 'its' : 'their'} recheck window.</strong>
+                    Soonest due first — press <strong>Verified today</strong> to re-stamp one early.
+               </div>`;
+        }
+
+        container.innerHTML = queueBanner + userBulletins.map(bulletin => {
             const isResource = this.isResourceBulletin(bulletin);
             const kind = this.getManageContentKind(bulletin);
             const typeLabel = kind === 'resource'
@@ -378,12 +482,32 @@ export class AdminManageMethods {
                     ${bulletin.address ? `<p><strong>Address:</strong> ${this.escapeHtml(bulletin.address)}</p>` : ''}
                     ${bulletin.phone ? `<p><strong>Phone:</strong> ${this.escapeHtml(bulletin.phone)} (${this.escapeHtml(bulletin.phoneMode || 'call')})</p>` : ''}
                     ${bulletin.resourceOrder !== '' && bulletin.resourceOrder !== undefined && bulletin.resourceOrder !== null ? `<p><strong>Display Order:</strong> ${this.escapeHtml(String(bulletin.resourceOrder))}</p>` : ''}
+                    <p><strong>Last verified:</strong> ${(() => {
+                        const v = this.getResourceVerificationStatus(bulletin);
+                        // The chip carries the verdict so a card reads the same way
+                        // as the verification filter that would select it.
+                        const chip = v.isDue
+                            ? '<span class="verify-chip verify-chip-due">Needs checking</span>'
+                            : '<span class="verify-chip verify-chip-ok">Verified</span>';
+                        const stamp = this.escapeHtml(String(bulletin.lastVerified));
+                        if (v.status === 'never-verified') return `${chip} <em>never checked</em>`;
+                        if (v.status === 'bad-date') return `${chip} ${stamp} <em>(unreadable date)</em>`;
+                        if (v.status === 'overdue') return `${chip} ${stamp} <em>(${v.monthsOld} months ago)</em>`;
+                        const left = v.window - v.monthsOld;
+                        return `${chip} ${stamp} <em>(next check due in ${left} month${left === 1 ? '' : 's'})</em>`;
+                    })()}</p>
                 ` : ''}
                 ${this.renderManageDateInfo(bulletin)}
                 <div class="manage-actions">
                     <button type="button" class="edit-btn" data-manage-action="edit-bulletin" data-bulletin-id="${this.escapeAttribute(bulletin.id)}">
                         Edit
                     </button>
+                    ${isResource ? `
+                        <button type="button" class="verify-btn" data-manage-action="verify-resource" data-bulletin-id="${this.escapeAttribute(bulletin.id)}"
+                            title="Record that you checked this card's details today. Clears it from the monthly re-verification queue.">
+                            Verified today
+                        </button>
+                    ` : ''}
                     <button type="button" class="delete-btn" data-manage-action="delete-bulletin" data-bulletin-id="${this.escapeAttribute(bulletin.id)}">
                         Delete
                     </button>

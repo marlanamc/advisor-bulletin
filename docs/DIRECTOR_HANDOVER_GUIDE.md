@@ -91,65 +91,20 @@ There are **no accounts to create**. Advisors sign in with their `@ebhcs.org` Go
 - [ ] Click **Publish**
 - [ ] Confirm the rules include an `errors` collection (used for automatic site error logging)
 
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /bulletins/{bulletinId} {
+`firestore.rules` in the repo root is the single source of truth — copy that file, not a snippet from this
+guide. (The inline copy that used to live here had drifted several versions behind the real rules.)
 
-      // Anyone can read active bulletins (for student viewing)
-      allow read: if resource.data.isActive == true;
+The model, as of Sep 2026:
 
-      // Only authenticated advisors can create bulletins
-      allow create: if request.auth != null
-        && request.auth.token.email.matches('.*@ebhcs\\.org')
-        && validateBulletinData(request.resource.data)
-        && request.resource.data.postedBy == getUsername(request.auth.token.email);
+- Anyone can read active posts and published resources (students need no login).
+- Any advisor with an `advisors/{username}` doc and a verified `@ebhcs.org` Google account can create,
+  edit and delete **any** post or resource. Content permissions are equal for all advisors.
+- Admins (`advisors/{username}.isAdmin == true`, toggled on the portal's Advisors tab) can additionally
+  add and remove people. That is the only difference.
+- `mcreed@ebhcs.org` is a hardcoded break-glass owner so the roster can never be orphaned.
 
-      // Original authors can update their own bulletins; admin/leah may update any bulletin
-      allow update: if request.auth != null
-        && request.auth.token.email.matches('.*@ebhcs\\.org')
-        && (isPrivilegedAdvisor(request.auth.token.email)
-          || resource.data.postedBy == getUsername(request.auth.token.email))
-        && validateBulletinData(request.resource.data)
-        && request.resource.data.postedBy == resource.data.postedBy
-        && request.resource.data.datePosted == resource.data.datePosted;
-
-      // Original authors (or admin/leah) can delete by setting isActive: false
-      allow update: if request.auth != null
-        && request.auth.token.email.matches('.*@ebhcs\\.org')
-        && (isPrivilegedAdvisor(request.auth.token.email)
-          || resource.data.postedBy == getUsername(request.auth.token.email))
-        && request.resource.data.isActive == false
-        && request.resource.data.keys().hasAll(resource.data.keys());
-    }
-
-    function getUsername(email) {
-      return email.split('@')[0];
-    }
-
-    function isPrivilegedAdvisor(email) {
-      return email == 'mcreed@ebhcs.org' || email == 'lgregory@ebhcs.org';
-    }
-
-    function validateBulletinData(data) {
-      return data.keys().hasAll(['title', 'category', 'advisorName', 'postedBy', 'isActive'])
-        && data.title is string && data.title.size() > 0 && data.title.size() <= 200
-        && data.category is string && data.category in ['job', 'training', 'college', 'career-fair', 'announcement', 'resource']
-        && data.description is string && data.description.size() <= 2000
-        && data.advisorName is string && data.advisorName.size() > 0
-        && data.postedBy is string && data.postedBy.size() > 0
-        && data.isActive is bool
-        && (data.company == null || (data.company is string && data.company.size() <= 200))
-        && (data.contact == null || (data.contact is string && data.contact.size() <= 500))
-        && (data.deadline == null || data.deadline is string)
-        && (data.eventTime == null || data.eventTime is string)
-        && (data.eventLink == null || (data.eventLink is string && data.eventLink.size() <= 1000))
-        && (data.image == null || (data.image is string && data.image.size() <= 5000000));
-    }
-  }
-}
-```
+See [FIREBASE_SECURITY_RULES.md](FIREBASE_SECURITY_RULES.md) for the full explanation, and run
+`npm run test:rules` to verify any change against the emulator before deploying.
 
 - [ ] Click **"Publish"**
 

@@ -16,12 +16,11 @@ service cloud.firestore {
         && validateBulletinData(request.resource.data)
         && request.resource.data.postedBy == getUsername(request.auth.token.email);
 
-      // Any active advisor can update ANY resource (title, description,
-      // hours, order, etc.) — resources aren't author-restricted the way
-      // posts are. Posts (bulletins) stay restricted to their original
-      // author or a privileged advisor. A single rule covers both, gated by
-      // resource.data.type so isActiveAdvisor() and validateBulletinData()
-      // are each evaluated exactly once per request.
+      // Any active advisor can update ANY post or resource. Content
+      // permissions are equal for every advisor (Sep 2026) — the only thing
+      // an admin can do that a plain advisor cannot is add and remove
+      // people. The immutable-field checks below keep authorship and
+      // timestamps honest no matter who does the editing.
       //
       // History: this used to be two separate `allow update` statements — a
       // cheap "reorder fast-path" declared before an expensive full-
@@ -40,17 +39,13 @@ service cloud.firestore {
         && validateBulletinData(request.resource.data)
         && (!('postedBy' in request.resource.data) || request.resource.data.postedBy == resource.data.postedBy)
         && (!('datePosted' in request.resource.data) || request.resource.data.datePosted == resource.data.datePosted)
-        && (!('createdAt' in request.resource.data) || !('createdAt' in resource.data) || request.resource.data.createdAt == resource.data.createdAt)
-        && (resource.data.type == 'resource'
-          || isPrivilegedAdvisor(request.auth.token.email)
-          || resource.data.postedBy == getUsername(request.auth.token.email));
+        && (!('createdAt' in request.resource.data) || !('createdAt' in resource.data) || request.resource.data.createdAt == resource.data.createdAt);
 
-      // Privileged advisors can permanently delete any bulletin. Authors may delete
-      // their own inactive placeholders (cancelled or failed publish drafts).
-      allow delete: if isActiveAdvisor(request.auth)
-        && (isPrivilegedAdvisor(request.auth.token.email)
-          || (resource.data.isActive == false
-            && resource.data.postedBy == getUsername(request.auth.token.email)));
+      // Any active advisor can permanently delete any bulletin — equal
+      // privilege (Sep 2026). This also makes the 133 legacy posts left over
+      // from the retired shared logins (postedBy 'admin' / 'advisors', owned
+      // by nobody) editable and removable by the whole team.
+      allow delete: if isActiveAdvisor(request.auth);
     }
 
     match /resourceLogos/{bulletinId} {
@@ -75,9 +70,8 @@ service cloud.firestore {
       allow read, write: if isAdvisor(request.auth)
         && username == getUsername(request.auth.token.email);
 
-      // Privileged admins can read/write any user document
-      allow read, write: if isAdvisor(request.auth)
-        && isPrivilegedAdvisor(request.auth.token.email);
+      // Admins manage the roster, so they can read/write any profile doc.
+      allow read, write: if isAdminAdvisor(request.auth);
     }
 
     match /advisors/{username} {
@@ -88,9 +82,11 @@ service cloud.firestore {
       allow read: if isActiveAdvisor(request.auth)
         || (isAdvisor(request.auth) && username == getUsername(request.auth.token.email));
 
-      // Only privileged advisors can create, update, or delete advisor records
-      allow write: if isAdvisor(request.auth)
-        && isPrivilegedAdvisor(request.auth.token.email);
+      // Adding and removing people is the ONE privilege an admin has beyond
+      // a normal advisor. Gated on the advisors/{username}.isAdmin flag, so
+      // the Admin toggle on the portal's Advisors tab is now the real switch
+      // — promoting someone no longer needs a code change and a rules deploy.
+      allow write: if isAdminAdvisor(request.auth);
     }
 
     match /config/studentDirectory {
@@ -98,8 +94,7 @@ service cloud.firestore {
       // Published from the admin Advisors tab; the student site falls back to
       // the static list in src/advisor-directory.js when this doc is absent.
       allow read: if true;
-      allow write: if isAdvisor(request.auth)
-        && isPrivilegedAdvisor(request.auth.token.email)
+      allow write: if isAdminAdvisor(request.auth)
         && request.resource.data.advisors is list
         && request.resource.data.advisors.size() <= 50;
     }
@@ -135,56 +130,65 @@ service cloud.firestore {
 
     // An advisor is "active" only while their advisors/{username} doc exists.
     // Removing an advisor in the portal (Advisors tab -> Remove) therefore
-    // revokes their write access immediately, even if their Firebase Auth
-    // login still exists. Privileged admins are exempt so the accounts that
-    // manage the advisor list can never lock themselves out.
+    // revokes their access immediately, even if their Firebase Auth login
+    // still exists. Every active advisor has the same content permissions:
+    // create, edit and delete any post or resource.
     function isActiveAdvisor(authInfo) {
       return isAdvisor(authInfo)
-        && (isPrivilegedAdvisor(authInfo.token.email)
+        && (isOwnerAdmin(authInfo.token.email)
           || exists(/databases/$(database)/documents/advisors/$(getUsername(authInfo.token.email))));
     }
 
-    function isPrivilegedAdvisor(email) {
-      return email == 'mcreed@ebhcs.org' || email == 'lgregory@ebhcs.org';
+    // An admin is any advisor whose advisors/{username} doc has isAdmin: true.
+    // The ONLY thing this grants over a plain advisor is managing the roster
+    // (advisors/*, config/studentDirectory, users/*). Read as a document get
+    // rather than a hardcoded list so the portal's Admin toggle is the source
+    // of truth; the exists() guard keeps a missing doc from erroring the rule.
+    function isAdminAdvisor(authInfo) {
+      return isAdvisor(authInfo)
+        && (isOwnerAdmin(authInfo.token.email)
+          || (exists(/databases/$(database)/documents/advisors/$(getUsername(authInfo.token.email)))
+            && get(/databases/$(database)/documents/advisors/$(getUsername(authInfo.token.email)))
+                 .data.get('isAdmin', false) == true));
     }
 
-    function validActionLinkItem(item) {
-      return item.keys().hasAll(['labelEn', 'labelEs'])
-        && item.labelEn is string && item.labelEn.size() > 0 && item.labelEn.size() <= 60
-        && item.labelEs is string && item.labelEs.size() > 0 && item.labelEs.size() <= 60
-        && (!('url' in item) || item.url is string)
-        && (!('pdfUrl' in item) || item.pdfUrl is string)
-        && (
-          (('url' in item) && item.url is string && item.url.size() > 0 && item.url.size() <= 500)
-          || (('pdfUrl' in item) && item.pdfUrl is string && item.pdfUrl.size() > 0 && item.pdfUrl.size() <= 500)
-        );
+    // Break-glass only: the site owner always counts as an active advisor and
+    // an admin, so clearing the last isAdmin flag (or deleting your own
+    // advisor doc) can't permanently orphan the roster. Not an extra
+    // day-to-day privilege — identical rights to any other admin.
+    // Kept in sync with OWNER_ADMIN_EMAILS in src/admin-roles.js by
+    // scripts/check-admin-emails-sync.mjs (prebuild).
+    function isOwnerAdmin(email) {
+      return email == 'mcreed@ebhcs.org';
     }
 
+    // actionLinks / hoursRows are bounded by type and length only.
+    //
+    // These used to validate every item individually, unrolled per index
+    // (5 action links x ~13 expressions, 7 hours rows x ~4). Firestore
+    // evaluates every `allow` statement for an operation regardless of
+    // short-circuiting, so on a single resource write validateBulletinData()
+    // ran three times over (create @ L15, update @ L38, create again) and
+    // those ~100 unrolled expressions tripled into the shared ~1000-expression
+    // ceiling: a resource carrying the maximum 5 links and 7 hours rows was
+    // rejected with a bare "permission-denied" that had nothing to do with
+    // permissions. Verified against the emulator in
+    // tests/rules/firestore-rules.test.mjs, which fails if this regresses.
+    //
+    // Same reasoning as the display-only fields dropped from
+    // validateBulletinData() below: the labels and urls inside these lists are
+    // rendered text the client already builds with the right shape (see
+    // buildBulletinObject in src/firebase-admin.js, and the protocol allowlist
+    // in src/resource-action-links.js with its unit tests). A malformed label
+    // is a data-quality problem, not a security one — every write here still
+    // requires an authenticated active advisor, and the list length caps still
+    // bound how much can be written.
     function validActionLinks(links) {
-      return links is list && links.size() <= 5
-        && (links.size() == 0
-          || (validActionLinkItem(links[0])
-            && (links.size() < 2 || validActionLinkItem(links[1]))
-            && (links.size() < 3 || validActionLinkItem(links[2]))
-            && (links.size() < 4 || validActionLinkItem(links[3]))
-            && (links.size() < 5 || validActionLinkItem(links[4]))));
-    }
-
-    function validHoursRowItem(item) {
-      return (!('day' in item) || item.day is string)
-        && (!('time' in item) || item.time is string);
+      return links is list && links.size() <= 5;
     }
 
     function validHoursRows(rows) {
-      return rows is list && rows.size() <= 7
-        && (rows.size() == 0
-          || (validHoursRowItem(rows[0])
-            && (rows.size() < 2 || validHoursRowItem(rows[1]))
-            && (rows.size() < 3 || validHoursRowItem(rows[2]))
-            && (rows.size() < 4 || validHoursRowItem(rows[3]))
-            && (rows.size() < 5 || validHoursRowItem(rows[4]))
-            && (rows.size() < 6 || validHoursRowItem(rows[5]))
-            && (rows.size() < 7 || validHoursRowItem(rows[6]))));
+      return rows is list && rows.size() <= 7;
     }
 
     function isDocumentResource(data) {

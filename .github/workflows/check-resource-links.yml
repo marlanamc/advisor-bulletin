@@ -10,6 +10,9 @@ name: Check Resource Links
 # Keeps a single tracking issue (label: link-check) up to date instead of
 # opening a new issue every week: updates the body when problems are
 # found, closes it when everything's clean again.
+#
+# Content freshness (hours, prices, eligibility going stale) is a separate
+# concern on a much slower clock — see check-resource-content.yml, monthly.
 
 on:
   schedule:
@@ -44,11 +47,6 @@ jobs:
         env:
           GOOGLE_APPLICATION_CREDENTIALS: /tmp/service-account.json
         run: node scripts/check-resource-links.mjs --json=/tmp/link-check-report.json
-
-      - name: Check resource content review risk
-        env:
-          GOOGLE_APPLICATION_CREDENTIALS: /tmp/service-account.json
-        run: node scripts/check-resource-content-risk.mjs --json=/tmp/resource-content-risk-report.json
 
       - name: Update or close the tracking issue
         uses: actions/github-script@v7
@@ -142,10 +140,82 @@ jobs:
               return item.seenWeeks === 1 ? 'first week seen' : `seen ${item.seenWeeks} weeks in a row`;
             }
 
+            function plural(n, word) {
+              return `${n} ${word}${n === 1 ? '' : 's'}`;
+            }
+
+            // The issue body is refreshed every run, but a comment (and therefore
+            // an email) is only worth sending when the finding set actually moved.
+            // Otherwise a stable set of automation-blocked hosts generates an
+            // identical notification every week and the weekly read stops meaning
+            // anything. Diffed against the state blob carried in the issue body.
+            const currentItems = [...brokenWithHistory, ...movedWithHistory, ...manualWithHistory];
+            const currentKeys = new Set(currentItems.map((i) => i.issueKey));
+            const priorKeys = Object.keys(priorState);
+
+            const added = currentItems.filter((i) => !priorState[i.issueKey]);
+            const cleared = priorKeys
+              .filter((k) => !currentKeys.has(k))
+              .map((k) => ({ ...priorState[k], issueKey: k }));
+            const recategorized = currentItems.filter(
+              (i) => priorState[i.issueKey] && priorState[i.issueKey].type !== i.type
+            );
+            const somethingChanged = added.length > 0 || cleared.length > 0 || recategorized.length > 0;
+
+            function changeComment() {
+              const parts = [];
+              if (added.length) parts.push(`${added.length} new`);
+              if (cleared.length) parts.push(`${cleared.length} cleared`);
+              if (recategorized.length) parts.push(`${recategorized.length} recategorized`);
+              const out = [`**What changed** — ${parts.join(', ')} since the last run.`, ''];
+              for (const i of added) {
+                out.push(`- NEW (${i.type}): **${i.resource}** (${i.kind}) — ${i.url}`);
+              }
+              for (const i of cleared) {
+                out.push(`- CLEARED (was ${i.type}): **${i.resource}** — ${i.url}`);
+              }
+              for (const i of recategorized) {
+                out.push(`- ${priorState[i.issueKey].type} → ${i.type}: **${i.resource}** — ${i.url}`);
+              }
+              out.push('');
+              out.push(`Now: ${brokenWithHistory.length} broken, ${movedWithHistory.length} moved, ${manualReal.length} to check, ${blocked.length} CI-blocked.`);
+              return out.join('\n');
+            }
+
+            // A 403 or a bot challenge from CI says nothing about the link: GitHub
+            // runs from Azure datacenter IPs that mass.gov and friends refuse
+            // outright, while the same page loads fine in a browser. Those are
+            // ~24 of the ~28 weekly findings, so listing them one by one buries
+            // the handful of items that actually need a decision. They are still
+            // recorded in the state blob below - only the rendering is grouped.
+            const BLOCKED_STATUSES = new Set(['warn-forbidden', 'warn-bot-challenge']);
+            const blocked = manualWithHistory.filter((i) => BLOCKED_STATUSES.has(i.status));
+            const manualReal = manualWithHistory.filter((i) => !BLOCKED_STATUSES.has(i.status));
+
+            const blockedHosts = new Map();
+            for (const item of blocked) {
+              let host = item.url;
+              try { host = new URL(item.url).hostname.replace(/^www\./i, ''); } catch {}
+              const entry = blockedHosts.get(host) || { count: 0, firstWeek: true };
+              entry.count += 1;
+              if (item.seenWeeks > 1) entry.firstWeek = false;
+              blockedHosts.set(host, entry);
+            }
+
+            const brokenCount = brokenWithHistory.length;
+            const actionableCount = movedWithHistory.length + manualReal.length;
+            const verdict = brokenCount > 0
+              ? `**${plural(brokenCount, 'link')} need${brokenCount === 1 ? 's' : ''} a card edit this week.**`
+              : actionableCount > 0
+                ? `**Nothing broken this week.** ${plural(actionableCount, 'item')} below worth a look, none urgent.`
+                : '**Nothing broken this week, nothing to do.** The only findings are sites that block automation from CI, which normally work fine in a browser.';
+
             const lines = [];
             lines.push(`**Weekly resource-link check — ${report.checkedAt}**`);
             lines.push('');
-            lines.push(`Checked ${totals.checked} links across all resources. ${brokenWithHistory.length} broken, ${movedWithHistory.length} domain-moved (still resolving, may want the main url updated), ${manualWithHistory.length} needs manual check.`);
+            lines.push(verdict);
+            lines.push('');
+            lines.push(`Checked ${totals.checked} links across all resources. ${brokenWithHistory.length} broken, ${movedWithHistory.length} domain-moved (still resolving, may want the main url updated), ${manualReal.length} needing a browser check, ${blocked.length} blocked from CI (no action).`);
             lines.push('');
             if (brokenWithHistory.length) {
               lines.push('### Broken — needs a fix');
@@ -162,123 +232,70 @@ jobs:
                 lines.push('  Action: Update the resource URL to the final destination when it is clearly the same official page.');
               }
             }
-            if (manualWithHistory.length) {
+            if (manualReal.length) {
               lines.push('');
-              lines.push('### Needs manual check — often bot-blocking, rate limiting, timeouts, or temporary server errors');
-              for (const f of manualWithHistory) {
+              lines.push('<details>');
+              lines.push(`<summary><b>Worth a browser check (${manualReal.length})</b> — certificate chains Node won't verify, timeouts, rate limiting, or temporary server errors</summary>`);
+              lines.push('');
+              for (const f of manualReal) {
                 lines.push(`- **${f.resource}** (${f.kind}): ${f.url} — ${f.reason || `HTTP ${f.httpStatus}`} (${historyText(f)})`);
                 lines.push(`  Action: ${f.advisorAction || 'Open in a browser; update only if it is actually unavailable.'}`);
               }
+              lines.push('');
+              lines.push('</details>');
+            }
+            if (blocked.length) {
+              lines.push('');
+              lines.push('<details>');
+              lines.push(`<summary>Blocked from CI (${blocked.length} links across ${blockedHosts.size} hosts) — no action needed</summary>`);
+              lines.push('');
+              lines.push('These sites refuse requests from GitHub\'s datacenter IPs. They are almost certainly fine in a browser, and a genuinely dead page on one of them would show up under Broken above instead.');
+              lines.push('');
+              for (const [host, entry] of [...blockedHosts.entries()].sort((a, b) => b[1].count - a[1].count)) {
+                lines.push(`- ${host} — ${plural(entry.count, 'link')}${entry.firstWeek ? ' — **new this week**' : ''}`);
+              }
+              lines.push('');
+              lines.push('</details>');
             }
             lines.push('');
             lines.push(writeState(nextState));
             const body = lines.join('\n');
+            const title = brokenCount > 0
+              ? `Weekly resource link check: ${brokenCount} broken`
+              : actionableCount > 0
+                ? `Weekly resource link check: nothing broken, ${actionableCount} to verify`
+                : 'Weekly resource link check: nothing broken';
 
             if (existing) {
               await github.rest.issues.update({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: existing.number,
+                title,
                 body,
               });
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: existing.number,
-                body: `Updated — ${brokenWithHistory.length} broken, ${movedWithHistory.length} moved, ${manualWithHistory.length} needs manual check as of this run.`,
-              });
-            } else {
-              await github.rest.issues.create({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                title: 'Weekly resource link check found links to review',
-                body,
-                labels: [label],
-              });
-            }
-
-      - name: Update resource content review issue
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const fs = require('fs');
-            const report = JSON.parse(fs.readFileSync('/tmp/resource-content-risk-report.json', 'utf8'));
-            const label = 'resource-review';
-
-            try {
-              await github.rest.issues.getLabel({ owner: context.repo.owner, repo: context.repo.repo, name: label });
-            } catch {
-              await github.rest.issues.createLabel({ owner: context.repo.owner, repo: context.repo.repo, name: label, color: '5319e7', description: 'Weekly resource content freshness review' });
-            }
-
-            const issues = await github.rest.issues.listForRepo({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              state: 'open',
-              labels: label,
-            });
-            const existing = issues.data[0];
-
-            if (!report.reviews.length) {
-              if (existing) {
+              if (somethingChanged) {
                 await github.rest.issues.createComment({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   issue_number: existing.number,
-                  body: `All clear as of ${report.checkedAt} — no resource content review risks found. Closing.`,
+                  body: changeComment(),
                 });
-                await github.rest.issues.update({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  issue_number: existing.number,
-                  state: 'closed',
-                });
+              } else {
+                console.log('Nothing changed since the last run — body refreshed, no comment posted.');
               }
-              return;
-            }
-
-            const lines = [];
-            lines.push(`**Weekly resource content review — ${report.checkedAt}**`);
-            lines.push('');
-            lines.push(`Checked ${report.totals.resources} live resources. Review queue: ${report.totals.high} high, ${report.totals.medium} medium, ${report.totals.low} low.`);
-            lines.push('');
-            for (const priority of ['high', 'medium', 'low']) {
-              const items = report.reviews.filter((item) => item.priority === priority);
-              if (!items.length) continue;
-              lines.push(`### ${priority[0].toUpperCase()}${priority.slice(1)} priority`);
-              for (const item of items.slice(0, priority === 'low' ? 15 : 30)) {
-                const reasons = item.reasons.map((reason) => reason.reason).join(' ');
-                const actions = [...new Set(item.reasons.map((reason) => reason.advisorAction))].join(' ');
-                lines.push(`- **${item.resource}** (${item.category}, verified: ${item.lastVerified || 'not set'}): ${reasons}`);
-                lines.push(`  Action: ${actions}`);
-                if (item.url) lines.push(`  URL: ${item.url}`);
-              }
-              if (items.length > (priority === 'low' ? 15 : 30)) {
-                lines.push(`- ...and ${items.length - (priority === 'low' ? 15 : 30)} more ${priority}-priority item(s).`);
-              }
-              lines.push('');
-            }
-
-            const body = lines.join('\n');
-            if (existing) {
-              await github.rest.issues.update({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: existing.number,
-                body,
-              });
             } else {
               await github.rest.issues.create({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                title: 'Weekly resource content review queue',
+                title,
                 body,
                 labels: [label],
               });
             }
 
       - name: Post weekly price recheck reminder
-        if: always()
+        if: always() && steps.check.outcome == 'success'
         uses: actions/github-script@v7
         with:
           script: |
@@ -335,3 +352,14 @@ jobs:
                 labels: [label],
               });
             }
+
+      # Both reports otherwise live only in /tmp on the runner and vanish with
+      # the job, leaving no way to diff one week against the next.
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: resource-link-reports
+          path: /tmp/link-check-report.json
+          retention-days: 90
+          if-no-files-found: warn

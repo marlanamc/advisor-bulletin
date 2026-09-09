@@ -8,7 +8,7 @@
 import { db, auth } from './firebase.js'
 import { collection, getDocs } from 'firebase/firestore'
 import { signOut } from 'firebase/auth'
-import { isPrivilegedAdminEmail } from './admin-roles.js'
+import { isOwnerAdminEmail } from './admin-roles.js'
 
 export class AdminAuthMethods {
     setAuthView(view, message = 'Checking your session...') {
@@ -74,7 +74,7 @@ export class AdminAuthMethods {
                 username,
                 email: userDetails.email,
                 name: userDetails.name || username,
-                isAdmin: isPrivilegedAdminEmail(userDetails.email)
+                isAdmin: isOwnerAdminEmail(userDetails.email)
             };
 
             this.setAuthView('loading', `Welcome back, ${this.currentUser.name}!`);
@@ -94,7 +94,7 @@ export class AdminAuthMethods {
                 if (advisor) {
                     this.currentUser.name = advisor.displayName || this.currentUser.name;
                     this.currentUser.isAdmin = advisor.isAdmin === true
-                        || isPrivilegedAdminEmail(this.currentUser.email);
+                        || isOwnerAdminEmail(this.currentUser.email);
                     const welcome = document.getElementById('welcomeMessage');
                     if (welcome) welcome.textContent = `Welcome, ${this.currentUser.name}!`;
 

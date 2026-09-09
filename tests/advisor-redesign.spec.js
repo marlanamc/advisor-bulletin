@@ -251,6 +251,34 @@ async function getLastCapturedUpdate(page) {
   return page.evaluate(() => window.__capturedUpdates.at(-1));
 }
 
+// Health resources are on the 3-month recheck window (src/resource-verification.js),
+// so a stamp 5 months back is overdue and last month's is comfortably fresh.
+async function seedVerificationResources(page) {
+  await showSeededAdvisorDashboard(page);
+  await page.evaluate(() => {
+    const now = new Date();
+    const stampMonthsAgo = (months) => {
+      const d = new Date(now.getFullYear(), now.getMonth() - months, 1);
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    };
+    const base = {
+      type: 'resource',
+      resourceCategory: 'health',
+      advisorName: 'Import',
+      postedBy: 'rocha',
+      datePosted: now.toISOString(),
+      isActive: true,
+      isPublished: true,
+    };
+    window.adminPanel.bulletins = [
+      { ...base, id: 'verify-never', title: 'Never Checked Clinic', titleEn: 'Never Checked Clinic' },
+      { ...base, id: 'verify-overdue', title: 'Stale Clinic', titleEn: 'Stale Clinic', lastVerified: stampMonthsAgo(5) },
+      { ...base, id: 'verify-fresh', title: 'Fresh Clinic', titleEn: 'Fresh Clinic', lastVerified: stampMonthsAgo(1) },
+    ];
+    window.adminPanel.loadManageBulletins();
+  });
+}
+
 test.describe('Advisor redesign', () => {
   test('renders the redesigned advisor login screen', async ({ page }) => {
     await page.goto('/admin.html');
@@ -336,6 +364,30 @@ test.describe('Advisor redesign', () => {
     await expect(page.locator('#statsCatChart')).not.toContainText('Resource');
     await expect(page.locator('#statsPostCatChart')).toContainText('Health / Salud');
     await expect(page.locator('#statsPostCatChart')).toContainText('Housing / Vivienda');
+  });
+
+  test('the post category picker only offers categories a post can be saved with', async ({ page }) => {
+    // The picker used to be built from the CATS colour map it shares with
+    // resource authoring, so "+ More topics" offered seven resource-tile
+    // categories (jobs, family, family-community, general, hse, legal-aid,
+    // consulates) that firestore.rules rejects — picking "Family & Community"
+    // failed the post with a bare "Missing or insufficient permissions".
+    await showSeededAdvisorDashboard(page);
+
+    await page.locator('#apNavCreate').click();
+    await page.locator('#cxCatBtn').click();
+    await page.locator('#cxCatPop .cx-cat', { hasText: 'More topics' }).click();
+
+    const offered = await page.locator('#cxCatPop .cx-cat[data-cat]').evaluateAll(
+      (els) => els.map((el) => el.dataset.cat)
+    );
+    expect(offered).toEqual([
+      'job', 'training', 'immigration', 'housing', 'health', 'food',
+      'esol', 'college', 'money', 'career-fair', 'announcement',
+    ]);
+    for (const dead of ['jobs', 'family', 'family-community', 'general', 'hse', 'legal-aid', 'consulates']) {
+      expect(offered).not.toContain(dead);
+    }
   });
 
   test('category picker stays in sync with bulletin category field', async ({ page }) => {
@@ -457,6 +509,42 @@ test.describe('Advisor redesign', () => {
     expect(savedOrders).toEqual([
       { category: 'health', orderedIds: ['resource-2', 'resource-1'] },
     ]);
+  });
+
+  test('filters resources by verification status on My Resources', async ({ page }) => {
+    await seedVerificationResources(page);
+
+    await page.locator('#apNavResources').click();
+
+    // Resources have no live/expired status, so the status controls give up their
+    // slot to the verification filter.
+    await expect(page.locator('#manageFilterSelect')).toBeHidden();
+    await expect(page.locator('#manageStatusPills')).toBeHidden();
+    const verification = page.locator('#manageVerificationSelect');
+    await expect(verification).toBeVisible();
+    await expect(verification).toHaveValue('all');
+    const cards = page.locator('#manageBulletins .manage-card');
+    await expect(cards).toHaveCount(3);
+
+    await verification.selectOption('needs-verification');
+    await expect(cards).toHaveCount(2);
+    await expect(page.locator('.verify-queue-banner')).toContainText('2 resources due for a check');
+    // Never verified sorts above a merely overdue stamp.
+    await expect(cards.first().locator('h5')).toHaveText('Never Checked Clinic');
+    await expect(page.locator('#manageBulletins')).not.toContainText('Fresh Clinic');
+    await expect(cards.first().locator('.verify-chip-due')).toHaveText('Needs checking');
+
+    await verification.selectOption('verified');
+    await expect(cards).toHaveCount(1);
+    await expect(cards.locator('h5')).toHaveText('Fresh Clinic');
+    await expect(cards.locator('.verify-chip-ok')).toHaveText('Verified');
+    await expect(page.locator('.verify-queue-banner')).toContainText('1 resource verified');
+
+    // Leaving the resources page puts the status controls back and clears the filter.
+    await page.locator('#apNavBulletins').click();
+    await expect(verification).toBeHidden();
+    await expect(verification).toHaveValue('all');
+    await expect(page.locator('#manageFilterSelect')).toBeVisible();
   });
 
   test('shows the resource card preview when editing a resource', async ({ page }) => {

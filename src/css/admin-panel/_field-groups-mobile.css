@@ -330,6 +330,19 @@ button[type="submit"]:hover {
     vertical-align: middle;
 }
 
+.advisor-hidden-badge {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 999px;
+    background: #eef1f6;
+    color: #64748b;
+    font: 800 11px var(--font-jakarta);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-left: 8px;
+    vertical-align: middle;
+}
+
 .desktop-action-advisors {
     background: transparent;
 }

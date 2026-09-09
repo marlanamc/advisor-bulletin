@@ -681,6 +681,18 @@
                             <option value="all">All statuses</option>
                             <option value="active">Live</option>
                             <option value="expired">Expired</option>
+                            <option value="needs-verification">Needs verification</option>
+                        </select>
+                        <!-- Resources only. They have no live/expired status, so the status
+                             dropdown above is hidden for them and this takes its slot
+                             (see syncManageStatusFilters in src/admin-preview.js). -->
+                        <select id="manageVerificationSelect" class="ap-select" hidden
+                            aria-label="Filter resources by verification status"
+                            title="Show only resources that are due for a check, or only ones already verified"
+                            style="width:auto;min-width:150px;padding:8px 34px 8px 12px;font-size:.82rem;">
+                            <option value="all">All resources</option>
+                            <option value="needs-verification">Needs checking</option>
+                            <option value="verified">Verified</option>
                         </select>
                         <button type="button" id="manageReorderToggle" class="ap-btn ap-btn-ghost" style="display:none;font-size:.82rem;padding:8px 14px;" data-ap-action="toggle-resource-reorder" title="Drag resources to change the order students see">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;vertical-align:-2px;margin-right:6px;"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
@@ -951,18 +963,14 @@
                         <div style="padding:20px 22px;">
                             <div class="advisor-form-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;">
                                 <div class="form-group">
-                                    <label for="newAdvisorUsername" class="ap-label">Username</label>
-                                    <input type="text" id="newAdvisorUsername" placeholder="e.g. jsmith" autocomplete="off" class="ap-input">
-                                    <small class="ap-field-hint">Their email prefix (before @ebhcs.org)</small>
+                                    <label for="newAdvisorEmail" class="ap-label">School Google Email</label>
+                                    <input type="email" id="newAdvisorEmail" placeholder="jsmith@ebhcs.org" autocomplete="off" class="ap-input">
+                                    <small class="ap-field-hint">The @ebhcs.org account they sign in with &mdash; this is their login</small>
                                 </div>
                                 <div class="form-group">
                                     <label for="newAdvisorDisplayName" class="ap-label">Display Name</label>
                                     <input type="text" id="newAdvisorDisplayName" placeholder="e.g. Jamie Smith" autocomplete="off" class="ap-input">
                                     <small class="ap-field-hint">Name students see on bulletins</small>
-                                </div>
-                                <div class="form-group">
-                                    <label for="newAdvisorEmail" class="ap-label">Email</label>
-                                    <input type="email" id="newAdvisorEmail" placeholder="jsmith@ebhcs.org" autocomplete="off" class="ap-input">
                                 </div>
                                 <div class="form-group">
                                     <label for="newAdvisorPublicRole" class="ap-label">Title on student site</label>
@@ -1024,8 +1032,9 @@
                             <small class="ap-field-hint">Name students see on bulletins</small>
                         </div>
                         <div class="form-group">
-                            <label for="editAdvisorEmail" class="ap-label">Email</label>
-                            <input type="email" id="editAdvisorEmail" autocomplete="off" class="ap-input">
+                            <label for="editAdvisorEmail" class="ap-label">School Google Email</label>
+                            <input type="email" id="editAdvisorEmail" autocomplete="off" class="ap-input" readonly aria-readonly="true" style="background:#f3f5f9;color:var(--ap-text-2);cursor:not-allowed;">
+                            <small class="ap-field-hint">This is their login and cannot be changed here. To move someone to a different address, remove them and add the new email.</small>
                         </div>
                         <div class="form-group">
                             <label for="editAdvisorPublicRole" class="ap-label">Title on student site</label>

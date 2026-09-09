@@ -2,6 +2,8 @@
 // Merged onto FirebaseBulletinBoard.prototype by applyMethods() in firebase-config.js.
 import { formatResourceHoursHtml, formatResourceHoursRowsHtml } from './resource-hours.js'
 import { normalizeWebUrl } from './url-safety.js'
+import { buildBulletinCalendarLink } from './calendar-export.js'
+import { toRichTextPlainText } from './rich-text.js'
 
 export class BoardDetailMethods {
     renderBulletinDetail(bulletin) {
@@ -32,10 +34,14 @@ export class BoardDetailMethods {
         const resourceNotesHtml = isResource && formattedDescription
             ? `<div class="post-detail-description post-detail-description--notes"><p class="post-detail-notes-label"><span class="en-text">Additional notes</span><span class="es-text">Notas adicionales</span></p>${formattedDescription}</div>`
             : '';
-        const tagValues = [bulletin.classType ? this.getClassTypeDisplay(bulletin.classType) : '', bulletin.company || '', bulletin.eventLocation || '']
+        // Prefer the Location row in the info grid; skip eventLocation tag when address already covers it.
+        const addressShown = Boolean((bulletin.address || '').trim());
+        const eventLocationTag = addressShown ? '' : (bulletin.eventLocation || '');
+        const tagValues = [bulletin.classType ? this.getClassTypeDisplay(bulletin.classType) : '', bulletin.company || '', eventLocationTag]
             .filter(Boolean)
             .slice(0, 3);
         const contactAction = this.getDetailContactAction(bulletin);
+        const calendarAction = this.getBulletinCalendarAction(bulletin);
         const showDetailInfoGrid = this.hasDetailInfoGridContent(bulletin);
         const resourceUrl = this.isResourceBulletin(bulletin) ? this.getResourceUrl(bulletin) : '';
         const detailExternalLink = resourceUrl && resourceUrl !== '#'
@@ -98,14 +104,14 @@ export class BoardDetailMethods {
                             ${bulletin.address ? `
                                 <div style="display: flex; gap: 12px; align-items: flex-start;">
                                     <div style="color: ${meta.accent}; margin-top: 2px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
-                                    <div><strong style="display: block; font-size: 0.8rem; color: #64748b; text-transform: uppercase;">Location</strong><span style="font-size: 0.95rem;">${this.escapeHtml(bulletin.address)}</span></div>
+                                    <div><strong style="display: block; font-size: 0.8rem; color: #64748b; text-transform: uppercase;"><span class="en-text">Location</span><span class="es-text">Ubicación</span></strong><span style="font-size: 0.95rem;">${this.escapeHtml(bulletin.address)}</span></div>
                                 </div>
                             ` : ''}
                             
                             ${(Array.isArray(bulletin.hoursRows) && bulletin.hoursRows.length) || bulletin.hours ? `
                                 <div style="display: flex; gap: 12px; align-items: flex-start;">
                                     <div style="color: ${meta.accent}; margin-top: 2px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
-                                    <div><strong style="display: block; font-size: 0.8rem; color: #64748b; text-transform: uppercase; margin-bottom: 6px;">Hours</strong>${Array.isArray(bulletin.hoursRows) && bulletin.hoursRows.length
+                                    <div><strong style="display: block; font-size: 0.8rem; color: #64748b; text-transform: uppercase; margin-bottom: 6px;"><span class="en-text">Hours</span><span class="es-text">Horario</span></strong>${Array.isArray(bulletin.hoursRows) && bulletin.hoursRows.length
                                         ? formatResourceHoursRowsHtml(bulletin.hoursRows, (value) => this.escapeHtml(value))
                                         : formatResourceHoursHtml(bulletin.hours, (value) => this.escapeHtml(value), bulletin.hoursEs)}</div>
                                 </div>
@@ -121,24 +127,33 @@ export class BoardDetailMethods {
                         ${contactAction ? `
                             <a href="${this.escapeAttribute(contactAction.href)}" class="post-detail-action post-detail-action--primary">
                                 <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.25 7.75c0 5.1 5.9 11 11 11h1.75a1 1 0 0 0 1-1v-3.2a1 1 0 0 0-.78-.98l-3.14-.7a1 1 0 0 0-.96.29l-.92.98a13.84 13.84 0 0 1-4.34-4.34l.98-.92a1 1 0 0 0 .29-.96l-.7-3.14A1 1 0 0 0 8.45 4H5.25a1 1 0 0 0-1 1v2.75Z"/></svg>
-                                <span><strong>${this.escapeHtml(contactAction.label)}</strong><small>${this.escapeHtml(contactAction.value)}</small></span>
+                                <span><strong><span class="en-text">${this.escapeHtml(contactAction.label.en)}</span><span class="es-text">${this.escapeHtml(contactAction.label.es)}</span></strong><small>${this.escapeHtml(contactAction.value)}</small></span>
                             </a>
                         ` : ''}
                         ${bulletin.pdfUrl ? `
                             <button type="button" class="post-detail-action post-detail-action--outline" data-detail-action="open-pdf" data-bulletin-id="${this.escapeAttribute(bulletin.id)}">
                                 <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M12 18v-6"/><path d="m9 15 3 3 3-3"/></svg>
-                                <span><strong>View PDF</strong><small>Open attachment</small></span>
+                                <span><strong><span class="en-text">View PDF</span><span class="es-text">Ver PDF</span></strong><small><span class="en-text">Open attachment</span><span class="es-text">Abrir archivo</span></small></span>
                             </button>
                         ` : ''}
                         ${detailExternalLink ? `
                             <a href="${this.escapeAttribute(detailExternalLink)}" target="_blank" rel="noopener" class="post-detail-action post-detail-action--outline">
                                 <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>
-                                <span><strong>${this.escapeHtml(this.getDetailLinkActionLabel(bulletin.category))}</strong><small>${this.escapeHtml(this.getDisplayHost(detailExternalLink))}</small></span>
+                                <span><strong>${this.getDetailLinkActionLabel(bulletin.category)}</strong><small>${this.escapeHtml(this.getDisplayHost(detailExternalLink))}</small></span>
+                            </a>
+                        ` : ''}
+                        ${calendarAction ? `
+                            <a href="${this.escapeAttribute(calendarAction.href)}" target="_blank" rel="noopener" class="post-detail-action post-detail-action--outline">
+                                <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 11h18"/><path d="M12 14v4M10 16h4"/></svg>
+                                <span>
+                                    <strong><span class="en-text">Add to Google Calendar</span><span class="es-text">Agregar a Google Calendar</span></strong>
+                                    <small><span class="en-text">${this.escapeHtml(calendarAction.hint.en)}</span><span class="es-text">${this.escapeHtml(calendarAction.hint.es)}</span></small>
+                                </span>
                             </a>
                         ` : ''}
                         <button type="button" class="post-detail-action post-detail-action--share" data-detail-action="share" data-bulletin-id="${this.escapeAttribute(bulletin.id)}" data-bulletin-title="${this.escapeAttribute(this.getPostTitle(bulletin) || '')}">
                             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4"/><path d="m15.4 6.5-6.8 4"/></svg>
-                            <strong>Share with a friend</strong>
+                            <strong><span class="en-text">Share with a friend</span><span class="es-text">Compartir con un amigo</span></strong>
                         </button>
                     </div>
                 </section>
@@ -231,6 +246,59 @@ export class BoardDetailMethods {
         };
     }
 
+    /**
+     * Null when the bulletin has no date worth putting in a calendar, so the
+     * caller can leave the button out entirely.
+     * @returns {{ href: string, hint: { en: string, es: string } } | null}
+     */
+    getBulletinCalendarAction(bulletin) {
+        // Strip rich-text markers line by line so paragraph breaks survive
+        // into the calendar entry's notes.
+        const notes = this.getPostDescription(bulletin)
+            .split('\n')
+            .map((line) => toRichTextPlainText(line))
+            .filter(Boolean)
+            .join('\n');
+
+        const link = buildBulletinCalendarLink({
+            bulletin,
+            sessions: this.getBulletinEventSessions(bulletin),
+            title: this.getPostTitle(bulletin),
+            notes,
+            timeLabel: this.formatTimeRange(bulletin.startTime, bulletin.endTime),
+            location: (bulletin.address || bulletin.eventLocation || '').trim(),
+            url: `${window.location.origin}${window.location.pathname}#bulletin-${bulletin.id}`,
+        });
+
+        if (!link) return null;
+
+        return { href: link.href, hint: this.getCalendarActionHint(bulletin, link) };
+    }
+
+    /**
+     * One Google Calendar link starts on one date, and only carries the rest
+     * when they form a weekly pattern. Say which of those happened rather
+     * than promising dates the link will not add.
+     */
+    getCalendarActionHint(bulletin, link) {
+        if (bulletin.dateType === 'deadline') {
+            return { en: 'Saves the deadline', es: 'Guarda la fecha límite' };
+        }
+
+        if (link.savedCount > 1) {
+            return {
+                en: `Saves all ${link.savedCount} dates`,
+                es: `Guarda las ${link.savedCount} fechas`,
+            };
+        }
+
+        if (link.remainingCount > 1) {
+            return { en: 'Saves the next date', es: 'Guarda la próxima fecha' };
+        }
+
+        return { en: 'Saves the date', es: 'Guarda la fecha' };
+    }
+
     getDetailContactAction(bulletin) {
         const phone = bulletin.phone || '';
         const source = [phone, bulletin.contact].filter(Boolean).join(' ');
@@ -242,19 +310,21 @@ export class BoardDetailMethods {
         const tel = matchedPhone.replace(/[^0-9+]/g, '');
         const mode = bulletin.phoneMode || 'call';
 
-        let label = 'Call';
+        let label = { en: 'Call', es: 'Llamar' };
         let href = `tel:${tel}`;
 
         if (mode === 'text') {
-            label = 'Text';
+            label = { en: 'Text', es: 'Enviar mensaje' };
             href = `sms:${tel}`;
         } else if (mode === 'both') {
-            label = 'Call or Text';
+            label = { en: 'Call or Text', es: 'Llamar o enviar mensaje' };
             // Default link to call, text mentioned in label
         }
 
         if (bulletin.category === 'job') {
-            label = mode === 'text' ? 'Text hiring' : 'Call hiring';
+            label = mode === 'text'
+                ? { en: 'Text hiring', es: 'Mensaje a contratación' }
+                : { en: 'Call hiring', es: 'Llamar a contratación' };
         }
 
         return {
@@ -272,15 +342,16 @@ export class BoardDetailMethods {
 
     getDetailLinkActionLabel(category) {
         const labels = {
-            job: 'Apply online',
-            training: 'Sign up online',
-            college: 'Apply online',
-            'career-fair': 'Event details',
-            resource: 'Open resource',
-            announcement: 'More info'
+            job: { en: 'Apply online', es: 'Aplicar en línea' },
+            training: { en: 'Sign up online', es: 'Inscribirse en línea' },
+            college: { en: 'Apply online', es: 'Aplicar en línea' },
+            'career-fair': { en: 'Event details', es: 'Detalles del evento' },
+            resource: { en: 'Open resource', es: 'Abrir recurso' },
+            announcement: { en: 'More info', es: 'Más info' }
         };
 
-        return labels[category] || 'Open link';
+        const label = labels[category] || { en: 'Open link', es: 'Abrir enlace' };
+        return `<span class="en-text">${this.escapeHtml(label.en)}</span><span class="es-text">${this.escapeHtml(label.es)}</span>`;
     }
 
     getDisplayHost(url) {

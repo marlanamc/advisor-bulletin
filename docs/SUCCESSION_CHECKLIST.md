@@ -19,23 +19,34 @@ CI deploys use `FIREBASE_SERVICE_ACCOUNT` in the GitHub repository secrets.
 3. **Never commit** the key file. Store a copy only in the new keyholder's password manager.
 4. Trigger a test deploy (merge a trivial doc change to `main` or use **Actions → Deploy to Firebase → Run workflow** if enabled) and confirm hosting + rules deploy succeed.
 
-## 3. Add or remove a privileged admin
+## 3. Add or remove an admin
 
-Privileged admins can edit any post and manage the advisor list. Today: `mcreed@ebhcs.org` and `lgregory@ebhcs.org`.
+**No developer needed.** Since Sep 2026, an admin is any advisor whose `advisors/{username}` doc has `isAdmin: true`, and `firestore.rules` reads that flag live. Open the portal → **Advisors** tab → **Edit** → toggle **Admin**. It takes effect immediately, with no code change and no rules deploy.
 
-**All three must stay in sync:**
+Being an admin grants exactly one thing a plain advisor doesn't have: adding and removing people. All content permissions (create, edit, delete any post or resource) are equal for every advisor.
+
+Keep at least two admins so a single departure can't leave the roster unmanaged.
+
+## 3a. Change the break-glass owner (developer required)
+
+`mcreed@ebhcs.org` is hardcoded as a permanent admin so clearing the last `isAdmin` flag can't orphan the roster. Changing *that* is the only admin change needing code.
+
+> **The Remove button will not revoke a break-glass owner.** `isOwnerAdmin` short-circuits the advisor-doc check, so removing them on the Advisors tab pulls them off the student directory while leaving their access completely intact. This is the trap to avoid when someone with owner status leaves.
+
+**All four must stay in sync:**
 
 | Location | What to edit |
 |----------|--------------|
-| `firestore.rules` | `isPrivilegedAdvisor(email)` function |
-| `src/admin-roles.js` | `PRIVILEGED_ADMIN_EMAILS` array |
-| `docs/FIREBASE_SECURITY_RULES.md` | Admin list in the doc |
+| `src/admin-roles.js` | `OWNER_ADMIN_EMAILS` array |
+| `firestore.rules` | `isOwnerAdmin(email)` function |
+| `storage.rules` | email allowlist in `isActiveAdvisor()` |
+| `docs/FIREBASE_SECURITY_RULES.md` | Owner list in the doc |
 
 Then:
 
-1. Create the Firebase Auth account for the new admin (Authentication → Users) if they don't have one.
-2. Run `npm run build` locally — `scripts/check-admin-emails-sync.mjs` fails if rules and `admin-roles.js` drift.
-3. Merge to `main` so CI deploys the updated rules (or run `npx firebase deploy --only firestore:rules` manually).
+1. Run `npm run build` locally — `scripts/check-admin-emails-sync.mjs` fails if the three code locations drift.
+2. Run `npm run test:rules` — the emulator suite covers the break-glass and admin paths.
+3. Merge to `main` so CI deploys the updated rules (or run `firebase deploy --only firestore:rules` manually).
 4. Optionally run `node scripts/update-roles.mjs` to write the `users/{username}` profile doc.
 
 ## 4. Replace student-facing contact email

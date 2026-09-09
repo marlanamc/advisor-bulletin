@@ -82,11 +82,22 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     function syncManageStatusFilters(contentType) {
-        var showStatus = contentType !== 'resource';
+        var isResource = contentType === 'resource';
+        var showStatus = !isResource;
         var pills = document.getElementById('manageStatusPills');
         var statusSelect = document.getElementById('manageFilterSelect');
+        var verificationSelect = document.getElementById('manageVerificationSelect');
         if (pills) pills.hidden = !showStatus;
         if (statusSelect) statusSelect.hidden = !showStatus;
+        // A resource is never "expired", it goes stale — so on My Resources the
+        // live/expired controls step aside for the verification filter.
+        if (verificationSelect) {
+            verificationSelect.hidden = !isResource;
+            if (!isResource && verificationSelect.value !== 'all') {
+                verificationSelect.value = 'all';
+                verificationSelect.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        }
         if (!showStatus) {
             document.querySelectorAll('#manageStatusPills .ap-filter-pill').forEach(function(pill, index) {
                 pill.classList.toggle('active', index === 0);
@@ -154,6 +165,7 @@ document.addEventListener('DOMContentLoaded', function() {
             };
             setFilter('manageContentTypeSelect', preset.contentType);
             setFilter('manageFilterSelect', 'all');
+            setFilter('manageVerificationSelect', 'all');
             setFilter('manageSortSelect', preset.sort);
             syncManageStatusFilters(preset.contentType);
 
@@ -657,8 +669,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 : '';
 
         var isDesktopPreview = window.matchMedia('(min-width: 768px)').matches;
-        var hasDirections = Boolean((data.address || '').trim());
-        var addressHtml = !isDocument && data.address && !(isDesktopPreview && hasDirections)
+        // Desktop: keep address visible for copy/paste; mobile relies on Directions
+        var addressHtml = !isDocument && data.address && isDesktopPreview
             ? '<p class="mobile-resource-card__address">' +
                 '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s6.25-5.9 6.25-11.1a6.25 6.25 0 1 0-12.5 0C5.75 15.1 12 21 12 21Z"/><circle cx="12" cy="9.75" r="2.5"/></svg>' +
                 escPreview(data.address) +

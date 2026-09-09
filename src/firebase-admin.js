@@ -3,7 +3,7 @@ import { showTab, handleTabKeydown, toggleDateFields } from './admin-tab-globals
 import * as bulletinFormat from './bulletin-format.js'
 import { applyResourceLogos, deleteResourceLogo, fetchAllResourceLogos } from './resource-logos.js'
 import { getPublicAdvisorEmail, STUDENT_ADVISOR_DIRECTORY } from './advisor-directory.js'
-import { isPrivilegedAdminEmail } from './admin-roles.js'
+import { isOwnerAdminEmail } from './admin-roles.js'
 import { installClientErrorLogger } from './error-logger.js'
 import { getPostCategoryDisplay } from './feed-categories.js'
 import { AUTHORABLE_RESOURCE_CATEGORIES, AUTHORABLE_RESOURCE_CATEGORY_SET } from './resource-categories.js'
@@ -74,7 +74,7 @@ class FirebaseAdminPanel {
             username: a.loginUsername,
             displayName: a.name,
             email: a.email,
-            isAdmin: isPrivilegedAdminEmail(a.email)
+            isAdmin: isOwnerAdminEmail(a.email)
         }));
         this.authTransitionInProgress = false;
         this.resourceReorderMode = false;
@@ -274,6 +274,7 @@ class FirebaseAdminPanel {
         const manageSearch = document.getElementById('manageSearchInput');
         const manageSort = document.getElementById('manageSortSelect');
         const manageFilter = document.getElementById('manageFilterSelect');
+        const manageVerification = document.getElementById('manageVerificationSelect');
         const rerender = () => this.loadManageBulletins();
         let manageSearchDebounceTimer = null;
         const rerenderDebounced = () => {
@@ -284,6 +285,7 @@ class FirebaseAdminPanel {
         if (manageSearch) manageSearch.addEventListener('input', rerenderDebounced);
         if (manageSort) manageSort.addEventListener('change', rerender);
         if (manageFilter) manageFilter.addEventListener('change', rerender);
+        if (manageVerification) manageVerification.addEventListener('change', rerender);
         if (manageContentType) manageContentType.addEventListener('change', () => {
             if (manageContentType.value !== 'resource' && this.resourceReorderMode) {
                 this.resourceReorderMode = false;
@@ -303,6 +305,8 @@ class FirebaseAdminPanel {
                 this.editBulletin(bulletinId);
             } else if (action === 'delete-bulletin' && bulletinId) {
                 this.deleteBulletin(bulletinId);
+            } else if (action === 'verify-resource' && bulletinId) {
+                this.markResourceVerified(bulletinId);
             }
         };
         ['advisorsList', 'manageBulletins'].forEach((id) => {

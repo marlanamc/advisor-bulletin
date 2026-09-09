@@ -76,24 +76,25 @@
 
     .mobile-tab-bar {
         position: fixed;
-        left: 10px;
-        right: 10px;
-        bottom: max(8px, env(safe-area-inset-bottom));
+        left: 0;
+        right: 0;
+        bottom: 0;
         z-index: 150;
         display: grid;
         grid-template-columns: repeat(4, minmax(0, 1fr));
         gap: 4px;
-        max-width: 600px;
-        margin: 0 auto;
-        padding: 8px;
+        max-width: none;
+        margin: 0;
+        padding: 8px 10px max(8px, env(safe-area-inset-bottom, 0px));
         min-height: 72px;
-        border-radius: 24px;
+        border-radius: 20px 20px 0 0;
         background: rgba(255, 255, 255, 0.97);
         border: 1px solid rgba(203, 213, 225, 0.9);
-        box-shadow: 0 12px 32px rgba(10, 29, 58, 0.18);
+        border-bottom: 0;
+        box-shadow: 0 -8px 28px rgba(10, 29, 58, 0.12);
         -webkit-backdrop-filter: blur(18px);
         backdrop-filter: blur(18px);
-        transform: none;
+        transform: translateZ(0);
     }
 
     .mobile-tab {
@@ -167,11 +168,11 @@
     }
 
     .mobile-tab-bar {
-        left: 8px;
-        right: 8px;
-        padding: 7px;
+        left: 0;
+        right: 0;
+        padding: 7px 8px max(7px, env(safe-area-inset-bottom, 0px));
         min-height: 68px;
-        border-radius: 22px;
+        border-radius: 18px 18px 0 0;
     }
 
     .mobile-tab {

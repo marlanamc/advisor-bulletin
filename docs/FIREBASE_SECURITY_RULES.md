@@ -3,7 +3,7 @@
 ## Overview
 These security rules ensure that:
 - Only authenticated advisors can create, edit, or delete bulletins
-- Advisor writes stay behind verified `@ebhcs.org` email and advisor-list checks
+- Advisors can only edit/delete their own bulletins
 - Anonymous users (students/public) can only read active bulletins
 - All operations are properly validated
 
@@ -14,13 +14,17 @@ The production security rules are located in the [firestore.rules](../firestore.
 These rules validate:
 1. **Public Read Access**: Active posts and published resources are readable by anyone (for student use).
 2. **Active Advisor Write Access**: Creating and editing requires a verified `@ebhcs.org` account **and** an `advisors/{username}` doc in Firestore (the `isActiveAdvisor` function). Removing an advisor on the portal's Advisors tab therefore revokes their write access immediately, even before their login is disabled. The same check gates file uploads in [storage.rules](../storage.rules) via cross-service rules.
-3. **Ownership Limits**: Authors and administrators (`mcreed@ebhcs.org`, `lgregory@ebhcs.org`) have the broadest bulletin update/delete permissions; active advisors may also update existing resource-type bulletins. Privileged administrators are exempt from the advisor-doc check so they can never lock themselves out. The authoritative list lives in `PRIVILEGED_ADMIN_EMAILS` in [src/admin-roles.js](../src/admin-roles.js), mirrored in [firestore.rules](../firestore.rules) and [storage.rules](../storage.rules) — `scripts/check-admin-emails-sync.mjs` fails the build if the three drift apart.
-4. **Data Shape Validation**: Field checks for text lengths, date formats (single event date, date ranges, multiple sessions, and deadlines), PDF attachments, and analytics/error properties.
+3. **Equal Advisor Permissions** (Sep 2026): every advisor on the list has identical content permissions — create, edit and delete **any** post or resource, whoever wrote it. This also makes the legacy posts from the retired `admin` / `advisors` shared logins (owned by nobody) editable by the whole team.
+4. **Admin = Managing People, Nothing Else**: the one thing an admin can do that a plain advisor cannot is add and remove people (`advisors/*`, `config/studentDirectory`, `users/*`). It is gated on `advisors/{username}.isAdmin == true`, read live by the `isAdminAdvisor` rule function — so the **Admin toggle on the portal's Advisors tab is the real switch** and promoting someone needs no code change and no rules deploy.
+5. **Owner Break-Glass**: `mcreed@ebhcs.org` always counts as an active advisor and an admin, so clearing the last `isAdmin` flag — or deleting your own advisor doc — cannot permanently orphan the roster. This is a recovery hatch, not an extra day-to-day privilege. The list lives in `OWNER_ADMIN_EMAILS` in [src/admin-roles.js](../src/admin-roles.js), mirrored in `isOwnerAdmin` in [firestore.rules](../firestore.rules) and the allowlist in [storage.rules](../storage.rules) — `scripts/check-admin-emails-sync.mjs` fails the build if the three drift apart.
+
+   > **Removing a break-glass owner takes a code change.** `isOwnerAdmin` short-circuits the advisor-doc check, so the Advisors tab's **Remove** button will pull them off the student directory while leaving their access fully intact. Revoking them means editing `src/admin-roles.js`, `firestore.rules` and `storage.rules` together, then deploying rules.
+6. **Data Shape Validation**: Field checks for text lengths, date formats (single event date, date ranges, multiple sessions, and deadlines), PDF attachments, and analytics/error properties.
 
 **Before deploying the active-advisor rules for the first time**, run `scripts/check-advisor-auth-sync.mjs` to confirm every current advisor has an `advisors/{username}` doc — anyone missing one will lose posting access when the rules ship. No service account key? Sign in with your admin password instead:
 
 ```bash
-npx firebase login
+firebase login
 node scripts/check-advisor-auth-sync.mjs --email=mcreed@ebhcs.org
 ```
 
@@ -35,7 +39,7 @@ The portal uses **Google sign-in only** (no passwords):
 
 ### Who Can Get In
 - The Google account picker is scoped to `@ebhcs.org` (the `hd` parameter), and any other domain is signed out by the client.
-- The rules additionally require `email_verified == true` and an `advisors/{username}` doc — so only staff an admin has added on the Advisors tab can read or write portal data, even if other org accounts authenticate. Keep Email/Password disabled if the project is relying on Google-only sign-in as part of the admin boundary.
+- The rules additionally require `email_verified == true` (always true for Google sign-in) and an `advisors/{username}` doc — so only staff an admin has added on the Advisors tab can read or write portal data, even if other org accounts authenticate.
 - Advisor Firebase Auth accounts are created automatically at first Google sign-in; there is nothing to pre-create in the console.
 
 ## Database Structure
