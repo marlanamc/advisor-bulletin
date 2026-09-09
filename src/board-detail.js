@@ -102,14 +102,14 @@ export class BoardDetailMethods {
                             ${bulletin.address ? `
                                 <div style="display: flex; gap: 12px; align-items: flex-start;">
                                     <div style="color: ${meta.accent}; margin-top: 2px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
-                                    <div><strong style="display: block; font-size: 0.8rem; color: #64748b; text-transform: uppercase;">Location</strong><span style="font-size: 0.95rem;">${this.escapeHtml(bulletin.address)}</span></div>
+                                    <div><strong style="display: block; font-size: 0.8rem; color: #64748b; text-transform: uppercase;"><span class="en-text">Location</span><span class="es-text">Ubicación</span></strong><span style="font-size: 0.95rem;">${this.escapeHtml(bulletin.address)}</span></div>
                                 </div>
                             ` : ''}
                             
                             ${(Array.isArray(bulletin.hoursRows) && bulletin.hoursRows.length) || bulletin.hours ? `
                                 <div style="display: flex; gap: 12px; align-items: flex-start;">
                                     <div style="color: ${meta.accent}; margin-top: 2px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
-                                    <div><strong style="display: block; font-size: 0.8rem; color: #64748b; text-transform: uppercase; margin-bottom: 6px;">Hours</strong>${Array.isArray(bulletin.hoursRows) && bulletin.hoursRows.length
+                                    <div><strong style="display: block; font-size: 0.8rem; color: #64748b; text-transform: uppercase; margin-bottom: 6px;"><span class="en-text">Hours</span><span class="es-text">Horario</span></strong>${Array.isArray(bulletin.hoursRows) && bulletin.hoursRows.length
                                         ? formatResourceHoursRowsHtml(bulletin.hoursRows, (value) => this.escapeHtml(value))
                                         : formatResourceHoursHtml(bulletin.hours, (value) => this.escapeHtml(value), bulletin.hoursEs)}</div>
                                 </div>
@@ -137,12 +137,12 @@ export class BoardDetailMethods {
                         ${detailExternalLink ? `
                             <a href="${this.escapeAttribute(detailExternalLink)}" target="_blank" rel="noopener" class="post-detail-action post-detail-action--outline">
                                 <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>
-                                <span><strong>${this.escapeHtml(this.getDetailLinkActionLabel(bulletin.category))}</strong><small>${this.escapeHtml(this.getDisplayHost(detailExternalLink))}</small></span>
+                                <span><strong>${this.getDetailLinkActionLabel(bulletin.category)}</strong><small>${this.escapeHtml(this.getDisplayHost(detailExternalLink))}</small></span>
                             </a>
                         ` : ''}
                         <button type="button" class="post-detail-action post-detail-action--share" onclick="shareBulletin('${this.escapeAttribute(bulletin.id)}','${this.escapeAttribute(this.getPostTitle(bulletin) || '')}')">
                             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4"/><path d="m15.4 6.5-6.8 4"/></svg>
-                            <strong>Share with a friend</strong>
+                            <strong><span class="en-text">Share with a friend</span><span class="es-text">Compartir con un amigo</span></strong>
                         </button>
                     </div>
                 </section>
@@ -224,15 +224,16 @@ export class BoardDetailMethods {
 
     getDetailLinkActionLabel(category) {
         const labels = {
-            job: 'Apply online',
-            training: 'Sign up online',
-            college: 'Apply online',
-            'career-fair': 'Event details',
-            resource: 'Open resource',
-            announcement: 'More info'
+            job: { en: 'Apply online', es: 'Aplicar en línea' },
+            training: { en: 'Sign up online', es: 'Inscribirse en línea' },
+            college: { en: 'Apply online', es: 'Aplicar en línea' },
+            'career-fair': { en: 'Event details', es: 'Detalles del evento' },
+            resource: { en: 'Open resource', es: 'Abrir recurso' },
+            announcement: { en: 'More info', es: 'Más info' }
         };
 
-        return labels[category] || 'Open link';
+        const label = labels[category] || { en: 'Open link', es: 'Abrir enlace' };
+        return `<span class="en-text">${this.escapeHtml(label.en)}</span><span class="es-text">${this.escapeHtml(label.es)}</span>`;
     }
 
     getDisplayHost(url) {
