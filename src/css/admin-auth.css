@@ -329,6 +329,38 @@
     line-height: 1.5;
 }
 
+/* Same green family as the queue banner, for the "Verified" side of the filter:
+   a list that is reassuring rather than a work queue. */
+.verify-queue-banner-ok {
+    background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+    border-color: #7dd3fc;
+    color: #0c4a6e;
+}
+
+/* Verdict on a manage card, worded exactly like the verification filter's
+   options so a card and the filter that selects it read the same. */
+.verify-chip {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1.5;
+    vertical-align: 1px;
+}
+
+.verify-chip-ok {
+    background: #dcfce7;
+    border: 1px solid #86efac;
+    color: #14532d;
+}
+
+.verify-chip-due {
+    background: #fef3c7;
+    border: 1px solid #fcd34d;
+    color: #78350f;
+}
+
 /* Records that an advisor re-checked a resource's details today. Green
    because it is the one confirming action in a row of edit/delete. */
 .verify-btn {

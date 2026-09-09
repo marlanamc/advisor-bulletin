@@ -82,11 +82,22 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     function syncManageStatusFilters(contentType) {
-        var showStatus = contentType !== 'resource';
+        var isResource = contentType === 'resource';
+        var showStatus = !isResource;
         var pills = document.getElementById('manageStatusPills');
         var statusSelect = document.getElementById('manageFilterSelect');
+        var verificationSelect = document.getElementById('manageVerificationSelect');
         if (pills) pills.hidden = !showStatus;
         if (statusSelect) statusSelect.hidden = !showStatus;
+        // A resource is never "expired", it goes stale — so on My Resources the
+        // live/expired controls step aside for the verification filter.
+        if (verificationSelect) {
+            verificationSelect.hidden = !isResource;
+            if (!isResource && verificationSelect.value !== 'all') {
+                verificationSelect.value = 'all';
+                verificationSelect.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        }
         if (!showStatus) {
             document.querySelectorAll('#manageStatusPills .ap-filter-pill').forEach(function(pill, index) {
                 pill.classList.toggle('active', index === 0);
@@ -154,6 +165,7 @@ document.addEventListener('DOMContentLoaded', function() {
             };
             setFilter('manageContentTypeSelect', preset.contentType);
             setFilter('manageFilterSelect', 'all');
+            setFilter('manageVerificationSelect', 'all');
             setFilter('manageSortSelect', preset.sort);
             syncManageStatusFilters(preset.contentType);
 

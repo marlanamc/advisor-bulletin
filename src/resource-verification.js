@@ -1,8 +1,8 @@
 /**
  * When a resource card is due for a human to re-check its details.
  *
- * Shared deliberately: the advisor portal's "Needs verification" filter and
- * `Verified today` button (src/admin-manage.js) and the monthly queue builder
+ * Shared deliberately: the advisor portal's verification filter (Needs checking /
+ * Verified) and `Verified today` button (src/admin-manage.js) and the monthly queue builder
  * (scripts/check-resource-content-risk.mjs) must agree on what "due" means,
  * or the portal would show a different list than the GitHub issue asks for.
  * Keep this module dependency-free so the Node script can import it directly
