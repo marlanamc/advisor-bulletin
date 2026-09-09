@@ -37,6 +37,20 @@ jobs:
       - name: Run unit tests
         run: npm run test:unit
 
+      # `--with-deps` shells out to `apt-get`, which fails the whole step if ANY
+      # configured source serves bad metadata — even one we have no use for.
+      # The runner image ships third-party sources (Google Chrome, Microsoft
+      # prod) and on 2026-09-09 dl.google.com served a Hash Sum mismatch
+      # mid-publish, failing this step with apt code 100 and blocking a deploy
+      # that had nothing to do with browsers. Playwright downloads its own
+      # Chromium build and `--with-deps` only needs Ubuntu archive packages, so
+      # drop those sources rather than depend on their availability. The globs
+      # cover both the .list and deb822 .sources spellings.
+      - name: Drop apt sources Playwright does not need
+        run: |
+          sudo rm -f /etc/apt/sources.list.d/google-chrome.* \
+                     /etc/apt/sources.list.d/microsoft-prod.*
+
       - name: Install Playwright browser
         run: npx playwright install --with-deps chromium
 
