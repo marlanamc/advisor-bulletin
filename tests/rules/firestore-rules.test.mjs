@@ -172,6 +172,62 @@ describe('the heaviest legitimate write stays inside the rule budget', () => {
     });
 });
 
+describe('the "Verified today" stamp', () => {
+    // The advisor portal writes lastVerified on its own, without resending the
+    // rest of the card (src/admin-manage.js markResourceVerified). That relies
+    // on Firestore validating the MERGED document on an update, so the required
+    // resource fields already on the doc satisfy validateBulletinData(). If that
+    // ever stops holding, the monthly re-verification queue becomes unclearable
+    // again, so it is pinned here.
+    const resource = (postedBy, overrides = {}) => ({
+        type: 'resource',
+        advisorName: 'Someone',
+        postedBy,
+        isActive: true,
+        title: 'Food Pantry',
+        titleEn: 'Food Pantry',
+        category: 'resource',
+        resourceCategory: 'food',
+        isPublished: true,
+        url: 'https://example.org/pantry',
+        ...overrides,
+    });
+
+    beforeEach(async () => {
+        await testEnv.withSecurityRulesDisabled(async (c) => {
+            await setDoc(doc(c.firestore(), 'bulletins/r1'), resource('rocha'));
+        });
+    });
+
+    test('an advisor can stamp lastVerified without resending the card', async () => {
+        const db = ctx('vlalin@ebhcs.org');
+        await assertSucceeds(updateDoc(doc(db, 'bulletins/r1'), { lastVerified: '2026-09' }));
+    });
+
+    test('the stamp works on another advisor\'s resource', async () => {
+        const db = ctx('cbaglio@ebhcs.org');
+        await assertSucceeds(updateDoc(doc(db, 'bulletins/r1'), { lastVerified: '2026-09' }));
+    });
+
+    test('a signed-out visitor cannot stamp it', async () => {
+        const db = testEnv.unauthenticatedContext().firestore();
+        await assertFails(updateDoc(doc(db, 'bulletins/r1'), { lastVerified: '2026-09' }));
+    });
+
+    test('an oversized lastVerified is still rejected', async () => {
+        const db = ctx('vlalin@ebhcs.org');
+        await assertFails(updateDoc(doc(db, 'bulletins/r1'), { lastVerified: 'x'.repeat(21) }));
+    });
+
+    test('the stamp cannot smuggle in a change of authorship', async () => {
+        const db = ctx('vlalin@ebhcs.org');
+        await assertFails(updateDoc(doc(db, 'bulletins/r1'), {
+            lastVerified: '2026-09',
+            postedBy: 'vlalin',
+        }));
+    });
+});
+
 describe('managing people is the only admin privilege', () => {
     test('an admin can add and remove advisors', async () => {
         const db = ctx('cbaglio@ebhcs.org');

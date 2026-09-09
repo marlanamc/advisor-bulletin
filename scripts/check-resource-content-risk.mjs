@@ -1,10 +1,25 @@
 #!/usr/bin/env node
 /**
- * Weekly content-risk checker for live student resources.
+ * Monthly re-verification queue for live student resources.
  *
- * This does not decide whether a resource is accurate. It surfaces cards that
- * are likelier to go stale so an advisor can re-check them before students rely
- * on old hours, eligibility, prices, or seasonal instructions.
+ * This does not decide whether a resource is accurate. It answers one question:
+ * which cards are overdue for a human to re-check?
+ *
+ * The only thing that puts a card in the queue is the clock — `lastVerified`
+ * missing, malformed, or older than its category's recheck window. Content
+ * signals (exact hours, a dollar amount, seasonal wording, intake rules,
+ * eligibility rules) do NOT create queue entries; they only say *what to look
+ * at* on a card that is already due, and break ties in the ordering.
+ *
+ * That split is deliberate. The previous version emitted a finding for each
+ * risk signal, which flagged 82 of 89 resources every week: 46 hits for being
+ * in a high-risk category (a permanent attribute that is already encoded in
+ * the 3-month window below, so it was double-counted), and 71 more for
+ * mentioning hours, prices, eligibility or intake rules — all of which could
+ * only be cleared by deleting the very information students need. 61 of the 82
+ * could not be resolved by any action at all, and the remaining 21 needed a
+ * `lastVerified` field that had no control anywhere in the advisor portal.
+ * A queue nobody can empty is not a queue.
  *
  * Usage:
  *   GOOGLE_APPLICATION_CREDENTIALS=./service-account.json \
@@ -12,10 +27,15 @@
  */
 
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { pathToFileURL } from 'node:url';
 
 const PROJECT_ID = 'ebhcs-bulletin-board';
 const COLLECTION = 'bulletins';
 
+// How long a card in each category may go unverified. The 3-month tier IS the
+// "high-risk category" concept — food/housing/health/legal-aid/immigration are
+// where a stale hour or eligibility rule sends a student to a closed door — so
+// there is no separate high-risk signal on top of it.
 const CATEGORY_RECHECK_MONTHS = {
   food: 3,
   housing: 3,
@@ -32,44 +52,30 @@ const CATEGORY_RECHECK_MONTHS = {
   general: 6,
   esol: 6,
 };
+const DEFAULT_RECHECK_MONTHS = 6;
 
-const HIGH_RISK_CATEGORIES = new Set(['food', 'housing', 'health', 'legal-aid', 'immigration']);
-
-const RISK_PATTERNS = [
+// Not findings — just "while you have this card open, look at these".
+const CHECK_HINTS = [
   {
-    id: 'specific-hours',
-    priority: 'medium',
+    id: 'hours',
+    label: 'hours',
     regex: /\b(monday|tuesday|wednesday|thursday|friday|saturday|sunday|mon\.?|tue\.?|tues\.?|wed\.?|thu\.?|thur\.?|thurs\.?|fri\.?|sat\.?|sun\.?|\d{1,2}(?::\d{2})?\s*(am|pm))\b/i,
-    reason: 'Mentions specific days or hours that can change.',
-    advisorAction: 'Confirm hours on the official site or by phone.',
   },
-  {
-    id: 'dollar-amount',
-    priority: 'high',
-    regex: /\$\s?\d|\b\d+\s?dollars?\b/i,
-    reason: 'Mentions a specific cost or dollar amount.',
-    advisorAction: 'Confirm the current price or benefit amount.',
-  },
+  { id: 'cost', label: 'the stated cost', regex: /\$\s?\d|\b\d+\s?dollars?\b/i },
   {
     id: 'seasonal',
-    priority: 'medium',
+    label: 'seasonal timing',
     regex: /\b(seasonal|summer|winter|spring|fall|school year|holiday|november|december|january|february|march|april)\b/i,
-    reason: 'Contains seasonal or date-window language.',
-    advisorAction: 'Confirm this is still in season and update wording if needed.',
   },
   {
-    id: 'call-to-confirm',
-    priority: 'medium',
+    id: 'intake',
+    label: 'intake or appointment rules',
     regex: /\b(call to confirm|call for|appointment|by appointment|sign[- ]?up opens|register every month|walk[- ]?in)\b/i,
-    reason: 'Depends on current intake, appointment, or registration rules.',
-    advisorAction: 'Confirm the current intake or registration process.',
   },
   {
     id: 'eligibility',
-    priority: 'medium',
+    label: 'eligibility and required documents',
     regex: /\b(qualif(y|ies)|eligible|income limit|resident|residents|work permit|immigration status|proof of income|id and proof)\b/i,
-    reason: 'Mentions eligibility rules or required documents.',
-    advisorAction: 'Confirm eligibility and document requirements.',
   },
 ];
 
@@ -98,13 +104,17 @@ async function initAdminDb(credentialsPath) {
   return admin.default.firestore();
 }
 
-function monthsSince(yearMonth, now) {
+export function monthsSince(yearMonth, now) {
   const match = /^(\d{4})-(\d{2})$/.exec(String(yearMonth || '').trim());
   if (!match) return null;
   return (now.getFullYear() - Number(match[1])) * 12 + (now.getMonth() + 1 - Number(match[2]));
 }
 
-function textForRisk(resource) {
+export function recheckWindowFor(category) {
+  return CATEGORY_RECHECK_MONTHS[category] || DEFAULT_RECHECK_MONTHS;
+}
+
+function textForHints(resource) {
   return [
     resource.title,
     resource.description,
@@ -117,71 +127,79 @@ function textForRisk(resource) {
   ].filter(Boolean).join(' ');
 }
 
-function maxPriority(reasons) {
-  const score = { low: 1, medium: 2, high: 3 };
-  return reasons.reduce((max, reason) => score[reason.priority] > score[max] ? reason.priority : max, 'low');
+export function checkHintsFor(resource) {
+  const text = textForHints(resource);
+  return CHECK_HINTS.filter((hint) => hint.regex.test(text)).map((hint) => hint.label);
 }
 
-function reviewForResource(resource, now) {
+/**
+ * Returns a queue entry only when the card is actually overdue, or null.
+ */
+export function reviewForResource(resource, now) {
   const category = resource.resourceCategory || resource.category || 'general';
-  const text = textForRisk(resource);
-  const reasons = [];
-  const threshold = CATEGORY_RECHECK_MONTHS[category] || 6;
-  const verifiedAge = monthsSince(resource.lastVerified, now);
+  const window = recheckWindowFor(category);
+  const age = monthsSince(resource.lastVerified, now);
+  const hints = checkHintsFor(resource);
 
+  let status;
+  let monthsOld = null;
   if (!resource.lastVerified) {
-    reasons.push({
-      id: 'never-verified',
-      priority: 'high',
-      reason: 'No lastVerified date is recorded.',
-      advisorAction: 'Verify the card and set lastVerified to YYYY-MM.',
-    });
-  } else if (verifiedAge === null) {
-    reasons.push({
-      id: 'bad-last-verified',
-      priority: 'high',
-      reason: `lastVerified is not YYYY-MM: ${resource.lastVerified}`,
-      advisorAction: 'Fix lastVerified to YYYY-MM after review.',
-    });
-  } else if (verifiedAge >= threshold) {
-    reasons.push({
-      id: 'stale-verification',
-      priority: HIGH_RISK_CATEGORIES.has(category) ? 'high' : 'medium',
-      reason: `Last verified ${resource.lastVerified}; ${verifiedAge} months old for a ${threshold}-month category.`,
-      advisorAction: 'Re-verify the card and refresh lastVerified.',
-    });
+    status = 'never-verified';
+  } else if (age === null) {
+    status = 'bad-date';
+  } else if (age >= window) {
+    status = 'overdue';
+    monthsOld = age;
+  } else {
+    return null;
   }
 
-  if (HIGH_RISK_CATEGORIES.has(category)) {
-    reasons.push({
-      id: 'high-risk-category',
-      priority: 'low',
-      reason: 'High-risk category for student decisions.',
-      advisorAction: 'Prioritize this card during manual review.',
-    });
-  }
+  const reason = status === 'never-verified'
+    ? 'Never verified — no date on record.'
+    : status === 'bad-date'
+      ? `Verified date is not YYYY-MM: ${resource.lastVerified}`
+      : `Verified ${resource.lastVerified}, ${monthsOld} months ago; this category wants a check every ${window}.`;
 
-  for (const pattern of RISK_PATTERNS) {
-    if (pattern.regex.test(text)) {
-      reasons.push({
-        id: pattern.id,
-        priority: pattern.priority,
-        reason: pattern.reason,
-        advisorAction: pattern.advisorAction,
-      });
-    }
-  }
-
-  if (!reasons.length) return null;
+  const advisorAction = hints.length
+    ? `Check ${hints.join(', ')}, then press "Verified today" on the card in the portal.`
+    : 'Give the card a quick look, then press "Verified today" on it in the portal.';
 
   return {
     id: resource.id,
+    issueKey: `${resource.id}|content`,
     resource: resource.title,
     category,
     url: resource.url || '',
     lastVerified: resource.lastVerified || '',
-    priority: maxPriority(reasons),
-    reasons,
+    status,
+    window,
+    monthsOld,
+    // How far past due, used for ordering. Never-verified sorts to the top.
+    overdueBy: status === 'overdue' ? monthsOld - window : Number.MAX_SAFE_INTEGER,
+    checkHints: hints,
+    reason,
+    advisorAction,
+  };
+}
+
+export function buildReport(resources, now) {
+  const due = resources
+    .map((resource) => reviewForResource(resource, now))
+    .filter(Boolean)
+    .sort((a, b) => b.overdueBy - a.overdueBy
+      || a.category.localeCompare(b.category)
+      || a.resource.localeCompare(b.resource));
+
+  return {
+    checkedAt: now.toISOString(),
+    totals: {
+      resources: resources.length,
+      due: due.length,
+      neverVerified: due.filter((d) => d.status === 'never-verified').length,
+      badDate: due.filter((d) => d.status === 'bad-date').length,
+      overdue: due.filter((d) => d.status === 'overdue').length,
+    },
+    due,
   };
 }
 
@@ -211,33 +229,14 @@ async function main() {
     };
   }).filter((resource) => resource.isActive && resource.isPublished);
 
-  const reviews = resources
-    .map((resource) => reviewForResource(resource, now))
-    .filter(Boolean)
-    .sort((a, b) => {
-      const score = { high: 3, medium: 2, low: 1 };
-      return score[b.priority] - score[a.priority] || a.category.localeCompare(b.category) || a.resource.localeCompare(b.resource);
-    });
+  const report = buildReport(resources, now);
 
-  const report = {
-    checkedAt: now.toISOString(),
-    totals: {
-      resources: resources.length,
-      reviewItems: reviews.length,
-      high: reviews.filter((item) => item.priority === 'high').length,
-      medium: reviews.filter((item) => item.priority === 'medium').length,
-      low: reviews.filter((item) => item.priority === 'low').length,
-    },
-    reviews,
-  };
-
-  console.log(`Checked ${resources.length} live resources for content risk.`);
-  console.log(`Review queue: ${report.totals.high} high, ${report.totals.medium} medium, ${report.totals.low} low.`);
-  for (const item of reviews.slice(0, 25)) {
-    const reasons = item.reasons.map((reason) => reason.id).join(', ');
-    console.log(`${item.priority.toUpperCase()}: [${item.category}] ${item.resource} (${reasons})`);
+  console.log(`Checked ${report.totals.resources} live resources.`);
+  console.log(`Due for re-verification: ${report.totals.due} (${report.totals.neverVerified} never verified, ${report.totals.overdue} past their window, ${report.totals.badDate} with a bad date).`);
+  for (const item of report.due.slice(0, 25)) {
+    console.log(`${item.status.toUpperCase()}: [${item.category}] ${item.resource} — ${item.reason}`);
   }
-  if (reviews.length > 25) console.log(`...and ${reviews.length - 25} more.`);
+  if (report.due.length > 25) console.log(`...and ${report.due.length - 25} more.`);
 
   if (args.json) {
     writeFileSync(args.json, JSON.stringify(report, null, 2));
@@ -245,7 +244,9 @@ async function main() {
   }
 }
 
-main().catch((error) => {
-  console.error('Content risk check failed:', error.message || error);
-  process.exit(1);
-});
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main().catch((error) => {
+    console.error('Content review check failed:', error.message || error);
+    process.exit(1);
+  });
+}

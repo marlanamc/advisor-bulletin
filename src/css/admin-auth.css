@@ -316,6 +316,33 @@
     box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
 }
 
+/* Records that an advisor re-checked a resource's details today. Green
+   because it is the one confirming action in a row of edit/delete. */
+.verify-btn {
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    min-height: 44px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    flex: 1;
+}
+
+.verify-btn:hover {
+    background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
+}
+
+.verify-btn:focus-visible {
+    outline: 2px solid #15803d;
+    outline-offset: 2px;
+}
+
 .delete-btn {
     background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
     color: white;
@@ -804,6 +831,7 @@ select:focus {
 .tab-btn,
 .admin-btn,
 .edit-btn,
+.verify-btn,
 .delete-btn {
     min-height: 44px;
     min-width: 44px;

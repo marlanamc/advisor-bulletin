@@ -10,6 +10,9 @@ name: Check Resource Links
 # Keeps a single tracking issue (label: link-check) up to date instead of
 # opening a new issue every week: updates the body when problems are
 # found, closes it when everything's clean again.
+#
+# Content freshness (hours, prices, eligibility going stale) is a separate
+# concern on a much slower clock — see check-resource-content.yml, monthly.
 
 on:
   schedule:
@@ -44,16 +47,6 @@ jobs:
         env:
           GOOGLE_APPLICATION_CREDENTIALS: /tmp/service-account.json
         run: node scripts/check-resource-links.mjs --json=/tmp/link-check-report.json
-
-      - name: Check resource content review risk
-        id: contentRisk
-        # Isolated on purpose: this script exits 1 on error, and without
-        # continue-on-error a content-risk failure would skip the link-check
-        # issue update below and silently drop that week's broken links.
-        continue-on-error: true
-        env:
-          GOOGLE_APPLICATION_CREDENTIALS: /tmp/service-account.json
-        run: node scripts/check-resource-content-risk.mjs --json=/tmp/resource-content-risk-report.json
 
       - name: Update or close the tracking issue
         uses: actions/github-script@v7
@@ -301,87 +294,6 @@ jobs:
               });
             }
 
-      - name: Update resource content review issue
-        if: steps.contentRisk.outcome == 'success'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const fs = require('fs');
-            const report = JSON.parse(fs.readFileSync('/tmp/resource-content-risk-report.json', 'utf8'));
-            const label = 'resource-review';
-
-            try {
-              await github.rest.issues.getLabel({ owner: context.repo.owner, repo: context.repo.repo, name: label });
-            } catch {
-              await github.rest.issues.createLabel({ owner: context.repo.owner, repo: context.repo.repo, name: label, color: '5319e7', description: 'Weekly resource content freshness review' });
-            }
-
-            const issues = await github.rest.issues.listForRepo({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              state: 'open',
-              labels: label,
-            });
-            const existing = issues.data[0];
-
-            if (!report.reviews.length) {
-              if (existing) {
-                await github.rest.issues.createComment({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  issue_number: existing.number,
-                  body: `All clear as of ${report.checkedAt} — no resource content review risks found. Closing.`,
-                });
-                await github.rest.issues.update({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  issue_number: existing.number,
-                  state: 'closed',
-                });
-              }
-              return;
-            }
-
-            const lines = [];
-            lines.push(`**Weekly resource content review — ${report.checkedAt}**`);
-            lines.push('');
-            lines.push(`Checked ${report.totals.resources} live resources. Review queue: ${report.totals.high} high, ${report.totals.medium} medium, ${report.totals.low} low.`);
-            lines.push('');
-            for (const priority of ['high', 'medium', 'low']) {
-              const items = report.reviews.filter((item) => item.priority === priority);
-              if (!items.length) continue;
-              lines.push(`### ${priority[0].toUpperCase()}${priority.slice(1)} priority`);
-              for (const item of items.slice(0, priority === 'low' ? 15 : 30)) {
-                const reasons = item.reasons.map((reason) => reason.reason).join(' ');
-                const actions = [...new Set(item.reasons.map((reason) => reason.advisorAction))].join(' ');
-                lines.push(`- **${item.resource}** (${item.category}, verified: ${item.lastVerified || 'not set'}): ${reasons}`);
-                lines.push(`  Action: ${actions}`);
-                if (item.url) lines.push(`  URL: ${item.url}`);
-              }
-              if (items.length > (priority === 'low' ? 15 : 30)) {
-                lines.push(`- ...and ${items.length - (priority === 'low' ? 15 : 30)} more ${priority}-priority item(s).`);
-              }
-              lines.push('');
-            }
-
-            const body = lines.join('\n');
-            if (existing) {
-              await github.rest.issues.update({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: existing.number,
-                body,
-              });
-            } else {
-              await github.rest.issues.create({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                title: 'Weekly resource content review queue',
-                body,
-                labels: [label],
-              });
-            }
-
       - name: Post weekly price recheck reminder
         if: always() && steps.check.outcome == 'success'
         uses: actions/github-script@v7
@@ -448,8 +360,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: resource-link-reports
-          path: |
-            /tmp/link-check-report.json
-            /tmp/resource-content-risk-report.json
+          path: /tmp/link-check-report.json
           retention-days: 90
           if-no-files-found: warn

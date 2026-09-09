@@ -15,6 +15,43 @@ export class AdminManageMethods {
         return true;
     }
 
+    // ── Resource re-verification ──────────────────────────────────────
+
+    // Stamps lastVerified to the current YYYY-MM. This is the only way an
+    // advisor can clear an item from the monthly re-verification queue
+    // (scripts/check-resource-content-risk.mjs): until this button existed the
+    // field was writable only by scripts, so 21 never-verified resources sat
+    // in the queue permanently with no action available to remove them.
+    // Deliberately one click and no confirm dialog — it is non-destructive and
+    // idempotent, and re-pressing it just refreshes the month.
+    async markResourceVerified(bulletinId) {
+        if (!this.verifyingResourceIds) this.verifyingResourceIds = new Set();
+        if (this.verifyingResourceIds.has(bulletinId)) return;
+        this.verifyingResourceIds.add(bulletinId);
+
+        const now = new Date();
+        const lastVerified = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+        try {
+            // Partial update: Firestore rules validate the merged document, so
+            // the required resource fields already present on the doc satisfy
+            // validateBulletinData() without resending the whole card.
+            await updateDoc(doc(db, 'bulletins', bulletinId), {
+                lastVerified,
+                updatedAt: serverTimestamp(),
+            });
+            this.showTemporaryMessage(`Marked verified for ${lastVerified}.`, 'success');
+        } catch (error) {
+            console.error('Error marking resource verified:', error);
+            this.showTemporaryMessage(
+                this.getFirestoreErrorMessage(error, 'mark this resource verified'),
+                'error',
+            );
+        } finally {
+            this.verifyingResourceIds.delete(bulletinId);
+        }
+    }
+
     // ── Advisor Management ────────────────────────────────────────────
 
     loadAdvisors() {
@@ -378,12 +415,21 @@ export class AdminManageMethods {
                     ${bulletin.address ? `<p><strong>Address:</strong> ${this.escapeHtml(bulletin.address)}</p>` : ''}
                     ${bulletin.phone ? `<p><strong>Phone:</strong> ${this.escapeHtml(bulletin.phone)} (${this.escapeHtml(bulletin.phoneMode || 'call')})</p>` : ''}
                     ${bulletin.resourceOrder !== '' && bulletin.resourceOrder !== undefined && bulletin.resourceOrder !== null ? `<p><strong>Display Order:</strong> ${this.escapeHtml(String(bulletin.resourceOrder))}</p>` : ''}
+                    <p><strong>Last verified:</strong> ${bulletin.lastVerified
+                        ? this.escapeHtml(String(bulletin.lastVerified))
+                        : '<em>never — this card is in the re-verification queue</em>'}</p>
                 ` : ''}
                 ${this.renderManageDateInfo(bulletin)}
                 <div class="manage-actions">
                     <button class="edit-btn" onclick="adminPanel.editBulletin('${bulletin.id}')">
                         Edit
                     </button>
+                    ${isResource ? `
+                        <button class="verify-btn" onclick="adminPanel.markResourceVerified('${bulletin.id}')"
+                            title="Record that you checked this card's details today. Clears it from the monthly re-verification queue.">
+                            Verified today
+                        </button>
+                    ` : ''}
                     <button class="delete-btn" onclick="adminPanel.deleteBulletin('${bulletin.id}')">
                         Delete
                     </button>
