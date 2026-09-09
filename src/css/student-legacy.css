@@ -3423,19 +3423,21 @@ h3, .section-header-row h3 {
 
     .mobile-tab-bar {
         position: fixed;
-        left: 12px;
-        right: 12px;
-        bottom: max(10px, env(safe-area-inset-bottom));
+        left: 0;
+        right: 0;
+        bottom: 0;
         z-index: 150;
         display: grid;
         grid-template-columns: repeat(4, minmax(0, 1fr));
         gap: 8px;
-        padding: 10px;
-        border-radius: 28px;
+        padding: 10px 10px max(10px, env(safe-area-inset-bottom, 0px));
+        border-radius: 20px 20px 0 0;
         background: rgba(248, 250, 252, 0.96);
         border: 1px solid rgba(226, 232, 240, 0.8);
-        box-shadow: 0 16px 34px rgba(15, 23, 42, 0.22);
+        border-bottom: 0;
+        box-shadow: 0 -8px 28px rgba(15, 23, 42, 0.16);
         backdrop-filter: blur(16px);
+        transform: translateZ(0);
     }
 
     .mobile-tab {
@@ -3706,11 +3708,11 @@ h3, .section-header-row h3 {
     }
 
     .mobile-tab-bar {
-        left: 10px;
-        right: 10px;
-        bottom: max(8px, env(safe-area-inset-bottom));
+        left: 0;
+        right: 0;
+        bottom: 0;
         gap: 5px;
-        padding: 7px;
+        padding: 7px 8px max(7px, env(safe-area-inset-bottom, 0px));
     }
 
     .header-resource-strip {
