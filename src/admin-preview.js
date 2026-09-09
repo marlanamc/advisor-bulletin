@@ -599,8 +599,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 : '';
 
         var isDesktopPreview = window.matchMedia('(min-width: 768px)').matches;
-        var hasDirections = Boolean((data.address || '').trim());
-        var addressHtml = !isDocument && data.address && !(isDesktopPreview && hasDirections)
+        // Desktop: keep address visible for copy/paste; mobile relies on Directions
+        var addressHtml = !isDocument && data.address && isDesktopPreview
             ? '<p class="mobile-resource-card__address">' +
                 '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s6.25-5.9 6.25-11.1a6.25 6.25 0 1 0-12.5 0C5.75 15.1 12 21 12 21Z"/><circle cx="12" cy="9.75" r="2.5"/></svg>' +
                 escPreview(data.address) +

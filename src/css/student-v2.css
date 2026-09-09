@@ -3147,6 +3147,17 @@ body[data-lang="ES"] .story-row-wrap--bilingual .story-bubble-label.es-text {
     body[data-current-view="resources"].resource-category-detail-open #resourcesView .page-back-bar {
         display: none;
     }
+
+    /* Keep the category banner pinned under the topbar while scrolling cards */
+    body[data-current-view="resources"].resource-category-detail-open .resource-category-detail:not([hidden]) {
+        position: sticky;
+        top: calc(var(--app-header-offset, 56px) + 8px);
+        z-index: 140;
+    }
+
+    body[data-current-view="resources"].resource-category-detail-open .mobile-resource-card {
+        scroll-margin-top: calc(var(--app-header-offset, 56px) + 88px);
+    }
 }
 
 .resource-category-detail {
@@ -4008,8 +4019,8 @@ body[data-lang="ES"] .story-row-wrap--bilingual .story-bubble-label.es-text {
 
 .mobile-resource-card__hours-row {
     display: grid;
-    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
-    gap: 4px 12px;
+    grid-template-columns: minmax(0, max-content) minmax(0, 1fr);
+    gap: 0 6px;
     align-items: baseline;
 }
 
@@ -4041,21 +4052,6 @@ body[data-lang="ES"] .story-row-wrap--bilingual .story-bubble-label.es-text {
 
 .post-detail-panel .mobile-resource-card__hours {
     margin-top: 2px;
-}
-
-.post-detail-panel .mobile-resource-card__hours-times {
-    text-align: left;
-}
-
-@media (max-width: 420px) {
-    .mobile-resource-card__hours-row {
-        grid-template-columns: 1fr;
-        gap: 2px;
-    }
-
-    .mobile-resource-card__hours-times {
-        text-align: left;
-    }
 }
 
 .post-detail-panel .resource-service-chips {
@@ -4240,6 +4236,11 @@ body[data-lang="ES"] .story-row-wrap--bilingual .story-bubble-label.es-text {
 
     .mobile-resource-card {
         margin: 18px 16px 0;
+    }
+
+    /* Address is redundant on mobile — Directions button covers it */
+    .mobile-resource-card__address {
+        display: none;
     }
 }
 
