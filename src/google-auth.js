@@ -1,7 +1,7 @@
 import { db, auth } from './firebase-auth.js'
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore'
 import { GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth'
-import { isPrivilegedAdminEmail } from './admin-roles.js'
+import { isOwnerAdminEmail } from './admin-roles.js'
 
 // Google Workspace sign-in for the EBHCS Advisor Portal.
 //
@@ -41,7 +41,7 @@ export async function verifyAdvisorAccess(user) {
         }
     }
 
-    if (isPrivilegedAdminEmail(email)) {
+    if (isOwnerAdminEmail(email)) {
         return { allowed: true, username, email }
     }
 

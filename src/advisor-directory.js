@@ -8,6 +8,7 @@
  * real @ebhcs.org email (the account they sign in with).
  */
 export const STUDENT_ADVISOR_DIRECTORY = [
+    { name: 'Carol', role: 'Director', email: 'cbaglio@ebhcs.org', loginUsername: 'cbaglio' },
     { name: 'Leah', role: 'Coordinator/Educator', email: 'lgregory@ebhcs.org', loginUsername: 'lgregory' },
     { name: 'Carmen', role: 'Advisor', email: 'vlalin@ebhcs.org', loginUsername: 'vlalin' },
     { name: 'Fabiola', role: 'Advisor', email: 'fvaquerano@ebhcs.org', loginUsername: 'fvaquerano' },
@@ -18,6 +19,19 @@ export const STUDENT_ADVISOR_DIRECTORY = [
     { name: 'Mike K.', role: 'Advisor', email: 'mkelsen@ebhcs.org', loginUsername: 'mkelsen' },
     { name: 'Simonetta', role: 'Advisor', email: 'spiergentili@ebhcs.org', loginUsername: 'spiergentili' }
 ];
+
+/**
+ * True when a title should sort above the plain advisors in the student
+ * directory (Director, Coordinator/Educator, ...). The title is free text
+ * typed on the Advisors tab, so compare case- and whitespace-insensitively:
+ * a stray "advisor " must not read as a leadership title and jump to the top.
+ * A blank title means Advisor, matching the default used when publishing.
+ * @param {string} [role]
+ */
+export function isLeadershipRole(role) {
+    const normalized = String(role || '').trim().toLowerCase();
+    return normalized !== '' && normalized !== 'advisor';
+}
 
 /**
  * Public contact email for an advisor row (matches student directory when possible).

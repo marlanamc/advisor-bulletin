@@ -952,18 +952,14 @@
                         <div style="padding:20px 22px;">
                             <div class="advisor-form-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;">
                                 <div class="form-group">
-                                    <label for="newAdvisorUsername" class="ap-label">Username</label>
-                                    <input type="text" id="newAdvisorUsername" placeholder="e.g. jsmith" autocomplete="off" class="ap-input">
-                                    <small class="ap-field-hint">Their email prefix (before @ebhcs.org)</small>
+                                    <label for="newAdvisorEmail" class="ap-label">School Google Email</label>
+                                    <input type="email" id="newAdvisorEmail" placeholder="jsmith@ebhcs.org" autocomplete="off" class="ap-input">
+                                    <small class="ap-field-hint">The @ebhcs.org account they sign in with &mdash; this is their login</small>
                                 </div>
                                 <div class="form-group">
                                     <label for="newAdvisorDisplayName" class="ap-label">Display Name</label>
                                     <input type="text" id="newAdvisorDisplayName" placeholder="e.g. Jamie Smith" autocomplete="off" class="ap-input">
                                     <small class="ap-field-hint">Name students see on bulletins</small>
-                                </div>
-                                <div class="form-group">
-                                    <label for="newAdvisorEmail" class="ap-label">Email</label>
-                                    <input type="email" id="newAdvisorEmail" placeholder="jsmith@ebhcs.org" autocomplete="off" class="ap-input">
                                 </div>
                                 <div class="form-group">
                                     <label for="newAdvisorPublicRole" class="ap-label">Title on student site</label>
@@ -1025,8 +1021,9 @@
                             <small class="ap-field-hint">Name students see on bulletins</small>
                         </div>
                         <div class="form-group">
-                            <label for="editAdvisorEmail" class="ap-label">Email</label>
-                            <input type="email" id="editAdvisorEmail" autocomplete="off" class="ap-input">
+                            <label for="editAdvisorEmail" class="ap-label">School Google Email</label>
+                            <input type="email" id="editAdvisorEmail" autocomplete="off" class="ap-input" readonly aria-readonly="true" style="background:#f3f5f9;color:var(--ap-text-2);cursor:not-allowed;">
+                            <small class="ap-field-hint">This is their login and cannot be changed here. To move someone to a different address, remove them and add the new email.</small>
                         </div>
                         <div class="form-group">
                             <label for="editAdvisorPublicRole" class="ap-label">Title on student site</label>

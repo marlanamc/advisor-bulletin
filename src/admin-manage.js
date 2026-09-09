@@ -2,21 +2,17 @@
 // Extracted verbatim from firebase-admin.js; methods are merged onto
 // FirebaseAdminPanel.prototype by applyMethods() in firebase-admin.js.
 import { db } from './firebase.js'
-import { getPublicAdvisorEmail } from './advisor-directory.js'
-import { isPrivilegedAdminEmail } from './admin-roles.js'
+import { getPublicAdvisorEmail, isLeadershipRole } from './advisor-directory.js'
 import { isDocumentResource } from './resource-kinds.js'
 import { doc, setDoc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore'
 
 export class AdminManageMethods {
+    // Content permissions are equal for every advisor (Sep 2026): anyone on
+    // the advisor list can see and manage every post and resource, including
+    // the legacy ones left over from the retired shared logins. Admin status
+    // only gates the Advisors tab (adding and removing people).
     canManageAllPosts() {
-        return this.currentUser?.isAdmin === true;
-    }
-
-    /** Google account used for portal sign-in (matches google-auth.js). */
-    getAdvisorAuthEmail(username) {
-        const u = String(username || '').trim().toLowerCase();
-        if (!u) return '';
-        return `${u}@ebhcs.org`;
+        return true;
     }
 
     // ── Advisor Management ────────────────────────────────────────────
@@ -38,8 +34,10 @@ export class AdminManageMethods {
                 <div class="manage-card-header">
                     <h5>${this.escapeHtml(a.displayName)}</h5>
                     ${a.isAdmin ? '<span class="advisor-admin-badge">Admin</span>' : ''}
+                    ${a.showInDirectory === false ? '<span class="advisor-hidden-badge">Not on student site</span>' : ''}
                 </div>
                 <div class="manage-card-body">
+                    <p><strong>Title on student site:</strong> ${this.escapeHtml(a.publicRole || 'Advisor')}</p>
                     <p><strong>Username:</strong> ${this.escapeHtml(a.username)}</p>
                     <p><strong>Email:</strong> ${this.escapeHtml(getPublicAdvisorEmail(a))}</p>
                 </div>
@@ -133,15 +131,15 @@ export class AdminManageMethods {
             }
             this.closeEditAdvisor();
             this.loadAdvisors();
-            // The Admin checkbox only unlocks admin screens in this portal.
-            // Server-side privileges (edit/delete anyone's posts) come from the
-            // isPrivilegedAdvisor email list in firestore.rules, which needs a
-            // developer to change — warn so the mismatch isn't a surprise.
-            if (isAdmin && !isPrivilegedAdminEmail(this.getAdvisorAuthEmail(username))) {
-                this.showToast('Saved. Note: full admin rights (managing other advisors’ posts) also require a developer to add this account to the security rules — see DEPLOYMENT.md.', 'info');
-            } else {
-                this.showToast('Advisor updated.', 'success');
-            }
+            // The Admin toggle is now the real switch on both sides: firestore.rules
+            // reads advisors/{username}.isAdmin directly, so no rules deploy is
+            // needed to promote or demote someone.
+            this.showToast(
+                isAdmin
+                    ? `${displayName} can now add and remove advisors.`
+                    : 'Advisor updated.',
+                'success'
+            );
         } catch (e) {
             this.showToast('Error saving advisor: ' + e.message, 'error');
         } finally {
@@ -150,28 +148,30 @@ export class AdminManageMethods {
     }
 
     async addAdvisor() {
-        const username = document.getElementById('newAdvisorUsername').value.trim().toLowerCase();
         const displayName = document.getElementById('newAdvisorDisplayName').value.trim();
         const email = document.getElementById('newAdvisorEmail').value.trim().toLowerCase();
         const isAdmin = document.getElementById('newAdvisorIsAdmin').checked;
         const publicRole = document.getElementById('newAdvisorPublicRole').value.trim() || 'Advisor';
         const showInDirectory = document.getElementById('newAdvisorShowInDirectory').checked;
-        if (!username || !displayName) {
-            this.showToast('Username and display name are required.', 'error'); return;
+        if (!email || !displayName) {
+            this.showToast('School Google email and display name are required.', 'error'); return;
         }
         // Access is granted by matching the Google sign-in email against
-        // advisors/{username}, so the username must be their real email prefix.
-        if (email && !email.endsWith('@ebhcs.org')) {
+        // advisors/{username}, so the username IS the email prefix — derived
+        // here rather than typed, because a typo in a separate field silently
+        // locks the advisor out of the portal.
+        if (!email.endsWith('@ebhcs.org')) {
             this.showToast('Email must be an @ebhcs.org address — it is what they sign in with.', 'error'); return;
         }
-        if (email && email.split('@')[0] !== username) {
-            this.showToast(`Username must match their email: use "${email.split('@')[0]}" for ${email}.`, 'error'); return;
+        const username = email.split('@')[0];
+        if (!username) {
+            this.showToast('That email is missing a name before the @ — check it and try again.', 'error'); return;
         }
         if (this.advisors.find(a => a.username === username)) {
-            this.showToast('An advisor with that username already exists.', 'error'); return;
+            this.showToast(`${email} is already on the advisor list.`, 'error'); return;
         }
         try {
-            const loginEmail = (email || `${username}@ebhcs.org`).trim().toLowerCase();
+            const loginEmail = email;
             await setDoc(doc(db, 'advisors', username), {
                 displayName,
                 email: loginEmail,
@@ -182,7 +182,6 @@ export class AdminManageMethods {
             });
             this.advisors.push({ username, displayName, email: loginEmail, isAdmin, publicRole, showInDirectory });
             await this.publishStudentDirectory();
-            document.getElementById('newAdvisorUsername').value = '';
             document.getElementById('newAdvisorDisplayName').value = '';
             document.getElementById('newAdvisorEmail').value = '';
             document.getElementById('newAdvisorIsAdmin').checked = false;
@@ -223,8 +222,8 @@ export class AdminManageMethods {
      * Write the student-facing advisor directory to config/studentDirectory.
      * The student site reads this doc (publicly readable) and falls back to
      * the static list in src/advisor-directory.js when it doesn't exist.
-     * Coordinators (any title other than "Advisor") sort first, matching the
-     * original hand-ordered list.
+     * Leadership titles (anything other than "Advisor" — Director,
+     * Coordinator/Educator) sort to the top, then everyone alphabetically.
      */
     async publishStudentDirectory() {
         const entries = this.advisors
@@ -236,9 +235,9 @@ export class AdminManageMethods {
                 loginUsername: a.username,
             }))
             .sort((a, b) => {
-                const aCoord = a.role === 'Advisor' ? 1 : 0;
-                const bCoord = b.role === 'Advisor' ? 1 : 0;
-                if (aCoord !== bCoord) return aCoord - bCoord;
+                const aLead = isLeadershipRole(a.role) ? 0 : 1;
+                const bLead = isLeadershipRole(b.role) ? 0 : 1;
+                if (aLead !== bLead) return aLead - bLead;
                 return a.name.localeCompare(b.name);
             });
         try {

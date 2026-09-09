@@ -23,7 +23,7 @@ In Firestore Database → Rules, paste the content of the [firestore.rules](../f
 These rules secure the bulletin board by:
 1. Permitting public read access only to active posts and published resources.
 2. Requiring an authenticated `@ebhcs.org` Google Account for creates and edits.
-3. Restricting post updates to the original creator, while administrators (`mcreed@ebhcs.org`, `lgregory@ebhcs.org`) have global update/delete rights (authoritative list: `isPrivilegedAdvisor` in `firestore.rules`).
+3. Giving every advisor equal rights to create, update and delete any post or resource, while admins (`advisors/{username}.isAdmin == true`, set on the portal's Advisors tab) can additionally add and remove people (authoritative logic: `isActiveAdvisor` / `isAdminAdvisor` in `firestore.rules`).
 4. Ensuring structural data validation for posts, resources, analytics events, and error logs before writes are processed.
 
 ## Step 4: Set Up Authentication

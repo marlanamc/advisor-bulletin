@@ -1,7 +1,7 @@
 import { db, auth, storage } from './firebase.js'
 import { applyResourceLogos, deleteResourceLogo, fetchAllResourceLogos, setResourceLogo } from './resource-logos.js'
 import { getPublicAdvisorEmail, STUDENT_ADVISOR_DIRECTORY } from './advisor-directory.js'
-import { isPrivilegedAdminEmail } from './admin-roles.js'
+import { isOwnerAdminEmail } from './admin-roles.js'
 import { installClientErrorLogger } from './error-logger.js'
 import { getPostCategoryDisplay } from './feed-categories.js'
 import { AUTHORABLE_RESOURCE_CATEGORIES, AUTHORABLE_RESOURCE_CATEGORY_SET } from './resource-categories.js'
@@ -93,7 +93,7 @@ class FirebaseAdminPanel {
             username: a.loginUsername,
             displayName: a.name,
             email: a.email,
-            isAdmin: isPrivilegedAdminEmail(a.email)
+            isAdmin: isOwnerAdminEmail(a.email)
         }));
         this.authTransitionInProgress = false;
         this.resourceReorderMode = false;
@@ -547,7 +547,7 @@ class FirebaseAdminPanel {
                 username,
                 email: userDetails.email,
                 name: userDetails.name || username,
-                isAdmin: isPrivilegedAdminEmail(userDetails.email)
+                isAdmin: isOwnerAdminEmail(userDetails.email)
             };
 
             this.setAuthView('loading', `Welcome back, ${this.currentUser.name}!`);
@@ -567,7 +567,7 @@ class FirebaseAdminPanel {
                 if (advisor) {
                     this.currentUser.name = advisor.displayName || this.currentUser.name;
                     this.currentUser.isAdmin = advisor.isAdmin === true
-                        || isPrivilegedAdminEmail(this.currentUser.email);
+                        || isOwnerAdminEmail(this.currentUser.email);
                     const welcome = document.getElementById('welcomeMessage');
                     if (welcome) welcome.textContent = `Welcome, ${this.currentUser.name}!`;
 
