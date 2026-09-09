@@ -32,6 +32,10 @@ async function seedDemoContent(page) {
       resourceIcon: 'scale',
       url: 'https://example.org/legal',
       eventLink: 'https://example.org/legal',
+      hoursRows: [{
+        day: 'Revival Church, 965 Bennington St: Tuesday',
+        time: '9am–10am'
+      }],
       description: 'Know-your-rights information and referrals.',
       advisorName: 'Fabiola',
       postedBy: 'fabiola',
@@ -75,6 +79,24 @@ test.describe('Quick mobile checks', () => {
 
     expect(layout.pageWidth).toBeLessThanOrEqual(layout.viewportWidth + 1);
     expect(layout.chipRailWidth).toBeLessThanOrEqual(layout.chipRailViewport + 1);
+  });
+
+  test('Help schedule rows wrap long locations without horizontal overflow', async ({ page }) => {
+    await page.locator('.mobile-tab[data-app-view="resources"]').click();
+    await page.evaluate(() => window.bulletinBoard.switchResourceCategory('legal-aid'));
+
+    const scheduleRow = page.locator('.mobile-resource-card__hours-row').first();
+    await expect(scheduleRow).toBeVisible();
+    const dimensions = await scheduleRow.evaluate((row) => ({
+      contentWidth: row.scrollWidth,
+      visibleWidth: row.clientWidth,
+      locationHeight: row.querySelector('.mobile-resource-card__hours-days')?.clientHeight ?? 0,
+      timeWidth: row.querySelector('.mobile-resource-card__hours-times')?.clientWidth ?? 0
+    }));
+
+    expect(dimensions.contentWidth).toBeLessThanOrEqual(dimensions.visibleWidth + 1);
+    expect(dimensions.locationHeight).toBeGreaterThan(20);
+    expect(dimensions.timeWidth).toBeGreaterThan(0);
   });
 
   test('feed bulletin detail modal still opens on mobile', async ({ page }) => {

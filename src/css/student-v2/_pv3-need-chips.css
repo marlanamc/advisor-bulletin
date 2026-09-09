@@ -308,7 +308,7 @@
 
 .mobile-resource-card__hours-row {
     display: grid;
-    grid-template-columns: minmax(0, max-content) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) max-content;
     gap: 0 6px;
     align-items: baseline;
 }
@@ -329,11 +329,14 @@
 }
 
 .mobile-resource-card__hours-days {
+    min-width: 0;
     font-weight: 700;
     color: #334155;
+    overflow-wrap: anywhere;
 }
 
 .mobile-resource-card__hours-times {
+    white-space: nowrap;
     font-weight: 600;
     color: #64748b;
     text-align: right;
