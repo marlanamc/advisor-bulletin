@@ -5,8 +5,14 @@ function getLightboxElements() {
         closeBtn: document.getElementById('imgLightboxClose'),
         backdrop: document.getElementById('imgLightboxBackdrop'),
         openBtn: document.getElementById('imgLightboxOpenBtn'),
+        frame: document.querySelector('.img-lightbox-frame'),
     };
 }
+
+// Only the lightbox's own inline lock gets cleared on close, so closing the
+// viewer can never unlock scroll for a layer that locked it for itself.
+let lightboxLockedBodyScroll = false;
+let lightboxOpenerElement = null;
 
 function usesClassBasedScrollLock() {
     return document.body.classList.contains('modal-open')
@@ -37,6 +43,7 @@ export function openImageLightbox(src, alt) {
     // Modal/sheet layers already lock page scroll via body classes.
     if (!usesClassBasedScrollLock()) {
         document.body.style.overflow = 'hidden';
+        lightboxLockedBodyScroll = true;
     }
 
     lightboxImg.onload = function () {
@@ -48,7 +55,7 @@ export function openImageLightbox(src, alt) {
 }
 
 export function closeImageLightbox() {
-    const { lightbox, lightboxImg } = getLightboxElements();
+    const { lightbox, lightboxImg, frame } = getLightboxElements();
     if (!lightbox || !lightboxImg) {
         return;
     }
@@ -56,12 +63,30 @@ export function closeImageLightbox() {
     lightbox.classList.remove('open');
     lightbox.setAttribute('aria-hidden', 'true');
 
-    // Always clear the lightbox inline lock. Class-based locks (modal-open, etc.)
-    // continue to manage page scroll when those layers stay open.
-    document.body.style.overflow = '';
+    // Clear only a lock this lightbox applied. Class-based locks (modal-open,
+    // etc.) continue to manage page scroll when those layers stay open.
+    if (lightboxLockedBodyScroll) {
+        document.body.style.overflow = '';
+        lightboxLockedBodyScroll = false;
+    }
 
-    lightboxImg.src = '';
+    // Focus goes back to the zoom button, so it never sits on a control inside
+    // a hidden dialog and the post is where keyboard and scroll resume.
+    if (lightbox.contains(document.activeElement)) {
+        if (lightboxOpenerElement && lightboxOpenerElement.isConnected) {
+            lightboxOpenerElement.focus({ preventScroll: true });
+        } else {
+            document.activeElement.blur();
+        }
+    }
+    lightboxOpenerElement = null;
+
+    // An empty src makes the browser re-request the page itself as an image.
+    lightboxImg.removeAttribute('src');
     lightboxImg.classList.remove('is-tall');
+    if (frame) {
+        frame.scrollTop = 0;
+    }
 }
 
 export function initImageLightbox() {
@@ -78,6 +103,7 @@ export function initImageLightbox() {
 
         event.preventDefault();
         event.stopPropagation();
+        lightboxOpenerElement = trigger;
         openImageLightbox(trigger.dataset.lightboxSrc, trigger.dataset.lightboxAlt);
     });
 

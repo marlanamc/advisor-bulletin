@@ -6370,12 +6370,18 @@ body[data-lang="ES"] .story-row-wrap--bilingual .story-bubble-label.es-text {
     justify-content: center;
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.2s ease;
+    /* Hidden, not just transparent: a closed-but-visible full-screen layer
+       still paints over the post underneath, and its blurred chrome makes
+       the bulletin behind it re-composite on every scroll frame. */
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0s linear 0.2s;
 }
 
 .img-lightbox.open {
     opacity: 1;
     pointer-events: all;
+    visibility: visible;
+    transition: opacity 0.2s ease, visibility 0s;
 }
 
 .img-lightbox-backdrop {
@@ -6390,7 +6396,6 @@ body[data-lang="ES"] .story-row-wrap--bilingual .story-bubble-label.es-text {
     max-width: 96vw;
     max-height: 92vh;
     overflow: auto;
-    -webkit-overflow-scrolling: touch;
     border-radius: 8px;
     display: flex;
     flex-direction: column;
