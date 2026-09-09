@@ -116,12 +116,11 @@ npx playwright show-report
 
 Screenshots for failed tests are saved in `test-results/`.
 
-## CSS Files Modified
+## CSS Files Covered
 
-- **style.css**:
-  - Lines 2115-2121: Mobile calendar grid
-  - Lines 2259-2327: Calendar component mobile optimizations
-  - Lines 2458-2545: Modal mobile optimizations
+- Student styles now flow through `src/css/student-v2.css`, which imports split section files.
+- Admin styles flow through `src/css/admin.css` and `src/css/advisor-portal-v2.css`, which also import split section files.
+- Prefer searching the split CSS modules by component/class name instead of relying on old monolithic line numbers.
 
 ## Browser Compatibility
 

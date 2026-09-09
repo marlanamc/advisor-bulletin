@@ -499,16 +499,16 @@ export class AdminManageMethods {
                 ` : ''}
                 ${this.renderManageDateInfo(bulletin)}
                 <div class="manage-actions">
-                    <button class="edit-btn" onclick="adminPanel.editBulletin('${bulletin.id}')">
+                    <button type="button" class="edit-btn" data-manage-action="edit-bulletin" data-bulletin-id="${this.escapeAttribute(bulletin.id)}">
                         Edit
                     </button>
                     ${isResource ? `
-                        <button class="verify-btn" onclick="adminPanel.markResourceVerified('${bulletin.id}')"
+                        <button type="button" class="verify-btn" data-manage-action="verify-resource" data-bulletin-id="${this.escapeAttribute(bulletin.id)}"
                             title="Record that you checked this card's details today. Clears it from the monthly re-verification queue.">
                             Verified today
                         </button>
                     ` : ''}
-                    <button class="delete-btn" onclick="adminPanel.deleteBulletin('${bulletin.id}')">
+                    <button type="button" class="delete-btn" data-manage-action="delete-bulletin" data-bulletin-id="${this.escapeAttribute(bulletin.id)}">
                         Delete
                     </button>
                 </div>

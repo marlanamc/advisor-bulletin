@@ -20,20 +20,11 @@ import { readFileSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { createInterface } from 'node:readline';
 import { stdin, stdout } from 'node:process';
+import { PROJECT_ID, firebaseConfig as FIREBASE_CONFIG } from './lib/firebase-config.mjs';
 
-const PROJECT_ID = 'ebhcs-bulletin-board';
 const COLLECTION = 'bulletins';
 const BATCH_SIZE = 400;
 const STALE_DAYS = 180;
-
-const FIREBASE_CONFIG = {
-  apiKey: 'AIzaSyBGaONCeB5MQCYdp3Gv8eUKPvLsBGFnXgY',
-  authDomain: 'ebhcs-bulletin-board.firebaseapp.com',
-  projectId: PROJECT_ID,
-  storageBucket: 'ebhcs-bulletin-uploads-us',
-  messagingSenderId: '556649154585',
-  appId: '1:556649154585:web:3a3f49d2056aa507088288',
-};
 
 function parseArgs(argv) {
   const args = { confirm: false, credentials: null, days: STALE_DAYS, email: 'mcreed@ebhcs.org' };

@@ -1,6 +1,5 @@
 // Image/PDF/action-link upload handling, validation, previews, and resource kind UI.
-// Extracted verbatim from firebase-admin.js; methods are merged onto
-// FirebaseAdminPanel.prototype by applyMethods() in firebase-admin.js.
+// Merged onto FirebaseAdminPanel.prototype by applyMethods() in firebase-admin.js.
 import {
     isPdfFile,
 } from './admin-shared.js'
@@ -95,7 +94,7 @@ export class AdminAttachmentMethods {
                     </div>
                     <div class="form-group resource-action-link-pdf-field" id="resourceActionLink${slot}PdfField" hidden>
                         <label for="resourceActionLink${slot}Pdf" class="optional">PDF file</label>
-                        <button type="button" class="ap-flyer-pdf-choose" onclick="document.getElementById('resourceActionLink${slot}Pdf').click()">Choose PDF</button>
+                        <button type="button" class="ap-flyer-pdf-choose" data-attachment-action="choose-action-link-pdf" data-slot="${slot}">Choose PDF</button>
                         <input type="file" id="resourceActionLink${slot}Pdf" name="resourceActionLink${slot}Pdf" accept=".pdf,application/pdf" class="file-input" style="display: none;" aria-label="Upload action link PDF ${slot}">
                         <div id="resourceActionLink${slot}PdfPreview" class="pdf-preview"></div>
                     </div>
@@ -166,7 +165,7 @@ export class AdminAttachmentMethods {
                     <strong>${this.escapeHtml(file.name)}</strong>
                     <small>${this.formatFileSize(file.size)}</small>
                 </div>
-                <button type="button" class="remove-pdf" onclick="adminPanel.removeActionLinkPdfPreview(${slot})" aria-label="Remove PDF">&times;</button>
+                <button type="button" class="remove-pdf" data-attachment-action="remove-action-link-pdf" data-slot="${slot}" aria-label="Remove PDF">&times;</button>
             </div>
         `;
         this.removedActionLinkPdfSlots.delete(slot);
@@ -193,7 +192,7 @@ export class AdminAttachmentMethods {
                     <strong>Current PDF</strong>
                     <small><a href="${this.escapeAttribute(pdfUrl)}" target="_blank" rel="noopener">Open uploaded PDF</a></small>
                 </div>
-                <button type="button" class="remove-pdf" onclick="adminPanel.removeActionLinkPdfPreview(${slot})" aria-label="Remove PDF">&times;</button>
+                <button type="button" class="remove-pdf" data-attachment-action="remove-action-link-pdf" data-slot="${slot}" aria-label="Remove PDF">&times;</button>
             </div>
         `;
     }
@@ -418,7 +417,7 @@ export class AdminAttachmentMethods {
                     preview.innerHTML = `
                     <div class="preview-container">
                         <img src="${processed.dataUrl}" alt="Preview" class="preview-image">
-                        <button type="button" class="remove-image" onclick="adminPanel.removeImagePreview('${fieldName}')" aria-label="Remove image">&times;</button>
+                        <button type="button" class="remove-image" data-attachment-action="remove-image" data-field-name="${this.escapeAttribute(fieldName)}" aria-label="Remove image">&times;</button>
                         <div class="image-info">
                             ${pdfNote}
                             <small>${processed.width} × ${processed.height} pixels</small>
@@ -784,7 +783,7 @@ export class AdminAttachmentMethods {
                         <strong>${file.name}</strong>
                         <small>${this.formatFileSize(file.size)}</small>
                     </div>
-                    <button type="button" class="remove-pdf" onclick="adminPanel.removePdfPreview()" aria-label="Remove PDF">&times;</button>
+                    <button type="button" class="remove-pdf" data-attachment-action="remove-pdf" aria-label="Remove PDF">&times;</button>
                 </div>
             `;
 
@@ -832,7 +831,7 @@ export class AdminAttachmentMethods {
                     <strong>${this.escapeHtml(file.name)}</strong>
                     <small>${this.formatFileSize(file.size)}</small>
                 </div>
-                <button type="button" class="remove-pdf" onclick="adminPanel.removeResourcePdfPreview()" aria-label="Remove PDF">&times;</button>
+                <button type="button" class="remove-pdf" data-attachment-action="remove-resource-pdf" aria-label="Remove PDF">&times;</button>
             </div>
         `;
         this.removeResourcePdf = false;
@@ -868,7 +867,7 @@ export class AdminAttachmentMethods {
                     <strong>Current form PDF</strong>
                     <small><a href="${this.escapeAttribute(pdfUrl)}" target="_blank" rel="noopener">Open uploaded PDF</a></small>
                 </div>
-                <button type="button" class="remove-pdf" onclick="adminPanel.removeResourcePdfPreview()" aria-label="Remove PDF">&times;</button>
+                <button type="button" class="remove-pdf" data-attachment-action="remove-resource-pdf" aria-label="Remove PDF">&times;</button>
             </div>
         `;
         this.removeResourcePdf = false;

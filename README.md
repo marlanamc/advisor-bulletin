@@ -38,12 +38,13 @@ advisor_bulletin/
 ├── admin.html                   # Advisor portal (entry page)
 ├── src/                         # All application JavaScript and CSS
 │   ├── main.js                  #   Student entry: snapshot-first bootstrap, PWA updates
-│   ├── firebase-config.js       #   Student app (FirebaseBulletinBoard) + board-*.js modules
+│   ├── firebase-config.js       #   Student app shell (FirebaseBulletinBoard) + board mixins
 │   ├── admin.js                 #   Advisor entry: auth wiring, page routing
-│   ├── firebase-admin.js        #   Admin panel (FirebaseAdminPanel) + admin-*.js modules
+│   ├── firebase-admin.js        #   Admin panel shell (FirebaseAdminPanel) + admin mixins
 │   ├── google-auth.js           #   Google Workspace sign-in + advisor-list gate
 │   ├── admin-roles.js           #   Privileged admin emails (sync-checked vs firestore.rules)
-│   └── css/                     #   Stylesheets
+│   ├── bulletin-format.js       #   Shared formatting helpers for student/admin renderers
+│   └── css/                     #   Import aggregators plus split section styles
 ├── public/                      # Static files served as-is (PWA service worker,
 │                                #   manifest, images, student feed snapshot, 404)
 ├── docs/                        # All guides: DEPLOYMENT, FIREBASE_SETUP, TESTING,
@@ -64,7 +65,7 @@ advisor_bulletin/
 ## 🚀 Running Locally
 
 ### Prerequisites
-*   Node.js (v18+)
+*   Node.js (v22+)
 *   npm
 
 ### Installation

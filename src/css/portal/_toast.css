@@ -1,0 +1,118 @@
+/* ============================================================
+   TOAST NOTIFICATION
+   ============================================================ */
+
+.ap-toast {
+  position: fixed;
+  bottom: max(24px, env(safe-area-inset-bottom));
+  right: max(24px, env(safe-area-inset-right));
+  background: var(--ap-navy);
+  color: #fff;
+  padding: 12px 18px;
+  border-radius: var(--ap-r-lg);
+  box-shadow: var(--ap-shadow-lg);
+  font-family: var(--ap-font-head);
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 999;
+  transform: translateY(80px);
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+  transition: transform .3s ease, opacity .3s ease, visibility 0s linear .3s;
+}
+
+.ap-toast.show {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+.ap-toast-icon {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.12);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.ap-toast-icon svg {
+  width: 14px; height: 14px;
+  color: #34d399;
+}
+
+.toast-message {
+  position: fixed;
+  top: max(20px, env(safe-area-inset-top));
+  right: max(20px, env(safe-area-inset-right));
+  z-index: 1001;
+  display: flex;
+  align-items: center;
+  max-width: min(350px, calc(100vw - 40px));
+  padding: 16px 20px;
+  border-radius: 12px;
+  color: #fff;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+  animation: toastMessageIn 0.3s ease-out;
+}
+
+.toast-message--success {
+  background: #27ae60;
+}
+
+.toast-message--error {
+  background: #e74c3c;
+}
+
+.toast-message--warning {
+  background: #f39c12;
+}
+
+.toast-message--info {
+  background: #3498db;
+}
+
+.toast-message--exiting {
+  animation: toastMessageOut 0.3s ease-in forwards;
+}
+
+.toast-message__icon {
+  margin-right: 8px;
+  font-size: 16px;
+}
+
+.toast-message__body {
+  min-width: 0;
+}
+
+@keyframes toastMessageIn {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes toastMessageOut {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}

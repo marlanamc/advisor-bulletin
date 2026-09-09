@@ -9,7 +9,7 @@
     "dev": "vite",
     "start": "vite",
     "build:snapshot": "node scripts/build-student-feed-snapshot.mjs",
-    "prebuild": "npm run build:snapshot && node scripts/check-resource-categories-sync.mjs && node scripts/check-post-categories-sync.mjs && node scripts/check-admin-emails-sync.mjs && node scripts/check-resource-freshness.mjs",
+    "prebuild": "npm run build:snapshot && node scripts/check-resource-categories-sync.mjs && node scripts/check-post-categories-sync.mjs && node scripts/check-admin-emails-sync.mjs && node scripts/check-csp-sync.mjs && node scripts/check-resource-freshness.mjs",
     "build": "vite build",
     "deploy": "npm run build && firebase deploy",
     "preview": "vite preview",
@@ -26,15 +26,13 @@
     "clear:analytics": "node scripts/clear-analytics-events.mjs --dry-run",
     "clear:analytics:confirm": "node scripts/clear-analytics-events.mjs --confirm",
     "prune:errors": "node scripts/prune-client-errors.mjs --dry-run",
-    "prune:errors:confirm": "node scripts/prune-client-errors.mjs --confirm",
-    "test:rules": "firebase emulators:exec --only firestore --project ebhcs-rules-test 'node --test tests/rules/*.test.mjs'"
+    "prune:errors:confirm": "node scripts/prune-client-errors.mjs --confirm"
   },
   "dependencies": {
     "firebase": "^12.13.0",
     "pdfjs-dist": "^6.3.289"
   },
   "devDependencies": {
-    "@firebase/rules-unit-testing": "^5.0.2",
     "@playwright/test": "^1.40.0",
     "firebase-admin": "^13.10.0",
     "firebase-tools": "^15.5.1",

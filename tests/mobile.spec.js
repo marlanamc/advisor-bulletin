@@ -103,6 +103,10 @@ async function seedDemoContent(page) {
     window.bulletinBoard.populateAdvisorFilters();
     window.bulletinBoard.displayBulletins([post, ...resources]);
   });
+  await expect(page.locator('#feedStoryCats [data-resource-shortcut="immigration"]')).toBeVisible();
+  await expect(page.locator('#feedStoryCats [data-resource-shortcut="housing"]')).toBeVisible();
+  await expect(page.locator('#feedStoryCats [data-resource-shortcut="jobs"]')).toBeVisible();
+  await expect(page.locator('#feedStoryCats [data-resource-shortcut="health"]')).toBeVisible();
 }
 
 test.describe('Mobile app shell', () => {
@@ -340,8 +344,9 @@ test.describe('Mobile app shell', () => {
 
     await page.locator('.mobile-tab[data-app-view="resources"]').click();
     await expect(page.locator('#resourceCategoryFilters')).toBeVisible();
+    await expect(page.locator('#resourceNeedTop [data-need-chip="Get job training"]')).toBeVisible();
 
-    await page.locator('#resourceNeedTop [data-need-chip="Get job training"]').click();
+    await page.locator('#resourceNeedTop [data-need-chip="Get job training"]').evaluate((chip) => chip.click());
 
     await expect(page.locator('#resourceCategoryFilters')).toBeHidden();
     await expect(page.locator('#resourceCategoryDetail')).toBeVisible();

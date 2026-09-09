@@ -2,6 +2,7 @@ import { db } from './firebase-student.js'
 import { applyResourceLogos, fetchAllResourceLogos } from './resource-logos.js'
 import { STUDENT_ADVISOR_DIRECTORY } from './advisor-directory.js'
 import { installClientErrorLogger } from './error-logger.js'
+import * as bulletinFormat from './bulletin-format.js'
 import { normalizePostCategory, getPostCategoryDisplay, getPostCategoryMeta, bulletinMatchesPostCategory, POST_CATEGORIES } from './feed-categories.js'
 import { RESOURCE_TILE_CATEGORIES } from './resource-categories.js'
 import {
@@ -67,6 +68,7 @@ import { BoardResourcesMethods } from './board-resources.js'
 import { BoardDetailMethods } from './board-detail.js'
 import { storeServerSnapshot } from './student-snapshot.js'
 import { BoardSearchMethods } from './board-search.js'
+import { BoardDateRenderMethods } from './board-date-render.js'
 
 // Maps a bulletin post category to the matching resource category, so the
 // feed category banner can point students to related Find Help listings.
@@ -318,7 +320,7 @@ class FirebaseBulletinBoard {
                 if (grid.getAttribute('data-snapshot-rendered') === 'true') {
                     return;
                 }
-                grid.innerHTML = '<div class="feed-load-error" role="alert"><p>Could not load posts. Check your connection and try again.</p><p class="empty-state-bilingual">No se pudieron cargar las publicaciones. Comprueba tu conexión.</p><button type="button" class="feed-load-retry" onclick="window.location.reload()">Try again / Intentar de nuevo</button></div>';
+                grid.innerHTML = '<div class="feed-load-error" role="alert"><p>Could not load posts. Check your connection and try again.</p><p class="empty-state-bilingual">No se pudieron cargar las publicaciones. Comprueba tu conexión.</p><button type="button" class="feed-load-retry" data-feed-action="reload">Try again / Intentar de nuevo</button></div>';
             }
         });
     }
@@ -759,6 +761,14 @@ class FirebaseBulletinBoard {
         const feedCategoryClear = document.getElementById('feedCategoryClear');
         if (feedCategoryClear) {
             feedCategoryClear.addEventListener('click', () => this.setFeedCategory('all'));
+        }
+        const bulletinGrid = document.getElementById('bulletinGrid');
+        if (bulletinGrid) {
+            bulletinGrid.addEventListener('click', (event) => {
+                if (event.target.closest('[data-feed-action="reload"]')) {
+                    window.location.reload();
+                }
+            });
         }
 
         this.setupResourceDetailSheet();
@@ -1779,6 +1789,7 @@ class FirebaseBulletinBoard {
             body.innerHTML = `<div class="detail-card"><p>This bulletin is no longer available.</p></div>`;
         } else {
             body.innerHTML = this.renderBulletinDetail(bulletin);
+            this.bindBulletinDetailActions?.(body);
         }
 
         modal.style.display = 'flex';
@@ -1817,7 +1828,7 @@ class FirebaseBulletinBoard {
         const bulletinsList = bulletins.map(bulletin => {
             const isExpired = this.isBulletinExpired(bulletin);
             return `
-                <div class="day-event-item ${isExpired ? 'expired' : ''}" role="button" tabindex="0" onclick="event.stopPropagation(); bulletinBoard.showBulletinDetail('${this.escapeAttribute(bulletin.id)}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();bulletinBoard.showBulletinDetail('${this.escapeAttribute(bulletin.id)}')}">
+                <div class="day-event-item ${isExpired ? 'expired' : ''}" role="button" tabindex="0" data-day-event-id="${this.escapeAttribute(bulletin.id)}">
                     <div class="day-event-header">
                         <h3 class="day-event-title">${this.escapeHtml(this.getPostTitle(bulletin))}</h3>
                         <span class="category-badge category-${bulletin.category}">${this.getCategoryDisplay(bulletin.category)}</span>
@@ -1836,10 +1847,11 @@ class FirebaseBulletinBoard {
                     ${bulletinsList}
                 </div>
                 <div class="detail-actions" style="margin-top: 24px;">
-                    <button type="button" class="close-btn" onclick="window.bulletinBoard.closeBulletinDetail()">Close</button>
+                    <button type="button" class="close-btn" data-detail-action="close">Close</button>
                 </div>
             </div>
         `;
+        this.bindBulletinDetailActions?.(body);
 
         modal.style.display = 'flex';
         modal.setAttribute('aria-hidden', 'false');
@@ -2263,12 +2275,7 @@ class FirebaseBulletinBoard {
     }
 
     getClassTypeDisplay(classType) {
-        const classTypes = {
-            'esol': 'ESOL (English for Speakers of Other Languages)',
-            'hse': 'HSE (High School Equivalency)',
-            'famlit': 'FamLit (Family Literacy)'
-        };
-        return classTypes[classType] || classType;
+        return bulletinFormat.getClassTypeDisplay(classType);
     }
 
     isDeadlineClose(deadline) {
@@ -2325,9 +2332,7 @@ class FirebaseBulletinBoard {
     }
 
     escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = String(text ?? '');
-        return div.innerHTML;
+        return bulletinFormat.escapeHtml(text);
     }
 
     // Open PDF from bulletin ID by looking up the bulletin data
@@ -2412,11 +2417,7 @@ class FirebaseBulletinBoard {
     }
 
     escapeAttribute(text) {
-        const div = document.createElement('div');
-        div.textContent = text || '';
-        return div.innerHTML
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#39;');
+        return bulletinFormat.escapeAttribute(text);
     }
 
     formatLinkLabel(url, category) {
@@ -2435,19 +2436,7 @@ class FirebaseBulletinBoard {
     }
 
     formatEventTime(timeString) {
-        if (!timeString) return '';
-        try {
-            const [hourStr, minuteStr] = timeString.split(':');
-            let hour = parseInt(hourStr, 10);
-            const minute = minuteStr || '00';
-            if (isNaN(hour)) return timeString;
-            const period = hour >= 12 ? 'PM' : 'AM';
-            hour = hour % 12;
-            if (hour === 0) hour = 12;
-            return `${hour}:${minute.padStart(2, '0')} ${period}`;
-        } catch (error) {
-            return timeString;
-        }
+        return bulletinFormat.formatEventTime(timeString);
     }
 
     getPostDescription(bulletin) {
@@ -2528,182 +2517,15 @@ class FirebaseBulletinBoard {
         }
     }
 
-    renderDateInfo(bulletin) {
-        // Prioritize new date structure over backward compatibility
-        if (bulletin.dateType && (bulletin.eventDate || (bulletin.eventDates && bulletin.eventDates.length) || (bulletin.startDate && bulletin.endDate))) {
-            return this.renderNewDateInfo(bulletin);
-        }
-
-        // Backward compatibility - show deadline if it exists
-        if (bulletin.deadline) {
-            const isDeadlineClose = this.isDeadlineClose(bulletin.deadline);
-            return `
-                <div class="meta-item ${isDeadlineClose ? 'deadline-warning' : ''}">
-                    <strong>Deadline:</strong> ${this.formatDateLocal(bulletin.deadline)}
-                    ${isDeadlineClose ? ' (Soon!)' : ''}
-                </div>
-            `;
-        }
-
-        return '';
-    }
-
-    renderNewDateInfo(bulletin) {
-        const dateType = bulletin.dateType;
-        let dateHtml = '';
-
-        if (dateType === 'deadline') {
-            const isClose = this.isDeadlineClose(bulletin.eventDate);
-            dateHtml = `
-                <div class="meta-item ${isClose ? 'deadline-warning' : ''}">
-                    <strong>Application Deadline:</strong> ${this.formatDateLocal(bulletin.eventDate)}
-                    ${isClose ? ' (Soon!)' : ''}
-                </div>
-            `;
-        } else if (dateType === 'event') {
-            const isClose = this.isDeadlineClose(bulletin.eventDate);
-            let timeInfo = this.formatTimeRange(bulletin.startTime, bulletin.endTime);
-            dateHtml = `
-                <div class="meta-item ${isClose ? 'deadline-warning' : ''}">
-                    <strong>Event Date:</strong> ${this.formatDateLocal(bulletin.eventDate)}${timeInfo ? ` at ${timeInfo}` : ''}
-                    ${isClose ? ' (Soon!)' : ''}
-                </div>
-            `;
-        } else if (dateType === 'range' && bulletin.startDate && bulletin.endDate) {
-            let timeInfo = this.formatTimeRange(bulletin.startTime, bulletin.endTime);
-            dateHtml = `
-                <div class="meta-item">
-                    <strong>Event Dates:</strong> ${this.formatDateLocal(bulletin.startDate)} - ${this.formatDateLocal(bulletin.endDate)}${timeInfo ? ` at ${timeInfo}` : ''}
-                </div>
-            `;
-        } else if (dateType === 'sessions') {
-            const sessions = this.getBulletinEventSessions(bulletin);
-            if (sessions.length) {
-                const lines = formatSessionsDetailLines(
-                    sessions,
-                    (date) => this.formatDateLocal(date),
-                    (start, end) => this.formatTimeRange(start, end)
-                );
-                dateHtml = `
-                    <div class="meta-item">
-                        <strong>Session Dates:</strong>
-                        ${lines.map((line) => `<div>${this.escapeHtml(line)}</div>`).join('')}
-                    </div>
-                `;
-            }
-        } else if (dateType === 'recurring' && bulletin.startDate && bulletin.endDate) {
-            const weekdayName = WEEKDAY_NAMES[Number(bulletin.recurringWeekday)] || '';
-            let timeInfo = this.formatTimeRange(bulletin.startTime, bulletin.endTime);
-            dateHtml = `
-                <div class="meta-item">
-                    <strong>Recurring:</strong> Every ${weekdayName}, ${this.formatDateLocal(bulletin.startDate)} - ${this.formatDateLocal(bulletin.endDate)}${timeInfo ? ` at ${timeInfo}` : ''}
-                </div>
-            `;
-        }
-
-        // Add event location if specified
-        if (bulletin.eventLocation && (dateType === 'event' || dateType === 'range' || dateType === 'sessions' || dateType === 'recurring')) {
-            const locationText = bulletin.eventLocation === 'in-person' ? 'In-Person' :
-                               bulletin.eventLocation === 'online' ? 'Online' :
-                               bulletin.eventLocation === 'hybrid' ? 'Hybrid (In-Person & Online)' : bulletin.eventLocation;
-            dateHtml += `
-                <div class="meta-item">
-                    <strong>Format:</strong> ${locationText}
-                </div>
-            `;
-        }
-
-        return dateHtml;
-    }
-
-    renderDetailDateInfo(bulletin) {
-        // Prioritize new date structure
-        if (bulletin.dateType && (bulletin.eventDate || (bulletin.eventDates && bulletin.eventDates.length) || (bulletin.startDate && bulletin.endDate))) {
-            const dateType = bulletin.dateType;
-            let dateHtml = '';
-
-            if (dateType === 'deadline') {
-                const isClose = this.isDeadlineClose(bulletin.eventDate);
-                dateHtml = `<div><strong>Application Deadline:</strong> <span class="${isClose ? 'deadline-warning' : ''}">${this.formatDateLocal(bulletin.eventDate)}${isClose ? ' (Soon!)' : ''}</span></div>`;
-            } else if (dateType === 'event') {
-                const isClose = this.isDeadlineClose(bulletin.eventDate);
-                let timeInfo = this.formatTimeRange(bulletin.startTime, bulletin.endTime);
-                dateHtml = `<div><strong>Event Date:</strong> <span class="${isClose ? 'deadline-warning' : ''}">${this.formatDateLocal(bulletin.eventDate)}${timeInfo ? ` at ${timeInfo}` : ''}${isClose ? ' (Soon!)' : ''}</span></div>`;
-            } else if (dateType === 'range' && bulletin.startDate && bulletin.endDate) {
-                let timeInfo = this.formatTimeRange(bulletin.startTime, bulletin.endTime);
-                dateHtml = `<div><strong>Event Dates:</strong> ${this.formatDateLocal(bulletin.startDate)} - ${this.formatDateLocal(bulletin.endDate)}${timeInfo ? ` at ${timeInfo}` : ''}</div>`;
-            } else if (dateType === 'sessions') {
-                const sessions = this.getBulletinEventSessions(bulletin);
-                if (sessions.length) {
-                    const lines = formatSessionsDetailLines(
-                        sessions,
-                        (date) => this.formatDateLocal(date),
-                        (start, end) => this.formatTimeRange(start, end)
-                    );
-                    dateHtml = `<div><strong>Session Dates:</strong> ${lines.map((line) => this.escapeHtml(line)).join('<br>')}</div>`;
-                }
-            } else if (dateType === 'recurring' && bulletin.startDate && bulletin.endDate) {
-                const weekdayName = WEEKDAY_NAMES[Number(bulletin.recurringWeekday)] || '';
-                let timeInfo = this.formatTimeRange(bulletin.startTime, bulletin.endTime);
-                dateHtml = `<div><strong>Recurring:</strong> Every ${weekdayName}, ${this.formatDateLocal(bulletin.startDate)} - ${this.formatDateLocal(bulletin.endDate)}${timeInfo ? ` at ${timeInfo}` : ''}</div>`;
-            }
-
-            // Add event location if specified
-            if (bulletin.eventLocation && (dateType === 'event' || dateType === 'range' || dateType === 'sessions' || dateType === 'recurring')) {
-                const locationText = bulletin.eventLocation === 'in-person' ? 'In-Person' :
-                                   bulletin.eventLocation === 'online' ? 'Online' :
-                                   bulletin.eventLocation === 'hybrid' ? 'Hybrid (In-Person & Online)' : bulletin.eventLocation;
-                dateHtml += `<div><strong>Format:</strong> ${locationText}</div>`;
-            }
-
-            return dateHtml;
-        }
-
-        // Backward compatibility
-        if (bulletin.deadline) {
-            const isDeadlineClose = this.isDeadlineClose(bulletin.deadline);
-            return `
-                <div><strong>Deadline:</strong> <span class="${isDeadlineClose ? 'deadline-warning' : ''}">${this.formatDateLocal(bulletin.deadline)}${isDeadlineClose ? ' (Soon!)' : ''}</span></div>
-            `;
-        }
-
-        return '';
-    }
-
-    formatDateLocal(dateString) {
-        if (!dateString) return '';
-
-        const ymd = String(dateString).split('T')[0].trim();
-        const local = this.parseStoredYmdLocal(ymd);
-        if (local) {
-            return local.toLocaleDateString();
-        }
-
-        const date = new Date(dateString);
-        return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString();
-    }
+    // renderDateInfo / renderNewDateInfo / renderDetailDateInfo / formatDateLocal
+    // moved to ./board-date-render.js (BoardDateRenderMethods).
 
     formatTimeRange(startTime, endTime) {
-        if (!startTime && !endTime) return '';
-
-        if (startTime && endTime) {
-            return `${this.formatTime(startTime)} - ${this.formatTime(endTime)}`;
-        } else if (startTime) {
-            return this.formatTime(startTime);
-        }
-
-        return '';
+        return bulletinFormat.formatTimeRange(startTime, endTime);
     }
 
     formatTime(timeString) {
-        if (!timeString) return '';
-
-        // Convert 24-hour format to 12-hour format
-        const [hours, minutes] = timeString.split(':');
-        const hour = parseInt(hours);
-        const ampm = hour >= 12 ? 'PM' : 'AM';
-        const hour12 = hour % 12 || 12;
-        return `${hour12}:${minutes} ${ampm}`;
+        return bulletinFormat.formatTime(timeString);
     }
 
     checkAutoLogin() {
@@ -2740,99 +2562,12 @@ applyMethods(FirebaseBulletinBoard, BoardCalendarMethods)
 applyMethods(FirebaseBulletinBoard, BoardResourcesMethods)
 applyMethods(FirebaseBulletinBoard, BoardDetailMethods)
 applyMethods(FirebaseBulletinBoard, BoardSearchMethods)
+applyMethods(FirebaseBulletinBoard, BoardDateRenderMethods)
 
-// Share functionality
-function shareBulletin(bulletinId, bulletinTitle) {
-    const shareUrl = `${window.location.origin}${window.location.pathname}#bulletin-${bulletinId}`;
-    fallbackShare(bulletinTitle, shareUrl);
-}
-
-function escapeHtmlAttributeValue(text) {
-    const div = document.createElement('div');
-    div.textContent = String(text ?? '');
-    return div.innerHTML
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-}
-
-function fallbackShare(title, url) {
-    // Ensure any existing share modal is closed before opening a new one
-    closeShareModal();
-
-    const urlAttr = escapeHtmlAttributeValue(url);
-
-    // Create share modal
-    const modal = document.createElement('div');
-    modal.className = 'share-modal';
-    modal.innerHTML = `
-        <div class="share-modal-content">
-            <h3>Share This Opportunity</h3>
-            <div class="share-options">
-                <button onclick="shareVia('whatsapp', '${encodeURIComponent(title)}', '${encodeURIComponent(url)}')" class="share-option whatsapp">
-                    📱 WhatsApp
-                </button>
-                <button onclick="shareVia('facebook', '${encodeURIComponent(title)}', '${encodeURIComponent(url)}')" class="share-option facebook">
-                    📘 Facebook
-                </button>
-                <button onclick="shareVia('email', '${encodeURIComponent(title)}', '${encodeURIComponent(url)}')" class="share-option email">
-                    ✉️ Email
-                </button>
-                <button onclick="shareVia('sms', '${encodeURIComponent(title)}', '${encodeURIComponent(url)}')" class="share-option sms">
-                    💬 Text Message
-                </button>
-            </div>
-            <div class="share-link">
-                <input type="text" value="${urlAttr}" id="shareLink" readonly>
-                <button onclick="copyLink()" class="copy-btn">Copy Link</button>
-            </div>
-            <button onclick="closeShareModal()" class="close-share">Close</button>
-        </div>
-    `;
-
-    document.body.appendChild(modal);
-}
-
-function shareVia(platform, title, url) {
-    const shareUrls = {
-        whatsapp: `https://wa.me/?text=${title}%20${url}`,
-        facebook: `https://www.facebook.com/sharer/sharer.php?u=${url}`,
-        email: `mailto:?subject=${title}&body=Check out this opportunity: ${url}`,
-        sms: `sms:?body=${title} ${url}`
-    };
-
-    window.open(shareUrls[platform], '_blank');
-    closeShareModal();
-}
-
-function copyLink() {
-    const linkInput = document.getElementById('shareLink');
-    linkInput.select();
-    linkInput.setSelectionRange(0, 99999);
-
-    try {
-        document.execCommand('copy');
-        const copyBtn = document.querySelector('.copy-btn');
-        copyBtn.textContent = 'Copied!';
-        copyBtn.style.background = '#27ae60';
-        setTimeout(() => {
-            copyBtn.textContent = 'Copy Link';
-            copyBtn.style.background = '';
-        }, 2000);
-    } catch (err) {
-        console.error('Copy failed:', err);
-    }
-}
-
-function closeShareModal() {
-    const modal = document.querySelector('.share-modal');
-    if (modal) modal.remove();
-}
-
-// Inline handlers (onclick="...") resolve on `window`; this file is an ES module, so export explicitly.
-window.shareBulletin = shareBulletin;
-window.shareVia = shareVia;
-window.copyLink = copyLink;
-window.closeShareModal = closeShareModal;
+// Share modal moved to ./board-share.js — importing it installs the
+// window.shareBulletin / shareVia / copyLink / closeShareModal globals that
+// existing board renderers still call while the inline handlers are retired.
+import './board-share.js'
 
 // Initialize the bulletin board when page loads
 let bulletinBoard;

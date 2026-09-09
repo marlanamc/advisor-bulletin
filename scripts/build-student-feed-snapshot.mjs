@@ -2,8 +2,8 @@
 
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { PROJECT_ID, firebaseConfig } from './lib/firebase-config.mjs';
 
-const PROJECT_ID = 'ebhcs-bulletin-board';
 const COLLECTION = 'bulletins';
 const OUT_PATH = resolve(process.cwd(), 'public/student-feed-snapshot.json');
 // Must not exceed the student listener limit in src/firebase-config.js (limit(500)),
@@ -145,14 +145,7 @@ async function fetchWithAdmin(credentialsPath) {
 async function fetchWithClientSdk() {
   const { initializeApp } = await import('firebase/app');
   const { getFirestore, collection, query, where, orderBy, limit, getDocs } = await import('firebase/firestore');
-  const app = initializeApp({
-    apiKey: 'AIzaSyBGaONCeB5MQCYdp3Gv8eUKPvLsBGFnXgY',
-    authDomain: 'ebhcs-bulletin-board.firebaseapp.com',
-    projectId: PROJECT_ID,
-    storageBucket: 'ebhcs-bulletin-uploads-us',
-    messagingSenderId: '556649154585',
-    appId: '1:556649154585:web:3a3f49d2056aa507088288',
-  }, `snapshot-build-${Date.now()}`);
+  const app = initializeApp(firebaseConfig, `snapshot-build-${Date.now()}`);
   const db = getFirestore(app);
   const q = query(
     collection(db, COLLECTION),
