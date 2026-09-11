@@ -37,12 +37,42 @@ This project includes Playwright tests to verify mobile responsiveness for the c
 ```bash
 npm install
 npx playwright install chromium
+brew install openjdk        # the Firestore emulator is a JVM process
 ```
+
+Java is required for anything that touches the emulator, which is every
+Playwright run (`npm test` wraps the command in `scripts/run-with-emulator.mjs`)
+and the rules suite. Only `npm run test:unit` runs without it.
+
+### The three suites
+
+| Command | What it covers | Emulator |
+|---|---|---|
+| `npm run test:unit` | pure logic — search scoring, hours parsing, calendar links, URL safety, chip labels | no |
+| `npm run test:rules` | `firestore.rules` — who can post, edit and delete; the category whitelist; the rule expression budget | yes, boots its own |
+| `npm test` | Playwright end-to-end across desktop/mobile/tablet | yes |
+
+`npm run test:unit` and `npm run test:rules` are the fast gate — together they
+take a few seconds and catch the two failure modes that reach students, a logic
+regression and a rules regression. Both, plus desktop/mobile Playwright, run in
+CI on every push to `main` (`.github/workflows/deploy.yml`).
 
 ### Run All Tests
 ```bash
 npm test
 ```
+
+### Run the Firestore Rules Tests
+```bash
+npm run test:rules
+```
+
+Asserts the security rules against a real emulator: every category the composer
+offers can actually be posted, an advisor can edit anyone's content, only admins
+can add or remove people, a removed advisor loses access immediately, and the
+heaviest legitimate resource write stays inside Firestore's expression budget.
+Run this whenever you touch `firestore.rules` — a rules regression surfaces to
+advisors as a bare "permission denied" that looks unrelated to what they did.
 
 ### Run Mobile Tests Only
 ```bash

@@ -232,27 +232,6 @@ test.describe('Advisor portal — refactor safety net', () => {
     await page.waitForFunction(() => window.__confirmRan === 1);
   });
 
-  test('content moderation flags scam-pattern content and passes clean content', async ({ page }) => {
-    await showAdvisorPortal(page);
-
-    const dirty = await page.evaluate(() =>
-      window.adminPanel.validateBulletinContent({
-        title: 'GUARANTEED INCOME NOW!!!!!!',
-        description: 'No experience required $5000 per week work from home, click here now money.',
-      }),
-    );
-    expect(dirty.isClean).toBe(false);
-    expect(dirty.warnings.length).toBeGreaterThan(0);
-
-    const clean = await page.evaluate(() =>
-      window.adminPanel.validateBulletinContent({
-        title: 'Resume workshop this Friday',
-        description: 'Bring a draft resume and questions for the career advisor.',
-      }),
-    );
-    expect(clean.isClean).toBe(true);
-  });
-
   test('workforce report page renders from fixture data without error', async ({ page }) => {
     await page.route('**/data/workforce/workforce-report.json', (route) =>
       route.fulfill({

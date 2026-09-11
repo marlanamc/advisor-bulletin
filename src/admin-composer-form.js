@@ -1,9 +1,5 @@
 // Composer form machinery: event date rows, composer mirror, content type, category pickers.
 // Merged onto FirebaseAdminPanel.prototype by applyMethods() in firebase-admin.js.
-import {
-    ADMIN_RESOURCE_CATEGORIES,
-    ADMIN_RESOURCE_CATEGORY_ICONS,
-} from './admin-shared.js'
 import { formatResourceServiceChipsInput, getSuggestedResourceChips, MAX_RESOURCE_SERVICE_CHIPS, parseResourceServiceChips } from './resource-chip-labels.js'
 import { MAX_EVENT_SESSIONS, normalizeEventSessions, parseSessionEntry } from './event-sessions.js'
 import { getRichTextFieldValue } from './description-format.js'
@@ -494,56 +490,6 @@ export class AdminComposerFormMethods {
             this.syncResourceKindUI();
         }
 
-    }
-
-    populateResourceCategoryField() {
-        const select = document.getElementById('resourceCategory');
-        const picker = document.getElementById('resourceCategoryPicker');
-        if (!select) return;
-
-        const current = select.value;
-        select.innerHTML = '<option value="">Select a category</option>' +
-            ADMIN_RESOURCE_CATEGORIES.map(([key, label]) => (
-                `<option value="${this.escapeAttribute(key)}">${this.escapeHtml(label)}</option>`
-            )).join('');
-        if (current) {
-            select.value = current;
-        }
-
-        if (picker) {
-            picker.innerHTML = ADMIN_RESOURCE_CATEGORIES.map(([key, label, emoji]) => {
-                const shortLabel = label.split(' / ')[0];
-                return `<button type="button" data-resource-category-pick="${this.escapeAttribute(key)}">${emoji} ${this.escapeHtml(shortLabel)}</button>`;
-            }).join('');
-
-            picker.querySelectorAll('[data-resource-category-pick]').forEach((button) => {
-                button.addEventListener('click', (event) => {
-                    const category = event.currentTarget.getAttribute('data-resource-category-pick');
-                    if (!category) return;
-                    select.value = category;
-                    select.dispatchEvent(new Event('change', { bubbles: true }));
-                });
-            });
-        }
-
-        this.syncResourceCategoryPicker(select.value);
-    }
-
-    syncResourceCategoryPicker(category) {
-        document.querySelectorAll('[data-resource-category-pick]').forEach((button) => {
-            button.classList.toggle('active', button.getAttribute('data-resource-category-pick') === category);
-        });
-        if (category) {
-            this.clearCategoryValidation('resourceCategory');
-        }
-    }
-
-    handleResourceCategoryChange(category) {
-        const categorySelect = document.getElementById('resourceCategory');
-        if (!categorySelect || !category) return;
-
-        categorySelect.dataset.suggestedIcon = ADMIN_RESOURCE_CATEGORY_ICONS[category] || 'globe';
-        this.renderResourceServicePresets(category);
     }
 
     renderResourceServicePresets(category) {

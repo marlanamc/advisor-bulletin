@@ -34,6 +34,10 @@ jobs:
       - name: Run unit tests
         run: npm run test:unit
 
+      # Boots its own Firestore emulator; needs the Java step above.
+      - name: Run Firestore rules tests
+        run: npm run test:rules
+
       # `--with-deps` shells out to `apt-get`, which fails the whole step if ANY
       # configured source serves bad metadata — even one we have no use for.
       # The runner image ships third-party sources (Google Chrome, Microsoft

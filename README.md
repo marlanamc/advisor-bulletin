@@ -116,7 +116,7 @@ npm run test:ui
 *   **Google Sign-In Only**: Advisors sign in with their school Google account ("Sign in with Google"). There are no passwords to create, share, or reset.
 *   **Advisor Domain**: Only `@ebhcs.org` Google accounts can sign in, and only accounts on the admin-managed Advisors list (the `advisors/{username}` Firestore collection) get portal access — other school staff are turned away at sign-in.
 *   **Adding an Advisor**: An admin adds them on the portal's Advisors tab. No Firebase Console step needed — their account is created automatically the first time they sign in with Google.
-*   **Edit Permissions**: Advisors can modify and delete only their own posts. Administrators (`mcreed@ebhcs.org`, `lgregory@ebhcs.org`) have global update/delete overrides — the authoritative list is `isPrivilegedAdvisor` in [firestore.rules](firestore.rules).
+*   **Edit Permissions**: Every advisor has equal rights over content — anyone on the Advisors list can create, edit and delete any post, resource or event. Being an admin grants exactly one extra power: adding and removing people on the Advisors tab. An admin is any advisor whose `advisors/{username}` doc has `isAdmin: true`, toggled from the portal — no code change or rules deploy needed. `mcreed@ebhcs.org` is additionally a break-glass owner in [firestore.rules](firestore.rules) so clearing the last `isAdmin` flag can't orphan the roster (see `OWNER_ADMIN_EMAILS` in [src/admin-roles.js](src/admin-roles.js)).
 
 ---
 

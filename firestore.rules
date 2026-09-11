@@ -195,6 +195,14 @@ service cloud.firestore {
       return ('resourceKind' in data) && data.resourceKind == 'document';
     }
 
+    // A resource has to give students at least one way to reach it. A phone
+    // number counts: some organizations genuinely have no website -- the
+    // Honduran and Cape Verdean consulates in this database each have only a
+    // phone and an address (Cape Verde's listed domain is dead and Honduras'
+    // government portal serves a broken certificate). Requiring a url made
+    // those two docs permanently un-editable, because update validates the
+    // merged document -- so even the one-click "Verified today" stamp failed
+    // with a bare permission-denied.
     function validResourceContact(data) {
       return isDocumentResource(data)
         ? (
@@ -202,7 +210,10 @@ service cloud.firestore {
           || (('url' in data) && data.url is string && data.url.size() > 0)
           || (('actionLinks' in data) && validActionLinks(data.actionLinks) && data.actionLinks.size() > 0)
         )
-        : (('url' in data) && data.url is string && data.url.size() > 0);
+        : (
+          (('url' in data) && data.url is string && data.url.size() > 0)
+          || (('phone' in data) && data.phone is string && data.phone.size() > 0)
+        );
     }
 
     function validateBulletinData(data) {

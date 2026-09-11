@@ -221,11 +221,12 @@ creating friction, without opening real holes.
 - `isAdvisor` = verified `@ebhcs.org` email. Current rules do **not** enforce
   `firebase.sign_in_provider == 'google.com'`; the client uses Google popup, so keep
   Email/Password disabled if relying on Google-only login as the admin boundary.
-- `isActiveAdvisor` = `isAdvisor` **AND** an `advisors/{username}` doc exists (or is privileged)
-- `isPrivilegedAdvisor` = hardcoded `mcreed@ebhcs.org` / `lgregory@ebhcs.org`
-- Bulletins: active advisors can update existing resource-type bulletins; authors and
-  privileged advisors have broader post/update/delete rights; privileged advisors control
-  advisor docs and role changes (`bulletins` block, ~lines 14–53)
+- `isActiveAdvisor` = `isAdvisor` **AND** an `advisors/{username}` doc exists (or is the break-glass owner)
+- `isAdminAdvisor` = `isAdvisor` **AND** (break-glass owner **OR** own advisor doc has `isAdmin: true`)
+- `isOwnerAdmin` = hardcoded break-glass owner, `mcreed@ebhcs.org` only
+- Bulletins: since the Sep 2026 rewrite every active advisor has equal create/update/delete
+  rights over every post and resource; authorship and timestamps stay immutable through an
+  edit (`bulletins` block). `advisors/` docs and `isAdmin` changes are admin-only.
 - Heavy per-field validation in `validateBulletinData` / `validActionLinks` / `validHoursRows` /
   `validResourceContact` (~lines 150–283) — hardcoded unrolled loops for list items
   (`links.size() < 2 || validActionLinkItem(links[1])` … up to [4]), size caps, required-key
@@ -283,8 +284,9 @@ should be exercised deliberately, especially the edge cases.
 - [ ] Happy path: @ebhcs.org account **on** the advisor list → portal opens, correct name/role
 - [ ] @ebhcs.org account **not** on the list → clean rejection message, no half-open portal
 - [ ] `Non-@ebhcs.org` Google account → rejected (rules deny the `advisors/` read → treated as "not an advisor")
-- [ ] Privileged admin (`mcreed@` / `lgregory@`) with **no** `advisors/` doc → still gets in
-  (the `isPrivilegedAdvisor` bypass in `isActiveAdvisor`)
+- [ ] Break-glass owner (`mcreed@`) with **no** `advisors/` doc → still gets in
+  (the `isOwnerAdmin` bypass in `isActiveAdvisor` / `isAdminAdvisor`). Note `lgregory@` is
+  **not** break-glass — she is an admin by data (`advisors/lgregory` with `isAdmin: true`)
 - [ ] Advisor removed from the list mid-session → next write is denied by rules; next sign-in is rejected
 - [ ] Sign out → back to login screen, `adminPanel` torn down, no stale listeners
   (check `bulletinsUnsubscribe` is called)
@@ -296,9 +298,9 @@ should be exercised deliberately, especially the edge cases.
   server-side but the site key is missing at build, every request 403s.
 - [ ] `recordAdvisorLogin` — writes a last-login timestamp; confirm it's not throwing and
   not blocking the mount if it fails
-- [ ] The `admin-roles.js` privileged-email list vs. `isPrivilegedAdvisor` in `firestore.rules`
-  — there's a `scripts/check-admin-emails-sync.mjs` that gates the build on these matching;
-  confirm it's still passing and the lists are right (`mcreed@ebhcs.org`, `lgregory@ebhcs.org`)
+- [ ] The `admin-roles.js` `OWNER_ADMIN_EMAILS` list vs. `isOwnerAdmin` in `firestore.rules` and
+  the `storage.rules` allowlist — `scripts/check-admin-emails-sync.mjs` gates the build on these
+  matching; confirm it's still passing and the list is right (`mcreed@ebhcs.org` only)
 
 **Note:** items 9 and 10 are related — do the auth verification (10) first so you have a
 known-good baseline, then loosen the rules (9) and re-verify.

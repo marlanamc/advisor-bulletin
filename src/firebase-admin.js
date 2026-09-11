@@ -49,7 +49,6 @@ import { AdminManageMethods } from './admin-manage.js'
 import { AdminUploadMethods } from './admin-uploads.js'
 import { AdminOfflineMethods } from './admin-offline.js'
 import { AdminToastMethods } from './admin-toasts.js'
-import { AdminValidationMethods } from './admin-validation.js'
 import { AdminAuthMethods } from './admin-auth.js'
 import { AdminDashboardMethods } from './admin-dashboard.js'
 import { AdminEditMethods } from './admin-edit.js'
@@ -158,17 +157,7 @@ class FirebaseAdminPanel {
             });
         });
 
-        this.populateResourceCategoryField();
-        const resourceCategory = document.getElementById('resourceCategory');
-        if (resourceCategory) {
-            resourceCategory.addEventListener('change', (event) => {
-                this.handleResourceCategoryChange(event.target.value);
-                this.syncResourceCategoryPicker(event.target.value);
-            });
-        }
-
         // Form validation
-        this.setupFormValidation();
 
         // Image upload preview — inputs may be dynamic (post-composer), so delegate from bulletinForm
         const bulletinFormEl = document.getElementById('bulletinForm');
@@ -822,9 +811,6 @@ class FirebaseAdminPanel {
     // showSuccessMessage / showToast / showTemporaryMessage moved to
     // ./admin-toasts.js (AdminToastMethods).
 
-    // setupFormValidation / validateField / moderateContent /
-    // validateBulletinContent moved to ./admin-validation.js
-    // (AdminValidationMethods).
 
     // createBulletin, updateHasPendingAssetUploads, updateBulletin,
     // buildBulletinObject, saveBulletin, resetForm moved to
@@ -914,7 +900,6 @@ applyMethods(FirebaseAdminPanel, AdminManageMethods)
 applyMethods(FirebaseAdminPanel, AdminUploadMethods)
 applyMethods(FirebaseAdminPanel, AdminOfflineMethods)
 applyMethods(FirebaseAdminPanel, AdminToastMethods)
-applyMethods(FirebaseAdminPanel, AdminValidationMethods)
 applyMethods(FirebaseAdminPanel, AdminAuthMethods)
 applyMethods(FirebaseAdminPanel, AdminDashboardMethods)
 applyMethods(FirebaseAdminPanel, AdminEditMethods)
