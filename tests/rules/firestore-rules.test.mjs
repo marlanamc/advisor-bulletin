@@ -252,6 +252,58 @@ describe('the "Verified today" stamp', () => {
     });
 });
 
+describe('a resource whose only contact is a phone number', () => {
+    // Some organizations genuinely have no website: the Honduran and Cape
+    // Verdean consulates each have only a phone and an address (Cape Verde's
+    // listed domain is dead, Honduras' government portal serves a broken
+    // certificate). validResourceContact used to require a non-empty url for
+    // every non-document resource, and because an update validates the MERGED
+    // document, those two live docs became permanently un-editable -- even the
+    // one-click "Verified today" stamp failed with a bare permission-denied.
+    const phoneOnly = (postedBy, overrides = {}) => ({
+        type: 'resource',
+        advisorName: 'Someone',
+        postedBy,
+        isActive: true,
+        title: 'Consulate of Honduras — Chelsea',
+        titleEn: 'Consulate of Honduras — Chelsea',
+        category: 'resource',
+        resourceCategory: 'consulates',
+        isPublished: true,
+        url: '',
+        phone: '617-819-4885',
+        address: '90 Everett Ave, 3rd Floor, Chelsea, MA 02150',
+        actionLinks: [],
+        ...overrides,
+    });
+
+    test('an advisor can create one', async () => {
+        const db = ctx('vlalin@ebhcs.org');
+        await assertSucceeds(setDoc(doc(db, 'bulletins/phone1'), phoneOnly('vlalin')));
+    });
+
+    test('an advisor can edit one', async () => {
+        await testEnv.withSecurityRulesDisabled(async (c) => {
+            await setDoc(doc(c.firestore(), 'bulletins/phone2'), phoneOnly('rocha'));
+        });
+        const db = ctx('vlalin@ebhcs.org');
+        await assertSucceeds(updateDoc(doc(db, 'bulletins/phone2'), { address: '90 Everett Ave, Chelsea, MA 02150' }));
+    });
+
+    test('the "Verified today" stamp works on one', async () => {
+        await testEnv.withSecurityRulesDisabled(async (c) => {
+            await setDoc(doc(c.firestore(), 'bulletins/phone3'), phoneOnly('rocha'));
+        });
+        const db = ctx('vlalin@ebhcs.org');
+        await assertSucceeds(updateDoc(doc(db, 'bulletins/phone3'), { lastVerified: '2026-09' }));
+    });
+
+    test('a resource with neither a url nor a phone is still rejected', async () => {
+        const db = ctx('vlalin@ebhcs.org');
+        await assertFails(setDoc(doc(db, 'bulletins/phone4'), phoneOnly('vlalin', { phone: '' })));
+    });
+});
+
 describe('managing people is the only admin privilege', () => {
     test('an admin can add and remove advisors', async () => {
         const db = ctx('cbaglio@ebhcs.org');
