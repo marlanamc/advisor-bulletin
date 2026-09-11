@@ -33,8 +33,16 @@ import { createInterface } from 'node:readline';
 import { execFileSync } from 'node:child_process';
 import { stdin, stdout } from 'node:process';
 import { PROJECT_ID, firebaseConfig as FIREBASE_CONFIG } from './lib/firebase-config.mjs';
+import { OWNER_ADMIN_EMAILS } from '../src/admin-roles.js';
 
-const PRIVILEGED_EMAILS = new Set(['mcreed@ebhcs.org', 'lgregory@ebhcs.org']);
+// The break-glass owner accounts, which count as active advisors in
+// firestore.rules without an advisors/{username} doc. Read from the same
+// list the app and check-admin-emails-sync.mjs use, so this can't drift:
+// it used to hardcode lgregory@ebhcs.org too, which stopped being break-glass
+// in the Sep 2026 permission rewrite. Leah is an admin by data now
+// (advisors/lgregory with isAdmin: true), so if her advisor doc ever went
+// missing she would be locked out while this script still called her fine.
+const PRIVILEGED_EMAILS = new Set(OWNER_ADMIN_EMAILS);
 
 function parseArgs(argv) {
   const args = { credentials: null, email: null, authExport: null };

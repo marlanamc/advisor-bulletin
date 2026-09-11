@@ -12,7 +12,7 @@ Two roles, two surfaces:
 
 - **Students (index.html, public feed):** ESOL/adult-education students at East Boston Harborside Community School (EBHCS), with mixed English proficiency and mixed digital literacy. They browse on phones, often for time-sensitive help: jobs, housing, legal aid, health, SNAP, English classes. They use "Find Help" to scan by action/topic rather than reading long text blocks.
 - **Advisors (admin.html, portal):** EBHCS staff who post and manage Bulletins, Resources, and Calendar/Events for students. They sign in with a Google Workspace (`@ebhcs.org`) account and must already be on the admin-managed Advisors list.
-- **Admins:** `mcreed@ebhcs.org` and `lgregory@ebhcs.org` — privileged advisors with global edit/delete override across all posts (authoritative list: `isPrivilegedAdvisor` in `firestore.rules`).
+- **Admins:** any advisor whose `advisors/{username}` doc has `isAdmin: true` (today `mcreed@ebhcs.org` and `lgregory@ebhcs.org`), toggled from the portal's Advisors tab. Admins differ from plain advisors in exactly one way — they add and remove people. Content permissions are equal for every advisor. `mcreed@ebhcs.org` is also the break-glass owner in `firestore.rules` (`OWNER_ADMIN_EMAILS` in `src/admin-roles.js`).
 
 ## Product Purpose
 
