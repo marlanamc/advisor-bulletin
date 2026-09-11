@@ -10,6 +10,23 @@ so anything you post that looks good can stay up for students.
 **Sign in at** https://ebhcsjobboard.web.app/admin with your `@ebhcs.org` Google
 account. **Students see** https://ebhcsjobboard.web.app/
 
+### About the Spanish below
+
+Every sample has a Spanish title and summary ready to paste, so you can test
+both languages in one pass instead of posting everything twice.
+
+It is **Latin American Spanish** in the **usted** form, matching how the board
+already speaks: existing service posts use "¿Le gustaría mejorar sus
+habilidades...", "únase", "No necesita ser paciente". Festive posts on the board
+use tú ("Celebra", "Únete al festival") — everything below is a service, so it
+stays with usted throughout. Vocabulary is Latin American rather than Castilian
+("capacitación" not "formación", "inscripción", "feria de empleo").
+
+One behaviour worth knowing while you test: **when a Spanish summary is filled
+in, students reading in Spanish see it instead of the description** — not
+underneath it. So the Spanish summary has to stand on its own, not continue a
+thought the English started.
+
 ---
 
 ## 1. Sign-in
@@ -43,6 +60,13 @@ After each post, open it on the student side and confirm the date reads right.
 > free ESOL program. Registration for the fall/winter session closes October 2.
 > Classes are for adults 18+ living in Massachusetts, at four levels from
 > Beginner to Advanced. An assessment is required before you start.
+> **Spanish title:** Inscríbase en clases de inglés gratis en la biblioteca
+> **Spanish summary:** La Biblioteca Pública de Boston ofrece clases de inglés
+> (ESOL) gratuitas durante todo el año. Las inscripciones para la sesión de
+> otoño e invierno cierran el 2 de octubre. Son para adultos de 18 años o más
+> que viven en Massachusetts. Hay cuatro niveles, desde principiante hasta
+> avanzado. Antes de empezar, usted hace una prueba corta para saber en qué
+> nivel entra. Llame al 617-859-2446 para preguntar.
 > **Link:** https://www.bpl.org/ell/
 > **Phone:** 617-859-2446
 
@@ -58,6 +82,11 @@ After each post, open it on the student side and confirm the date reads right.
 > **Description:** The fall and winter ESOL session runs September through
 > December at Boston Public Library branches, including East Boston. Free for
 > adults 18+ in Massachusetts.
+> **Spanish title:** Sesión de otoño de clases de inglés en la biblioteca
+> **Spanish summary:** La sesión de otoño e invierno va del 14 de septiembre al
+> 18 de diciembre, en varias bibliotecas de Boston, incluyendo la de East
+> Boston. Las clases son gratis para adultos de 18 años o más que viven en
+> Massachusetts.
 > **Link:** https://www.bpl.org/ell/
 
 - [ ] Posts without error
@@ -72,6 +101,11 @@ After each post, open it on the student side and confirm the date reads right.
 > **Description:** Free drop-in conversation groups with volunteer English
 > speakers. Many in-person groups need no registration — just show up. Call to
 > ask which branch and time works for you.
+> **Spanish title:** Grupo de conversación en inglés
+> **Spanish summary:** Grupos gratuitos para practicar inglés con voluntarios
+> que hablan inglés. Muchos grupos en persona no requieren inscripción: solo
+> llegue. Llame al 617-859-2446 para preguntar qué biblioteca y qué horario le
+> conviene.
 > **Link:** https://www.bpl.org/ell/
 > **Phone:** 617-859-2446
 
@@ -89,6 +123,12 @@ After each post, open it on the student side and confirm the date reads right.
 > Operations job fair on September 15, and a virtual hiring event for Low
 > Voltage Technicians on September 23. Free. First-time users create a profile
 > on MyMassGov.
+> **Spanish title:** Dos ferias de empleo en MassHire Downtown Boston
+> **Spanish summary:** MassHire Downtown Boston tendrá una feria de empleo de
+> mantenimiento y operaciones el 15 de septiembre, y un evento de contratación
+> virtual para técnicos de bajo voltaje el 23 de septiembre. Son gratis. Si es
+> su primera vez, cree un perfil en MyMassGov antes de ir. Llame al
+> 617-399-3100.
 > **Link:** https://masshiredowntownboston.org/job-fairs/
 > **Phone:** 617-399-3100
 
@@ -125,6 +165,12 @@ A training one worth posting for real:
 > run Monday to Friday, mornings and evenings. Open enrollment — they will help
 > you find out if you qualify. You need English as a non-native language and
 > work authorization, or a pathway to it.
+> **Spanish title:** Clases de inglés gratis y ayuda para encontrar trabajo
+> **Spanish summary:** El programa English 2 Employment de JVS Boston combina
+> clases de inglés gratuitas con apoyo para buscar trabajo, para inmigrantes y
+> refugiados. Las clases son de lunes a viernes, en la mañana y en la noche. La
+> inscripción está abierta y ellos le ayudan a saber si califica. Necesita tener
+> permiso de trabajo, o estar en camino de obtenerlo. Llame al 617-399-3131.
 > **Link:** https://www.jvs-boston.org/our-services/e2e-rapid-english/
 > **Phone:** 617-399-3131
 > **Location:** 75 Federal St, 3rd Floor, Boston, MA 02110
@@ -142,6 +188,10 @@ A training one worth posting for real:
 > **Description:** A free state-funded career centre. Job search help,
 > workshops, hiring events, and training referrals. Open to anyone looking for
 > work — no cost.
+> **Spanish title:** Centro de Carreras MassHire Downtown Boston
+> **Spanish summary:** Centro de carreras gratuito del estado. Ayuda para buscar
+> trabajo, talleres, ferias de empleo y referencias a capacitación. Abierto a
+> cualquier persona que busque trabajo, sin costo.
 > **Website:** https://masshiredowntownboston.org/
 > **Phone:** 617-399-3100
 > **Address:** 75 Federal St, 3rd Floor, Boston, MA 02110
@@ -193,7 +243,16 @@ again."* or, worse, a security warning. Trip each deliberately.
 - [ ] Everything you posted appears on https://ebhcsjobboard.web.app/
 - [ ] Calendar shows each event on the right date
 - [ ] Search finds your posts by title and by description
-- [ ] Switch to Spanish — posts show Spanish titles/summaries where you set them
+- [ ] Switch to Spanish — posts show the Spanish titles you set
+- [ ] Where you filled in a Spanish summary, the Spanish reader sees **that
+      instead of** the English description, not both
+- [ ] A post with **no** Spanish summary still reads sensibly in Spanish mode —
+      it falls back to the English description rather than going blank
+- [ ] Category filter chips are translated (Empleo, Vivienda, Comida, Salud…)
+- [ ] Buttons are translated — Llamar, Cómo llegar, and the PDF/calendar labels
+- [ ] Search in Spanish finds the posts — try "inglés" and "empleo", and then
+      **"ingles" without the accent**, which should still find them
+- [ ] Accents and ¿ ¡ render correctly on the cards, not as garbled characters
 - [ ] Open on your phone — cards, Call, Directions and the calendar all behave
 - [ ] Scroll the feed — the pinned Help row shrinks **once** and stays put (it
       used to flip between sizes as you scrolled; fixed in PR #19)
