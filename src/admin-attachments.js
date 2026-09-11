@@ -1,12 +1,11 @@
 // Image/PDF/action-link upload handling, validation, previews, and resource kind UI.
 // Merged onto FirebaseAdminPanel.prototype by applyMethods() in firebase-admin.js.
-import {
-    isPdfFile,
-} from './admin-shared.js'
+import { isPdfFile } from './admin-shared.js'
 import { auth, storage } from './firebase.js'
 import { getResourceActionLinkFieldValues, MAX_RESOURCE_ACTION_LINKS, normalizeResourceActionLinks, parseResourceActionLinkSlotsFromForm, stripActionLinkUploadMeta } from './resource-action-links.js'
 import { normalizeResourceKind, RESOURCE_KIND_DOCUMENT } from './resource-kinds.js'
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage'
+import { ComposerValidationError } from './composer-errors.js'
 
 export class AdminAttachmentMethods {
     getImageFieldConfig(fieldName) {
@@ -212,15 +211,15 @@ export class AdminAttachmentMethods {
 
     async uploadActionLinkPdf(file, bulletinId, slot) {
         if (file.size > 10 * 1024 * 1024) {
-            throw new Error('PDF file too large. Please select a PDF under 10MB.');
+            throw new ComposerValidationError('PDF file too large. Please select a PDF under 10MB.');
         }
         if (file.type !== 'application/pdf') {
-            throw new Error('Please select a valid PDF file.');
+            throw new ComposerValidationError('Please select a valid PDF file.');
         }
 
         const currentUser = auth.currentUser;
         if (!currentUser) {
-            throw new Error('Session expired. Please log in again.');
+            throw new ComposerValidationError('Session expired. Please log in again.');
         }
         await currentUser.getIdToken(true);
 
@@ -349,7 +348,7 @@ export class AdminAttachmentMethods {
             return;
         }
 
-        throw new Error('Document resources need a link, PDF upload, or extra action link so students can open something.');
+        throw new ComposerValidationError('Document resources need a link, PDF upload, or extra action link so students can open something.');
     }
 
     async handleImagePreview(e, fieldName = 'image') {
@@ -566,7 +565,7 @@ export class AdminAttachmentMethods {
     async prepareFlyerSourceFile(file, fieldName = 'image') {
         if ((fieldName === 'image' || fieldName === 'imageEs') && isPdfFile(file)) {
             if (file.size > 10 * 1024 * 1024) {
-                throw 'PDF file too large. Please select a PDF under 10MB.';
+                throw new ComposerValidationError('PDF file too large. Please select a PDF under 10MB.');
             }
 
             const { convertPdfFirstPageToImageFile } = await import('./pdf-flyer.js');

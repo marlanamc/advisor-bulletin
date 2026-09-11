@@ -17,6 +17,13 @@ import { syncRichEditorsToForm, refreshRichEditors } from './description-format.
 import { normalizeWebUrl } from './url-safety.js'
 import { deleteResourceLogo } from './resource-logos.js'
 import { toggleDateFields } from './admin-tab-globals.js'
+import { ComposerValidationError, composerValidationMessage } from './composer-errors.js'
+
+// The date shapes #cxEvType offers and syncEventDateMirrors mirrors
+// (post-composer.js). buildBulletinObject keys eventDates/recurringWeekday
+// off these exact values, so the submit path must preserve whichever one the
+// composer wrote rather than re-deriving it.
+const EVENT_DATE_TYPES = ['event', 'deadline', 'range', 'sessions', 'recurring'];
 
 // Reads the hoursRowDay/hoursRowTime hidden input pairs the composer's
 // hours block writes (see wireHoursBlock/syncHoursRowMirrors in
@@ -62,8 +69,17 @@ export class AdminBulletinWriteMethods {
                 const hasEndDate = Boolean((formData.get('endDate') || '').trim());
                 formData.set('contentType', 'post');
                 formData.set('category', 'announcement');
-                formData.set('dateType', hasEndDate ? 'range' : 'event');
-                if (hasEndDate && !formData.get('startDate')) {
+                // Trust the date type the composer mirrored from #cxEvType. It
+                // offers all five shapes, and overwriting it here used to throw
+                // three of them away -- 'sessions' lost every date but the
+                // first and 'recurring' lost the weekday, both silently,
+                // because buildBulletinObject only keeps eventDates/
+                // recurringWeekday for the matching dateType.
+                const mirroredDateType = (formData.get('dateType') || '').trim();
+                if (!EVENT_DATE_TYPES.includes(mirroredDateType)) {
+                    formData.set('dateType', hasEndDate ? 'range' : 'event');
+                }
+                if (formData.get('dateType') === 'range' && hasEndDate && !formData.get('startDate')) {
                     formData.set('startDate', formData.get('eventDate') || '');
                 }
             }
@@ -111,7 +127,13 @@ export class AdminBulletinWriteMethods {
             console.error('Error submitting bulletin:', error);
             let errorMessage = `Error saving ${this.getCurrentContentLabel().toLowerCase()}. Please try again.`;
 
-            if (error.code === 'permission-denied') {
+            // The composer's own guards already say exactly what to fix, so
+            // show that instead of the generic fallback.
+            const validationMessage = composerValidationMessage(error);
+
+            if (validationMessage) {
+                errorMessage = validationMessage;
+            } else if (error.code === 'permission-denied') {
                 errorMessage = 'Post blocked by security rules. Try signing out and back in. If it persists, contact an admin — your account email must match your @ebhcs.org login.';
             } else if (error.code === 'unavailable') {
                 errorMessage = 'Service temporarily unavailable. Please try again in a moment.';
@@ -384,45 +406,57 @@ export class AdminBulletinWriteMethods {
             const rawOrder = (formData.get('resourceOrder') || '').trim();
 
             if (!titleEn) {
-                throw new Error('English title is required for resources.');
+                throw new ComposerValidationError('English title is required for resources.');
             }
 
             if (!resourceCategory) {
-                throw new Error('Resource category is required.');
+                throw new ComposerValidationError('Resource category is required.');
             }
+
+            // A phone number is contact enough, matching validResourceContact
+            // in firestore.rules: some organizations genuinely have no website
+            // (the consulates in this database are reachable only by phone).
+            const resourcePhone = (formData.get('resourcePhone') || '').trim();
 
             if (!isDocument && !url) {
                 if (this.isEditMode && this.editingBulletinId) {
                     const existing = this.bulletins.find((b) => b.id === this.editingBulletinId);
                     url = (existing?.url || existing?.eventLink || '').trim();
                 }
-                if (!url) {
-                    throw new Error('Resource link is required.');
+                if (!url && !resourcePhone) {
+                    throw new ComposerValidationError(
+                        'Add a website or a phone number so students have a way to reach this resource.'
+                    );
                 }
             }
 
             if (url) {
                 url = normalizeWebUrl(url);
                 if (!url) {
-                    throw new Error('Please enter a valid resource URL.');
+                    throw new ComposerValidationError('Please enter a valid resource URL.');
                 }
             }
 
             const resourceOrder = rawOrder === '' ? null : Number(rawOrder);
             if (rawOrder !== '' && (!Number.isFinite(resourceOrder) || !Number.isInteger(resourceOrder) || resourceOrder < 0 || resourceOrder > 999)) {
-                throw new Error('Display order must be a whole number from 0 to 999.');
+                throw new ComposerValidationError('Display order must be a whole number from 0 to 999.');
             }
 
+            // An edit carries the stored icon forward via the mirror's dataset
+            // (see admin-edit.js). A new resource has none, and 'auto' tells
+            // getResourceIconSvg to use the icon canonical for the category --
+            // this defaulted to 'globe' before, so every resource created in
+            // the portal rendered a globe whatever its category.
             const suggestedIcon = document.getElementById('resourceCategory')?.dataset?.suggestedIcon
                 || document.querySelector('#bulletinForm [name="resourceCategory"]')?.dataset?.suggestedIcon
-                || 'globe';
+                || 'auto';
 
             const servicesRaw = (formData.get('resourceHighlights') || '').trim();
             const services = parseResourceServiceChips(servicesRaw);
             const resourceSummaryEn = (formData.get('resourceDescription') || '').trim();
             const resourceSummaryEs = (formData.get('resourceSummaryEs') || '').trim();
             if (!services.length && !resourceSummaryEn) {
-                throw new Error('Add at least one service chip, or a card summary so students can tell this resource apart.');
+                throw new ComposerValidationError('Add at least one service chip, or a card summary so students can tell this resource apart.');
             }
 
             const existingResource = this.isEditMode && this.editingBulletinId
@@ -483,14 +517,14 @@ export class AdminBulletinWriteMethods {
         if (dateType === 'sessions') {
             eventDates = sessionsFromFormData(formData);
             if (eventDates.length < 2) {
-                throw new Error('Please add at least two session dates.');
+                throw new ComposerValidationError('Please add at least two session dates.');
             }
         }
         let recurringWeekday = '';
         if (dateType === 'recurring') {
             recurringWeekday = formData.get('recurringWeekday') || '';
             if (recurringWeekday === '' || !formData.get('startDate') || !formData.get('endDate')) {
-                throw new Error('Please choose a weekday and a start and end date for the recurring event.');
+                throw new ComposerValidationError('Please choose a weekday and a start and end date for the recurring event.');
             }
         }
 
@@ -529,12 +563,24 @@ export class AdminBulletinWriteMethods {
         if (bulletin.eventLink) {
             bulletin.eventLink = normalizeWebUrl(bulletin.eventLink);
             if (!bulletin.eventLink) {
-                throw new Error('Please enter a valid information link.');
+                throw new ComposerValidationError('Please enter a valid information link.');
             }
         }
 
+        if (!bulletin.title) {
+            // The form is novalidate and the submit button dispatches a
+            // synthetic event, so HTML5 required never runs. Without this the
+            // write reached Firestore, failed the title.size() > 0 rule and
+            // told the advisor their post was "blocked by security rules".
+            throw new ComposerValidationError(
+                this.contentMode === 'event'
+                    ? 'Add a name for this event before posting.'
+                    : 'Add a title before posting.'
+            );
+        }
+
         if (!bulletin.category) {
-            throw new Error('Please select a category.');
+            throw new ComposerValidationError('Please select a category.');
         }
 
         return bulletin;
@@ -563,7 +609,7 @@ export class AdminBulletinWriteMethods {
             }
 
             if (sizeInBytes > 1048576) { // 1MB in bytes
-                throw new Error(`Bulletin too large (${sizeInMB} MB). Firestore documents must be under 1 MB. Try using a smaller image.`);
+                throw new ComposerValidationError(`Bulletin too large (${sizeInMB} MB). Firestore documents must be under 1 MB. Try using a smaller image.`);
             }
 
             if (editingId) {

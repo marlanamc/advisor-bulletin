@@ -12,6 +12,7 @@ import { doc, updateDoc } from 'firebase/firestore'
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage'
 import { setResourceLogo } from './resource-logos.js'
 import { isPdfFile } from './admin-shared.js'
+import { ComposerValidationError } from './composer-errors.js'
 
 export class AdminUploadMethods {
     async handleImageUpload(file, bulletin, pdfFile = null, editingId = null, fieldName = 'image', options = {}) {
@@ -40,7 +41,7 @@ export class AdminUploadMethods {
 
             // Ensure final encoded image is within safety limits (~4MB)
             if (processedImage.finalBytes > 4 * 1024 * 1024) {
-                throw `Optimized ${label} is still larger than 4MB. Please upload a smaller image.`;
+                throw new ComposerValidationError(`Optimized ${label} is still larger than 4MB. Please upload a smaller image.`);
             }
 
             if (fieldName === 'resourceLogo') {
@@ -100,18 +101,18 @@ export class AdminUploadMethods {
 
             // Check file size (10MB limit)
             if (file.size > 10 * 1024 * 1024) {
-                throw 'PDF file too large. Please select a PDF under 10MB.';
+                throw new ComposerValidationError('PDF file too large. Please select a PDF under 10MB.');
             }
 
             // Check file type
             if (file.type !== 'application/pdf') {
-                throw 'Please select a valid PDF file.';
+                throw new ComposerValidationError('Please select a valid PDF file.');
             }
 
             // Ensure user is still authenticated and refresh token
             const currentUser = auth.currentUser;
             if (!currentUser) {
-                throw 'Session expired. Please log in again.';
+                throw new ComposerValidationError('Session expired. Please log in again.');
             }
             await currentUser.getIdToken(true);
 
