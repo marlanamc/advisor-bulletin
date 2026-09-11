@@ -38,29 +38,12 @@ export const ADMIN_RESOURCE_CATEGORY_DATA = {
     }
 }
 
-// Preserves the existing [key, label, emoji, icon] tuple shape used by the
-// rest of firebase-admin.js (dropdown rendering, preset lookups, etc.).
-export const ADMIN_RESOURCE_CATEGORIES = Object.entries(ADMIN_RESOURCE_CATEGORY_DATA)
-    .map(([key, [label, emoji, icon]]) => [key, label, emoji, icon]);
-
+// The bilingual label shown on the admin resource cards. The composer's own
+// category picker reads RESOURCE_CATEGORY_CONFIG (board-shared.js) instead,
+// so this is the only consumer of ADMIN_RESOURCE_CATEGORY_DATA left.
 export const ADMIN_RESOURCE_CATEGORY_LABELS = Object.fromEntries(
-    ADMIN_RESOURCE_CATEGORIES.map(([key, label]) => [key, label])
+    Object.entries(ADMIN_RESOURCE_CATEGORY_DATA).map(([key, [label]]) => [key, label])
 );
-
-export const ADMIN_RESOURCE_CATEGORY_ICONS = Object.fromEntries(
-    ADMIN_RESOURCE_CATEGORIES.map(([key, , , icon]) => [key, icon])
-);
-
-export const ADMIN_RESOURCE_ICON_LABELS = {
-    auto: 'Auto',
-    shield: 'Shield',
-    briefcase: 'Briefcase',
-    home: 'Home',
-    heart: 'Health',
-    scale: 'Legal Aid',
-    globe: 'Globe',
-    flag: 'Consulate'
-};
 
 export function isPdfFile(file) {
     if (!file) return false;
