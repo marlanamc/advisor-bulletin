@@ -37,6 +37,14 @@ jobs:
       - name: Run unit tests
         run: npm run test:unit
 
+      # The rules suite gates the deploy because the deploy job ships
+      # firestore.rules on every push (see "Deploy Firestore and Storage rules"
+      # below). It boots its own Firestore emulator, so it needs the Java and
+      # emulator cache steps above. test:unit globs tests/unit/*.test.mjs and
+      # does not reach tests/rules/.
+      - name: Run Firestore rules tests
+        run: npm run test:rules
+
       # `--with-deps` shells out to `apt-get`, which fails the whole step if ANY
       # configured source serves bad metadata — even one we have no use for.
       # The runner image ships third-party sources (Google Chrome, Microsoft
