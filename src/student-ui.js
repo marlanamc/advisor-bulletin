@@ -16,9 +16,84 @@ if (header) {
 var storyRowWrap = document.querySelector('#feedView > .story-row-wrap.story-row-wrap--bilingual');
 var storyRowCompactPending = false;
 var storyRowIsCompact = false;
+var storyRowCollapseOffset = null;
+var storyRowMeasuredWidth = null;
 var STORY_ROW_COMPACT_ON = 96;
 var STORY_ROW_COMPACT_OFF = 48;
 var scrollIdleTimer;
+
+// Every bubble is as tall as this, since the row stretches them to match.
+function tallestStoryLabel() {
+    var tallest = 0;
+    storyRowWrap.querySelectorAll('.story-bubble-label').forEach(function (label) {
+        tallest = Math.max(tallest, label.getBoundingClientRect().height);
+    });
+    return tallest;
+}
+
+function documentHeight() {
+    return document.body.getBoundingClientRect().height;
+}
+
+function setStoryRowCollapseOffset(px) {
+    storyRowCollapseOffset = px;
+    storyRowWrap.style.setProperty('--story-row-collapse-offset', px + 'px');
+}
+
+// The pinned row loses ~46px of height when it collapses. Left alone that
+// shrinks the feed, the browser re-anchors the scroll by the same amount, and
+// the corrected scrollY trips the threshold that expands the row again — the
+// bubbles ping-pong between sizes. Reserving the lost height as margin keeps
+// the row's flow slot constant, so collapsing never moves the scroll position.
+//
+// Reads both states back-to-back with transitions off. Nothing is painted in
+// between: the row is returned to the state it came in with before this
+// function yields.
+function measureStoryRow() {
+    var wasCompact = storyRowWrap.classList.contains('story-row-wrap--compact');
+    storyRowWrap.classList.add('story-row-wrap--measuring');
+    storyRowWrap.style.removeProperty('--story-label-height');
+    storyRowWrap.style.removeProperty('--story-label-height-compact');
+    setStoryRowCollapseOffset(0);
+
+    storyRowWrap.classList.remove('story-row-wrap--compact');
+    var expandedLabel = tallestStoryLabel();
+    var expandedDoc = documentHeight();
+
+    storyRowWrap.classList.add('story-row-wrap--compact');
+    var compactLabel = tallestStoryLabel();
+
+    // Solve for the margin rather than deriving it from the row's own height:
+    // the row's bottom margin collapses with the next post's top margin, so
+    // part of any reserved height is swallowed instead of added. One
+    // correction pass settles it, whatever that neighbouring margin is.
+    setStoryRowCollapseOffset(Math.max(0, expandedDoc - documentHeight()));
+    var shortfall = expandedDoc - documentHeight();
+    if (shortfall > 0.5) {
+        setStoryRowCollapseOffset(storyRowCollapseOffset + shortfall);
+    }
+
+    storyRowWrap.classList.toggle('story-row-wrap--compact', wasCompact);
+    // Pinning every label to the tallest one changes no layout — the bubbles
+    // already stretch to that height — but it does make the height animatable.
+    // Keep the fractional measurement: rounding either way moves the row by a
+    // whole CSS pixel against the natural `auto` layout.
+    if (expandedLabel > 0 && compactLabel > 0) {
+        storyRowWrap.style.setProperty('--story-label-height', expandedLabel + 'px');
+        storyRowWrap.style.setProperty('--story-label-height-compact', compactLabel + 'px');
+    }
+    storyRowWrap.getBoundingClientRect();
+    storyRowWrap.classList.remove('story-row-wrap--measuring');
+}
+
+function syncStoryRowCollapseOffset() {
+    // The compact rules only apply on the feed, so measuring anywhere else reads 0.
+    if (!storyRowWrap || document.body.getAttribute('data-current-view') !== 'feed') {
+        return;
+    }
+    storyRowMeasuredWidth = window.innerWidth;
+    measureStoryRow();
+}
 
 function syncStoryRowCompact() {
     if (!storyRowWrap) {
@@ -28,6 +103,9 @@ function syncStoryRowCompact() {
         storyRowIsCompact = false;
         storyRowWrap.classList.remove('story-row-wrap--compact');
         return;
+    }
+    if (storyRowCollapseOffset === null) {
+        syncStoryRowCollapseOffset();
     }
     var y = window.scrollY;
     if (!storyRowIsCompact && y > STORY_ROW_COMPACT_ON) {
@@ -65,12 +143,28 @@ function onPageScroll() {
 if (header) {
     header.classList.toggle('collapsed', window.scrollY > 50);
 }
+syncStoryRowCollapseOffset();
 syncStoryRowCompact();
 window.addEventListener('scroll', onPageScroll, { passive: true });
+// Label wrapping — and so the collapse offset — moves with width, language and
+// webfont swap, so re-measure whenever one of those lands. Width only: mobile
+// browsers fire resize for every address-bar collapse, which happens mid-scroll,
+// and measuring re-lays out the row and cuts any running collapse short.
+window.addEventListener('resize', function () {
+    if (window.innerWidth !== storyRowMeasuredWidth) {
+        syncStoryRowCollapseOffset();
+    }
+});
+if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(syncStoryRowCollapseOffset);
+}
 if (document.body) {
-    new MutationObserver(queueStoryRowCompactSync).observe(document.body, {
+    new MutationObserver(function () {
+        syncStoryRowCollapseOffset();
+        queueStoryRowCompactSync();
+    }).observe(document.body, {
         attributes: true,
-        attributeFilter: ['data-current-view']
+        attributeFilter: ['data-current-view', 'data-lang']
     });
 }
 

@@ -267,6 +267,7 @@ body[data-current-view="feed"] #feedView > .story-row-wrap.story-row-wrap--bilin
     transition:
         padding 0.24s ease,
         box-shadow 0.24s ease,
+        margin-bottom 0.24s ease,
         top 0.24s ease;
 }
 
@@ -274,6 +275,23 @@ body[data-current-view="feed"] #feedView > .story-row-wrap.story-row-wrap--bilin
 body[data-current-view="feed"] #feedView > .story-row-wrap.story-row-wrap--compact {
     padding: 2px 0 6px;
     box-shadow: 0 4px 14px rgba(15, 23, 42, 0.1);
+    /* Collapsing costs the row ~46px of height. Left alone that shrinks the
+       feed, the browser re-anchors the scroll by the same amount, and the new
+       scrollY trips the threshold that expands the row again — the bubbles
+       ping-pong between sizes. student-ui.js solves --story-row-collapse-offset
+       against the page height so the flow slot stays put and nothing under the
+       row moves. !important because the .story-row-wrap--mobile variants set a
+       `margin` shorthand at higher specificity, which silently drops this and
+       brings the ping-pong back; the offset is measured against whatever the
+       rest of the cascade does, so it replaces that margin rather than adding
+       to it. */
+    margin-bottom: var(--story-row-collapse-offset, 0px) !important;
+}
+
+/* Used for a synchronous expanded-vs-compact measurement; never painted. */
+.story-row-wrap--measuring,
+.story-row-wrap--measuring * {
+    transition: none !important;
 }
 
 body[data-current-view="feed"] #feedView > .story-row-wrap.story-row-wrap--compact .story-row-label {
@@ -316,6 +334,7 @@ body[data-current-view="feed"] #feedView > .story-row-wrap.story-row-wrap--compa
 }
 
 body[data-current-view="feed"] #feedView > .story-row-wrap.story-row-wrap--compact .story-bubble-label {
+    height: var(--story-label-height-compact, auto);
     font-size: 12px;
     max-width: 56px;
     -webkit-line-clamp: 1;
@@ -339,7 +358,10 @@ body[data-lang="ES"][data-current-view="feed"] #feedView > .story-row-wrap.story
 
 body[data-lang="ES"][data-current-view="feed"] #feedView > .story-row-wrap.story-row-wrap--compact .story-bubble-label.es-text {
     opacity: 1;
-    max-height: 1.4em;
+    /* Only undoing the max-height: 0 the EN-mode rule above applies. A length
+       here would snap, not animate, on the way in: max-height has no expanded
+       value to interpolate from. The measured height already sizes the label. */
+    max-height: none;
     display: -webkit-box !important;
     color: #0a1d3a;
     font-weight: 800;
@@ -486,6 +508,11 @@ body[data-current-view="feed"] #feedView > .story-row-wrap.story-row-wrap--compa
 }
 
 .story-bubble-label {
+    /* Height is measured into --story-label-height by student-ui.js so the
+       2-line -> 1-line switch below can animate. line-clamp is not animatable,
+       so without this the row loses a whole text line in a single frame. The
+       `auto` fallback keeps the natural layout if the script never runs. */
+    height: var(--story-label-height, auto);
     font-size: 12px;
     font-weight: 800;
     color: #0a1d3a;
@@ -497,7 +524,7 @@ body[data-current-view="feed"] #feedView > .story-row-wrap.story-row-wrap--compa
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
-    transition: font-size 0.24s ease, max-width 0.24s ease, opacity 0.24s ease, max-height 0.24s ease, margin 0.24s ease;
+    transition: font-size 0.24s ease, max-width 0.24s ease, opacity 0.24s ease, height 0.24s ease, max-height 0.24s ease, margin 0.24s ease;
 }
 
 /* ── Feed section label ───────────────────────────────────── */
