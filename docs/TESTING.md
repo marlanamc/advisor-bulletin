@@ -14,7 +14,9 @@ The full matrix runs on pull requests to `main`, weekly on Mondays, and manually
 
 ### Backlog reviewed October 1, 2026
 
-**Deployment blocker:** `npm audit --audit-level=high` reports 25 vulnerable package entries (7 high, 18 moderate, no critical). The deploy workflow runs this command and will stop before deployment. High-severity roots include `@grpc/grpc-js`, `brace-expansion`, and `undici`; several Firebase entries inherit the gRPC finding. Compatible updates are available for some packages, but even Firebase 12.19.0 pins gRPC to `~1.9.0`, below the advisory's patched releases. Do not apply `npm audit fix --force`: its suggested Firebase 9.14.0 downgrade is not an appropriate unattended repair. Address this dependency update with a tested upstream update or scoped override before the next deploy. Dependencies were left unchanged in this catch-up. See [the gRPC advisory](https://github.com/advisories/GHSA-m9gg-hp2v-232j).
+**Dependency audit repair (October 1):** the original audit reported 7 high and 18 moderate vulnerable package entries. The high-severity findings are addressed by updating `brace-expansion` and `undici` within their existing major versions and pinning Firestore's nested `@grpc/grpc-js` dependency to patched version `1.14.5` using a scoped npm override. Firebase remains on 12.13.0; no forced SDK downgrade or audit-threshold change is involved. The regenerated lockfile also deduplicates the other gRPC copies onto 1.14.5. The deployment audit now passes locally; 18 moderate findings remain for separate maintenance.
+
+The override is needed because Firestore still declares `~1.9.0`. Keep it until an upstream Firebase release supports a patched gRPC version, then remove it and rerun the audit, rules tests, browser tests, and build. [gRPC security advisory](https://github.com/advisories/GHSA-m9gg-hp2v-232j). `npm run test:check` now starts with the same dependency audit as deployment, and the full matrix also audits dependencies on pull requests, weekly runs, and manual runs. Remaining moderate findings are tracked in [#24](https://github.com/marlanamc/advisor-bulletin/issues/24).
 
 | Issue | Remaining work |
 |---|---|
@@ -85,7 +87,7 @@ take a few seconds and catch the two failure modes that reach students, a logic
 regression and a rules regression. Both, plus desktop/mobile Playwright, run in
 CI on every push to `main` (`.github/workflows/deploy.yml`).
 
-### Run All Three Suites
+### Audit Dependencies and Run All Three Suites
 ```bash
 npm run test:check
 ```
@@ -151,7 +153,9 @@ npm run test:headed
 
 ## Test Results
 
-October 1 catch-up: `CI=true npm run test:check` passed locally on Node 23.3.0: **121 unit tests, 43 rules tests, 277 browser tests**, with 15 intentional viewport-specific skips and no flaky retries reported. `npx vite build` also passed. GitHub uses Node 22 and still needs a run of these local changes; the dependency audit described above remains a separate failing deployment gate.
+Dependency repair validation: a clean `npm ci` followed by `CI=true npm run test:check` passed the audit, 121 unit tests, 43 rules tests, and 277 browser tests (15 intentional skips). The full `npm run build` also passed on Node 22.20.0, including a live Firestore snapshot fetch and all prebuild consistency checks.
+
+October 1 catch-up: `CI=true npm run test:check` passed locally on Node 23.3.0: **121 unit tests, 43 rules tests, 277 browser tests**, with 15 intentional viewport-specific skips and no flaky retries reported. `npx vite build` also passed. GitHub uses Node 22. The corresponding full matrix also passed in [run 36886626196](https://github.com/marlanamc/advisor-bulletin/actions/runs/36886626196); see the dependency repair notes above for the later audit fix.
 
 Use the current command output and GitHub Actions run for results. Browser tests deliberately skip a few viewport-specific cases; inspect unexpected skips and flaky retries instead of treating a green run alone as complete coverage.
 

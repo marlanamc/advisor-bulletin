@@ -99,7 +99,7 @@ To run all automated tests:
 npm run test:check
 ```
 
-This runs unit, Firestore rules, and all browser tests. Java and Playwright Chromium are required; see [the testing and weekly maintenance guide](docs/TESTING.md). `npm test` runs only the browser suite.
+This audits dependencies, then runs unit, Firestore rules, and all browser tests. Network access, Java, and Playwright Chromium are required; see [the testing and weekly maintenance guide](docs/TESTING.md). `npm test` runs only the browser suite.
 
 To run mobile viewport tests specifically:
 ```bash

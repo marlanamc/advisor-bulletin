@@ -25,7 +25,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Audit production dependencies
+      - name: Audit dependencies
         run: npm audit --audit-level=high
 
       - name: Cache Firebase emulator binaries
