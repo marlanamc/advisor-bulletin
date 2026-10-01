@@ -1,31 +1,31 @@
+---
+title: Advisor Portal Test Checklist
+date: 2026-09-11
+tags:
+  - advisor-portal
+  - demo
+  - checklist
+aliases:
+  - Demo Test Checklist
+  - Faculty walkthrough
+---
+
 # Advisor Portal Test Checklist
 
-For walking the portal end to end before showing it to faculty. Written
-2026-09-11, just after the fixes in PR #18 went live.
+For walking the portal end to end before showing it to faculty. Written 2026-09-11, just after the fixes in PR #18 went live.
 
-Every item below is something that **was broken and is now fixed**, or a path
-faculty will hit in their first ten minutes. The content is real and verified,
-so anything you post that looks good can stay up for students.
+Every item below is something that **was broken and is now fixed**, or a path faculty will hit in their first ten minutes. The content is real and verified, so anything you post that looks good can stay up for students.
 
-**Sign in at** https://ebhcsjobboard.web.app/admin with your `@ebhcs.org` Google
-account. **Students see** https://ebhcsjobboard.web.app/
+> [!info] Where to sign in
+> **Advisor portal:** https://ebhcsjobboard.web.app/admin — use your `@ebhcs.org` Google account  
+> **Student view:** https://ebhcsjobboard.web.app/
 
-### About the Spanish below
-
-Every sample has a Spanish title and summary ready to paste, so you can test
-both languages in one pass instead of posting everything twice.
-
-It is **Latin American Spanish** in the **usted** form, matching how the board
-already speaks: existing service posts use "¿Le gustaría mejorar sus
-habilidades...", "únase", "No necesita ser paciente". Festive posts on the board
-use tú ("Celebra", "Únete al festival") — everything below is a service, so it
-stays with usted throughout. Vocabulary is Latin American rather than Castilian
-("capacitación" not "formación", "inscripción", "feria de empleo").
-
-One behaviour worth knowing while you test: **when a Spanish summary is filled
-in, students reading in Spanish see it instead of the description** — not
-underneath it. So the Spanish summary has to stand on its own, not continue a
-thought the English started.
+> [!note] About the Spanish below
+> Every sample has a Spanish title and summary ready to paste, so you can test both languages in one pass instead of posting everything twice.
+>
+> It is **Latin American Spanish** in the **usted** form, matching how the board already speaks: existing service posts use "¿Le gustaría mejorar sus habilidades...", "únase", "No necesita ser paciente". Festive posts on the board use tú ("Celebra", "Únete al festival") — everything below is a service, so it stays with usted throughout. Vocabulary is Latin American rather than Castilian ("capacitación" not "formación", "inscripción", "feria de empleo").
+>
+> **One behaviour worth knowing while you test:** when a Spanish summary is filled in, students reading in Spanish see it **instead of** the description — not underneath it. So the Spanish summary has to stand on its own, not continue a thought the English started.
 
 ---
 
@@ -34,39 +34,27 @@ thought the English started.
 - [ ] Sign in with Google — portal opens, your name shows as the advisor
 - [ ] Hard-reload the page — you stay signed in (no re-login)
 - [ ] Sign out — lands back on the login screen
-- [ ] Sign in with a personal (non-`@ebhcs.org`) Google account — you should get
-      *"Please sign in with your @ebhcs.org school Google account."* and **not** a
-      generic failure
-- [ ] Confirm the **Advisors** tab is visible to you (you're an admin) — Leah
-      should see it too; a plain advisor should not
+- [ ] Sign in with a personal (non-`@ebhcs.org`) Google account — you should get *"Please sign in with your @ebhcs.org school Google account."* and **not** a generic failure
+- [ ] Confirm the **Advisors** tab is visible to you (you're an admin) — Leah should see it too; a plain advisor should not
 
 ---
 
 ## 2. Events — the five date types
 
-This is the section that matters most. Until yesterday, **three of the five
-silently threw data away**: "Multiple sessions" kept only the first date,
-"Repeats weekly" lost the recurrence, and "Deadline" was stored as a plain
-event. No error either way.
-
-After each post, open it on the student side and confirm the date reads right.
+> [!warning] Why this section matters most
+> Until yesterday, **three of the five silently threw data away**: "Multiple sessions" kept only the first date, "Repeats weekly" lost the recurrence, and "Deadline" was stored as a plain event. No error either way.
+>
+> After each post, open it on the student side and confirm the date reads right.
 
 ### 2a. Deadline → real content
 
+> [!example]- Paste: Register for free English classes at the library
 > **Title:** Register for free English classes at the library
 > **Category:** English Class (ESOL)
 > **When:** Deadline — **October 2, 2026**
-> **Description:** Boston Public Library runs Boston's only year-round, 100%
-> free ESOL program. Registration for the fall/winter session closes October 2.
-> Classes are for adults 18+ living in Massachusetts, at four levels from
-> Beginner to Advanced. An assessment is required before you start.
+> **Description:** Boston Public Library runs Boston's only year-round, 100% free ESOL program. Registration for the fall/winter session closes October 2. Classes are for adults 18+ living in Massachusetts, at four levels from Beginner to Advanced. An assessment is required before you start.
 > **Spanish title:** Inscríbase en clases de inglés gratis en la biblioteca
-> **Spanish summary:** La Biblioteca Pública de Boston ofrece clases de inglés
-> (ESOL) gratuitas durante todo el año. Las inscripciones para la sesión de
-> otoño e invierno cierran el 2 de octubre. Son para adultos de 18 años o más
-> que viven en Massachusetts. Hay cuatro niveles, desde principiante hasta
-> avanzado. Antes de empezar, usted hace una prueba corta para saber en qué
-> nivel entra. Llame al 617-859-2446 para preguntar.
+> **Spanish summary:** La Biblioteca Pública de Boston ofrece clases de inglés (ESOL) gratuitas durante todo el año. Las inscripciones para la sesión de otoño e invierno cierran el 2 de octubre. Son para adultos de 18 años o más que viven en Massachusetts. Hay cuatro niveles, desde principiante hasta avanzado. Antes de empezar, usted hace una prueba corta para saber en qué nivel entra. Llame al 617-859-2446 para preguntar.
 > **Link:** https://www.bpl.org/ell/
 > **Phone:** 617-859-2446
 
@@ -76,65 +64,55 @@ After each post, open it on the student side and confirm the date reads right.
 
 ### 2b. Date range
 
+> [!example]- Paste: Fall English class session at the library
 > **Title:** Fall English class session at the library
 > **Category:** English Class (ESOL)
 > **When:** Date range — **September 14 – December 18, 2026**
-> **Description:** The fall and winter ESOL session runs September through
-> December at Boston Public Library branches, including East Boston. Free for
-> adults 18+ in Massachusetts.
+> **Description:** The fall and winter ESOL session runs September through December at Boston Public Library branches, including East Boston. Free for adults 18+ in Massachusetts.
 > **Spanish title:** Sesión de otoño de clases de inglés en la biblioteca
-> **Spanish summary:** La sesión de otoño e invierno va del 14 de septiembre al
-> 18 de diciembre, en varias bibliotecas de Boston, incluyendo la de East
-> Boston. Las clases son gratis para adultos de 18 años o más que viven en
-> Massachusetts.
+> **Spanish summary:** La sesión de otoño e invierno va del 14 de septiembre al 18 de diciembre, en varias bibliotecas de Boston, incluyendo la de East Boston. Las clases son gratis para adultos de 18 años o más que viven en Massachusetts.
 > **Link:** https://www.bpl.org/ell/
 
 - [ ] Posts without error
 - [ ] Both start **and** end date survive
 - [ ] Student side shows a range, not a single date
 
-### 2c. Repeats weekly ← *was silently losing the recurrence*
+### 2c. Repeats weekly
 
+> [!danger] Was silently losing the recurrence
+> Reopen after save and confirm the weekday is still selected — that is the exact thing that used to vanish.
+
+> [!example]- Paste: English conversation group
 > **Title:** English conversation group
 > **Category:** English Class (ESOL)
 > **When:** Repeats weekly — pick a weekday, give it a start and end date
-> **Description:** Free drop-in conversation groups with volunteer English
-> speakers. Many in-person groups need no registration — just show up. Call to
-> ask which branch and time works for you.
+> **Description:** Free drop-in conversation groups with volunteer English speakers. Many in-person groups need no registration — just show up. Call to ask which branch and time works for you.
 > **Spanish title:** Grupo de conversación en inglés
-> **Spanish summary:** Grupos gratuitos para practicar inglés con voluntarios
-> que hablan inglés. Muchos grupos en persona no requieren inscripción: solo
-> llegue. Llame al 617-859-2446 para preguntar qué biblioteca y qué horario le
-> conviene.
+> **Spanish summary:** Grupos gratuitos para practicar inglés con voluntarios que hablan inglés. Muchos grupos en persona no requieren inscripción: solo llegue. Llame al 617-859-2446 para preguntar qué biblioteca y qué horario le conviene.
 > **Link:** https://www.bpl.org/ell/
 > **Phone:** 617-859-2446
 
 - [ ] Posts without error
-- [ ] **The weekday survives** — reopen it for editing and confirm the weekday is
-      still selected. This is the exact thing that used to vanish.
+- [ ] **The weekday survives** — reopen it for editing and confirm the weekday is still selected
 - [ ] Student side describes it as weekly, not as a date range
 
-### 2d. Multiple sessions ← *was keeping only the first date*
+### 2d. Multiple sessions
 
+> [!danger] Was keeping only the first date
+> Reopen for editing and confirm you see two session rows, not one. This is the bug that would have bitten a workshop series.
+
+> [!example]- Paste: Two hiring events at MassHire Downtown Boston
 > **Title:** Two hiring events at MassHire Downtown Boston
 > **Category:** Career Fair
 > **When:** Multiple sessions — **September 15, 2026** and **September 23, 2026**
-> **Description:** MassHire Downtown Boston is holding a Facilities and
-> Operations job fair on September 15, and a virtual hiring event for Low
-> Voltage Technicians on September 23. Free. First-time users create a profile
-> on MyMassGov.
+> **Description:** MassHire Downtown Boston is holding a Facilities and Operations job fair on September 15, and a virtual hiring event for Low Voltage Technicians on September 23. Free. First-time users create a profile on MyMassGov.
 > **Spanish title:** Dos ferias de empleo en MassHire Downtown Boston
-> **Spanish summary:** MassHire Downtown Boston tendrá una feria de empleo de
-> mantenimiento y operaciones el 15 de septiembre, y un evento de contratación
-> virtual para técnicos de bajo voltaje el 23 de septiembre. Son gratis. Si es
-> su primera vez, cree un perfil en MyMassGov antes de ir. Llame al
-> 617-399-3100.
+> **Spanish summary:** MassHire Downtown Boston tendrá una feria de empleo de mantenimiento y operaciones el 15 de septiembre, y un evento de contratación virtual para técnicos de bajo voltaje el 23 de septiembre. Son gratis. Si es su primera vez, cree un perfil en MyMassGov antes de ir. Llame al 617-399-3100.
 > **Link:** https://masshiredowntownboston.org/job-fairs/
 > **Phone:** 617-399-3100
 
 - [ ] Posts without error
-- [ ] **Both dates survive** — reopen for editing and confirm you see two session
-      rows, not one. This is the bug that would have bitten a workshop series.
+- [ ] **Both dates survive** — reopen for editing and confirm you see two session rows, not one
 - [ ] Both dates show on the student calendar
 - [ ] Try adding a **third** date, save, reopen — all three still there
 
@@ -148,29 +126,18 @@ After each post, open it on the student side and confirm the date reads right.
 
 ## 3. Bulletins and categories
 
-- [ ] Post one bulletin in each of a few categories — **Job Opportunity**,
-      **Training / Workshop**, **Housing**, **Food**, **Announcement**
+- [ ] Post one bulletin in each of a few categories — **Job Opportunity**, **Training / Workshop**, **Housing**, **Food**, **Announcement**
 - [ ] None of them error
 - [ ] Each shows the right emoji and colour on the student feed
-- [ ] Filter the student feed by category and confirm each post appears under
-      the filter you'd expect
+- [ ] Filter the student feed by category and confirm each post appears under the filter you'd expect
 - [ ] Switch the student page to Spanish — categories are translated
 
-A training one worth posting for real:
-
+> [!example]- Paste: Free English classes plus help finding a job
 > **Title:** Free English classes plus help finding a job
 > **Category:** Training / Workshop
-> **Description:** JVS Boston's English 2 Employment program combines free
-> English classes with job search support for immigrants and refugees. Classes
-> run Monday to Friday, mornings and evenings. Open enrollment — they will help
-> you find out if you qualify. You need English as a non-native language and
-> work authorization, or a pathway to it.
+> **Description:** JVS Boston's English 2 Employment program combines free English classes with job search support for immigrants and refugees. Classes run Monday to Friday, mornings and evenings. Open enrollment — they will help you find out if you qualify. You need English as a non-native language and work authorization, or a pathway to it.
 > **Spanish title:** Clases de inglés gratis y ayuda para encontrar trabajo
-> **Spanish summary:** El programa English 2 Employment de JVS Boston combina
-> clases de inglés gratuitas con apoyo para buscar trabajo, para inmigrantes y
-> refugiados. Las clases son de lunes a viernes, en la mañana y en la noche. La
-> inscripción está abierta y ellos le ayudan a saber si califica. Necesita tener
-> permiso de trabajo, o estar en camino de obtenerlo. Llame al 617-399-3131.
+> **Spanish summary:** El programa English 2 Employment de JVS Boston combina clases de inglés gratuitas con apoyo para buscar trabajo, para inmigrantes y refugiados. Las clases son de lunes a viernes, en la mañana y en la noche. La inscripción está abierta y ellos le ayudan a saber si califica. Necesita tener permiso de trabajo, o estar en camino de obtenerlo. Llame al 617-399-3131.
 > **Link:** https://www.jvs-boston.org/our-services/e2e-rapid-english/
 > **Phone:** 617-399-3131
 > **Location:** 75 Federal St, 3rd Floor, Boston, MA 02110
@@ -183,15 +150,12 @@ A training one worth posting for real:
 
 ### 4a. A normal resource
 
+> [!example]- Paste: MassHire Downtown Boston Career Center
 > **English title:** MassHire Downtown Boston Career Center
 > **Category:** Jobs
-> **Description:** A free state-funded career centre. Job search help,
-> workshops, hiring events, and training referrals. Open to anyone looking for
-> work — no cost.
+> **Description:** A free state-funded career centre. Job search help, workshops, hiring events, and training referrals. Open to anyone looking for work — no cost.
 > **Spanish title:** Centro de Carreras MassHire Downtown Boston
-> **Spanish summary:** Centro de carreras gratuito del estado. Ayuda para buscar
-> trabajo, talleres, ferias de empleo y referencias a capacitación. Abierto a
-> cualquier persona que busque trabajo, sin costo.
+> **Spanish summary:** Centro de carreras gratuito del estado. Ayuda para buscar trabajo, talleres, ferias de empleo y referencias a capacitación. Abierto a cualquier persona que busque trabajo, sin costo.
 > **Website:** https://masshiredowntownboston.org/
 > **Phone:** 617-399-3100
 > **Address:** 75 Federal St, 3rd Floor, Boston, MA 02110
@@ -200,40 +164,36 @@ A training one worth posting for real:
 - [ ] Shows under **Jobs** in Find Help with the briefcase icon (not a globe)
 - [ ] Call and Directions buttons work from a phone
 
-### 4b. A phone-only resource ← *newly possible*
+### 4b. A phone-only resource
 
-Until yesterday the composer demanded a website, so an organization reachable
-only by phone could not be added at all.
+> [!tip] Newly possible
+> Until yesterday the composer demanded a website, so an organization reachable only by phone could not be added at all.
 
 - [ ] Add any resource with a **phone number but no website** — it should save
-- [ ] Now try one with **neither** a website nor a phone — it should be refused,
-      with a message telling you to add one or the other
+- [ ] Now try one with **neither** a website nor a phone — it should be refused, with a message telling you to add one or the other
 
-### 4c. The two consulates ← *were permanently un-editable*
+### 4c. The two consulates
+
+> [!danger] Were permanently un-editable
+> "Verified today" used to fail with *"blocked by security rules"* until the rules deployed.
 
 - [ ] Find **Consulate of Honduras — Chelsea** in the portal
-- [ ] Click **Verified today** — it should stamp, not fail with *"blocked by
-      security rules"*. This was impossible until the rules deployed.
+- [ ] Click **Verified today** — it should stamp, not fail with *"blocked by security rules"*
 - [ ] Same for **Consulate General of Cape Verde — Quincy**
-- [ ] Check the Honduras phone now reads **617-819-4885** — I changed it from
-      617-571-7974 based on directory agreement. **Worth calling to confirm.**
+- [ ] Check the Honduras phone now reads **617-819-4885** — changed from 617-571-7974 based on directory agreement. **Worth calling to confirm.**
 
 ---
 
-## 5. Error messages ← *all used to say the same unhelpful thing*
+## 5. Error messages
 
-Every one of these used to surface as *"Error saving resource. Please try
-again."* or, worse, a security warning. Trip each deliberately.
+> [!warning] All used to say the same unhelpful thing
+> Every one of these used to surface as *"Error saving resource. Please try again."* or, worse, a security warning. Trip each deliberately.
 
-- [ ] Post a bulletin with **no title** → should ask for a title, and must **not**
-      mention security rules
+- [ ] Post a bulletin with **no title** → should ask for a title, and must **not** mention security rules
 - [ ] Post an event with no name → should ask for an event name
-- [ ] Publish a resource with **no English title** → *"English title is required
-      for resources."*
-- [ ] Save an event as "Multiple sessions" with only **one** date → *"Please add
-      at least two session dates."*
-- [ ] Save "Repeats weekly" with no weekday → should say to choose a weekday and
-      dates
+- [ ] Publish a resource with **no English title** → *"English title is required for resources."*
+- [ ] Save an event as "Multiple sessions" with only **one** date → *"Please add at least two session dates."*
+- [ ] Save "Repeats weekly" with no weekday → should say to choose a weekday and dates
 - [ ] Submit with **no category** chosen → inline message, scrolls to the picker
 
 ---
@@ -244,18 +204,14 @@ again."* or, worse, a security warning. Trip each deliberately.
 - [ ] Calendar shows each event on the right date
 - [ ] Search finds your posts by title and by description
 - [ ] Switch to Spanish — posts show the Spanish titles you set
-- [ ] Where you filled in a Spanish summary, the Spanish reader sees **that
-      instead of** the English description, not both
-- [ ] A post with **no** Spanish summary still reads sensibly in Spanish mode —
-      it falls back to the English description rather than going blank
+- [ ] Where you filled in a Spanish summary, the Spanish reader sees **that instead of** the English description, not both
+- [ ] A post with **no** Spanish summary still reads sensibly in Spanish mode — it falls back to the English description rather than going blank
 - [ ] Category filter chips are translated (Empleo, Vivienda, Comida, Salud…)
 - [ ] Buttons are translated — Llamar, Cómo llegar, and the PDF/calendar labels
-- [ ] Search in Spanish finds the posts — try "inglés" and "empleo", and then
-      **"ingles" without the accent**, which should still find them
+- [ ] Search in Spanish finds the posts — try "inglés" and "empleo", and then **"ingles" without the accent**, which should still find them
 - [ ] Accents and ¿ ¡ render correctly on the cards, not as garbled characters
 - [ ] Open on your phone — cards, Call, Directions and the calendar all behave
-- [ ] Scroll the feed — the pinned Help row shrinks **once** and stays put (it
-      used to flip between sizes as you scrolled; fixed in PR #19)
+- [ ] Scroll the feed — the pinned Help row shrinks **once** and stays put (it used to flip between sizes as you scrolled; fixed in PR #19)
 
 ---
 
@@ -267,15 +223,8 @@ again."* or, worse, a security warning. Trip each deliberately.
 
 ---
 
-## If something goes wrong
+> [!bug] If something goes wrong
+> Note **what you clicked, what you expected, and exactly what the message said**. The wording matters now: after PR #18 the portal is supposed to tell you what is actually wrong, so a vague or misleading message is itself a bug worth reporting.
 
-Note **what you clicked, what you expected, and exactly what the message said**.
-The wording matters now: after PR #18 the portal is supposed to tell you what is
-actually wrong, so a vague or misleading message is itself a bug worth reporting.
-
-## Content caveats
-
-Details were verified live on 2026-09-11 against each organization's own site.
-Programs change. The BPL October 2 registration deadline in particular is
-time-sensitive, and the two MassHire hiring events pass in late September — check
-before leaving those posted much past then.
+> [!caution] Content caveats
+> Details were verified live on 2026-09-11 against each organization's own site. Programs change. The BPL October 2 registration deadline in particular is time-sensitive, and the two MassHire hiring events pass in late September — check before leaving those posted much past then.
