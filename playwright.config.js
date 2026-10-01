@@ -2,8 +2,9 @@ const { defineConfig, devices } = require('@playwright/test');
 
 module.exports = defineConfig({
   testDir: './tests',
-  // Node unit tests live under tests/unit and run via `npm run test:unit`.
-  testIgnore: ['**/unit/**'],
+  // Node unit/rules suites have their own runners. Project-level testIgnore
+  // settings replace the top-level setting, so select browser specs explicitly.
+  testMatch: '**/*.spec.js',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,

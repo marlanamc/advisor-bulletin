@@ -129,6 +129,7 @@ async function seedAdvisorResources(page) {
         if (bulletin) bulletin.resourceOrder = (index + 1) * 10;
       });
     };
+    window.adminPanel.updateAdvisorDashboard();
     window.adminPanel.loadManageBulletins();
   });
 }

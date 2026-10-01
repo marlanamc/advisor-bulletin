@@ -31,8 +31,11 @@ function tallestStoryLabel() {
     return tallest;
 }
 
-function documentHeight() {
-    return document.body.getBoundingClientRect().height;
+function contentBelowStoryRowTop() {
+    // Body height can be pinned by min-height while the feed is loading (or
+    // empty). Measure the feed content so the lost space is visible even
+    // before posts arrive. Add scrollY to keep this in document coordinates.
+    return document.querySelector('#feedView > .desktop-home-shell').getBoundingClientRect().top + window.scrollY;
 }
 
 function setStoryRowCollapseOffset(px) {
@@ -58,17 +61,17 @@ function measureStoryRow() {
 
     storyRowWrap.classList.remove('story-row-wrap--compact');
     var expandedLabel = tallestStoryLabel();
-    var expandedDoc = documentHeight();
+    var expandedContentTop = contentBelowStoryRowTop();
 
     storyRowWrap.classList.add('story-row-wrap--compact');
     var compactLabel = tallestStoryLabel();
 
-    // Solve for the margin rather than deriving it from the row's own height:
+    // Solve for the margin against the content below the row:
     // the row's bottom margin collapses with the next post's top margin, so
     // part of any reserved height is swallowed instead of added. One
     // correction pass settles it, whatever that neighbouring margin is.
-    setStoryRowCollapseOffset(Math.max(0, expandedDoc - documentHeight()));
-    var shortfall = expandedDoc - documentHeight();
+    setStoryRowCollapseOffset(Math.max(0, expandedContentTop - contentBelowStoryRowTop()));
+    var shortfall = expandedContentTop - contentBelowStoryRowTop();
     if (shortfall > 0.5) {
         setStoryRowCollapseOffset(storyRowCollapseOffset + shortfall);
     }

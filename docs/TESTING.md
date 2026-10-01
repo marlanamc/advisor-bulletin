@@ -1,7 +1,35 @@
-# Mobile Testing Guide
+# Testing and Maintenance Guide
 
 ## Overview
-This project includes Playwright tests to verify mobile responsiveness for the calendar view and modal components.
+The project has three separate suites: Node unit tests, Firestore security-rule tests, and Playwright browser tests across four viewport sizes.
+
+## Weekly check-in
+
+1. Open [GitHub Actions](https://github.com/marlanamc/advisor-bulletin/actions). Check **Full Playwright Matrix** as well as **Production Health Check**; a healthy live site does not mean the browser suite passed. Read the most recent completed run and its failed step, including retries/flaky tests and the downloadable Playwright report.
+2. Review [open issues](https://github.com/marlanamc/advisor-bulletin/issues). Prioritize failed tests or broken student links, then resource accuracy. Review five due resource cards per session. Compare the card with the organization's current information before pressing **Verified today** in the portal.
+3. After code changes, run `npm run test:check`. This stops at the first failing suite. To debug only a browser spec, use `npm test -- tests/story-row-collapse.spec.js --project=mobile`.
+4. After merging, confirm the **Deploy to Firebase** run succeeds and check the live student and advisor pages. Use [the demo checklist](Demo-Test-Checklist.md) for the manual flows.
+
+The full matrix runs on pull requests to `main`, weekly on Mondays, and manually through **Run workflow**. Deploys run unit/rules tests plus desktop and mobile browser tests. These workflow changes take effect on GitHub once merged; local edits alone do not update CI.
+
+### Backlog reviewed October 1, 2026
+
+**Deployment blocker:** `npm audit --audit-level=high` reports 25 vulnerable package entries (7 high, 18 moderate, no critical). The deploy workflow runs this command and will stop before deployment. High-severity roots include `@grpc/grpc-js`, `brace-expansion`, and `undici`; several Firebase entries inherit the gRPC finding. Compatible updates are available for some packages, but even Firebase 12.19.0 pins gRPC to `~1.9.0`, below the advisory's patched releases. Do not apply `npm audit fix --force`: its suggested Firebase 9.14.0 downgrade is not an appropriate unattended repair. Address this dependency update with a tested upstream update or scoped override before the next deploy. Dependencies were left unchanged in this catch-up. See [the gRPC advisory](https://github.com/advisories/GHSA-m9gg-hp2v-232j).
+
+| Issue | Remaining work |
+|---|---|
+| [#12: 20 cards due](https://github.com/marlanamc/advisor-bulletin/issues/12) | All 20 have no verification date. Start with health/housing and eligibility-sensitive resources, then work through five at a time. The live issue is the current checklist. |
+| [#8: price recheck](https://github.com/marlanamc/advisor-bulletin/issues/8) | **Confirmed stale pricing; update these two cards first.** CED now lists $90 general / $145 course-by-course / $195 with GPA; Spanish/Portuguese interpretation is $25 general or $50 course-by-course. WES lists $118–$239 for its four U.S. packages, before delivery and other fees. WES also appears in #12. |
+| [#14: three links to verify](https://github.com/marlanamc/advisor-bulletin/issues/14) | Browser-checked October 1: BHCC's homepage and application page and the Peru consulate page all loaded normally without a certificate interstitial. No link edit indicated. The September 28 scan found zero broken links. The automated issue may repeat the Node certificate-chain warnings. |
+
+GitHub cleanup on October 1: #14 was closed after the browser checks; #8 has a comment with verified price corrections; #12 remains open for its 20 content reviews. The deployment audit blocker is tracked in [#23](https://github.com/marlanamc/advisor-bulletin/issues/23). An automated check succeeding only means the checker ran; it does not clear its findings.
+
+Price sources checked October 1: [CED application fee schedule](https://apply.cedevaluations.com/product/application-form/) and [WES evaluation fees](https://www.wes.org/evaluations/). The live cards still need edits in the advisor portal. Suggested replacement pricing sentences:
+
+- **CED — English:** “Evaluations start at $90. A course-by-course report costs $145, or $195 with a GPA. Spanish and Portuguese document interpretation costs extra: $25 for a general report or $50 for a course-by-course report. Ask your advisor which report you need before paying.”
+- **CED — Spanish:** “Las evaluaciones cuestan desde $90. Un informe curso por curso cuesta $145, o $195 con promedio de calificaciones (GPA). La interpretación de documentos en español o portugués cuesta $25 adicionales para un informe general o $50 para uno curso por curso. Pregunta a tu asesor qué informe necesitas antes de pagar.”
+- **WES — English:** “U.S. evaluation packages cost $118–$239, depending on the report and service. Delivery and other fees are extra. Ask your advisor which report your school or employer accepts before paying.”
+- **WES — Spanish:** “Los paquetes de evaluación para Estados Unidos cuestan entre $118 y $239, según el informe y el servicio. El envío y otros cargos se cobran aparte. Pregunta a tu asesor qué informe acepta tu escuela o empleador antes de pagar.”
 
 ## Mobile CSS Improvements
 
@@ -57,7 +85,12 @@ take a few seconds and catch the two failure modes that reach students, a logic
 regression and a rules regression. Both, plus desktop/mobile Playwright, run in
 CI on every push to `main` (`.github/workflows/deploy.yml`).
 
-### Run All Tests
+### Run All Three Suites
+```bash
+npm run test:check
+```
+
+### Run All Browser Tests
 ```bash
 npm test
 ```
@@ -118,13 +151,11 @@ npm run test:headed
 
 ## Test Results
 
-Latest test run (mobile-quick tests):
-```
-4 tests passed (4.6s)
-✅ Calendar view rendered on mobile
-✅ All view toggle buttons are visible
-ℹ️  Modal tests require bulletins to be loaded
-```
+October 1 catch-up: `CI=true npm run test:check` passed locally on Node 23.3.0: **121 unit tests, 43 rules tests, 277 browser tests**, with 15 intentional viewport-specific skips and no flaky retries reported. `npx vite build` also passed. GitHub uses Node 22 and still needs a run of these local changes; the dependency audit described above remains a separate failing deployment gate.
+
+Use the current command output and GitHub Actions run for results. Browser tests deliberately skip a few viewport-specific cases; inspect unexpected skips and flaky retries instead of treating a green run alone as complete coverage.
+
+Browser specs use seeded content and simulated advisor state. They do not replace a manual Google sign-in and publish/edit check using the demo checklist. Local browser runs may log Firestore connection errors while fixture-based assertions pass; the separate rules suite validates permissions against the emulator.
 
 ## Playwright Configuration
 

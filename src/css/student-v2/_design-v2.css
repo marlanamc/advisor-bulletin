@@ -279,7 +279,7 @@ body[data-current-view="feed"] #feedView > .story-row-wrap.story-row-wrap--compa
        feed, the browser re-anchors the scroll by the same amount, and the new
        scrollY trips the threshold that expands the row again — the bubbles
        ping-pong between sizes. student-ui.js solves --story-row-collapse-offset
-       against the page height so the flow slot stays put and nothing under the
+       against the following content so the flow slot stays put and nothing under the
        row moves. !important because the .story-row-wrap--mobile variants set a
        `margin` shorthand at higher specificity, which silently drops this and
        brings the ping-pong back; the offset is measured against whatever the
