@@ -6,6 +6,9 @@ import {
 } from './board-shared.js'
 import { normalizeWebUrl } from './url-safety.js'
 
+// Longest date range that gets every day marked on the month grid.
+const CALENDAR_RANGE_MAX_DAYS = 14
+
 export class BoardCalendarMethods {
     renderCalendar(bulletins) {
         const calendar = document.getElementById('bulletinCalendar');
@@ -103,7 +106,11 @@ export class BoardCalendarMethods {
         const activate = (dayEl) => {
             const iso = dayEl.getAttribute('data-calendar-day');
             if (!iso) return;
-            const target = document.querySelector(`[data-list-date="${iso}"]`);
+            // A mid-range day (Wed of a closure week) has no card of its own;
+            // fall back to the card of a post that covers it.
+            const coveringId = (dayEl.getAttribute('data-day-bulletin-ids') || '').split(',')[0];
+            const target = document.querySelector(`[data-list-date="${iso}"]`)
+                || (coveringId && document.querySelector(`.dates-list-card[data-bulletin-id="${CSS.escape(coveringId)}"]`));
             if (!target) return;
             const headerOffset = parseInt(
                 getComputedStyle(document.documentElement)
@@ -301,11 +308,14 @@ export class BoardCalendarMethods {
         endNextWeek.setDate(endThisWeek.getDate() + 7);
 
         datedItems.forEach((item) => {
-            if (item.date < todayStart) {
+            // A range that has started but not ended is happening now, not past.
+            const lastDay = item.endDate || item.date;
+            const effectiveDate = item.date < todayStart ? todayStart : item.date;
+            if (lastDay < todayStart) {
                 groups[3].items.push(item);
-            } else if (item.date <= endThisWeek) {
+            } else if (effectiveDate <= endThisWeek) {
                 groups[0].items.push(item);
-            } else if (item.date <= endNextWeek) {
+            } else if (effectiveDate <= endNextWeek) {
                 groups[1].items.push(item);
             } else {
                 groups[2].items.push(item);
@@ -405,9 +415,40 @@ export class BoardCalendarMethods {
             bulletin,
             rawDate,
             date,
+            endDate: kind === 'start' ? this.getRangeEndDate(bulletin) : null,
             kind,
             label: this.getDatesListLabel(bulletin, date, kind)
         };
+    }
+
+    // End of a 'range' post, or null when it has none (or it isn't after the start).
+    getRangeEndDate(bulletin) {
+        if (bulletin.dateType !== 'range' || !bulletin.startDate || !bulletin.endDate) return null;
+        const start = this.parseDateOnly(bulletin.startDate);
+        const end = this.parseDateOnly(bulletin.endDate);
+        return start && end && end > start ? end : null;
+    }
+
+    // Every day a range covers, for marking the month grid. Long programmes
+    // (a farmers market running July–October) would paint months of dots, so
+    // only ranges up to CALENDAR_RANGE_MAX_DAYS — a closure week, a winter
+    // break — fill in; longer ones keep marking just their start day.
+    getRangeCalendarDates(bulletin) {
+        const end = this.getRangeEndDate(bulletin);
+        const start = end && this.parseDateOnly(bulletin.startDate);
+        if (!start) return null;
+        const days = [];
+        for (const d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+            days.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`);
+            if (days.length > CALENDAR_RANGE_MAX_DAYS) return null;
+        }
+        return days;
+    }
+
+    formatDateRangeLabel(start, end) {
+        const opts = { weekday: 'short', month: 'short', day: 'numeric' };
+        const locale = this.getLocale();
+        return `${start.toLocaleDateString(locale, opts)} – ${end.toLocaleDateString(locale, opts)}`;
     }
 
     parseDateOnly(rawDate) {
@@ -430,6 +471,11 @@ export class BoardCalendarMethods {
 
         if (kind === 'deadline') {
             return isEs ? `Vence el ${dateLabel}` : `Due by ${dateLabel}`;
+        }
+
+        const rangeEnd = kind === 'start' ? this.getRangeEndDate(bulletin) : null;
+        if (rangeEnd) {
+            return `${this.formatDateRangeLabel(date, rangeEnd)}${timeRange ? ` · ${timeRange}` : ''}`;
         }
 
         if (kind === 'start') {
@@ -491,7 +537,8 @@ export class BoardCalendarMethods {
         calendarBulletins.forEach((bulletin) => {
             const rawDates = (bulletin.dateType === 'sessions' || bulletin.dateType === 'recurring')
                 ? this.getBulletinEventDates(bulletin)
-                : [bulletin.eventDate || bulletin.startDate || bulletin.deadline].filter(Boolean);
+                : this.getRangeCalendarDates(bulletin)
+                    || [bulletin.eventDate || bulletin.startDate || bulletin.deadline].filter(Boolean);
 
             rawDates.forEach((rawDate) => {
                 const date = new Date(String(rawDate).split('T')[0] + 'T12:00:00');
@@ -579,7 +626,9 @@ export class BoardCalendarMethods {
         const actionAttr = hasBulletins && !navigatorMode
             ? `data-calendar-action="show-day-events" data-bulletin-ids="${this.escapeAttribute(bulletins.map(b => b.id).join(','))}"`
             : '';
-        const dayAttr = hasBulletins && navigatorMode ? `data-calendar-day="${isoDate}"` : '';
+        const dayAttr = hasBulletins && navigatorMode
+            ? `data-calendar-day="${isoDate}" data-day-bulletin-ids="${this.escapeAttribute(bulletins.map(b => b.id).join(','))}"`
+            : '';
         const interactiveAttrs = hasBulletins ? 'role="button" tabindex="0"' : '';
 
         return `

@@ -49,7 +49,7 @@ The portal uses **Google sign-in only** (no passwords):
 {
   id: "auto-generated-id",
   title: "Job Opening: Customer Service Rep",
-  category: "job", // job|training|college|career-fair|announcement|resource|immigration
+  category: "job", // job|training|college|career-fair|announcement|no-classes|resource|immigration
   description: "Full job description...",
   company: "Boston Medical Center", // optional
   contact: "hr@bmc.org", // optional

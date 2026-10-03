@@ -299,6 +299,13 @@ export const FEED_CATEGORY_CONTENT = {
         titleEs: 'Anuncios',
         description: 'School news, reminders, and general updates from your advisors.',
         chips: ['School News', 'Reminders', 'Updates', 'Events']
+    },
+    'no-classes': {
+        icon: '🚫',
+        title: 'No Classes',
+        titleEs: 'No hay clases',
+        description: 'Days the school is closed: holidays, snow days, and other closures.',
+        chips: ['Holidays', 'Snow Days', 'School Closed']
     }
 };
 

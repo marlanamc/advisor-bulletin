@@ -255,7 +255,7 @@ service cloud.firestore {
       let validPost = data.type == 'post'
         && data.keys().hasAll(['title', 'category'])
         && data.title is string && data.title.size() > 0 && data.title.size() <= 200
-        && data.category is string && data.category in ['job', 'training', 'college', 'career-fair', 'announcement', 'resource', 'immigration', 'housing', 'health', 'food', 'esol', 'money', 'childcare'];
+        && data.category is string && data.category in ['job', 'training', 'college', 'career-fair', 'announcement', 'no-classes', 'resource', 'immigration', 'housing', 'health', 'food', 'esol', 'money', 'childcare'];
 
       let validResource = data.type == 'resource'
         && data.keys().hasAll(['title', 'titleEn', 'category', 'resourceCategory', 'isPublished'])

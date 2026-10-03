@@ -463,7 +463,8 @@ document.addEventListener('DOMContentLoaded', function() {
         esol:         { accent: '#8050d1', tint: '#ece6f8', grad: 'linear-gradient(145deg,color-mix(in srgb,#8050d1 12%,#fff),#ece6f8)', label: 'ESOL',        emoji: '🗣️' },
         'career-fair':{ accent: '#1f3d7a', tint: '#e3eaf7', grad: 'linear-gradient(145deg,color-mix(in srgb,#1f3d7a 12%,#fff),#e3eaf7)', label: 'CAREER FAIR', emoji: '🤝' },
         money:        { accent: '#1aa37a', tint: '#d7f0e6', grad: 'linear-gradient(145deg,color-mix(in srgb,#1aa37a 12%,#fff),#d7f0e6)', label: 'MONEY HELP',  emoji: '💰' },
-        announcement: { accent: '#317dea', tint: '#dbeafe', grad: 'linear-gradient(145deg,color-mix(in srgb,#317dea 12%,#fff),#dbeafe)', label: 'ANNOUNCEMENT',emoji: '📢' }
+        announcement: { accent: '#317dea', tint: '#dbeafe', grad: 'linear-gradient(145deg,color-mix(in srgb,#317dea 12%,#fff),#dbeafe)', label: 'ANNOUNCEMENT',emoji: '📢' },
+        'no-classes': { accent: '#9a3412', tint: '#fff5e8', grad: 'linear-gradient(145deg,color-mix(in srgb,#9a3412 12%,#fff),#fff5e8)', label: 'NO CLASSES',  emoji: '🚫' }
     };
 
     function getPreviewCardIconSvg(category) {
@@ -484,6 +485,7 @@ document.addEventListener('DOMContentLoaded', function() {
             'legal-aid': '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l-3 7H3l5.5 4-2 7L12 17l5.5 3-2-7L21 9h-6z"/></svg>',
             consulates: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="22" x2="4" y2="2"/><path d="M4 3h13l-3 4.5L17 12H4z"/></svg>',
             announcement: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>',
+            'no-classes': '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="10" y1="14" x2="14" y2="18"/><line x1="14" y1="14" x2="10" y2="18"/></svg>',
         };
         return icons[category] || icons.announcement;
     }
@@ -1175,6 +1177,7 @@ document.addEventListener('DOMContentLoaded', function() {
         'career-fair':  { fill: 'ap-bar-fill-teal',   label: 'Career Fair' },
         'immigration':  { fill: 'ap-bar-fill-green',  label: 'Immigration' },
         'announcement': { fill: 'ap-bar-fill-teal',   label: 'Announce.' },
+        'no-classes':   { fill: 'ap-bar-fill-coral',  label: 'No Classes' },
         'housing':      { fill: 'ap-bar-fill-coral',  label: 'Housing' },
         'health':       { fill: 'ap-bar-fill-coral',  label: 'Health' },
         'food':         { fill: 'ap-bar-fill-green',  label: 'Food' },

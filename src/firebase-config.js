@@ -447,6 +447,10 @@ class FirebaseBulletinBoard {
         const dayLabel = date.toLocaleDateString(locale, { weekday: 'long', month: 'short', day: 'numeric' });
         const timeRange = this.formatTimeRange(bulletin.startTime, bulletin.endTime);
         const timeSuffix = timeRange ? ` · ${this.escapeHtml(timeRange)}` : '';
+        const rangeEnd = this.getRangeEndDate(bulletin);
+        if (rangeEnd) {
+            return `${this.escapeHtml(this.formatDateRangeLabel(date, rangeEnd))}${timeSuffix}`;
+        }
         const prefix = isEs ? 'Comienza el' : 'From';
         const datePart = isEs ? dayLabel : dateLabel;
 
@@ -1883,6 +1887,7 @@ class FirebaseBulletinBoard {
             'career-fair': { accent: '#1f3d7a', tint: '#e3eaf7', grad: 'linear-gradient(145deg,color-mix(in srgb,#1f3d7a 12%,#fff) 0%,#e3eaf7 100%)', label: 'Career Fair',   labelEs: 'Feria de Empleo',badge: 'FREE',         emoji: '🤝' },
             money:         { accent: '#1aa37a', tint: '#d7f0e6', grad: 'linear-gradient(145deg,color-mix(in srgb,#1aa37a 12%,#fff) 0%,#d7f0e6 100%)', label: 'Money Help',    labelEs: 'Ayuda Económica',badge: 'FREE',         emoji: '💵' },
             announcement:  { accent: '#317dea', tint: '#dbeafe', grad: 'linear-gradient(145deg,color-mix(in srgb,#317dea 12%,#fff) 0%,#dbeafe 100%)', label: 'Announcements', labelEs: 'Anuncios',       badge: 'INFO',         emoji: '📣' },
+            'no-classes':  { accent: '#9a3412', tint: '#fff5e8', grad: 'linear-gradient(145deg,color-mix(in srgb,#9a3412 12%,#fff) 0%,#fff5e8 100%)', label: 'No Classes',    labelEs: 'No hay clases',  badge: 'CLOSED',       emoji: '🚫' },
             resource:      { accent: '#566274', tint: '#e8ecf2', grad: 'linear-gradient(145deg,color-mix(in srgb,#566274 12%,#fff) 0%,#e8ecf2 100%)', label: 'Resource',      labelEs: 'Recurso',        badge: 'INFO',         emoji: '🔗' },
         };
         return map[category] || { accent: '#566274', tint: '#e8ecf2', grad: 'linear-gradient(145deg,color-mix(in srgb,#566274 12%,#fff) 0%,#e8ecf2 100%)', label: category, labelEs: category, badge: 'INFO', emoji: '📌' };
@@ -1906,6 +1911,7 @@ class FirebaseBulletinBoard {
             money: `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="38" height="38"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>`,
             childcare: `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="38" height="38"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
             announcement: `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="38" height="38"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>`,
+            'no-classes': `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="38" height="38"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="10" y1="14" x2="14" y2="18"/><line x1="14" y1="14" x2="10" y2="18"/></svg>`,
         };
         return icons[category] || icons.announcement;
     }
@@ -1926,6 +1932,7 @@ class FirebaseBulletinBoard {
             'career-fair': { top: '#e3eaf7', bot: '#fff', sun: '#fff',    fg1: '#1f3d7a', fg2: '#e3eaf7' },
             money:         { top: '#d7f0e6', bot: '#fff', sun: '#ffc857', fg1: '#1aa37a', fg2: '#d7f0e6' },
             announcement:  { top: '#dbeafe', bot: '#fff', sun: '#fff8eb', fg1: '#317dea', fg2: '#dbeafe' },
+            'no-classes':  { top: '#fff5e8', bot: '#fff', sun: '#fff8eb', fg1: '#9a3412', fg2: '#fff5e8' },
             resource:      { top: '#e8ecf2', bot: '#fff', sun: '#fff8eb', fg1: '#566274', fg2: '#e8ecf2' },
         };
         const p = palettes[category] || palettes.announcement;

@@ -347,7 +347,8 @@ export class BoardDetailMethods {
             college: { en: 'Apply online', es: 'Aplicar en línea' },
             'career-fair': { en: 'Event details', es: 'Detalles del evento' },
             resource: { en: 'Open resource', es: 'Abrir recurso' },
-            announcement: { en: 'More info', es: 'Más info' }
+            announcement: { en: 'More info', es: 'Más info' },
+            'no-classes': { en: 'More info', es: 'Más info' }
         };
 
         const label = labels[category] || { en: 'Open link', es: 'Abrir enlace' };

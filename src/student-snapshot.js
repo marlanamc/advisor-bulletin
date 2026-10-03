@@ -25,6 +25,7 @@ const CATEGORY_META = {
     money: { label: 'Money help', labelEs: 'Dinero', emoji: '💵', accent: '#1aa37a', tint: '#d7f0e6', grad: 'linear-gradient(145deg,color-mix(in srgb,#1aa37a 12%,#fff) 0%,#d7f0e6 100%)' },
     'career-fair': { label: 'Career fair', labelEs: 'Feria', emoji: '🤝', accent: '#1f3d7a', tint: '#e3eaf7', grad: 'linear-gradient(145deg,color-mix(in srgb,#1f3d7a 12%,#fff) 0%,#e3eaf7 100%)' },
     announcement: { label: 'News', labelEs: 'Anuncios', emoji: '📣', accent: '#317dea', tint: '#dbeafe', grad: 'linear-gradient(145deg,color-mix(in srgb,#317dea 12%,#fff) 0%,#dbeafe 100%)' },
+    'no-classes': { label: 'No classes', labelEs: 'No hay clases', emoji: '🚫', accent: '#9a3412', tint: '#fff5e8', grad: 'linear-gradient(145deg,color-mix(in srgb,#9a3412 12%,#fff) 0%,#fff5e8 100%)' },
 };
 
 function mark(name, detail) {
