@@ -68,7 +68,11 @@ export class AdminBulletinWriteMethods {
             if (this.contentMode === 'event') {
                 const hasEndDate = Boolean((formData.get('endDate') || '').trim());
                 formData.set('contentType', 'post');
-                formData.set('category', 'announcement');
+                // Calendar events can be school closures or other categories.
+                // Announcement is only the default when no category was chosen.
+                if (!(formData.get('category') || '').trim()) {
+                    formData.set('category', 'announcement');
+                }
                 // Trust the date type the composer mirrored from #cxEvType. It
                 // offers all five shapes, and overwriting it here used to throw
                 // three of them away -- 'sessions' lost every date but the

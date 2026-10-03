@@ -324,14 +324,14 @@ class FirebaseAdminPanel {
         }
 
         const categorySelect = document.getElementById('category');
-        if (categorySelect) {
+        if (categorySelect && !categorySelect.value) {
             categorySelect.value = 'announcement';
             categorySelect.dispatchEvent(new Event('change', { bubbles: true }));
             this.syncCategoryPicker('announcement');
         }
 
         const dateTypeSelect = document.getElementById('dateType');
-        if (dateTypeSelect) {
+        if (dateTypeSelect && !dateTypeSelect.value) {
             dateTypeSelect.value = 'event';
             toggleDateFields();
             if (this.contentMode === 'event') {
