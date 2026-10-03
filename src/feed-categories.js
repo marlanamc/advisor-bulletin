@@ -102,6 +102,17 @@ export const POST_CATEGORIES = [
         emoji: '📣',
         pickerShort: 'News',
     },
+    {
+        // School closures (holidays, snow days, staff days). Kept apart from
+        // 'announcement' — mostly community events — so a closure stands out.
+        id: 'no-classes',
+        adminLabel: 'No Classes / School Closed',
+        displayLabel: 'No Classes',
+        filterLabelEn: 'No classes',
+        filterLabelEs: 'No hay clases',
+        emoji: '🚫',
+        pickerShort: 'No class',
+    },
 ];
 
 /** Legacy / alternate values mapped to canonical ids when filtering or displaying. */

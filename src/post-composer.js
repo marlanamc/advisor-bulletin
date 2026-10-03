@@ -48,6 +48,7 @@ const CATS = {
     consulates:    { em: '🛂', chip: 'Consulates',    bg: '#dbeff2', fg: '#0f6f7a' },
     'career-fair': { em: '🤝', chip: 'Career Fair',   bg: '#e3eaf7', fg: '#1f3d7a' },
     announcement:  { em: '📣', chip: 'Announcement',  bg: '#dbeafe', fg: '#317dea' },
+    'no-classes':  { em: '🚫', chip: 'No Classes',    bg: '#fff5e8', fg: '#9a3412' },
 }
 const PRIMARY_CATS = ['job', 'training', 'immigration', 'housing', 'health', 'announcement']
 

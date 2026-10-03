@@ -384,7 +384,7 @@ test.describe('Advisor redesign', () => {
     );
     expect(offered).toEqual([
       'job', 'training', 'immigration', 'housing', 'health', 'food',
-      'esol', 'college', 'money', 'career-fair', 'announcement',
+      'esol', 'college', 'money', 'career-fair', 'announcement', 'no-classes',
     ]);
     for (const dead of ['jobs', 'family', 'family-community', 'general', 'hse', 'legal-aid', 'consulates']) {
       expect(offered).not.toContain(dead);
