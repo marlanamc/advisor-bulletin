@@ -18,6 +18,29 @@ The GitHub Action (`.github/workflows/deploy.yml`) does this on each push:
 
 **Where to look when a deploy fails:** GitHub repository → **Actions** tab → click the failed run. A failed *test* job means the code change broke something (download the `playwright-report` artifact to see what). A failed *deploy* job usually means a Firebase permission/secret problem. Either way, **the live site is unaffected** — it simply keeps running the previous version.
 
+## Dependency audit maintenance
+
+CI runs `npm audit --audit-level=high` before tests. Commit both `package.json`
+and `package-lock.json` when updating dependencies; CI installs the lockfile with
+`npm ci`.
+
+The October 2026 security update includes two scoped overrides:
+
+- `firebase-tools` uses `chokidar@4.0.3` to remove the unpatched `braces`
+  dependency ([advisory](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm)).
+  Version 4 supports CommonJS and the literal rule-file paths used by this
+  project's Firestore and Storage emulators, but removes glob matching. This
+  project has no Functions emulator; reassess this override if adding Functions
+  with glob-based ignore patterns.
+- `get-uri` uses `basic-ftp@6.2.1` to fix the directory-listing parser denial of
+  service ([advisory](https://github.com/advisories/GHSA-c475-qrg2-pj4r)).
+
+Remove these overrides when upstream dependencies adopt fixed versions. The
+audit still reports moderate findings through OpenTelemetry and UUID in the
+Firebase/Google tooling. They do not fail the high-severity gate. Review those
+upstream upgrades separately rather than applying `npm audit fix --force`, which
+currently proposes a breaking Firebase CLI downgrade.
+
 ## Deploying manually from a computer
 
 You only need this if GitHub Actions is unavailable or you're doing something unusual.
