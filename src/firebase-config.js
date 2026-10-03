@@ -447,6 +447,10 @@ class FirebaseBulletinBoard {
         const dayLabel = date.toLocaleDateString(locale, { weekday: 'long', month: 'short', day: 'numeric' });
         const timeRange = this.formatTimeRange(bulletin.startTime, bulletin.endTime);
         const timeSuffix = timeRange ? ` · ${this.escapeHtml(timeRange)}` : '';
+        const rangeEnd = this.getRangeEndDate(bulletin);
+        if (rangeEnd) {
+            return `${this.escapeHtml(this.formatDateRangeLabel(date, rangeEnd))}${timeSuffix}`;
+        }
         const prefix = isEs ? 'Comienza el' : 'From';
         const datePart = isEs ? dayLabel : dateLabel;
 
