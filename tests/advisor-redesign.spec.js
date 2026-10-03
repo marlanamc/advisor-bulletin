@@ -632,6 +632,42 @@ test.describe('Advisor redesign', () => {
     await expect(page.locator('#apNavBulletins')).toHaveClass(/active/);
   });
 
+  test('keeps a school closure category and date range when reopening and saving an event', async ({ page }) => {
+    await seedAdvisorEditFixtures(page);
+    await page.evaluate(() => {
+      const event = window.adminPanel.bulletins.find(item => item.id === 'edit-event-1');
+      Object.assign(event, {
+        title: 'Winter break', category: 'no-classes', dateType: 'range',
+        startDate: '2027-02-15', endDate: '2027-02-19',
+      });
+      window.adminPanel.loadManageBulletins();
+    });
+    await page.locator('#apNavEvents').click();
+    await page.locator('#manage-card-edit-event-1 .edit-btn').click();
+    await expect(page.locator('[data-cx-type="event"]')).toHaveClass(/active/);
+    await expect(page.locator('#cxCatBtn')).toContainText('No Classes');
+    await expect(page.locator('#cxEvType')).toHaveValue('range');
+    await page.locator('#cxSubmitBtn').click();
+    const update = await getLastCapturedUpdate(page);
+    expect(update.bulletin).toMatchObject({
+      category: 'no-classes', dateType: 'range',
+      startDate: '2027-02-15', endDate: '2027-02-19', hideFromMainFeed: true,
+    });
+  });
+
+  test('changes an announcement event to No Classes through the category picker', async ({ page }) => {
+    await seedAdvisorEditFixtures(page);
+    await page.locator('#apNavEvents').click();
+    await page.locator('#manage-card-edit-event-1 .edit-btn').click();
+    await page.locator('#cxCatBtn').click();
+    await page.getByRole('button', { name: '+ More topics', exact: true }).click();
+    await page.locator('#cxCatPop .cx-cat[data-cat="no-classes"]').click();
+    await expect(page.locator('#cxCatBtn')).toContainText('No Classes');
+    await page.locator('#cxSubmitBtn').click();
+    const update = await getLastCapturedUpdate(page);
+    expect(update.bulletin).toMatchObject({ category: 'no-classes', hideFromMainFeed: true });
+  });
+
   test('edits a calendar event with event preview, date mirrors, and event submit routing', async ({ page }) => {
     await seedAdvisorEditFixtures(page);
 

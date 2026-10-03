@@ -171,7 +171,7 @@ export class AdminComposerFormMethods {
             || bulletin.pdfUrl
         );
 
-        return bulletin.category === 'announcement' && !hasBody;
+        return ['announcement', 'no-classes'].includes(bulletin.category) && !hasBody;
     }
 
     getManageContentKind(bulletin) {
