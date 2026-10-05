@@ -210,40 +210,6 @@ export function getSessionStartMs(session, fallbackStart = '') {
 }
 
 /**
- * Feed sort timestamp for multi-session bulletins.
- * After a session ends, bump the post toward the top until the next session passes.
- * @param {EventSession[]} sessions
- * @param {number} datePostedMs
- * @param {number} [now]
- */
-export function getMultiSessionFeedSortMs(sessions, datePostedMs, now = Date.now()) {
-    if (!sessions || sessions.length < 2 || !datePostedMs) {
-        return datePostedMs || 0;
-    }
-
-    let lastCompletedEnd = 0;
-    let hasUpcoming = false;
-
-    sessions.forEach((session) => {
-        const endMs = getSessionEndMs(session);
-        if (!endMs) return;
-        if (endMs <= now) {
-            lastCompletedEnd = Math.max(lastCompletedEnd, endMs);
-        } else {
-            hasUpcoming = true;
-        }
-    });
-
-    if (lastCompletedEnd > 0 && hasUpcoming) {
-        const todayStart = new Date(now);
-        todayStart.setHours(0, 0, 0, 0);
-        return Math.max(datePostedMs, lastCompletedEnd, todayStart.getTime());
-    }
-
-    return datePostedMs;
-}
-
-/**
  * @param {EventSession[]} sessions
  * @param {number} [now]
  * @param {string} [fallbackStart]

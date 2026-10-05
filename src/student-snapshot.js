@@ -1,3 +1,4 @@
+import { comparePostsNewestFirst } from './post-order.js';
 import { expandRecurringWeeklySessions, normalizeEventSessions } from './event-sessions.js';
 
 const SNAPSHOT_URL = '/student-feed-snapshot.json';
@@ -361,7 +362,7 @@ function renderSnapshot(snapshot, source) {
 
     const posts = snapshot.items
         .filter((item) => item.type !== 'resource' && !isCalendarOnly(item) && !isExpired(item))
-        .sort((a, b) => getTimestampValue(b.datePosted || b.createdAt) - getTimestampValue(a.datePosted || a.createdAt))
+        .sort(comparePostsNewestFirst)
         .slice(0, 36);
 
     if (!posts.length) return false;
