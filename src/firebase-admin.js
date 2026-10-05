@@ -1,3 +1,4 @@
+import { getPostPublicationMs, comparePostsNewestFirst } from './post-order.js'
 import { db } from './firebase.js'
 import { showTab, handleTabKeydown, toggleDateFields } from './admin-tab-globals.js'
 import * as bulletinFormat from './bulletin-format.js'
@@ -22,8 +23,6 @@ import {
     parseSessionEntry,
     sessionsShareSameTime,
     formatSessionsDetailLines,
-    getMultiSessionFeedSortMs,
-    getNextSessionStartMs,
     expandRecurringWeeklySessions,
     WEEKDAY_NAMES,
 } from './event-sessions.js'
@@ -536,32 +535,11 @@ class FirebaseAdminPanel {
     }
 
     getManageSortTimestamp(bulletin) {
-        const postedMs = this.getManagePostTimestamp(bulletin);
-        if (!bulletin || (bulletin.dateType !== 'sessions' && bulletin.dateType !== 'recurring')) {
-            return postedMs;
-        }
-
-        return getMultiSessionFeedSortMs(this.getBulletinEventSessions(bulletin), postedMs);
+        return getPostPublicationMs(bulletin);
     }
 
     compareManagePosts(a, b) {
-        const sortA = this.getManageSortTimestamp(a);
-        const sortB = this.getManageSortTimestamp(b);
-        if (sortB !== sortA) {
-            return sortB - sortA;
-        }
-
-        const aIsMulti = a.dateType === 'sessions' || a.dateType === 'recurring';
-        const bIsMulti = b.dateType === 'sessions' || b.dateType === 'recurring';
-        if (aIsMulti && bIsMulti) {
-            const nextA = getNextSessionStartMs(this.getBulletinEventSessions(a));
-            const nextB = getNextSessionStartMs(this.getBulletinEventSessions(b));
-            if (nextA !== nextB) {
-                return nextA - nextB;
-            }
-        }
-
-        return this.getManagePostTimestamp(b) - this.getManagePostTimestamp(a);
+        return comparePostsNewestFirst(a, b);
     }
 
     // Tab switching (showTab) and the dashboard overview

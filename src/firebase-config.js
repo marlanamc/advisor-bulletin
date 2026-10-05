@@ -1,3 +1,4 @@
+import { getPostPublicationMs, comparePostsNewestFirst } from './post-order.js'
 import { db } from './firebase-student.js'
 import { applyResourceLogos, fetchAllResourceLogos } from './resource-logos.js'
 import { STUDENT_ADVISOR_DIRECTORY } from './advisor-directory.js'
@@ -15,8 +16,6 @@ import {
     normalizeEventSessions,
     parseSessionEntry,
     formatSessionsDetailLines,
-    getMultiSessionFeedSortMs,
-    getNextSessionStartMs,
     getSessionEndMs,
     sessionsShareSameTime,
     expandRecurringWeeklySessions,
@@ -1608,33 +1607,11 @@ class FirebaseBulletinBoard {
     }
 
     getFeedSortTimestamp(bulletin) {
-        const postedMs = this.getTimestampValue(bulletin.datePosted || bulletin.createdAt);
-        if (!bulletin || (bulletin.dateType !== 'sessions' && bulletin.dateType !== 'recurring')) {
-            return postedMs;
-        }
-
-        const sessions = this.getBulletinEventSessions(bulletin);
-        return getMultiSessionFeedSortMs(sessions, postedMs);
+        return getPostPublicationMs(bulletin);
     }
 
     compareFeedPosts(a, b) {
-        const sortA = this.getFeedSortTimestamp(a);
-        const sortB = this.getFeedSortTimestamp(b);
-        if (sortB !== sortA) {
-            return sortB - sortA;
-        }
-
-        const aIsMulti = a.dateType === 'sessions' || a.dateType === 'recurring';
-        const bIsMulti = b.dateType === 'sessions' || b.dateType === 'recurring';
-        if (aIsMulti && bIsMulti) {
-            const nextA = getNextSessionStartMs(this.getBulletinEventSessions(a));
-            const nextB = getNextSessionStartMs(this.getBulletinEventSessions(b));
-            if (nextA !== nextB) {
-                return nextA - nextB;
-            }
-        }
-
-        return this.getTimestampValue(b.datePosted || b.createdAt) - this.getTimestampValue(a.datePosted || a.createdAt);
+        return comparePostsNewestFirst(a, b);
     }
 
     formatPostedDate(value) {
