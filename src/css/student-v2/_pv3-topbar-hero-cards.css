@@ -493,26 +493,80 @@ body[data-lang="ES"] .story-row-wrap--bilingual .story-bubble-label.es-text {
     }
 
     .bulletin-grid {
-        grid-template-columns: repeat(3, 1fr) !important;
-        gap: 22px;
         max-width: 1120px;
         margin: 0 auto;
     }
 }
 
+/* ── Feed card grid ─────────────────────────────────────────────── */
+/* Columns follow the width the feed actually has (it shares the row
+   with the desktop aside), not the viewport: one column on phones, two
+   at intermediate widths, three once cards have room to breathe. */
+.bulletin-container {
+    container: feed / inline-size;
+}
+
+.bulletin-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+    align-items: stretch;
+}
+
+@container feed (min-width: 600px) {
+    .bulletin-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 20px 18px;
+    }
+}
+
+@container feed (min-width: 860px) {
+    .bulletin-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 22px 20px;
+    }
+}
+
 /* ── Proto Cards (pc) ───────────────────────────────────────────── */
+/* --pc-accent / --pc-tint come from the category (inline style on the
+   card); the defaults are the neutral fallback for unknown categories.
+   --pc-ink is the accent darkened toward harbor navy so small labels
+   clear 4.5:1 on the tint for every category. */
 .pc {
+    --pc-accent: #566274;
+    --pc-tint: #e8ecf2;
+    --pc-ink: color-mix(in srgb, var(--pc-accent) 60%, #0a1d3a);
+    --pc-inset: 12px;
+    --pc-image-h: clamp(300px, 82vw, 440px);
+    --pc-panel-min: 0px;
     background: #fff;
     border-radius: 20px;
     overflow: hidden;
-    box-shadow: 0 2px 0 rgba(0,0,0,0.04), 0 8px 24px rgba(10,29,58,0.07);
+    box-shadow: 0 2px 0 rgba(10,29,58,0.04), 0 8px 24px rgba(10,29,58,0.07);
     transition: transform 0.18s, box-shadow 0.18s;
     display: flex;
     flex-direction: column;
+    min-width: 0;
     cursor: pointer;
     outline: none;
     content-visibility: auto;
-    contain-intrinsic-size: 0 450px;
+    contain-intrinsic-size: auto 420px;
+}
+
+/* Multi-column: each card spans two rows of the feed grid (media, body)
+   and shares them via subgrid, so image areas and panels in a row are
+   the same height, and bodies/footers line up. A panel that needs more
+   room for a long title grows the whole row instead of clipping. */
+@container feed (min-width: 600px) {
+    .bulletin-grid > .pc {
+        --pc-image-h: 320px;
+        --pc-panel-min: 200px;
+        display: grid;
+        grid-row: span 2;
+        grid-template-rows: subgrid;
+        row-gap: 0;
+        /* Containment would turn the subgrid into an independent grid. */
+        content-visibility: visible;
+    }
 }
 
 .pc:hover {
@@ -537,56 +591,136 @@ body[data-lang="ES"] .story-row-wrap--bilingual .story-bubble-label.es-text {
 
 .pc--expired { opacity: 0.62; }
 
-/* Top colored section */
-.pc__top {
+/* Media area: the flyer, or the typographic announcement panel */
+.pc__media {
     position: relative;
-    height: 200px;
     display: flex;
     flex-direction: column;
-    padding: 14px 14px 0;
+    min-width: 0;
+    padding: var(--pc-inset) var(--pc-inset) 0;
+}
+
+.pc--image .pc__media {
+    min-height: var(--pc-image-h);
+}
+
+.pc--image .pc__panel,
+.pc--panel .pc__image-stage,
+.pc--panel .pc__body-head {
+    display: none;
+}
+
+.pc__image-stage {
+    position: absolute;
+    inset: var(--pc-inset) var(--pc-inset) 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 16px;
+    background: color-mix(in srgb, var(--pc-tint) 40%, #f8fafc);
     overflow: hidden;
 }
 
-.pc__top--image {
-    height: clamp(320px, 60vw, 520px);
-    padding: 12px;
+.pc__poster-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+    display: block;
+    cursor: zoom-in;
 }
 
-@media (min-width: 768px) {
-    .pc__top--image {
-        height: 390px;
-    }
-}
-
-.pc__chip-bar {
-    padding: 14px 16px 4px;
-    background: #fff;
-}
-
-.pc__chip-bar .pc__chips {
-    margin: 0;
-    justify-content: flex-end;
-}
-
-.pc__chip-bar .pc__chip--expired {
-    margin-right: auto;
-}
-
-.pc__chips {
+.pc__panel {
+    container-type: inline-size;
+    flex: 1;
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
+    gap: 14px;
+    min-height: var(--pc-panel-min);
+    padding: 18px 20px 22px;
+    border-radius: 16px;
+    background: var(--pc-tint);
+    color: #0a1d3a;
+}
+
+/* The post title is the card's headline. It scales with the panel's
+   width, wraps freely, and is centred in any height the row gives it. */
+.pc__panel-title {
+    margin: auto 0;
+    font-family: 'Outfit', sans-serif;
+    font-size: clamp(26px, 11.5cqi, 46px);
+    font-weight: 800;
+    line-height: 1.04;
+    letter-spacing: -0.015em;
+    color: #0a1d3a;
+    overflow-wrap: break-word;
+    text-wrap: balance;
+}
+
+.pc__panel-title--long {
+    font-size: clamp(23px, 9.5cqi, 38px);
+    line-height: 1.08;
+}
+
+.pc__panel-title--xlong {
+    font-size: clamp(21px, 8cqi, 32px);
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+}
+
+/* Category icon + label (Heavy-Label Rule) */
+.pc__eyebrow {
+    display: flex;
     align-items: center;
     gap: 8px;
-    margin: 0 0 10px;
+    min-width: 0;
+    color: var(--pc-ink);
+    font-family: 'Outfit', sans-serif;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    line-height: 1.2;
+}
+
+.pc__eyebrow-icon {
+    flex: none;
+    display: inline-flex;
+    width: 22px;
+    height: 22px;
+}
+
+.pc__eyebrow-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.pc__eyebrow-label {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.pc__eyebrow .pc__chip--expired {
+    margin-left: auto;
+}
+
+.pc__eyebrow--compact {
+    gap: 6px;
+    margin-bottom: 6px;
+    font-size: 11.5px;
+}
+
+.pc__eyebrow--compact .pc__eyebrow-icon {
+    width: 16px;
+    height: 16px;
 }
 
 .pc__chip {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 5px;
-    min-height: 26px;
-    padding: 5px 10px;
+    flex: none;
+    min-height: 24px;
+    padding: 4px 10px;
     border-radius: 999px;
     font-family: 'Plus Jakarta Sans', sans-serif;
     font-size: 10.5px;
@@ -595,86 +729,21 @@ body[data-lang="ES"] .story-row-wrap--bilingual .story-bubble-label.es-text {
     text-transform: uppercase;
     line-height: 1.2;
     border: 1px solid transparent;
-    box-shadow: none;
-}
-
-.pc__chip-emoji {
-    font-size: 13px;
-    line-height: 1;
-    letter-spacing: 0;
-    text-transform: none;
-    opacity: 0.9;
-}
-
-.pc__chip--category {
-    background: var(--chip-tint, #eef4ff);
-    color: var(--chip-accent, #1d4ed8);
-    border-color: color-mix(in srgb, var(--chip-accent, #1d4ed8) 14%, #ffffff);
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
 }
 
 .pc__chip--expired {
     background: #fff7ed;
-    color: #c2410c;
-    border-color: rgba(251, 146, 60, 0.2);
-    box-shadow: 0 1px 2px rgba(234, 88, 12, 0.05);
-}
-
-/* Centered icon */
-.pc__icon-wrap {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.pc__icon-box {
-    width: 88px;
-    height: 88px;
-    border-radius: 22px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.18);
-}
-
-.pc__image-stage {
-    position: absolute;
-    inset: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 16px;
-    background: #fff;
-    overflow: hidden;
-}
-
-.pc__poster-image {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    display: block;
-    cursor: zoom-in;
-}
-
-/* Title overlay at bottom of colored area */
-.pc__title-overlay {
-    font-family: 'Outfit', sans-serif;
-    font-size: 14px;
-    font-weight: 700;
-    color: rgba(15,23,42,0.6);
-    padding: 10px 2px 12px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    color: #9a3412;
+    border-color: rgba(251, 146, 60, 0.3);
 }
 
 /* White body */
 .pc__body {
-    padding: 14px 16px 16px;
+    padding: 16px 20px 18px;
     display: flex;
     flex-direction: column;
     flex: 1;
+    min-width: 0;
 }
 
 .pc__title {
@@ -684,10 +753,7 @@ body[data-lang="ES"] .story-row-wrap--bilingual .story-bubble-label.es-text {
     color: #0a1d3a;
     line-height: 1.2;
     margin: 0 0 6px;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+    overflow-wrap: break-word;
 }
 
 .pc__desc {
@@ -745,6 +811,7 @@ body[data-lang="ES"] .story-row-wrap--bilingual .story-bubble-label.es-text {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 12px;
     margin-top: 14px;
     padding-top: 12px;
     border-top: 1px solid #f1f5f9;
@@ -767,6 +834,7 @@ body[data-lang="ES"] .story-row-wrap--bilingual .story-bubble-label.es-text {
 }
 
 .pc__open-btn {
+    color: var(--pc-ink);
     font-size: 13px;
     font-weight: 800;
     font-family: 'Plus Jakarta Sans', sans-serif;
