@@ -31,7 +31,7 @@ import { RESOURCE_CATEGORY_CONFIG } from './board-shared.js'
 // composer's chips match the colors advisors and students see everywhere else.
 const CATS = {
     job:           { em: '💼', chip: 'Job',           bg: '#e3eaf7', fg: '#1f3d7a' },
-    training:      { em: '📚', chip: 'Training',      bg: '#e6edfa', fg: '#2f5fb3' },
+    training:      { em: '📚', chip: 'Training',      bg: '#d3eef3', fg: '#0e7490' },
     immigration:   { em: '🌎', chip: 'Immigration',   bg: '#ece6f8', fg: '#6d4aa8' },
     housing:       { em: '🏠', chip: 'Housing',       bg: '#f8ded3', fg: '#c2542e' },
     health:        { em: '❤️', chip: 'Health',        bg: '#fbdde7', fg: '#d63f6f' },
@@ -41,12 +41,12 @@ const CATS = {
     'family-community': { em: '🏘️', chip: 'Family & Community', bg: '#f0dcee', fg: '#7d2f66' },
     general:       { em: '❓', chip: 'General Help',  bg: '#e8ecf2', fg: '#566274' },
     esol:          { em: '🗣️', chip: 'ESOL',          bg: '#ece6f8', fg: '#8050d1' },
-    hse:           { em: '📚', chip: 'GED / HSE',      bg: '#e6edfa', fg: '#2f5fb3' },
+    hse:           { em: '📚', chip: 'GED / HSE',      bg: '#d3eef3', fg: '#0e7490' },
     college:       { em: '🎓', chip: 'College',       bg: '#e1e6f0', fg: '#14315f' },
     money:         { em: '💵', chip: 'Money Help',    bg: '#d7f0e6', fg: '#1aa37a' },
     'legal-aid':   { em: '⚖️', chip: 'Legal Help',    bg: '#e8e2f7', fg: '#55379e' },
     consulates:    { em: '🛂', chip: 'Consulates',    bg: '#dbeff2', fg: '#0f6f7a' },
-    'career-fair': { em: '🤝', chip: 'Career Fair',   bg: '#e3eaf7', fg: '#1f3d7a' },
+    'career-fair': { em: '🤝', chip: 'Career Fair',   bg: '#e6f2d0', fg: '#4d7c0f' },
     announcement:  { em: '📣', chip: 'Announcement',  bg: '#dbeafe', fg: '#317dea' },
     'no-classes':  { em: '🚫', chip: 'No Classes',    bg: '#fff5e8', fg: '#9a3412' },
 }

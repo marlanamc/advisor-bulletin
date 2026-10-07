@@ -142,8 +142,8 @@ export const RESOURCE_CATEGORY_CONFIG = {
         labelEn: 'GED / HSE',
         labelEs: 'Equivalencia escolar',
         icon: 'abc',
-        color: '#2f5fb3',
-        tint: '#e6edfa'
+        color: '#0e7490',
+        tint: '#d3eef3'
     },
     college: {
         labelEn: 'College & Careers',

@@ -453,7 +453,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // preview matches what students actually see.
     var PREVIEW_CAT_META = {
         job:          { accent: '#1f3d7a', tint: '#e3eaf7', grad: 'linear-gradient(145deg,color-mix(in srgb,#1f3d7a 12%,#fff),#e3eaf7)', label: 'JOB HELP',    emoji: '💼' },
-        training:     { accent: '#2f5fb3', tint: '#e6edfa', grad: 'linear-gradient(145deg,color-mix(in srgb,#2f5fb3 12%,#fff),#e6edfa)', label: 'TRAINING',    emoji: '📚' },
+        training:     { accent: '#0e7490', tint: '#d3eef3', grad: 'linear-gradient(145deg,color-mix(in srgb,#0e7490 12%,#fff),#d3eef3)', label: 'TRAINING',    emoji: '📚' },
         college:      { accent: '#14315f', tint: '#e1e6f0', grad: 'linear-gradient(145deg,color-mix(in srgb,#14315f 12%,#fff),#e1e6f0)', label: 'COLLEGE',     emoji: '🎓' },
         immigration:  { accent: '#6d4aa8', tint: '#ece6f8', grad: 'linear-gradient(145deg,color-mix(in srgb,#6d4aa8 12%,#fff),#ece6f8)', label: 'IMMIGRATION', emoji: '🌍' },
         housing:      { accent: '#c2542e', tint: '#f8ded3', grad: 'linear-gradient(145deg,color-mix(in srgb,#c2542e 12%,#fff),#f8ded3)', label: 'HOUSING',     emoji: '🏠' },
@@ -461,7 +461,7 @@ document.addEventListener('DOMContentLoaded', function() {
         food:         { accent: '#b9741c', tint: '#f8e8cf', grad: 'linear-gradient(145deg,color-mix(in srgb,#b9741c 12%,#fff),#f8e8cf)', label: 'FOOD',        emoji: '🍎' },
         childcare:    { accent: '#a8386c', tint: '#f6dced', grad: 'linear-gradient(145deg,color-mix(in srgb,#a8386c 12%,#fff),#f6dced)', label: 'FAMILY',      emoji: '👨‍👩‍👧' },
         esol:         { accent: '#8050d1', tint: '#ece6f8', grad: 'linear-gradient(145deg,color-mix(in srgb,#8050d1 12%,#fff),#ece6f8)', label: 'ESOL',        emoji: '🗣️' },
-        'career-fair':{ accent: '#1f3d7a', tint: '#e3eaf7', grad: 'linear-gradient(145deg,color-mix(in srgb,#1f3d7a 12%,#fff),#e3eaf7)', label: 'CAREER FAIR', emoji: '🤝' },
+        'career-fair':{ accent: '#4d7c0f', tint: '#e6f2d0', grad: 'linear-gradient(145deg,color-mix(in srgb,#4d7c0f 12%,#fff),#e6f2d0)', label: 'CAREER FAIR', emoji: '🤝' },
         money:        { accent: '#1aa37a', tint: '#d7f0e6', grad: 'linear-gradient(145deg,color-mix(in srgb,#1aa37a 12%,#fff),#d7f0e6)', label: 'MONEY HELP',  emoji: '💰' },
         announcement: { accent: '#317dea', tint: '#dbeafe', grad: 'linear-gradient(145deg,color-mix(in srgb,#317dea 12%,#fff),#dbeafe)', label: 'ANNOUNCEMENT',emoji: '📢' },
         'no-classes': { accent: '#9a3412', tint: '#fff5e8', grad: 'linear-gradient(145deg,color-mix(in srgb,#9a3412 12%,#fff),#fff5e8)', label: 'NO CLASSES',  emoji: '🚫' }
@@ -546,7 +546,7 @@ document.addEventListener('DOMContentLoaded', function() {
         food: '#b9741c',
         family: '#a8386c',
         esol: '#8050d1',
-        hse: '#2f5fb3',
+        hse: '#0e7490',
         college: '#14315f',
         'legal-aid': '#55379e',
         money: '#1aa37a',
