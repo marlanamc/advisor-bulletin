@@ -17,7 +17,7 @@ const SNAPSHOT_MAX_STORED_ITEMS = 72;
 // cards visibly recolor once the live feed takes over.
 const CATEGORY_META = {
     job: { label: 'Job Help', labelEs: 'Ayuda con empleo', emoji: '💼', accent: '#1f3d7a', tint: '#e3eaf7', grad: 'linear-gradient(145deg,color-mix(in srgb,#1f3d7a 12%,#fff) 0%,#e3eaf7 100%)' },
-    training: { label: 'Training', labelEs: 'Capacitación', emoji: '📚', accent: '#2f5fb3', tint: '#e6edfa', grad: 'linear-gradient(145deg,color-mix(in srgb,#2f5fb3 12%,#fff) 0%,#e6edfa 100%)' },
+    training: { label: 'Training', labelEs: 'Capacitación', emoji: '📚', accent: '#0e7490', tint: '#d3eef3', grad: 'linear-gradient(145deg,color-mix(in srgb,#0e7490 12%,#fff) 0%,#d3eef3 100%)' },
     immigration: { label: 'Immigration', labelEs: 'Inmigración', emoji: '🌎', accent: '#6d4aa8', tint: '#ece6f8', grad: 'linear-gradient(145deg,color-mix(in srgb,#6d4aa8 12%,#fff) 0%,#ece6f8 100%)' },
     housing: { label: 'Housing', labelEs: 'Vivienda', emoji: '🏠', accent: '#c2542e', tint: '#f8ded3', grad: 'linear-gradient(145deg,color-mix(in srgb,#c2542e 12%,#fff) 0%,#f8ded3 100%)' },
     health: { label: 'Health', labelEs: 'Salud', emoji: '❤️', accent: '#d63f6f', tint: '#fbdde7', grad: 'linear-gradient(145deg,color-mix(in srgb,#d63f6f 12%,#fff) 0%,#fbdde7 100%)' },
@@ -25,7 +25,7 @@ const CATEGORY_META = {
     esol: { label: 'English class', labelEs: 'Inglés', emoji: '🗣️', accent: '#8050d1', tint: '#ece6f8', grad: 'linear-gradient(145deg,color-mix(in srgb,#8050d1 12%,#fff) 0%,#ece6f8 100%)' },
     college: { label: 'College & GED', labelEs: 'Colegio', emoji: '🎓', accent: '#14315f', tint: '#e1e6f0', grad: 'linear-gradient(145deg,color-mix(in srgb,#14315f 12%,#fff) 0%,#e1e6f0 100%)' },
     money: { label: 'Money help', labelEs: 'Dinero', emoji: '💵', accent: '#1aa37a', tint: '#d7f0e6', grad: 'linear-gradient(145deg,color-mix(in srgb,#1aa37a 12%,#fff) 0%,#d7f0e6 100%)' },
-    'career-fair': { label: 'Career fair', labelEs: 'Feria', emoji: '🤝', accent: '#1f3d7a', tint: '#e3eaf7', grad: 'linear-gradient(145deg,color-mix(in srgb,#1f3d7a 12%,#fff) 0%,#e3eaf7 100%)' },
+    'career-fair': { label: 'Career fair', labelEs: 'Feria', emoji: '🤝', accent: '#4d7c0f', tint: '#e6f2d0', grad: 'linear-gradient(145deg,color-mix(in srgb,#4d7c0f 12%,#fff) 0%,#e6f2d0 100%)' },
     announcement: { label: 'News', labelEs: 'Anuncios', emoji: '📣', accent: '#317dea', tint: '#dbeafe', grad: 'linear-gradient(145deg,color-mix(in srgb,#317dea 12%,#fff) 0%,#dbeafe 100%)' },
     'no-classes': { label: 'No classes', labelEs: 'No hay clases', emoji: '🚫', accent: '#9a3412', tint: '#fff5e8', grad: 'linear-gradient(145deg,color-mix(in srgb,#9a3412 12%,#fff) 0%,#fff5e8 100%)' },
 };

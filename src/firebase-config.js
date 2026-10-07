@@ -1164,7 +1164,7 @@ class FirebaseBulletinBoard {
             '#d63f6f',   // health
             '#b9741c',   // food
             '#a8386c',   // family / child care
-            '#2f5fb3',   // hse
+            '#0e7490',   // hse
             '#14315f',   // college
             '#55379e',   // legal-aid
             '#1aa37a',   // money
@@ -1854,7 +1854,7 @@ class FirebaseBulletinBoard {
         // bulletin post colors and resource colors read as one system site-wide.
         const map = {
             job:           { accent: '#1f3d7a', tint: '#e3eaf7', grad: 'linear-gradient(145deg,color-mix(in srgb,#1f3d7a 12%,#fff) 0%,#e3eaf7 100%)', label: 'Job Help',     labelEs: 'Ayuda con empleo', badge: 'HELP',         emoji: '💼' },
-            training:      { accent: '#2f5fb3', tint: '#e6edfa', grad: 'linear-gradient(145deg,color-mix(in srgb,#2f5fb3 12%,#fff) 0%,#e6edfa 100%)', label: 'Training',      labelEs: 'Capacitación',   badge: 'FREE',         emoji: '📚' },
+            training:      { accent: '#0e7490', tint: '#d3eef3', grad: 'linear-gradient(145deg,color-mix(in srgb,#0e7490 12%,#fff) 0%,#d3eef3 100%)', label: 'Training',      labelEs: 'Capacitación',   badge: 'FREE',         emoji: '📚' },
             college:       { accent: '#14315f', tint: '#e1e6f0', grad: 'linear-gradient(145deg,color-mix(in srgb,#14315f 12%,#fff) 0%,#e1e6f0 100%)', label: 'College',       labelEs: 'Universidad',    badge: 'APPLY',        emoji: '🎓' },
             immigration:   { accent: '#6d4aa8', tint: '#ece6f8', grad: 'linear-gradient(145deg,color-mix(in srgb,#6d4aa8 12%,#fff) 0%,#ece6f8 100%)', label: 'Immigration',   labelEs: 'Inmigración',    badge: 'FREE',         emoji: '🌎' },
             housing:       { accent: '#c2542e', tint: '#f8ded3', grad: 'linear-gradient(145deg,color-mix(in srgb,#c2542e 12%,#fff) 0%,#f8ded3 100%)', label: 'Housing',       labelEs: 'Vivienda',       badge: 'FREE HELP',    emoji: '🏠' },
@@ -1862,7 +1862,7 @@ class FirebaseBulletinBoard {
             food:          { accent: '#b9741c', tint: '#f8e8cf', grad: 'linear-gradient(145deg,color-mix(in srgb,#b9741c 12%,#fff) 0%,#f8e8cf 100%)', label: 'Food',          labelEs: 'Comida',         badge: 'FREE',         emoji: '🍽️' },
             childcare:     { accent: '#a8386c', tint: '#f6dced', grad: 'linear-gradient(145deg,color-mix(in srgb,#a8386c 12%,#fff) 0%,#f6dced 100%)', label: 'Family',        labelEs: 'Familia',        badge: 'FREE',         emoji: '👨‍👩‍👧' },
             esol:          { accent: '#8050d1', tint: '#ece6f8', grad: 'linear-gradient(145deg,color-mix(in srgb,#8050d1 12%,#fff) 0%,#ece6f8 100%)', label: 'ESOL',          labelEs: 'Inglés',         badge: 'FREE',         emoji: '🗣️' },
-            'career-fair': { accent: '#1f3d7a', tint: '#e3eaf7', grad: 'linear-gradient(145deg,color-mix(in srgb,#1f3d7a 12%,#fff) 0%,#e3eaf7 100%)', label: 'Career Fair',   labelEs: 'Feria de Empleo',badge: 'FREE',         emoji: '🤝' },
+            'career-fair': { accent: '#4d7c0f', tint: '#e6f2d0', grad: 'linear-gradient(145deg,color-mix(in srgb,#4d7c0f 12%,#fff) 0%,#e6f2d0 100%)', label: 'Career Fair',   labelEs: 'Feria de Empleo',badge: 'FREE',         emoji: '🤝' },
             money:         { accent: '#1aa37a', tint: '#d7f0e6', grad: 'linear-gradient(145deg,color-mix(in srgb,#1aa37a 12%,#fff) 0%,#d7f0e6 100%)', label: 'Money Help',    labelEs: 'Ayuda Económica',badge: 'FREE',         emoji: '💵' },
             announcement:  { accent: '#317dea', tint: '#dbeafe', grad: 'linear-gradient(145deg,color-mix(in srgb,#317dea 12%,#fff) 0%,#dbeafe 100%)', label: 'Announcements', labelEs: 'Anuncios',       badge: 'INFO',         emoji: '📣' },
             'no-classes':  { accent: '#9a3412', tint: '#fff5e8', grad: 'linear-gradient(145deg,color-mix(in srgb,#9a3412 12%,#fff) 0%,#fff5e8 100%)', label: 'No Classes',    labelEs: 'No hay clases',  badge: 'CLOSED',       emoji: '🚫' },
@@ -1880,7 +1880,7 @@ class FirebaseBulletinBoard {
         // rendering of the same category color, not a separate palette.
         const palettes = {
             job:           { top: '#e3eaf7', bot: '#fff', sun: '#ffc857', fg1: '#1f3d7a', fg2: '#e3eaf7' },
-            training:      { top: '#e6edfa', bot: '#fff', sun: '#fff',    fg1: '#2f5fb3', fg2: '#e6edfa' },
+            training:      { top: '#d3eef3', bot: '#fff', sun: '#fff',    fg1: '#0e7490', fg2: '#d3eef3' },
             college:       { top: '#e1e6f0', bot: '#fff', sun: '#ffc857', fg1: '#14315f', fg2: '#e1e6f0' },
             immigration:   { top: '#ece6f8', bot: '#fff', sun: '#fff',    fg1: '#6d4aa8', fg2: '#ece6f8' },
             housing:       { top: '#f8ded3', bot: '#fff', sun: '#fff8eb', fg1: '#c2542e', fg2: '#f8ded3' },
@@ -1888,7 +1888,7 @@ class FirebaseBulletinBoard {
             food:          { top: '#f8e8cf', bot: '#fff', sun: '#ffc857', fg1: '#b9741c', fg2: '#f8e8cf' },
             childcare:     { top: '#f6dced', bot: '#fff', sun: '#fff',    fg1: '#a8386c', fg2: '#f6dced' },
             esol:          { top: '#ece6f8', bot: '#fff', sun: '#fff',    fg1: '#8050d1', fg2: '#ece6f8' },
-            'career-fair': { top: '#e3eaf7', bot: '#fff', sun: '#fff',    fg1: '#1f3d7a', fg2: '#e3eaf7' },
+            'career-fair': { top: '#e6f2d0', bot: '#fff', sun: '#fff',    fg1: '#4d7c0f', fg2: '#e6f2d0' },
             money:         { top: '#d7f0e6', bot: '#fff', sun: '#ffc857', fg1: '#1aa37a', fg2: '#d7f0e6' },
             announcement:  { top: '#dbeafe', bot: '#fff', sun: '#fff8eb', fg1: '#317dea', fg2: '#dbeafe' },
             'no-classes':  { top: '#fff5e8', bot: '#fff', sun: '#fff8eb', fg1: '#9a3412', fg2: '#fff5e8' },
