@@ -1108,11 +1108,9 @@ a.about-action-card {
         min-height: calc(100vh - var(--app-header-offset));
     }
 
-    /* Feed: 2-column card grid */
+    /* Feed card grid columns: see the "Feed card grid" block in _pv3-topbar-hero-cards.css */
     .bulletin-grid {
         display: grid !important;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 16px;
     }
 
     /* Story bubbles: wrap instead of horizontal scroll */
@@ -1177,9 +1175,4 @@ a.about-action-card {
     }
 }
 
-@media (min-width: 1440px) {
-    .bulletin-grid {
-        grid-template-columns: repeat(3, 1fr);
-    }
-}
 /* ═══ End Design V2 ═════════════════════════════════════════════ */

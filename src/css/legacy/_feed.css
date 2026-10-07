@@ -10,33 +10,7 @@
     margin-bottom: 40px;
 }
 
-@media (min-width: 480px) {
-    .bulletin-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 12px;
-    }
-}
-
-@media (min-width: 860px) {
-    .bulletin-grid {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 14px;
-    }
-}
-
-@media (min-width: 1200px) {
-    .bulletin-grid {
-        grid-template-columns: repeat(3, 1fr) !important;
-        gap: 16px;
-    }
-}
-
-@media (min-width: 1600px) {
-    .bulletin-grid {
-        grid-template-columns: repeat(4, 1fr) !important;
-        gap: 14px;
-    }
-}
+/* Column count lives with the card styles in student-v2/_pv3-topbar-hero-cards.css. */
 
 .expired-banner {
     position: absolute;

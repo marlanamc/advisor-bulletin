@@ -68,6 +68,7 @@ import { BoardDetailMethods } from './board-detail.js'
 import { storeServerSnapshot } from './student-snapshot.js'
 import { BoardSearchMethods } from './board-search.js'
 import { BoardDateRenderMethods } from './board-date-render.js'
+import { renderPostCardMedia } from './post-card-media.js'
 
 // Maps a bulletin post category to the matching resource category, so the
 // feed category banner can point students to related Find Help listings.
@@ -1874,25 +1875,6 @@ class FirebaseBulletinBoard {
         return `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 4.5v10.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/><path d="M12 4.5 19 14.5H12Z" fill="rgba(255,255,255,0.18)" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"/><path d="M12 9 5 16h14" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 16c1.35 2.35 3.55 3.5 6 3.5s4.65-1.15 6-3.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/><path d="M4 19.5h16" stroke="#c9a84c" stroke-width="1.6" stroke-linecap="round"/></svg>`;
     }
 
-    getCardIconSvg(category) {
-        const icons = {
-            job: `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="38" height="38"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>`,
-            immigration: `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="38" height="38"><circle cx="12" cy="12" r="9"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`,
-            housing: `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="38" height="38"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`,
-            health: `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="38" height="38"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/></svg>`,
-            food: `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="38" height="38"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>`,
-            esol: `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="38" height="38"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`,
-            training: `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="38" height="38"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>`,
-            college: `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="38" height="38"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>`,
-            'career-fair': `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="38" height="38"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>`,
-            money: `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="38" height="38"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>`,
-            childcare: `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="38" height="38"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
-            announcement: `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="38" height="38"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>`,
-            'no-classes': `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="38" height="38"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="10" y1="14" x2="14" y2="18"/><line x1="14" y1="14" x2="10" y2="18"/></svg>`,
-        };
-        return icons[category] || icons.announcement;
-    }
-
     createHeroSvg(category) {
         // Same accent/tint pairs as getCatMeta() — the hero banner is another
         // rendering of the same category color, not a separate palette.
@@ -1929,7 +1911,6 @@ class FirebaseBulletinBoard {
         const isExpired = this.isBulletinExpired(bulletin);
         const postedAgo = this.formatPostedDate(bulletin.datePosted);
         const title = this.getPostTitle(bulletin);
-        const titleShort = title.length > 40 ? title.substring(0, 38) + '…' : title;
         const desc = this.getPostDescription(bulletin);
         const descPreview = formatRichTextPlainPreview(desc, 150);
         const descHtml = this.escapeHtml(descPreview);
@@ -1938,19 +1919,6 @@ class FirebaseBulletinBoard {
 
         const currentLang = document.body.getAttribute('data-lang') || 'EN';
         const displayImage = (currentLang === 'ES' && bulletin.imageEs) ? bulletin.imageEs : bulletin.image;
-        const hasImage = Boolean(displayImage);
-
-        const chipsBar = `
-      <div class="pc__chip-bar" style="--chip-accent:${meta.accent};--chip-tint:${meta.tint}">
-        <div class="pc__chips" role="list" aria-label="Post labels">
-          ${isExpired ? '<span class="pc__chip pc__chip--expired" role="listitem">⏰ Expired</span>' : ''}
-          <span class="pc__chip pc__chip--category" role="listitem">
-            <span class="pc__chip-emoji" aria-hidden="true">${meta.emoji}</span>
-            <span class="en-text">${this.escapeHtml(meta.label.toUpperCase())}</span>
-            <span class="es-text">${this.escapeHtml(meta.labelEs.toUpperCase())}</span>
-          </span>
-        </div>
-      </div>`;
 
         // If the card is in the top 3 cards (above-the-fold), load it with high priority
         // Otherwise, lazy-load it to prevent bandwidth starvation
@@ -1958,18 +1926,22 @@ class FirebaseBulletinBoard {
             ? 'decoding="async" fetchpriority="high"'
             : 'decoding="async" loading="lazy"';
 
+        const { hasImage, mediaHtml, bodyHeadHtml } = renderPostCardMedia({
+            category: bulletin.category,
+            label: meta.label,
+            labelEs: meta.labelEs,
+            title,
+            image: displayImage,
+            isExpired,
+            imageAttributes,
+        });
+
         return `
-    <article class="pc ${isExpired ? 'pc--expired' : ''}" id="bulletin-${this.escapeAttribute(bulletin.id)}" data-bulletin-id="${this.escapeAttribute(bulletin.id)}" role="button" tabindex="0" style="cursor:pointer">
-      ${chipsBar}
-      <div class="pc__top ${hasImage ? 'pc__top--image' : ''}" style="background:${hasImage ? '#f8fafc' : meta.grad}">
-        ${hasImage
-          ? `<div class="pc__image-stage"><img class="pc__poster-image" src="${this.escapeAttribute(displayImage)}" alt="" ${imageAttributes}></div>`
-          : `<div class="pc__icon-wrap"><div class="pc__icon-box" style="background:${meta.accent}">${this.getCardIconSvg(bulletin.category)}</div></div>
-        <div class="pc__title-overlay">${this.escapeHtml(titleShort)} —</div>`}
-      </div>
+    <article class="pc ${hasImage ? 'pc--image' : 'pc--panel'} ${isExpired ? 'pc--expired' : ''}" id="bulletin-${this.escapeAttribute(bulletin.id)}" data-bulletin-id="${this.escapeAttribute(bulletin.id)}" role="button" tabindex="0" style="--pc-accent:${meta.accent};--pc-tint:${meta.tint}">
+      ${mediaHtml}
 
       <div class="pc__body">
-        <h3 class="pc__title">${this.escapeHtml(title)}</h3>
+        ${bodyHeadHtml}
         <p class="pc__desc">${descHtml}</p>
 
         ${dateLabelHtml ? `
@@ -1982,7 +1954,7 @@ class FirebaseBulletinBoard {
           <div class="pc__foot-left">
             <span class="pc__foot-name">${this.escapeHtml(bulletin.advisorName || 'Advisor')} · ${postedAgo}</span>
           </div>
-          <span class="pc__open-btn" style="color:${meta.accent}">Open →</span>
+          <span class="pc__open-btn">Open →</span>
         </div>
       </div>
     </article>

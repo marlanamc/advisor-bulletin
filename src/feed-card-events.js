@@ -3,6 +3,8 @@
 // grid (static snapshot, cached bulletins, or live Firestore) — innerHTML
 // swaps replace the cards but never the grid element these listeners live on.
 
+import { showPostCardPanelFallback } from './post-card-media.js';
+
 function activateCard(card) {
     const id = card.getAttribute('data-bulletin-id');
     if (!id) return;
@@ -27,10 +29,19 @@ function onGridKeydown(event) {
     activateCard(card);
 }
 
+// <img> error events don't bubble, so this listens in the capture phase.
+// A card whose image fails to load swaps to its typographic panel.
+function onGridImageError(event) {
+    const img = event.target;
+    if (!(img instanceof HTMLImageElement) || !img.classList.contains('pc__poster-image')) return;
+    showPostCardPanelFallback(img.closest('.pc'));
+}
+
 export function initBulletinGridEvents() {
     const grid = document.getElementById('bulletinGrid');
     if (!grid || grid.dataset.cardEventsBound === 'true') return;
     grid.dataset.cardEventsBound = 'true';
     grid.addEventListener('click', onGridClick);
     grid.addEventListener('keydown', onGridKeydown);
+    grid.addEventListener('error', onGridImageError, true);
 }

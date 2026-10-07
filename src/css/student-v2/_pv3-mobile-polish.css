@@ -208,12 +208,6 @@
         padding: 0 4px 6px;
     }
 
-    .desktop-feed-column .bulletin-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-        gap: 14px;
-        align-items: start;
-    }
-
     .feed-soft-section {
         grid-column: 1 / -1;
         margin: 8px 0 -8px;
@@ -250,14 +244,6 @@
     .pc:hover {
         transform: translateY(-4px);
         box-shadow: 0 18px 42px rgba(49, 39, 27, 0.14);
-    }
-
-    .pc__top {
-        height: 220px;
-    }
-
-    .pc__top--image {
-        height: 360px;
     }
 
     .pc__body {

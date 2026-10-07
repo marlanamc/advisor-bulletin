@@ -1,5 +1,6 @@
 import { comparePostsNewestFirst } from './post-order.js';
 import { expandRecurringWeeklySessions, normalizeEventSessions } from './event-sessions.js';
+import { renderPostCardMedia } from './post-card-media.js';
 
 const SNAPSHOT_URL = '/student-feed-snapshot.json';
 const SNAPSHOT_CACHE_KEY = 'ebhcs_student_feed_snapshot_v1';
@@ -309,45 +310,35 @@ function isCalendarOnly(item) {
         && !item.pdfUrl;
 }
 
-function iconSvg() {
-    return '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 3 4 7v6c0 5.4 3.4 9.3 8 11 4.6-1.7 8-5.6 8-11V7l-8-4Zm0 3.1 5 2.5V13c0 3.5-2 6.2-5 7.7-3-1.5-5-4.2-5-7.7V8.6l5-2.5Z"/></svg>';
-}
-
 function createCard(item, index) {
     const category = normalizeCategory(item.category);
     const meta = CATEGORY_META[category] || CATEGORY_META.announcement;
     const title = getTitle(item);
-    const titleShort = title.length > 40 ? `${title.slice(0, 38)}...` : title;
     const desc = getDescription(item);
     const image = document.body.getAttribute('data-lang') === 'ES' && item.imageEs ? item.imageEs : item.image;
     const dateLabel = getDateLabel(item);
     const imageAttributes = index < 3 ? 'decoding="async" fetchpriority="high"' : 'decoding="async" loading="lazy"';
+    const { hasImage, mediaHtml, bodyHeadHtml } = renderPostCardMedia({
+        category: CATEGORY_META[category] ? category : 'announcement',
+        label: meta.label,
+        labelEs: meta.labelEs,
+        title,
+        image,
+        imageAttributes,
+    });
 
     return `
-    <article class="pc" id="bulletin-${escapeAttribute(item.id)}" data-bulletin-id="${escapeAttribute(item.id)}" role="button" tabindex="0" style="cursor:pointer">
-      <div class="pc__chip-bar" style="--chip-accent:${meta.accent};--chip-tint:${meta.tint}">
-        <div class="pc__chips" role="list" aria-label="Post labels">
-          <span class="pc__chip pc__chip--category" role="listitem">
-            <span class="pc__chip-emoji" aria-hidden="true">${meta.emoji}</span>
-            <span class="en-text">${escapeHtml(meta.label.toUpperCase())}</span>
-            <span class="es-text">${escapeHtml(meta.labelEs.toUpperCase())}</span>
-          </span>
-        </div>
-      </div>
-      <div class="pc__top ${image ? 'pc__top--image' : ''}" style="background:${image ? '#f8fafc' : meta.grad}">
-        ${image
-            ? `<div class="pc__image-stage"><img class="pc__poster-image" src="${escapeAttribute(image)}" alt="" ${imageAttributes}></div>`
-            : `<div class="pc__icon-wrap"><div class="pc__icon-box" style="background:${meta.accent}">${iconSvg()}</div></div><div class="pc__title-overlay">${escapeHtml(titleShort)} -</div>`}
-      </div>
+    <article class="pc ${hasImage ? 'pc--image' : 'pc--panel'}" id="bulletin-${escapeAttribute(item.id)}" data-bulletin-id="${escapeAttribute(item.id)}" role="button" tabindex="0" style="--pc-accent:${meta.accent};--pc-tint:${meta.tint}">
+      ${mediaHtml}
       <div class="pc__body">
-        <h3 class="pc__title">${escapeHtml(title)}</h3>
+        ${bodyHeadHtml}
         <p class="pc__desc">${escapeHtml(desc)}</p>
         ${dateLabel ? `<div class="pc__date"><span>${escapeHtml(dateLabel)}</span></div>` : ''}
         <div class="pc__footer">
           <div class="pc__foot-left">
             <span class="pc__foot-name">${escapeHtml(item.advisorName || 'Advisor')} · ${escapeHtml(formatPostedDate(item.datePosted || item.createdAt))}</span>
           </div>
-          <span class="pc__open-btn" style="color:${meta.accent}">Open -></span>
+          <span class="pc__open-btn">Open →</span>
         </div>
       </div>
     </article>`;

@@ -381,7 +381,6 @@
 
     .desktop-feed-column .bulletin-grid {
         max-width: none;
-        gap: 14px;
     }
 
     .desktop-home-aside {
@@ -887,10 +886,6 @@
 @media (min-width: 1100px) and (max-width: 1320px) {
     .desktop-home-shell {
         grid-template-columns: minmax(0, 1fr) 260px;
-    }
-
-    .desktop-feed-column .bulletin-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
     }
 
 }
