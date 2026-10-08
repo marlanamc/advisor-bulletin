@@ -307,15 +307,21 @@ export class AdminManageMethods {
         const filterMode = document.getElementById('manageFilterSelect')?.value || 'all';
         const contentKind = document.getElementById('manageContentTypeSelect')?.value || 'all';
         // Two controls can ask for the queue: the dedicated verification filter on
-        // My Resources (where the status dropdown is hidden — resources are never
+        // the Resources page (where the status dropdown is hidden — resources are never
         // "expired", they go stale) and the status dropdown's "Needs verification"
         // on the mixed views. Read whichever one is actually on screen.
         const verificationMode = contentKind === 'resource'
             ? (document.getElementById('manageVerificationSelect')?.value || 'all')
             : (filterMode === 'needs-verification' ? 'needs-verification' : 'all');
 
+        const mineOnly = document.getElementById('manageMineToggle')?.getAttribute('aria-pressed') === 'true';
+
         let userBulletins = this.bulletins
             .filter(b => (this.canManageAllPosts() || b.postedBy === this.currentUser.username) && b.isActive);
+
+        if (mineOnly) {
+            userBulletins = userBulletins.filter(b => this.isMineOrManaged(b));
+        }
 
         // Apply filter
         if (filterMode === 'active') {
@@ -414,6 +420,8 @@ export class AdminManageMethods {
         if (userBulletins.length === 0) {
             if (searchQuery) {
                 container.innerHTML = `<p>No posts match "<strong>${this.escapeHtml(searchQuery)}</strong>". Try a different search.</p>`;
+            } else if (mineOnly) {
+                container.innerHTML = '<p>Nothing posted by you here yet. Turn off <strong>Posted by me</strong> to see the whole team\'s posts.</p>';
             } else if (filterMode === 'expired') {
                 container.innerHTML = '<p>No expired posts. Great — everything is still active!</p>';
             } else if (verificationMode === 'needs-verification') {

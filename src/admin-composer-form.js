@@ -194,11 +194,11 @@ export class AdminComposerFormMethods {
 
     getManagePageLabel(page) {
         return {
-            resources: 'My Resources',
-            events: 'My Events',
-            bulletins: 'My Bulletins',
+            resources: 'Resources',
+            events: 'Events',
+            bulletins: 'Bulletins',
             posts: 'All Posts',
-        }[page] || 'My Bulletins';
+        }[page] || 'Bulletins';
     }
 
     navigateToManagePage(page = 'bulletins') {

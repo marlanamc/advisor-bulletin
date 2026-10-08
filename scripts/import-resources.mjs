@@ -445,7 +445,7 @@ async function main() {
   if (args.dryRun) {
     await writeResources(null, resources, { dryRun: true });
     console.log(`\nDry run complete — ${resources.length} resource(s) ready to import (all unpublished).`);
-    console.log('Review in Advisor Portal → My Posts → publish by category when ready.');
+    console.log('Review in Advisor Portal → Resources → publish by category when ready.');
     process.exit(0);
   }
 
@@ -459,7 +459,7 @@ async function main() {
   }
 
   console.log(`\nImport complete — ${resources.length} unpublished resource(s) written.`);
-  console.log('Next: Advisor Portal → My Posts → review chips/contact → publish by category.');
+  console.log('Next: Advisor Portal → Resources → review chips/contact → publish by category.');
 }
 
 main().catch((error) => {

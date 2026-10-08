@@ -208,13 +208,13 @@ Posts appear on the student site right away after publishing.
 
 Open the matching management section for the type of post you want to update:
 
-- **My Bulletins** for announcements, jobs, trainings, and general bulletins.
-- **My Resources** for Find Help resources and documents.
-- **My Events** for calendar events.
+- **Bulletins** for announcements, jobs, trainings, and general bulletins.
+- **Resources** for Find Help resources and documents.
+- **Events** for calendar events.
 
-Administrators can manage all posts.
+Every advisor can edit or delete any post, not just their own. Turn on **Posted by me** to see only the posts you created.
 
-![My Bulletins edit and delete controls](screenshots/11-my-bulletins-edit-delete.png)
+![Bulletins edit and delete controls](screenshots/11-my-bulletins-edit-delete.png)
 
 Use **Edit** when:
 
@@ -253,4 +253,4 @@ Use **Delete** when:
 | Add student action chips | Resource composer chip field |
 | Add extra URL/PDF buttons | Resource composer -> **Add detail** -> **Extra button** |
 | Preview | Phone preview in Advisor Portal |
-| Edit or delete | **My Bulletins**, **My Resources**, or **My Events** |
+| Edit or delete | **Bulletins**, **Resources**, or **Events** |

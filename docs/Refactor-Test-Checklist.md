@@ -49,7 +49,7 @@ _(This is where most of the change is — `firebase-admin.js` went 2,722 → 894
 
 ### Sign-in & shell
 - [ ] Google sign-in works; portal opens; your name shows in the welcome / advisor card
-- [ ] Sidebar nav (`apShowPage`): Dashboard, Create Post, My Bulletins, My Resources, My Events, Stats all switch pages
+- [ ] Sidebar nav (`apShowPage`): Dashboard, Create Post, Bulletins, Resources, Events, Stats all switch pages
 - [ ] Dashboard stat tiles show numbers (live posts / resources / upcoming events / expiring soon)
 - [ ] Dashboard "upcoming events" list renders (or shows the empty-state message)
 - [ ] Admin-only: Advisors tab + Workforce Report rail button appear (if you're an admin)
@@ -57,9 +57,9 @@ _(This is where most of the change is — `firebase-admin.js` went 2,722 → 894
 - [ ] Sign out — returns to the login screen cleanly
 
 ### Create a post (`admin-bulletin-write.js` + `admin-uploads.js` + `admin-validation.js`)
-- [ ] **Bulletin**: pick category, title, description → Post → success toast → appears in My Bulletins → check it shows on the student feed
-- [ ] **Calendar Event**: title + event date + start/end time → Post → appears in My Events → check it shows on the student calendar
-- [ ] **Resource**: pick resource category, title (EN), a service chip or summary, a URL → Publish → appears in My Resources → check it shows in the student Resources view
+- [ ] **Bulletin**: pick category, title, description → Post → success toast → appears in Bulletins → check it shows on the student feed
+- [ ] **Calendar Event**: title + event date + start/end time → Post → appears in Events → check it shows on the student calendar
+- [ ] **Resource**: pick resource category, title (EN), a service chip or summary, a URL → Publish → appears in Resources → check it shows in the student Resources view
 - [ ] **Image upload**: create a bulletin with a JPG/PNG flyer → uploads, shows on the card
 - [ ] **PDF flyer**: create a bulletin with a PDF flyer → converts to page-1 image, "open full PDF" works on the student side
 - [ ] **PDF document resource**: create a document-kind resource with a PDF → student can open it
