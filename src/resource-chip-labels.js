@@ -165,6 +165,8 @@ const RESOURCE_CHIP_ES = {
     'let someone get your info if detained': 'Dejar que alguien obtenga su información si lo detienen',
     'practice job skills': 'Practicar habilidades laborales',
     'report a problem': 'Reportar un problema',
+    'see days with no school': 'Ver días sin clases',
+    'see early release days': 'Ver días de salida temprano',
     'take english classes': 'Clases de inglés',
     'talk to a lawyer': 'Hablar con un abogado',
     'translate documents': 'Traducir documentos',
