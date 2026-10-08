@@ -4,7 +4,6 @@ function getLightboxElements() {
         lightboxImg: document.getElementById('imgLightboxImg'),
         closeBtn: document.getElementById('imgLightboxClose'),
         backdrop: document.getElementById('imgLightboxBackdrop'),
-        openBtn: document.getElementById('imgLightboxOpenBtn'),
         frame: document.querySelector('.img-lightbox-frame'),
     };
 }
@@ -13,40 +12,6 @@ function getLightboxElements() {
 // viewer can never unlock scroll for a layer that locked it for itself.
 let lightboxLockedBodyScroll = false;
 let lightboxOpenerElement = null;
-let lightboxObjectUrl = null;
-
-// Browsers refuse to open data: URLs as a top-level page, so "Open full size"
-// on an uploaded flyer would land on a blank tab. A blob: URL opens normally.
-function toOpenableUrl(src) {
-    if (!src.startsWith('data:')) {
-        return src;
-    }
-    try {
-        const commaIndex = src.indexOf(',');
-        const meta = src.slice(5, commaIndex);
-        const payload = src.slice(commaIndex + 1);
-        const mimeType = meta.split(';')[0] || 'application/octet-stream';
-        let bytes;
-        if (meta.includes(';base64')) {
-            const binary = atob(payload);
-            bytes = new Uint8Array(binary.length);
-            for (let i = 0; i < binary.length; i += 1) {
-                bytes[i] = binary.charCodeAt(i);
-            }
-        } else {
-            bytes = new TextEncoder().encode(decodeURIComponent(payload));
-        }
-        // Revoke the previous flyer's URL only now, so a tab opened from it
-        // has long since loaded.
-        if (lightboxObjectUrl) {
-            URL.revokeObjectURL(lightboxObjectUrl);
-        }
-        lightboxObjectUrl = URL.createObjectURL(new Blob([bytes], { type: mimeType }));
-        return lightboxObjectUrl;
-    } catch (error) {
-        return src;
-    }
-}
 
 function usesClassBasedScrollLock() {
     return document.body.classList.contains('modal-open')
@@ -60,7 +25,7 @@ export function isImageLightboxOpen() {
 }
 
 export function openImageLightbox(src, alt) {
-    const { lightbox, lightboxImg, openBtn } = getLightboxElements();
+    const { lightbox, lightboxImg } = getLightboxElements();
     if (!lightbox || !lightboxImg || !src) {
         return;
     }
@@ -68,9 +33,6 @@ export function openImageLightbox(src, alt) {
     lightboxImg.classList.remove('is-tall');
     lightboxImg.src = src;
     lightboxImg.alt = alt || 'Full size flyer';
-    if (openBtn) {
-        openBtn.href = toOpenableUrl(src);
-    }
     lightbox.classList.add('open');
     lightbox.setAttribute('aria-hidden', 'false');
 
