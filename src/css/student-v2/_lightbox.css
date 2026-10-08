@@ -55,27 +55,6 @@
     max-height: 92vh;
 }
 
-.img-lightbox-open-btn {
-    display: block;
-    margin: 10px auto 4px;
-    padding: 6px 16px;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    color: #fff;
-    font: 700 12px/1 sans-serif;
-    cursor: pointer;
-    text-decoration: none;
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-    transition: background 0.15s;
-    flex-shrink: 0;
-}
-
-.img-lightbox-open-btn:hover {
-    background: rgba(255, 255, 255, 0.28);
-}
-
 .img-lightbox-close {
     position: absolute;
     top: 14px;
