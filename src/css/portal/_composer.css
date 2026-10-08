@@ -197,6 +197,9 @@
     font-family: var(--ap-font-body);
 }
 .cx-input::placeholder, .cx-textarea::placeholder { color: #aab8cc; }
+/* iOS Safari gives date/time inputs an intrinsic min-width that overflows the card */
+.cx-input[type="date"], .cx-input[type="time"] { box-sizing: border-box; min-width: 0; max-width: 100%; -webkit-appearance: none; appearance: none; min-height: 44px; text-align: left; }
+.cx-input::-webkit-date-and-time-value { text-align: left; }
 .cx-input:focus, .cx-textarea:focus, .cx-select:focus { border-color: var(--ap-blue); box-shadow: 0 0 0 3px var(--ap-blue-dim); }
 .cx-textarea { resize: vertical; min-height: 84px; line-height: 1.55; }
 .cx-select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%237a95b5' stroke-width='2.5' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 13px center; padding-right: 38px; }
@@ -304,6 +307,11 @@
 .cx-insert-item.rec { background: linear-gradient(180deg, #fff, var(--ap-mint)); }
 .cx-insert-item.rec .mi { background: var(--ap-mint-mid); }
 .cx-mi-rec { font-family: var(--ap-font-head); font-size: .6rem; font-weight: 800; letter-spacing: .03em; text-transform: uppercase; color: var(--ap-green); background: var(--ap-green-dim); border-radius: var(--ap-r-pill); padding: 1px 7px; margin-left: 6px; vertical-align: 1px; }
+/* Mobile: the portal's overflow-x:hidden ancestors clip an absolutely
+   positioned menu (and it can't be scrolled to), so render it in flow. */
+@media (max-width: 768px) {
+  .cx-insert-menu { position: static; min-width: 0; width: 100%; margin-top: 8px; box-sizing: border-box; }
+}
 
 /* Link/PDF segmented toggle inside a block */
 .cx-seg { display: inline-flex; gap: 3px; background: var(--ap-surface-2); border: 1px solid var(--ap-border); border-radius: var(--ap-r-md); padding: 3px; }

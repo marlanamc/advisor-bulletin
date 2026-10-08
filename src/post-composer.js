@@ -1483,6 +1483,8 @@ function bindInsertButton() {
     btn.addEventListener('click', (e) => {
         e.stopPropagation()
         menu.classList.add('open')
+        // On mobile the menu renders in flow below the button; bring it into view.
+        requestAnimationFrame(() => menu.scrollIntoView({ block: 'nearest', behavior: 'smooth' }))
     })
     document.addEventListener('click', () => menu.classList.remove('open'))
     menu.addEventListener('click', e => e.stopPropagation())
