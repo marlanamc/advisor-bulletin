@@ -3,6 +3,10 @@
 // whitelist on the resource document). The prebuild script
 // `scripts/check-resource-categories-sync.mjs` enforces this.
 
+// Ids are not labels: `family` displays as "Child Care". Use `family-community`
+// for general family and parent support. Check labelEn in
+// RESOURCE_CATEGORY_CONFIG (src/board-shared.js) before picking an id.
+
 // Categories shown as tiles in the student "Find Help" sidebar.
 export const RESOURCE_TILE_CATEGORIES = [
   'jobs',
