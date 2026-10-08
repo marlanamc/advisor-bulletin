@@ -26,7 +26,7 @@ A modern, mobile-responsive, bilingual community bulletin board system for the *
 *   **Comprehensive Advisor Portal**:
     *   **Content Status Dashboard**: Review live posts, resources, upcoming events, expiring posts, and content categories.
     *   **Unified Post Creator**: Simplified type selectors to create Bulletins, Resources, or Calendar events.
-    *   **Interactive My Posts Section**: Real-time search, sorting, deleting, and editing of existing opportunities.
+    *   **Interactive Posts Section**: Real-time search, sorting, deleting, and editing of existing opportunities.
 
 ---
 

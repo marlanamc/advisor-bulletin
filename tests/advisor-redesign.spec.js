@@ -512,7 +512,7 @@ test.describe('Advisor redesign', () => {
     ]);
   });
 
-  test('filters resources by verification status on My Resources', async ({ page }) => {
+  test('filters resources by verification status on Resources', async ({ page }) => {
     await seedVerificationResources(page);
 
     await page.locator('#apNavResources').click();
@@ -546,6 +546,43 @@ test.describe('Advisor redesign', () => {
     await expect(verification).toBeHidden();
     await expect(verification).toHaveValue('all');
     await expect(page.locator('#manageFilterSelect')).toBeVisible();
+  });
+
+  test('Posted by me narrows the shared post list to your own posts', async ({ page }) => {
+    await showSeededAdvisorDashboard(page);
+    await page.evaluate(() => {
+      window.adminPanel.bulletins.push({
+        id: 'post-leah',
+        type: 'post',
+        title: 'Spring ESOL registration',
+        category: 'announcement',
+        description: 'Sign up at the front desk.',
+        advisorName: 'Leah',
+        postedBy: 'lgregory',
+        datePosted: new Date().toISOString(),
+        isActive: true,
+      });
+    });
+
+    await page.locator('#apNavBulletins').click();
+    await expect(page.locator('#apPagePosts h1')).toHaveText('Bulletins');
+    const cards = page.locator('#manageBulletins .manage-card');
+    await expect(cards).toHaveCount(3);
+
+    const mine = page.locator('#manageMineToggle');
+    await mine.click();
+    await expect(mine).toHaveAttribute('aria-pressed', 'true');
+    await expect(cards).toHaveCount(2);
+    await expect(page.locator('#manageBulletins')).not.toContainText('Spring ESOL registration');
+
+    // Stays on across the sibling pages; nothing of Jorge's is an event.
+    await page.locator('#apNavEvents').click();
+    await expect(page.locator('#manageBulletins')).toContainText('Nothing posted by you here yet');
+
+    await page.locator('#apNavBulletins').click();
+    await mine.click();
+    await expect(mine).toHaveAttribute('aria-pressed', 'false');
+    await expect(cards).toHaveCount(3);
   });
 
   test('shows the resource card preview when editing a resource', async ({ page }) => {

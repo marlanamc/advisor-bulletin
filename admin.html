@@ -98,21 +98,21 @@
                         <div class="ap-nav-icon">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
                         </div>
-                        My Bulletins
+                        Bulletins
                     </button>
 
                     <button class="ap-nav-item" type="button" data-ap-page="resources" id="apNavResources">
                         <div class="ap-nav-icon">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
                         </div>
-                        My Resources
+                        Resources
                     </button>
 
                     <button class="ap-nav-item" type="button" data-ap-page="events" id="apNavEvents">
                         <div class="ap-nav-icon">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                         </div>
-                        My Events
+                        Events
                     </button>
 
                     <button class="ap-nav-item" type="button" data-ap-page="stats" id="apNavStats">
@@ -632,13 +632,13 @@
                 </div><!-- /apPageCreate -->
 
                 <!-- ══════════════════════════════════════
-                     PAGE: MY POSTS
+                     PAGE: POSTS
                      ══════════════════════════════════════ -->
                 <div id="apPagePosts" class="ap-page">
                     <div class="ap-page-header">
                         <div class="ap-page-header-copy">
-                            <h1 style="font-family:var(--ap-font-head);font-size:1.5rem;font-weight:800;color:var(--ap-text);margin:0 0 4px;letter-spacing:-.02em;">My Posts</h1>
-                            <p style="font-size:.9rem;color:var(--ap-text-2);margin:0;">All content you've published.</p>
+                            <h1 style="font-family:var(--ap-font-head);font-size:1.5rem;font-weight:800;color:var(--ap-text);margin:0 0 4px;letter-spacing:-.02em;">All Posts</h1>
+                            <p style="font-size:.9rem;color:var(--ap-text-2);margin:0;">Everything the team has published.</p>
                         </div>
                         <button class="ap-btn ap-btn-blue ap-page-header-action" type="button" data-ap-page="create">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -657,13 +657,15 @@
                             <button class="ap-filter-pill" type="button">Live</button>
                             <button class="ap-filter-pill" type="button">Expired</button>
                         </div>
+                        <!-- Everyone can edit every post; this narrows the list to your own. -->
+                        <button class="ap-filter-pill" type="button" id="manageMineToggle" aria-pressed="false">Posted by me</button>
                         <select id="manageSortSelect" class="ap-select" style="width:auto;min-width:140px;padding:8px 34px 8px 12px;font-size:.82rem;">
                             <option value="newest">Newest First</option>
                             <option value="oldest">Oldest First</option>
                             <option value="category">By Category</option>
                             <option value="deadline">By Deadline</option>
                         </select>
-                        <!-- Hidden state holder: dedicated sidebar pages (My Bulletins / My Resources / My Events) drive this. -->
+                        <!-- Hidden state holder: dedicated sidebar pages (Bulletins / Resources / Events) drive this. -->
                         <select id="manageContentTypeSelect" class="ap-select" style="display:none" aria-hidden="true" tabindex="-1">
                             <option value="all">All types</option>
                             <option value="bulletin">Bulletins</option>

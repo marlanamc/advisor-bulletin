@@ -66,9 +66,9 @@ document.addEventListener('DOMContentLoaded', function() {
         dashboard: { el: 'apPageDashboard', nav: 'apNavDashboard',  title: 'Dashboard' },
         create:    { el: 'apPageCreate',    nav: 'apNavCreate',     title: 'Create Post' },
         posts:     { el: 'apPagePosts',     nav: 'apNavBulletins',  title: 'All Posts' },
-        bulletins: { el: 'apPagePosts',     nav: 'apNavBulletins',  title: 'My Bulletins' },
-        resources: { el: 'apPagePosts',     nav: 'apNavResources',  title: 'My Resources' },
-        events:    { el: 'apPagePosts',     nav: 'apNavEvents',     title: 'My Events' },
+        bulletins: { el: 'apPagePosts',     nav: 'apNavBulletins',  title: 'Bulletins' },
+        resources: { el: 'apPagePosts',     nav: 'apNavResources',  title: 'Resources' },
+        events:    { el: 'apPagePosts',     nav: 'apNavEvents',     title: 'Events' },
         stats:     { el: 'apPageStats',     nav: 'apNavStats',      title: 'Stats' },
         advisors:  { el: 'apPageAdvisors',  nav: 'advisorsRailBtn',  title: 'Advisors' },
         workforce: { el: 'apPageWorkforce', nav: 'workforceRailBtn', title: 'Workforce Report' },
@@ -89,7 +89,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var verificationSelect = document.getElementById('manageVerificationSelect');
         if (pills) pills.hidden = !showStatus;
         if (statusSelect) statusSelect.hidden = !showStatus;
-        // A resource is never "expired", it goes stale — so on My Resources the
+        // A resource is never "expired", it goes stale — so on the Resources page the
         // live/expired controls step aside for the verification filter.
         if (verificationSelect) {
             verificationSelect.hidden = !isResource;
@@ -174,10 +174,10 @@ document.addEventListener('DOMContentLoaded', function() {
             var subhead = document.querySelector('#apPagePosts h1 + p');
             if (subhead) {
                 var subtitleByPage = {
-                    bulletins: 'Announcements, jobs, and other bulletins you have published.',
+                    bulletins: 'Announcements, jobs, and other bulletins the team has published.',
                     resources: 'Help links shown in the resources view, grouped by category.',
-                    events:    'Calendar events you have published.',
-                    posts:     'All content you have published.',
+                    events:    'Calendar events the team has published.',
+                    posts:     'Everything the team has published.',
                 };
                 subhead.textContent = subtitleByPage[page] || subtitleByPage.posts;
             }
@@ -1121,7 +1121,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ── Filter pills in My Posts ──────────────────────────────────
+    // ── Filter pills on the posts pages ───────────────────────────
     document.querySelectorAll('.ap-filter-pills .ap-filter-pill').forEach(function(pill) {
         pill.addEventListener('click', function() {
             document.querySelectorAll('.ap-filter-pills .ap-filter-pill').forEach(function(p) { p.classList.remove('active'); });
@@ -1134,6 +1134,17 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+
+    // Stays on while switching between Bulletins / Resources / Events.
+    var mineToggle = document.getElementById('manageMineToggle');
+    if (mineToggle) {
+        mineToggle.addEventListener('click', function() {
+            var on = mineToggle.getAttribute('aria-pressed') !== 'true';
+            mineToggle.setAttribute('aria-pressed', on ? 'true' : 'false');
+            mineToggle.classList.toggle('active', on);
+            if (window.adminPanel) window.adminPanel.loadManageBulletins();
+        });
+    }
 
     // ── Toast helper ──────────────────────────────────────────────
     window.apShowToast = function(msg) {

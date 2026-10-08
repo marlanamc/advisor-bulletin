@@ -119,7 +119,7 @@ source of truth — but reaching Firestore means pasting it in the portal by han
 
 ## Advisor review (portal)
 
-1. Sign in to the Advisor Portal → **My Posts**
+1. Sign in to the Advisor Portal → **Resources**
 2. Filter or sort by **Resources**
 3. Open each imported draft — verify chips, contact info, and category
 4. Toggle **Published** and save, category by category
