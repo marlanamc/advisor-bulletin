@@ -2,6 +2,20 @@ import { normalizeActionUrl, normalizePdfUrl } from './url-safety.js'
 
 export const MAX_RESOURCE_ACTION_LINKS = 5;
 
+// The portal's extra-button block only asks for an English label, so buttons
+// added there are saved with labelEs === labelEn. This map supplies the
+// Spanish for those labels (keys are lowercased English) so the Español side
+// of the board doesn't fall back to English.
+const RESOURCE_ACTION_LINK_ES = {
+    'get help with your application': 'Obtener ayuda con su solicitud',
+};
+
+function translateActionLinkLabelEs(labelEn, labelEs) {
+    if (labelEs && labelEs !== labelEn) return labelEs;
+    const key = labelEn.replace(/\s+/g, ' ').toLowerCase();
+    return RESOURCE_ACTION_LINK_ES[key] || labelEs || labelEn;
+}
+
 export function normalizeActionLinkUrl(url) {
     return normalizeActionUrl(url);
 }
@@ -22,7 +36,7 @@ export function normalizeResourceActionLinks(raw) {
         if (!item || typeof item !== 'object') return;
 
         const labelEn = String(item.labelEn || item.label || '').trim();
-        const labelEs = String(item.labelEs || labelEn).trim();
+        const labelEs = translateActionLinkLabelEs(labelEn, String(item.labelEs || '').trim());
         const url = normalizeActionLinkUrl(item.url);
         const pdfUrl = normalizePdfUrl(item.pdfUrl);
         if (!labelEn || (!url && !pdfUrl)) return;
