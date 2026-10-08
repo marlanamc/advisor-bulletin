@@ -99,4 +99,25 @@ test.describe('Flyer lightbox on mobile', () => {
     await expect(page.locator('#imgLightbox')).toHaveClass(/open/);
     await expect(page.locator('#imgLightboxImg')).toHaveAttribute('src', FLYER);
   });
+
+  test('"Open full size" opens an uploaded flyer in a new tab', async ({ page, context }) => {
+    await openPostWithFlyer(page);
+
+    await page.locator('.lightbox-trigger').click();
+    const openBtn = page.locator('#imgLightboxOpenBtn');
+    // Browsers block data: URLs as a top-level page, so the link must not use one.
+    await expect(openBtn).toHaveAttribute('href', /^blob:/);
+
+    const [popup] = await Promise.all([
+      context.waitForEvent('page'),
+      openBtn.click(),
+    ]);
+    await popup.waitForLoadState();
+    expect(popup.url()).toMatch(/^blob:/);
+    const size = await popup.evaluate(() => {
+      const img = document.querySelector('img, svg');
+      return img ? img.getBoundingClientRect().width : 0;
+    });
+    expect(size).toBeGreaterThan(0);
+  });
 });
