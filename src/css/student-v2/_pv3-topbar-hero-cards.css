@@ -26,7 +26,10 @@
         font-size: 13px;
         font-weight: 800;
         line-height: 1;
-        padding: 10px 14px;
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        padding: 0 14px;
         transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
         white-space: nowrap;
     }
@@ -36,7 +39,11 @@
         background: rgba(255, 255, 255, 0.12);
         border-color: rgba(255, 255, 255, 0.16);
         color: #fff;
-        outline: none;
+    }
+
+    .desktop-topnav-btn:focus-visible {
+        outline: 3px solid #ffc857;
+        outline-offset: 2px;
     }
 
     .desktop-topnav-btn.active {
@@ -119,7 +126,19 @@
     gap: 4px;
     white-space: nowrap;
     flex-shrink: 0;
+    position: relative;
     transition: color 0.15s;
+}
+
+/* Grow the tap area to 44px without moving the label row. It grows upward,
+   stopping 6px below the link so it never covers the topic circles' top edge. */
+.story-row-wrap--bilingual .story-row-see-all::after {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    left: -12px;
+    right: -12px;
+    height: 44px;
 }
 
 .story-row-wrap--bilingual .story-row-see-all:hover {
@@ -676,7 +695,7 @@ body[data-lang="ES"] .story-row-wrap--bilingual .story-bubble-label.es-text {
     min-width: 0;
     color: var(--pc-ink);
     font-family: 'Outfit', sans-serif;
-    font-size: 13px;
+    font-size: 0.8125rem;
     font-weight: 800;
     letter-spacing: 0.08em;
     line-height: 1.2;
@@ -706,7 +725,7 @@ body[data-lang="ES"] .story-row-wrap--bilingual .story-bubble-label.es-text {
 .pc__eyebrow--compact {
     gap: 6px;
     margin-bottom: 6px;
-    font-size: 11.5px;
+    font-size: 0.7188rem;
 }
 
 .pc__eyebrow--compact .pc__eyebrow-icon {
@@ -723,7 +742,7 @@ body[data-lang="ES"] .story-row-wrap--bilingual .story-bubble-label.es-text {
     padding: 4px 10px;
     border-radius: 999px;
     font-family: 'Plus Jakarta Sans', sans-serif;
-    font-size: 10.5px;
+    font-size: 0.6562rem;
     font-weight: 700;
     letter-spacing: 0.05em;
     text-transform: uppercase;
@@ -748,7 +767,7 @@ body[data-lang="ES"] .story-row-wrap--bilingual .story-bubble-label.es-text {
 
 .pc__title {
     font-family: 'Outfit', sans-serif;
-    font-size: 18px;
+    font-size: 1.125rem;
     font-weight: 800;
     color: #0a1d3a;
     line-height: 1.2;
@@ -757,7 +776,7 @@ body[data-lang="ES"] .story-row-wrap--bilingual .story-bubble-label.es-text {
 }
 
 .pc__desc {
-    font-size: 14px;
+    font-size: 0.875rem;
     color: #475569;
     line-height: 1.45;
     margin: 0;
@@ -792,7 +811,7 @@ body[data-lang="ES"] .story-row-wrap--bilingual .story-bubble-label.es-text {
     background: #f1f5f9;
     border: 1px solid #e2e8f0;
     color: #334155;
-    font-size: 12.5px;
+    font-size: 0.7812rem;
     font-weight: 500;
     font-family: 'Plus Jakarta Sans', sans-serif;
 }
@@ -825,7 +844,7 @@ body[data-lang="ES"] .story-row-wrap--bilingual .story-bubble-label.es-text {
 }
 
 .pc__foot-name {
-    font-size: 12px;
+    font-size: 0.75rem;
     color: #64748b;
     font-weight: 600;
     white-space: nowrap;
@@ -835,7 +854,7 @@ body[data-lang="ES"] .story-row-wrap--bilingual .story-bubble-label.es-text {
 
 .pc__open-btn {
     color: var(--pc-ink);
-    font-size: 13px;
+    font-size: 0.8125rem;
     font-weight: 800;
     font-family: 'Plus Jakarta Sans', sans-serif;
     white-space: nowrap;

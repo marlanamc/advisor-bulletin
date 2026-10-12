@@ -32,6 +32,8 @@
 </head>
 <body>
 
+    <a class="skip-link" href="#mainContent"><span class="en-text">Skip to content</span><span class="es-text">Ir al contenido</span></a>
+
     <!-- ═══ APP TOPBAR ═══════════════════════════════════════════ -->
     <header class="app-topbar">
         <div class="topbar-inner">
@@ -154,8 +156,8 @@
         </div>
     </div>
 
-    <!-- Hidden screen-reader nav; wired by firebase-config.js -->
-    <nav class="header-tabs sr-only" aria-label="Main sections" aria-hidden="true">
+    <!-- Legacy hidden nav; inert keeps its buttons out of the Tab order (the topbar and mobile tab bar are the real nav) -->
+    <nav class="header-tabs sr-only" aria-label="Main sections" inert>
         <button class="section-nav-btn active" data-app-view="feed" type="button">Feed / Inicio</button>
         <button class="section-nav-btn" data-app-view="calendar" type="button">Calendar / Calendario</button>
         <button class="section-nav-btn" data-app-view="resources" type="button">Find Help / Ayuda</button>
@@ -172,7 +174,7 @@
     </nav>
 
     <!-- ═══ MAIN APP ══════════════════════════════════════════════ -->
-    <main class="app-main">
+    <main class="app-main" id="mainContent" tabindex="-1">
 
         <!-- ─── FEED VIEW ─────────────────────────────────────── -->
         <div class="page-view active" id="feedView" data-view-panel="feed">
@@ -395,7 +397,7 @@
                     </div>
                 </div>
 
-                <aside class="desktop-home-aside" aria-label="Helpful information">
+                <section class="desktop-home-aside" aria-label="Helpful information">
 
                     <section class="side-panel side-panel--events">
                         <div class="side-panel-header">
@@ -438,7 +440,7 @@
                             <span class="advisor-message-btn-arrow" aria-hidden="true">&rarr;</span>
                         </button>
                     </section>
-                </aside>
+                </section>
             </section>
 
             <!-- Empty state -->
@@ -495,9 +497,9 @@
                 <div class="bulletin-calendar calendar-split-list" id="bulletinCalendar">
                     <!-- List view bulletins render here -->
                 </div>
-                <aside class="calendar-split-grid" id="bulletinCalendarDesktopGrid" aria-label="Month calendar">
+                <section class="calendar-split-grid" id="bulletinCalendarDesktopGrid" aria-label="Month calendar">
                     <!-- Month calendar renders here on desktop -->
-                </aside>
+                </section>
             </div>
 
             <div class="empty-state view-empty-state" id="calendarEmptyState" style="display: none;">
@@ -601,7 +603,7 @@
             <!-- Desktop Find Help Layout -->
             <div class="resources-desktop-layout">
                 <!-- Left Sidebar Nav & Filters -->
-                <aside class="resources-desktop-sidebar">
+                <section class="resources-desktop-sidebar" aria-label="Find Help topics">
                     <div class="resources-sidebar-group">
                         <h2 class="resources-sidebar-title">
                             <span class="en-text">BROWSE BY TOPIC</span>
@@ -611,10 +613,10 @@
                             <!-- Populated dynamically via JS -->
                         </nav>
                     </div>
-                </aside>
+                </section>
 
                 <!-- Main Content Pane -->
-                <main class="resources-desktop-main">
+                <section class="resources-desktop-main" aria-label="Find Help resources">
                     <!-- Scrollable categorized sections -->
                     <div class="resources-desktop-sections" id="resourcesDesktopSections">
                         <!-- Populated dynamically via JS -->
@@ -632,7 +634,7 @@
                         <p>Try adjusting your search terms or filters.</p>
                         <p class="empty-state-bilingual">No se encontró ayuda. Intente ajustar los términos o filtros.</p>
                     </div>
-                </main>
+                </section>
             </div>
         </div>
 

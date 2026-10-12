@@ -609,7 +609,10 @@ export class AdminAttachmentMethods {
                 const img = new Image();
                 img.onload = () => {
                     const originalBytes = file.size;
-                    const isOptimizable = !/image\/(gif|webp)/i.test(file.type);
+                    // GIFs pass through untouched (re-encoding drops animation). WebP goes
+                    // through the same resize as JPEG/PNG — skipping it let full-size
+                    // phone-camera WebP flyers into the student feed.
+                    const isOptimizable = !/image\/gif/i.test(file.type);
 
                     if (!isOptimizable) {
                         const finalBytes = this.calculateBase64Size(originalDataUrl);

@@ -79,8 +79,15 @@
 
 .feed-category-select-wrap {
     cursor: pointer;
+    min-height: 44px;
+    position: relative;
 }
 
+.feed-category-select-wrap .desktop-filter-open-icon {
+    pointer-events: none;
+}
+
+/* The select stretches over the pill's padding and icon so the whole pill opens it */
 .feed-category-select {
     appearance: none;
     -webkit-appearance: none;
@@ -90,13 +97,17 @@
     color: inherit;
     letter-spacing: inherit;
     cursor: pointer;
-    max-width: 140px;
+    max-width: calc(140px + 41px);
+    align-self: stretch;
+    margin: 0 -16px 0 -39px;
+    padding: 0 16px 0 39px;
+    border-radius: 999px;
+    position: relative;
 }
 
 .feed-category-select:focus-visible {
-    outline: 2px solid rgba(10, 29, 58, 0.35);
+    outline: 2px solid rgba(10, 29, 58, 0.55);
     outline-offset: 2px;
-    border-radius: 6px;
 }
 
 /* Main feed row — label beside Filters (all widths where this shell shows) */
@@ -270,7 +281,7 @@
     .desktop-topnav-btn {
         display: inline-flex;
         align-items: center;
-        min-height: 42px;
+        min-height: 44px;
         border-radius: 999px;
         padding: 0 14px;
         color: #fff;
@@ -468,8 +479,8 @@
     }
 
     .side-date span {
-        color: #dc5a2e;
-        font-size: 10px;
+        color: #9a3412;
+        font-size: 11px;
         font-weight: 900;
         line-height: 1;
     }
@@ -921,7 +932,7 @@
 
     .desktop-topnav-btn {
         padding: 0 10px;
-        min-height: 38px;
+        min-height: 44px;
     }
 
     /* Story shortcuts: wrap instead of squeezing ten icons on one line */
