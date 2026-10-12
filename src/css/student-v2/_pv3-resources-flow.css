@@ -34,11 +34,21 @@
     margin: 8px 12px 12px;
     padding: 10px 12px;
     border-radius: 16px;
-    background: var(--cat-accent, #0a1d3a);
+    /* Deepened toward navy like the Call buttons, so the white title and
+       count clear 4.5:1 on every category (raw Food/Health/Financial didn't). */
+    background: color-mix(in srgb, var(--cat-accent, #0a1d3a) 62%, #0a1d3a);
     color: #fff;
     overflow: hidden;
     isolation: isolate;
     box-shadow: 0 8px 22px rgba(10, 29, 58, 0.16);
+}
+
+/* Where supported, cap lightness instead of mixing in navy: dark categories stay
+   exactly as they are and light ones (Food, Health, Financial Help) keep their hue. */
+@supports (color: oklch(from red l c h)) {
+    .resource-category-detail {
+        background: oklch(from var(--cat-accent, #0a1d3a) min(l, 0.48) c h);
+    }
 }
 
 /* Soft circular decoration in the top-right, mirroring the mockup. */
@@ -63,8 +73,8 @@
     align-items: center;
     justify-content: center;
     gap: 4px;
-    min-height: 36px;
-    padding: 0 10px;
+    min-height: 44px;
+    padding: 0 12px;
     border: 0;
     border-radius: 999px;
     background: rgba(255, 255, 255, 0.2);
@@ -212,8 +222,8 @@
     top: 14px;
     right: 14px;
     z-index: 2;
-    width: 36px;
-    height: 36px;
+    width: 44px;
+    height: 44px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -465,7 +475,19 @@
     color: #7eb1ff;
     cursor: pointer;
     border-bottom: 1px solid transparent;
+    position: relative;
     transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+/* 44px tap area around the small text link, without moving it */
+.resource-need__toggle::after {
+    content: '';
+    position: absolute;
+    left: -6px;
+    right: -6px;
+    top: 50%;
+    height: 44px;
+    transform: translateY(-50%);
 }
 
 .resource-need__toggle:hover {
@@ -515,6 +537,8 @@
     color: #e2e8f0;
     border-radius: 999px;
     padding: 8px 16px;
+    min-height: 40px;
+    position: relative;
     font-family: 'Plus Jakarta Sans', sans-serif;
     font-size: 13px;
     font-weight: 600;
@@ -522,6 +546,15 @@
     white-space: nowrap;
     cursor: pointer;
     transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.12s ease;
+}
+
+/* 40px chip + 2px above and below = 44px tap area. Stays inside the 8px row
+   gap, so neighbouring chips never steal each other's taps. (Measured from the
+   padding box, so the 1.5px border is added back: 1.5 + 2 = 3.5px.) */
+.resource-need-hero-chip::after {
+    content: '';
+    position: absolute;
+    inset: -3.5px -1.5px;
 }
 
 .resource-need-hero-chip:hover {
@@ -575,4 +608,11 @@
 .resource-need__change:focus-visible {
     outline: 2px solid #7eb1ff;
     outline-offset: 2px;
+}
+
+/* Headings that receive focus when a topic opens (tabindex="-1"). Keyboard
+   users get a ring; a mouse or touch tap doesn't leave one behind. */
+.resource-category-detail-text h2:focus:not(:focus-visible),
+.desktop-section-title:focus:not(:focus-visible) {
+    outline: none;
 }

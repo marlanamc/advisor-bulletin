@@ -405,6 +405,19 @@ export class BoardResourcesMethods {
         const config = category && category !== 'all' ? RESOURCE_CATEGORY_CONFIG[category] : null;
         const needChip = (this.currentResourceNeedChip || '').trim();
         const isNeedChipMode = !!needChip && isMobileResourcesLayout;
+        // Set by a student's tap (open a topic / press Back). Consumed here so a
+        // later data re-render never moves focus on its own.
+        const pendingFocus = this._pendingResourceFocus || null;
+        this._pendingResourceFocus = null;
+        // The tile or Back button that had focus is about to be hidden or
+        // replaced; put focus somewhere real instead of dropping it to <body>.
+        const focusHeading = () => {
+            const heading = header.querySelector('h2');
+            if (heading && pendingFocus === 'heading') {
+                heading.setAttribute('tabindex', '-1');
+                heading.focus({ preventScroll: true });
+            }
+        };
 
         const resetHeader = () => {
             header.hidden = true;
@@ -415,6 +428,11 @@ export class BoardResourcesMethods {
                 tiles.style.removeProperty('display');
             }
             document.body.classList.remove('resource-category-detail-open');
+            if (pendingFocus && pendingFocus.tile && tiles) {
+                const tile = tiles.querySelector(`[data-resource-category="${pendingFocus.tile}"]`)
+                    || tiles.querySelector('[data-resource-category]');
+                if (tile) tile.focus({ preventScroll: true });
+            }
         };
 
         if (!exploring || !isMobileResourcesLayout || (!config && !isNeedChipMode)) {
@@ -446,7 +464,7 @@ export class BoardResourcesMethods {
             header.style.removeProperty('display');
             header.style.setProperty('--cat-accent', accent);
             header.innerHTML = `
-                <button type="button" class="resource-category-detail-back" data-resource-need-back aria-label="Clear need filter">
+                <button type="button" class="resource-category-detail-back" data-resource-need-back>
                     <span aria-hidden="true">&larr;</span>
                     <span class="en-text">Back</span>
                     <span class="es-text">Atrás</span>
@@ -472,6 +490,7 @@ export class BoardResourcesMethods {
                     this.setResourceNeedChip('');
                 });
             }
+            focusHeading();
             return;
         }
 
@@ -487,7 +506,7 @@ export class BoardResourcesMethods {
 
         const returnToFeed = this.mobileResourceCategoryReturnView === 'feed';
         header.innerHTML = `
-            <button type="button" class="resource-category-detail-back" data-resource-detail-back aria-label="${returnToFeed ? 'Back to home' : 'Back to help categories'}">
+            <button type="button" class="resource-category-detail-back" data-resource-detail-back>
                 <span aria-hidden="true">&larr;</span>
                 ${returnToFeed
                     ? `<span class="en-text">Back to home</span>
@@ -518,9 +537,11 @@ export class BoardResourcesMethods {
                     scrollWindowTo(0);
                     return;
                 }
+                this._pendingResourceFocus = { tile: category };
                 this.switchResourceCategory('all');
             });
         }
+        focusHeading();
     }
 
     renderResourceList(resources) {
@@ -742,6 +763,7 @@ export class BoardResourcesMethods {
                 type="button"
                 class="desktop-cat-btn desktop-cat-btn--all${activeTopic === 'all' ? ' active' : ''}"
                 data-desktop-cat="all"
+                ${activeTopic === 'all' ? 'aria-current="true"' : ''}
                 aria-label="All topics / Todos los temas"
             >
                 <span class="desktop-cat-icon desktop-cat-icon--all" aria-hidden="true">${RESOURCE_ICON_SVGS['all-topics']}</span>
@@ -765,6 +787,7 @@ export class BoardResourcesMethods {
                     type="button"
                     class="desktop-cat-btn${activeTopic === key ? ' active' : ''}"
                     data-desktop-cat="${key}"
+                    ${activeTopic === key ? 'aria-current="true"' : ''}
                     style="--topic-color:${config.color};--topic-tint:${config.tint}"
                     aria-label="${this.escapeAttribute(config.labelEn + ' / ' + config.labelEs)}"
                 >
@@ -782,7 +805,12 @@ export class BoardResourcesMethods {
             this.currentDesktopResourceTopic = topic || 'all';
             navContainer.querySelectorAll('.desktop-cat-btn').forEach((button) => {
                 const buttonTopic = button.dataset.desktopCat || 'all';
-                button.classList.toggle('active', buttonTopic === this.currentDesktopResourceTopic);
+                const isActive = buttonTopic === this.currentDesktopResourceTopic;
+                button.classList.toggle('active', isActive);
+                // Jump links to sections on this page: the current one is
+                // aria-current, so screen readers announce which topic is shown.
+                if (isActive) button.setAttribute('aria-current', 'true');
+                else button.removeAttribute('aria-current');
             });
         };
 
@@ -811,6 +839,13 @@ export class BoardResourcesMethods {
                 if (target) {
                     const top = window.scrollY + target.getBoundingClientRect().top - headerOffset - 16;
                     scrollWindowTo(top);
+                    // Move keyboard focus with the scroll, so the next Tab is the
+                    // first resource in that topic instead of the next sidebar button.
+                    const heading = target.querySelector('.desktop-section-title');
+                    if (heading) {
+                        heading.setAttribute('tabindex', '-1');
+                        heading.focus({ preventScroll: true });
+                    }
                 }
             });
         });
@@ -961,7 +996,10 @@ export class BoardResourcesMethods {
         const navContainer = document.getElementById('desktopCategoryNav');
         if (navContainer) {
             navContainer.querySelectorAll('.desktop-cat-btn').forEach((button) => {
-                button.classList.toggle('active', button.dataset.desktopCat === category);
+                const isActive = button.dataset.desktopCat === category;
+                button.classList.toggle('active', isActive);
+                if (isActive) button.setAttribute('aria-current', 'true');
+                else button.removeAttribute('aria-current');
             });
         }
 
@@ -999,6 +1037,7 @@ export class BoardResourcesMethods {
     }
 
     openResourceShortcut(category) {
+        this._pendingResourceFocus = 'heading';
         this.navigateToResourceCategory(category);
     }
 
@@ -1142,6 +1181,9 @@ export class BoardResourcesMethods {
         sheet.classList.toggle('cat-detail-sheet--desktop', !isMobileSheet);
         sheet.classList.toggle('cat-detail-sheet--expanded', !shouldLimit);
         sheet.setAttribute('aria-hidden', 'false');
+        // inert while closed keeps Back/Close out of the Tab order; lift it
+        // before focusDialogOpen, since inert content can't take focus.
+        sheet.inert = false;
         document.body.classList.add('resource-sheet-open');
         const scroll = sheet.querySelector('.cat-detail-scroll');
         if (scroll) scroll.scrollTop = 0;
@@ -1155,6 +1197,7 @@ export class BoardResourcesMethods {
             const wasDesktopSheet = sheet.classList.contains('cat-detail-sheet--desktop');
             sheet.classList.remove('open', 'is-dragging');
             sheet.setAttribute('aria-hidden', 'true');
+            sheet.inert = true;
             sheet.style.removeProperty('--cat-sheet-drag-y');
             focusDialogClose(this._lastFocusedBeforeCatSheet);
             this._lastFocusedBeforeCatSheet = null;
