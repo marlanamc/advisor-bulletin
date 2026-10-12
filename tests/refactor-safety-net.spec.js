@@ -28,6 +28,10 @@ async function seedStudentFeed(page) {
         title: 'Resume workshop this Friday',
         category: 'job',
         description: 'Bring a draft resume and questions for the career advisor.',
+        eventLink: 'https://example.org/resume-workshop',
+        actionLinks: [
+          { labelEn: 'Sign up', labelEs: 'Inscribirse', url: 'https://signup.example.org/resume', pdfUrl: '' },
+        ],
         advisorName: 'Marlana',
         datePosted: now,
         isActive: true,
@@ -65,6 +69,10 @@ test.describe('Student board — refactor safety net', () => {
     await expect(modal).toBeVisible();
     await expect(page.locator('#bulletinDetailBody')).toContainText('Resume workshop this Friday');
     await expect(page.locator('#bulletinDetailBody')).toContainText('Bring a draft resume');
+    await expect(page.locator('#bulletinDetailBody a[href="https://example.org/resume-workshop"]')).toBeVisible();
+    const extraButton = page.locator('#bulletinDetailBody a[href="https://signup.example.org/resume"]');
+    await expect(extraButton).toBeVisible();
+    await expect(extraButton).toContainText('Sign up');
 
     await page.locator('#closeBulletinDetail').click();
     await expect(modal).toBeHidden();

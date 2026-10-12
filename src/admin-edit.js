@@ -117,6 +117,13 @@ export class AdminEditMethods {
 
         this.setContentType(isResource ? 'resource' : isEvent ? 'event' : 'post', { preserveFields: true, silent: true });
 
+        // Extra buttons work the same on resources, bulletins and events.
+        const actionLinkValues = getResourceActionLinkFieldValues(bulletin.actionLinks);
+        Object.entries(actionLinkValues).forEach(([fieldId, value]) => {
+            set(fieldId, value);
+        });
+        this.removedActionLinkPdfSlots = new Set();
+
         if (isResource) {
             const resourceKind = normalizeResourceKind(bulletin.resourceKind);
             set('contentType', 'resource');
@@ -147,11 +154,6 @@ export class AdminEditMethods {
                 : (bulletin.hours ? [{ day: '', time: bulletin.hours }] : []);
             this.writeHoursRowMirrorInputs(initialHoursRows);
 
-            const actionLinkValues = getResourceActionLinkFieldValues(bulletin.actionLinks);
-            Object.entries(actionLinkValues).forEach(([fieldId, value]) => {
-                set(fieldId, value);
-            });
-            this.removedActionLinkPdfSlots = new Set();
             this.renderExistingResourcePdfPreview(bulletin.pdfUrl || '');
 
             const resourceLogoPreview = document.getElementById('resourceLogoPreview');

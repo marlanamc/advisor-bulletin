@@ -4,6 +4,11 @@ import { formatResourceHoursHtml, formatResourceHoursRowsHtml } from './resource
 import { normalizeWebUrl } from './url-safety.js'
 import { buildBulletinCalendarLink } from './calendar-export.js'
 import { toRichTextPlainText } from './rich-text.js'
+import {
+    normalizeResourceActionLinks,
+    RESOURCE_ACTION_LINK_ICON_SVG,
+    RESOURCE_ACTION_LINK_PDF_ICON_SVG,
+} from './resource-action-links.js'
 
 export class BoardDetailMethods {
     renderBulletinDetail(bulletin) {
@@ -47,6 +52,8 @@ export class BoardDetailMethods {
         const detailExternalLink = resourceUrl && resourceUrl !== '#'
             ? resourceUrl
             : normalizeWebUrl(bulletin.eventLink || '');
+        // Resources show their extra buttons on the card itself; posts only here.
+        const extraButtonsHtml = isResource ? '' : this.getDetailExtraButtonsHtml(bulletin);
         const currentLang = document.body.getAttribute('data-lang') || 'EN';
         const displayImage = (currentLang === 'ES' && bulletin.imageEs) ? bulletin.imageEs : bulletin.image;
 
@@ -142,6 +149,7 @@ export class BoardDetailMethods {
                                 <span><strong>${this.getDetailLinkActionLabel(bulletin.category)}</strong><small>${this.escapeHtml(this.getDisplayHost(detailExternalLink))}</small></span>
                             </a>
                         ` : ''}
+                        ${extraButtonsHtml}
                         ${calendarAction ? `
                             <a href="${this.escapeAttribute(calendarAction.href)}" target="_blank" rel="noopener" class="post-detail-action post-detail-action--outline">
                                 <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 11h18"/><path d="M12 14v4M10 16h4"/></svg>
@@ -192,6 +200,13 @@ export class BoardDetailMethods {
 
             if (action === 'open-pdf') {
                 this.openPdfFromBulletin(bulletinId);
+            } else if (action === 'open-action-pdf') {
+                const pdfUrl = actionButton.getAttribute('data-pdf-url') || '';
+                if (pdfUrl) {
+                    this.openResourcePdf(pdfUrl).catch((error) => {
+                        console.error('Error opening PDF:', error);
+                    });
+                }
             } else if (action === 'share') {
                 window.shareBulletin?.(bulletinId, actionButton.getAttribute('data-bulletin-title') || '');
             }
@@ -338,6 +353,25 @@ export class BoardDetailMethods {
         if (!bulletin) return false;
         if ((bulletin.address || '').trim()) return true;
         return Boolean((bulletin.hours || '').trim());
+    }
+
+    getDetailExtraButtonsHtml(bulletin) {
+        const sized = (svg) => svg.replace('<svg ', '<svg width="23" height="23" ');
+        return normalizeResourceActionLinks(bulletin.actionLinks).map((link) => {
+            const label = `<strong><span class="en-text">${this.escapeHtml(link.labelEn)}</span><span class="es-text">${this.escapeHtml(link.labelEs)}</span></strong>`;
+            if (link.pdfUrl) {
+                return `
+                            <button type="button" class="post-detail-action post-detail-action--outline" data-detail-action="open-action-pdf" data-bulletin-id="${this.escapeAttribute(bulletin.id)}" data-pdf-url="${this.escapeAttribute(link.pdfUrl)}">
+                                ${sized(RESOURCE_ACTION_LINK_PDF_ICON_SVG)}
+                                <span>${label}<small>PDF</small></span>
+                            </button>`;
+            }
+            return `
+                            <a href="${this.escapeAttribute(link.url)}" target="_blank" rel="noopener" class="post-detail-action post-detail-action--outline">
+                                ${sized(RESOURCE_ACTION_LINK_ICON_SVG)}
+                                <span>${label}<small>${this.escapeHtml(this.getDisplayHost(link.url))}</small></span>
+                            </a>`;
+        }).join('');
     }
 
     getDetailLinkActionLabel(category) {
