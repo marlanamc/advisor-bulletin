@@ -229,6 +229,8 @@ const RESOURCE_CHIP_ES = {
     'call for immigration info': 'Llamar para información de inmigración',
     'citizenship form workshops': 'Talleres de formularios de ciudadanía',
     'talk to an immigration lawyer': 'Hablar con un abogado de inmigración',
+    'find a lawyer for immigration court': 'Buscar un abogado para la corte de inmigración',
+    'help if someone is detained': 'Ayuda si alguien está detenido',
     'make a family emergency plan': 'Hacer un plan de emergencia familiar',
     'prepare for detention or deportation': 'Prepararse para detención o deportación',
     'see a doctor with no insurance': 'Ver a un médico sin seguro',
