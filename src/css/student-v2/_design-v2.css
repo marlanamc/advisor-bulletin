@@ -551,6 +551,17 @@ body[data-current-view="feed"] #feedView > .story-row-wrap.story-row-wrap--compa
 .desktop-cat-icon .cat-wordmark,
 .resources-sidebar-btn-icon .cat-wordmark {
     font-size: 10px;
+    /* Same navy-deepened ink as other category text: 10px "GED" on its tint */
+    color: color-mix(in srgb, currentColor 62%, #0a1d3a);
+}
+
+/* Where supported, cap lightness instead of mixing in navy: dark categories stay
+   exactly as they are and light ones (Food, Health, Financial Help) keep their hue. */
+@supports (color: oklch(from red l c h)) {
+    .desktop-cat-icon .cat-wordmark,
+    .resources-sidebar-btn-icon .cat-wordmark {
+        color: oklch(from currentColor min(l, 0.48) c h);
+    }
 }
 
 .story-bubble-label {
