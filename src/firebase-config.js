@@ -1117,9 +1117,13 @@ class FirebaseBulletinBoard {
         document.querySelectorAll('[data-app-view]').forEach((button) => {
             const isActive = button.getAttribute('data-app-view') === view;
             button.classList.toggle('active', isActive);
-            button.setAttribute('aria-pressed', String(isActive));
-            if (button.classList.contains('mobile-tab')) {
-                button.setAttribute('aria-current', isActive ? 'page' : 'false');
+            // These switch views, so they're navigation: aria-current, not
+            // aria-pressed (which is invalid on the <a> lockup / See all links).
+            button.removeAttribute('aria-pressed');
+            if (isActive) {
+                button.setAttribute('aria-current', 'page');
+            } else {
+                button.removeAttribute('aria-current');
             }
         });
 

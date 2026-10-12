@@ -251,12 +251,12 @@
     }
 
     .pc__title {
-        font-size: 21px;
+        font-size: 1.3125rem;
         line-height: 1.12;
     }
 
     .pc__desc {
-        font-size: 15px;
+        font-size: 0.9375rem;
         line-height: 1.5;
     }
 
