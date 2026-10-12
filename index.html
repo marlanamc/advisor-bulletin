@@ -156,8 +156,8 @@
         </div>
     </div>
 
-    <!-- Legacy hidden nav; inert keeps its buttons out of the Tab order (the topbar and mobile tab bar are the real nav) -->
-    <nav class="header-tabs sr-only" aria-label="Main sections" inert>
+    <!-- Legacy hidden nav: aria-hidden hides it from screen readers, inert takes its buttons out of the Tab order (the topbar and mobile tab bar are the real nav) -->
+    <nav class="header-tabs sr-only" aria-label="Main sections" aria-hidden="true" inert>
         <button class="section-nav-btn active" data-app-view="feed" type="button">Feed / Inicio</button>
         <button class="section-nav-btn" data-app-view="calendar" type="button">Calendar / Calendario</button>
         <button class="section-nav-btn" data-app-view="resources" type="button">Find Help / Ayuda</button>
