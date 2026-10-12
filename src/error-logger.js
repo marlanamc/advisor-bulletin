@@ -7,6 +7,16 @@ const MAX_MESSAGE = 500
 const MAX_STACK = 2000
 const DAILY_LOG_LIMIT = 20
 
+// Browser noise that isn't an app bug. ResizeObserver warns when a layout
+// change inside its callback needs another frame; nothing is lost.
+const IGNORED_MESSAGES = [
+    /ResizeObserver loop (completed with undelivered notifications|limit exceeded)/i
+]
+
+function isIgnored(message) {
+    return IGNORED_MESSAGES.some((pattern) => pattern.test(message))
+}
+
 function getDayKey(date = new Date()) {
     const year = date.getFullYear()
     const month = String(date.getMonth() + 1).padStart(2, '0')
@@ -60,6 +70,9 @@ function writeClientError(event) {
 
 function logClientError(source, payload) {
     const message = String(payload.message || 'Unknown error').slice(0, MAX_MESSAGE)
+    if (isIgnored(message)) {
+        return
+    }
     if (!shouldLog(getFingerprint(source, message))) {
         return
     }
