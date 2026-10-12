@@ -221,7 +221,7 @@ const BLOCK_DEFS = {
         html(slot = 1) {
             return `
 <p class="cx-help" style="margin:0 0 10px">Adds a button to the card — point it at a page <em>or</em> attach a PDF.</p>
-<input class="cx-input" data-cx-mirror="resourceActionLink${slot}LabelEn" placeholder="Button label (e.g. Steps to apply)" aria-label="Button label" style="margin-bottom:10px">
+<input class="cx-input" data-cx-mirror="resourceActionLink${slot}LabelEn" placeholder="Button label (e.g. Sign up)" aria-label="Button label" style="margin-bottom:10px">
 <div class="cx-seg" data-cx-toggle-pdf style="margin-bottom:10px">
   <label class="on"><input type="radio" name="cxExtKind${slot}" value="url" checked> 🔗 Link</label>
   <label><input type="radio" name="cxExtKind${slot}" value="pdf"> 📄 PDF</label>
@@ -258,8 +258,8 @@ const BLOCK_DEFS = {
 
 // Mode → ordered add-detail menu items (spanish always first + Recommended)
 const MODE_MENUS = {
-    bulletin:     ['spanish', 'dates', 'link', 'contact', 'audience'],
-    event:        ['spanish', 'format', 'link', 'audience'],
+    bulletin:     ['spanish', 'dates', 'link', 'extras', 'contact', 'audience'],
+    event:        ['spanish', 'format', 'link', 'extras', 'audience'],
     organization: ['spanish', 'weblink', 'phone', 'address', 'hours', 'extras'],
     document:     ['spanish', 'weblink', 'extras'],
 }
@@ -1512,6 +1512,15 @@ export function hydrateFromForm() {
     if (!form) return
 
     const gv = name => (form.querySelector(`[name="${name}"]`)?.value || '').trim()
+    const insertSavedExtrasBlocks = () => {
+        for (let slot = 1; slot <= MAX_RESOURCE_ACTION_LINKS; slot += 1) {
+            if (gv(`resourceActionLink${slot}LabelEn`)
+                || gv(`resourceActionLink${slot}Url`)
+                || gv(`resourceActionLink${slot}ExistingPdfUrl`)) {
+                insertBlock('extras', { slot })
+            }
+        }
+    }
 
     // Determine and apply mode
     const adminMode = window.adminPanel?.contentMode
@@ -1595,6 +1604,7 @@ export function hydrateFromForm() {
             }
         }
         if (gv('eventLink')) insertBlock('link')
+        insertSavedExtrasBlocks()
         if (gv('company') || gv('contactPhone') || gv('eventLocation')) insertBlock('contact')
         if (gv('classType')) insertBlock('audience')
     } else if (contentType === 'resource') {
@@ -1602,13 +1612,7 @@ export function hydrateFromForm() {
         if (gv('resourcePhone')) insertBlock('phone')
         if (gv('resourceAddress')) insertBlock('address')
         if (form.querySelector('input[name="hoursRowDay"], input[name="hoursRowTime"]')) insertBlock('hours')
-        for (let slot = 1; slot <= MAX_RESOURCE_ACTION_LINKS; slot += 1) {
-            if (gv(`resourceActionLink${slot}LabelEn`)
-                || gv(`resourceActionLink${slot}Url`)
-                || gv(`resourceActionLink${slot}ExistingPdfUrl`)) {
-                insertBlock('extras', { slot })
-            }
-        }
+        insertSavedExtrasBlocks()
         // help tags
         const highlights = restoredResourceHighlights || gv('resourceHighlights')
         if (highlights) {

@@ -151,6 +151,10 @@ async function seedAdvisorEditFixtures(page) {
         title: 'Resume workshop this Friday',
         category: 'job',
         description: 'Bring a draft resume and questions for the career advisor.',
+        eventLink: 'https://example.org/resume-workshop',
+        actionLinks: [
+          { labelEn: 'Sign up', labelEs: 'Inscribirse', url: 'https://example.org/resume-signup', pdfUrl: '' },
+        ],
         advisorName: 'Jorge',
         postedBy: 'rocha',
         datePosted: now,
@@ -655,10 +659,16 @@ test.describe('Advisor redesign', () => {
     await expect(page.locator('.ap-preview-card .mobile-resource-card.ap-preview-resource-mock')).toHaveCount(0);
     await expect(page.locator('.ap-preview-card #previewTitle')).toContainText('Resume workshop this Friday');
     await expect(page.locator('[data-preview-nav="home"]')).toHaveClass(/active/);
+    await expect(page.locator('#cxBlocks [data-cx-block="extras"]')).toHaveCount(1);
+    await expect(page.locator('#cxBlocks [data-cx-block="extras"] [data-cx-mirror="resourceActionLink1LabelEn"]')).toHaveValue('Sign up');
 
     await page.locator('#cxSubmitBtn').click();
     const update = await getLastCapturedUpdate(page);
     expect(update.bulletinId).toBe('edit-bulletin-1');
+    expect(update.bulletin.eventLink).toBe('https://example.org/resume-workshop');
+    expect(update.bulletin.actionLinks).toEqual([
+      { labelEn: 'Sign up', labelEs: 'Inscribirse', url: 'https://example.org/resume-signup', pdfUrl: '' },
+    ]);
     expect(update.contentMode).toBe('post');
     expect(update.bulletin).toMatchObject({
       type: 'post',

@@ -209,6 +209,11 @@ export class AdminBulletinWriteMethods {
                     await this.handlePdfUpload(resourcePdfFile, bulletin, bulletinId);
                 }
             } else {
+                if (bulletin.actionLinks.length) {
+                    const actionLinks = await this.finalizeResourceActionLinks(formData, bulletinId, []);
+                    await updateDoc(doc(db, 'bulletins', bulletinId), { actionLinks });
+                }
+
                 const imageFile = formData.get('image');
                 const imageEsFile = formData.get('imageEs');
                 const pdfFile = formData.get('pdf');
@@ -358,6 +363,13 @@ export class AdminBulletinWriteMethods {
                 this.removedActionLinkPdfSlots = new Set();
                 return;
             }
+
+            bulletin.actionLinks = await this.finalizeResourceActionLinks(
+                formData,
+                bulletinId,
+                existingBulletin?.actionLinks || [],
+            );
+            this.removedActionLinkPdfSlots = new Set();
 
             await this.saveBulletin(bulletin, bulletinId);
 
@@ -532,6 +544,9 @@ export class AdminBulletinWriteMethods {
             }
         }
 
+        const existingPost = this.isEditMode && this.editingBulletinId
+            ? this.bulletins.find((b) => b.id === this.editingBulletinId)
+            : null;
         const bulletin = {
             type: 'post',
             title: (formData.get('title') || '').trim(),
@@ -552,6 +567,10 @@ export class AdminBulletinWriteMethods {
             endTime: dateType === 'sessions' ? '' : (formData.get('endTime') || ''),
             eventLocation: formData.get('eventLocation') || '',
             eventLink: (formData.get('eventLink') || '').trim(),
+            actionLinks: stripActionLinkUploadMeta(parseResourceActionLinkSlotsFromForm(formData, {
+                removedPdfSlots: this.removedActionLinkPdfSlots,
+                existingLinks: existingPost?.actionLinks || [],
+            })),
             classType: formData.get('classType') || '',
             address: (formData.get('eventLocation') || '').trim(),
             phone: (formData.get('contactPhone') || '').trim(),
