@@ -762,6 +762,7 @@
     align-items: center;
     gap: 10px;
     width: 100%;
+    min-height: 44px;
     padding: 6px 10px;
     background: transparent;
     border: 0;
@@ -826,7 +827,15 @@
     border-radius: 999px;
     flex-shrink: 0;
     background: var(--topic-tint);
-    color: var(--topic-color);
+    color: color-mix(in srgb, var(--topic-color) 62%, #0a1d3a);
+}
+
+/* Where supported, cap lightness instead of mixing in navy: dark categories stay
+   exactly as they are and light ones (Food, Health, Financial Help) keep their hue. */
+@supports (color: oklch(from red l c h)) {
+    .desktop-cat-count {
+        color: oklch(from var(--topic-color) min(l, 0.48) c h);
+    }
 }
 
 .desktop-cat-btn.active .desktop-cat-count {
@@ -887,7 +896,7 @@
 .desktop-section-count {
     font-size: 0.82rem;
     font-weight: 600;
-    color: #64748b;
+    color: #475569;
     margin: 0;
 }
 
@@ -983,12 +992,12 @@
 
 .badge--walkin {
     background: hsla(24, 90%, 50%, 0.1);
-    color: hsl(24, 95%, 38%);
+    color: hsl(24, 95%, 30%);
 }
 
 .badge--open {
     background: hsla(150, 80%, 40%, 0.1);
-    color: hsl(150, 80%, 30%);
+    color: hsl(150, 80%, 23%);
 }
 
 .badge--open::before {

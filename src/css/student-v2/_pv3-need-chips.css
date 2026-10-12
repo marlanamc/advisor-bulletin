@@ -199,7 +199,7 @@
     .resource-need-hero-chip {
         padding: 7px 12px;
         font-size: 12px;
-        min-height: 34px;
+        min-height: 40px;
     }
 
     .resource-need__top {
@@ -273,9 +273,19 @@
     /* Two even lines instead of a full line plus one orphan word. */
     text-wrap: balance;
     background: color-mix(in srgb, var(--cat-accent, #0a1d3a) 9%, #ffffff);
-    color: color-mix(in srgb, var(--cat-accent, #0a1d3a) 78%, #0a1d3a);
+    /* Category color deepened toward navy: 62% clears 4.5:1 on the chip tint
+       for every category (the lightest, Financial Help green, is the limit). */
+    color: color-mix(in srgb, var(--cat-accent, #0a1d3a) 62%, #0a1d3a);
     border: 1px solid color-mix(in srgb, var(--cat-accent, #0a1d3a) 22%, #e2e8f0);
     box-shadow: none;
+}
+
+/* Where supported, cap lightness instead of mixing in navy: dark categories stay
+   exactly as they are and light ones (Food, Health, Financial Help) keep their hue. */
+@supports (color: oklch(from red l c h)) {
+    .resource-service-chip {
+        color: oklch(from var(--cat-accent, #0a1d3a) min(l, 0.48) c h);
+    }
 }
 
 .help-sheet-row__copy .resource-service-chips {
@@ -375,9 +385,17 @@
 .mobile-resource-card__hours--locations .mobile-resource-card__hours-times {
     display: block;
     margin-top: 2px;
-    color: color-mix(in srgb, var(--cat-accent, #0a1d3a) 72%, #334155);
+    color: color-mix(in srgb, var(--cat-accent, #0a1d3a) 62%, #0a1d3a);
     font-weight: 800;
     text-align: left;
+}
+
+/* Where supported, cap lightness instead of mixing in navy: dark categories stay
+   exactly as they are and light ones (Food, Health, Financial Help) keep their hue. */
+@supports (color: oklch(from red l c h)) {
+    .mobile-resource-card__hours--locations .mobile-resource-card__hours-times {
+        color: oklch(from var(--cat-accent, #0a1d3a) min(l, 0.48) c h);
+    }
 }
 
 .post-detail-panel .mobile-resource-card__hours {
@@ -481,16 +499,35 @@
     transform: scale(0.98);
 }
 
+/* Text-bearing category colors use the 62%-navy "ink" so white-on-color and
+   color-on-white both clear 4.5:1 for every category (Food, Health, Financial
+   Help and Consulates failed with the raw accent). */
 .mobile-resource-card__btn--primary {
-    background: var(--cat-accent, #0a1d3a);
+    background: color-mix(in srgb, var(--cat-accent, #0a1d3a) 62%, #0a1d3a);
     color: #fff;
     box-shadow: 0 6px 14px rgba(10, 29, 58, 0.14);
 }
 
+/* Where supported, cap lightness instead of mixing in navy: dark categories stay
+   exactly as they are and light ones (Food, Health, Financial Help) keep their hue. */
+@supports (color: oklch(from red l c h)) {
+    .mobile-resource-card__btn--primary {
+        background: oklch(from var(--cat-accent, #0a1d3a) min(l, 0.48) c h);
+    }
+}
+
 .mobile-resource-card__btn--secondary {
     background: #fff;
-    color: var(--cat-accent, #0a1d3a);
+    color: color-mix(in srgb, var(--cat-accent, #0a1d3a) 62%, #0a1d3a);
     border: 1.5px solid var(--cat-accent, #0a1d3a);
+}
+
+/* Where supported, cap lightness instead of mixing in navy: dark categories stay
+   exactly as they are and light ones (Food, Health, Financial Help) keep their hue. */
+@supports (color: oklch(from red l c h)) {
+    .mobile-resource-card__btn--secondary {
+        color: oklch(from var(--cat-accent, #0a1d3a) min(l, 0.48) c h);
+    }
 }
 
 .mobile-resource-card__action-links {
@@ -873,8 +910,17 @@
 .cat-org-btn--website,
 .cat-org-btn--directions {
     background: #fff;
-    color: var(--cat-accent, #0d9488);
+    color: color-mix(in srgb, var(--cat-accent, #0d9488) 62%, #0a1d3a);
     border: 2px solid var(--cat-accent, #0d9488);
+}
+
+/* Where supported, cap lightness instead of mixing in navy: dark categories stay
+   exactly as they are and light ones (Food, Health, Financial Help) keep their hue. */
+@supports (color: oklch(from red l c h)) {
+    .cat-org-btn--website,
+    .cat-org-btn--directions {
+        color: oklch(from var(--cat-accent, #0d9488) min(l, 0.48) c h);
+    }
 }
 
 .cat-detail-backdrop {
@@ -1322,12 +1368,20 @@
         border: 1.5px solid #e2e8f0;
         border-radius: 999px;
         background: #fff;
-        color: var(--cat-accent, #0a1d3a);
+        color: color-mix(in srgb, var(--cat-accent, #0a1d3a) 62%, #0a1d3a);
         font-family: 'Plus Jakarta Sans', sans-serif;
         font-size: 13px;
         font-weight: 700;
         cursor: pointer;
         white-space: nowrap;
+    }
+
+    /* Where supported, cap lightness instead of mixing in navy: dark categories stay
+       exactly as they are and light ones (Food, Health, Financial Help) keep their hue. */
+    @supports (color: oklch(from red l c h)) {
+        .help-sheet-row__more {
+            color: oklch(from var(--cat-accent, #0a1d3a) min(l, 0.48) c h);
+        }
     }
 
     .help-sheet-row__more svg {

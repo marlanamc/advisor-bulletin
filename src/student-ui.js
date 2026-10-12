@@ -522,6 +522,7 @@ function openCategoryDetail(catKey) {
 
     sheet.classList.add('open');
     sheet.setAttribute('aria-hidden', 'false');
+    sheet.inert = false;
     sheet.scrollTop = 0;
     var scroll = sheet.querySelector('.cat-detail-scroll');
     if (scroll) scroll.scrollTop = 0;
@@ -532,6 +533,7 @@ function closeCategoryDetail() {
     if (sheet) {
         sheet.classList.remove('open');
         sheet.setAttribute('aria-hidden', 'true');
+        sheet.inert = true;
     }
 }
 
