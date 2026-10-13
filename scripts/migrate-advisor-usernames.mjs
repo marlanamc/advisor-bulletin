@@ -4,7 +4,7 @@
  *
  * The portal originally used made-up logins like jorge@ebhcs.org, so Firestore
  * keys advisors and posts by those short usernames. With Google sign-in,
- * everyone arrives as their REAL @ebhcs.org account (rocha@, vlalin@, …), and
+ * everyone arrives as their REAL @ebhcs.org account (jrocha@, vlalin@, …), and
  * access/ownership checks derive the username from that email. This script
  * re-keys everything to the real email prefixes:
  *
@@ -39,7 +39,7 @@ const USERNAME_MAP = {
   fabiola: 'fvaquerano',
   felipe: 'fgallego',
   jerome: 'jkiley',
-  jorge: 'rocha',
+  jorge: 'jrocha',
   leidy: 'lalzate',
   mike: 'mkelsen',
   simonetta: 'spiergentili',

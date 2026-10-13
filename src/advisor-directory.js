@@ -14,7 +14,7 @@ export const STUDENT_ADVISOR_DIRECTORY = [
     { name: 'Fabiola', role: 'Advisor', email: 'fvaquerano@ebhcs.org', loginUsername: 'fvaquerano' },
     { name: 'Felipe', role: 'Advisor', email: 'fgallego@ebhcs.org', loginUsername: 'fgallego' },
     { name: 'Jerome', role: 'Advisor', email: 'jkiley@ebhcs.org', loginUsername: 'jkiley' },
-    { name: 'Jorge', role: 'Advisor', email: 'rocha@ebhcs.org', loginUsername: 'rocha' },
+    { name: 'Jorge', role: 'Advisor', email: 'jrocha@ebhcs.org', loginUsername: 'jrocha' },
     { name: 'Leidy', role: 'Advisor', email: 'lalzate@ebhcs.org', loginUsername: 'lalzate' },
     { name: 'Mike K.', role: 'Advisor', email: 'mkelsen@ebhcs.org', loginUsername: 'mkelsen' },
     { name: 'Simonetta', role: 'Advisor', email: 'spiergentili@ebhcs.org', loginUsername: 'spiergentili' }
@@ -38,6 +38,9 @@ export function isLeadershipRole(role) {
  * @param {{ username: string, displayName?: string, email?: string }} advisor
  */
 export function getPublicAdvisorEmail(advisor) {
+    // Saved contact details take precedence over the offline fallback list.
+    const raw = advisor.email && String(advisor.email).trim();
+    if (raw) return raw;
     const username = (advisor.username || '').trim().toLowerCase();
     const displayName = (advisor.displayName || '').trim();
     const byLogin = STUDENT_ADVISOR_DIRECTORY.find((d) => d.loginUsername === username);
@@ -46,7 +49,5 @@ export function getPublicAdvisorEmail(advisor) {
         (d) => d.name.toLowerCase() === displayName.toLowerCase()
     );
     if (byName) return byName.email;
-    const raw = advisor.email && String(advisor.email).trim();
-    if (raw) return raw;
     return `${username}@ebhcs.org`;
 }
