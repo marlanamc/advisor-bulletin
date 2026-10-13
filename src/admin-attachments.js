@@ -473,7 +473,8 @@ export class AdminAttachmentMethods {
                 }
             }
         } else {
-            preview.innerHTML = '';
+            // The current composer does not render the legacy preview elements.
+            if (preview) preview.innerHTML = '';
             this[pendingKey] = null;
             if (fieldName === 'resourceLogo') {
                 this.updateResourceIconGroupState();
