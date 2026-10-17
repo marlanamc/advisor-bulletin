@@ -141,6 +141,7 @@ function isLikelyOrphanDraft(data) {
   // Resources are never auto-deleted by this script — visibility is isPublished.
   if (data.type === 'resource') return false;
   if (data.type !== 'post') return false;
+  if (data.privateDraft === true) return false;
   if (data.isActive !== false) return false;
   const createdMs = toMillis(data.createdAt);
   const updatedMs = toMillis(data.updatedAt);

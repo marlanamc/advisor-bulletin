@@ -63,6 +63,7 @@ document.addEventListener('DOMContentLoaded', function() {
 (function() {
     // ── Page navigation ──────────────────────────────────────────
     var PAGES = {
+        drafts: { el: 'apPageDrafts', nav: 'apNavDrafts', title: 'My Drafts' },
         dashboard: { el: 'apPageDashboard', nav: 'apNavDashboard',  title: 'Dashboard' },
         create:    { el: 'apPageCreate',    nav: 'apNavCreate',     title: 'Create Post' },
         posts:     { el: 'apPagePosts',     nav: 'apNavBulletins',  title: 'All Posts' },

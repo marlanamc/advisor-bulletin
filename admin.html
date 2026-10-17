@@ -78,6 +78,7 @@
                 <div class="ap-sidebar-brand" data-ebhcs-brand-lockup data-brand-href="/" data-brand-variant="sidebar" data-brand-portal-tag="true"></div>
 
                 <nav class="ap-nav" role="navigation">
+                    <button class="ap-nav-item" type="button" data-ap-page="drafts" id="apNavDrafts">My Drafts</button>
                     <button class="ap-nav-item ap-nav-create" type="button" data-ap-page="create" id="apNavCreate">
                         <div class="ap-nav-icon">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -354,6 +355,11 @@
                 <!-- ══════════════════════════════════════
                      PAGE: CREATE POST
                      ══════════════════════════════════════ -->
+                <div id="apPageDrafts" class="ap-page">
+                    <div class="ap-page-header"><h2>My Drafts</h2></div>
+                    <p>Only you can see these drafts. Changes are saved only when you click Save Draft. Drafts support up to 900 KB including attachments; add larger files when publishing.</p>
+                    <div id="myDraftsList" aria-live="polite"></div>
+                </div>
                 <div id="apPageCreate" class="ap-page" role="main">
                     <div class="ap-create-header">
                         <h1>Create a Post</h1>
@@ -514,6 +520,7 @@
                             </div>
 
                             <div class="cx-actions">
+                                <button type="button" class="ap-btn" id="saveDraftBtn">Save Draft</button>
                                 <button type="button" class="cx-btn-primary" id="cxSubmitBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Post to students</button>
                                 <span class="cx-actions-note">Title, a category, and a line of text is all it takes.</span>
                             </div>

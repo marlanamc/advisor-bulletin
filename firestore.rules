@@ -4,16 +4,26 @@ service cloud.firestore {
     match /bulletins/{bulletinId} {
 
       // Students can read active content. Unpublished resources stay visible only to staff.
-      allow read: if isActiveAdvisor(request.auth)
+      allow get: if (isActiveAdvisor(request.auth)
+          && (resource.data.isActive == true || !resource.data.get('privateDraft', false)
+            || resource.data.authorUid == request.auth.uid))
         || (resource.data.isActive == true
           && (!('type' in resource.data)
             || resource.data.type != 'resource'
             || !('isPublished' in resource.data)
             || resource.data.isPublished == true));
 
+      // Queries must prove either shared active content or the caller's UID.
+      allow list: if (isActiveAdvisor(request.auth)
+          && (resource.data.isActive == true || resource.data.authorUid == request.auth.uid))
+        || (resource.data.isActive == true
+          && (!('type' in resource.data) || resource.data.type != 'resource'
+            || !('isPublished' in resource.data) || resource.data.isPublished == true));
+
       // Only advisors still on the advisor list can create content
       allow create: if isActiveAdvisor(request.auth)
-        && validateBulletinData(request.resource.data)
+        && (validPrivateDraft(request.resource.data) || validateBulletinData(request.resource.data))
+        && (!request.resource.data.get('privateDraft', false) || validPrivateDraft(request.resource.data))
         && request.resource.data.postedBy == getUsername(request.auth.token.email);
 
       // Any active advisor can update ANY post or resource. Content
@@ -36,16 +46,30 @@ service cloud.firestore {
       // permissions. The fix here is a single, smaller rule rather than
       // clever branch ordering.
       allow update: if isActiveAdvisor(request.auth)
-        && validateBulletinData(request.resource.data)
+        && (!resource.data.get('privateDraft', false) || resource.data.authorUid == request.auth.uid)
+        && (!request.resource.data.get('privateDraft', false)
+          || (resource.data.get('privateDraft', false) && validPrivateDraft(request.resource.data)))
+        && (request.resource.data.get('privateDraft', false) || validateBulletinData(request.resource.data))
+        && (!resource.data.get('privateDraft', false) || request.resource.data.authorUid == resource.data.authorUid)
         && (!('postedBy' in request.resource.data) || request.resource.data.postedBy == resource.data.postedBy)
-        && (!('datePosted' in request.resource.data) || request.resource.data.datePosted == resource.data.datePosted)
+        && (!('datePosted' in request.resource.data) || request.resource.data.datePosted == resource.data.datePosted
+          || (resource.data.get('privateDraft', false) && !request.resource.data.get('privateDraft', false)))
         && (!('createdAt' in request.resource.data) || !('createdAt' in resource.data) || request.resource.data.createdAt == resource.data.createdAt);
 
       // Any active advisor can permanently delete any bulletin — equal
       // privilege (Sep 2026). This also makes the 133 legacy posts left over
       // from the retired shared logins (postedBy 'admin' / 'advisors', owned
       // by nobody) editable and removable by the whole team.
-      allow delete: if isActiveAdvisor(request.auth);
+      allow delete: if isActiveAdvisor(request.auth)
+        && (!resource.data.get('privateDraft', false) || resource.data.authorUid == request.auth.uid);
+    }
+
+    function validPrivateDraft(data) {
+      return data.get('privateDraft', false) == true
+        && data.isActive == false
+        && data.authorUid == request.auth.uid
+        && data.draftData is map
+        && data.title is string;
     }
 
     match /resourceLogos/{bulletinId} {

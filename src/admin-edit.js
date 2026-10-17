@@ -91,6 +91,8 @@ export class AdminEditMethods {
             return;
         }
 
+        this.draftId = null;
+        document.getElementById('saveDraftBtn').hidden = true;
         this.editReturnManagePage = this.getManagePageForContentKind(bulletin);
 
         // Switch to post tab (skip preview sync until edit data is loaded)

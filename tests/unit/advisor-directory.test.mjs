@@ -9,7 +9,13 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { isLeadershipRole, STUDENT_ADVISOR_DIRECTORY } from '../../src/advisor-directory.js';
+import { getPublicAdvisorEmail, isLeadershipRole, STUDENT_ADVISOR_DIRECTORY } from '../../src/advisor-directory.js';
+
+test('saved contact corrections override fallback matches by login or name', () => {
+    assert.equal(getPublicAdvisorEmail({ username: 'vlalin', displayName: 'Carmen', email: ' corrected@ebhcs.org ' }), 'corrected@ebhcs.org');
+    assert.equal(getPublicAdvisorEmail({ username: 'newlogin', displayName: 'Jorge', email: 'updated@ebhcs.org' }), 'updated@ebhcs.org');
+    assert.equal(getPublicAdvisorEmail({ username: 'jrocha', displayName: 'Jorge' }), 'jrocha@ebhcs.org');
+});
 
 test('leadership titles sort above advisors', () => {
     assert.equal(isLeadershipRole('Director'), true);

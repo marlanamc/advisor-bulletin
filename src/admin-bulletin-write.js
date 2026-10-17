@@ -8,7 +8,7 @@
  * other parts of the merged prototype.
  */
 import { db } from './firebase.js'
-import { collection, doc, addDoc, updateDoc, deleteDoc, deleteField, serverTimestamp } from 'firebase/firestore'
+import { collection, doc, addDoc, updateDoc, deleteDoc, deleteField, serverTimestamp, runTransaction } from 'firebase/firestore'
 import { parseResourceServiceChips } from './resource-chip-labels.js'
 import { parseResourceActionLinkSlotsFromForm, stripActionLinkUploadMeta } from './resource-action-links.js'
 import { isDocumentResource, normalizeResourceKind, RESOURCE_KIND_DOCUMENT } from './resource-kinds.js'
@@ -188,7 +188,19 @@ export class AdminBulletinWriteMethods {
         bulletin.isActive = false;
 
         // Create the Firestore document FIRST to get an ID
-        const docRef = await addDoc(collection(db, 'bulletins'), bulletin);
+        const publishingDraftId = this.draftId;
+        const docRef = publishingDraftId ? doc(db, 'bulletins', publishingDraftId)
+            : await addDoc(collection(db, 'bulletins'), bulletin);
+        if (publishingDraftId) {
+            // Keep the saved private form intact until publication completes.
+            delete bulletin.createdAt;
+            delete bulletin.datePosted;
+            await runTransaction(db, async transaction => {
+                const saved = (await transaction.get(docRef)).data();
+                if (!saved?.privateDraft) throw new Error('This draft has already been published or deleted.');
+                transaction.update(docRef, bulletin);
+            });
+        }
         const bulletinId = docRef.id;
 
         let assetsReady = false;
@@ -236,6 +248,7 @@ export class AdminBulletinWriteMethods {
             if (shouldBeActive) {
                 await updateDoc(doc(db, 'bulletins', bulletinId), {
                     isActive: true,
+                    ...(publishingDraftId ? { privateDraft: false, draftData: deleteField(), datePosted: serverTimestamp() } : {}),
                     updatedAt: serverTimestamp(),
                 });
             }
@@ -243,7 +256,7 @@ export class AdminBulletinWriteMethods {
             // The admin listener only loads isActive==true docs, so an inactive
             // placeholder becomes invisible. Remove failed/cancelled drafts; keep
             // the doc only if uploads finished but the final activation write failed.
-            if (!assetsReady) {
+            if (!assetsReady && !publishingDraftId) {
                 try {
                     await deleteDoc(doc(db, 'bulletins', bulletinId));
                 } catch (cleanupError) {
@@ -656,6 +669,10 @@ export class AdminBulletinWriteMethods {
             || this.editReturnManagePage
             || this.getManagePageForContentMode(this.contentMode);
         this.editReturnManagePage = null;
+        this.draftId = null;
+        this.draftDirty = false;
+        const draftButton = document.getElementById('saveDraftBtn');
+        if (draftButton) draftButton.hidden = false;
 
         // Reset edit mode
         this.isEditMode = false;
