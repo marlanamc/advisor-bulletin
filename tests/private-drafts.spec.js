@@ -42,7 +42,7 @@ test('manual draft save, reload, validation and same-ID publication', async ({ p
     const category = document.querySelector('[data-cat="announcement"]');
     if (category) category.click();
   });
-  await page.locator('#cxDesc').fill('A saved announcement.');
+  await page.locator('#cxDescEditor').fill('A saved announcement.');
   await page.locator('#cxSubmitBtn').click();
   await page.waitForFunction(id => window.adminPanel.bulletins.some(b => b.id === id && b.isActive), id);
   expect(await page.evaluate(id => window.adminPanel.drafts.some(d => d.id === id), id)).toBe(false);

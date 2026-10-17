@@ -1,3 +1,4 @@
+import { initDescriptionFormatToolbars, refreshRichEditors } from './description-format.js'
 import {
     getActionResourceChipLabel,
     getCanonicalResourceChipCatalog,
@@ -1037,6 +1038,7 @@ function clearComposerForNewPost() {
     const descInp = document.getElementById('cxDesc')
     if (titleInp) titleInp.value = ''
     if (descInp) descInp.value = ''
+    refreshRichEditors(document.querySelector('.cx-doc'))
 
     resetCategoryPill()
     clearAllBlocks({ clearActionLinkMirrors: true })
@@ -1104,6 +1106,9 @@ function applyMode(options = {}) {
         if (titleInp) titleInp.placeholder = 'Untitled post — type a title'
         if (descInp)  descInp.placeholder  = 'Write what it is, who it\'s for, and how to sign up…'
     }
+
+    const descEditor = document.getElementById('cxDescEditor')
+    if (descEditor && descInp) descEditor.dataset.placeholder = descInp.placeholder
 
     // Sync contentType hidden field so handleBulletinSubmit routes correctly
     mirror('contentType', isResource ? 'resource' : 'post')
@@ -1562,6 +1567,8 @@ export function hydrateFromForm() {
     if (titleInp) titleInp.value = contentType === 'resource' ? gv('resourceTitleEn') : gv('title')
     if (descInp)  descInp.value  = contentType === 'resource' ? gv('resourceDescription') : gv('description')
 
+    refreshRichEditors(document.querySelector('.cx-doc'))
+
     // Insert optional blocks for whichever fields are present
     clearAllBlocks()
 
@@ -1905,6 +1912,7 @@ export function mountPostComposer() {
     bindTypeTabs()
     bindResKindButtons()
     bindCoreFields()
+    initDescriptionFormatToolbars()
     bindEventHero()
     bindInsertButton()
     buildCatPopover()

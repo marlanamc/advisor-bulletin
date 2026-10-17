@@ -83,8 +83,10 @@ export function normalizeInlineBullets(text) {
     }
 
     return String(text)
+        .replace(/\r\n?/g, '\n')
         .split('\n')
         .map((line) => {
+            line = line.replace(/^\s*[-*•◦▪●‣]\s+/, '- ');
             if (/^\s*-\s+/.test(line)) {
                 return line;
             }
