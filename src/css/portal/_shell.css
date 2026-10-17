@@ -352,6 +352,35 @@ body.ap-portal-active .main-content {
   background: linear-gradient(135deg, rgba(26,86,219,.45), rgba(26,86,219,.25));
 }
 
+/* Drafts stay easy to find, with a stronger amber state on the drafts page. */
+#apNavDrafts {
+  background: rgba(251,191,36,.08);
+  color: #fcd77d;
+}
+
+#apNavDrafts .ap-nav-icon {
+  background: rgba(251,191,36,.12);
+}
+
+#apNavDrafts:hover {
+  background: rgba(251,191,36,.15);
+  color: #ffe5a3;
+}
+
+#apNavDrafts.active {
+  background: rgba(251,191,36,.22);
+  color: #fff0c2;
+}
+
+#apNavDrafts.active .ap-nav-icon {
+  background: rgba(251,191,36,.24);
+}
+
+#apNavDrafts:focus-visible {
+  outline: 2px solid #fcd77d;
+  outline-offset: 2px;
+}
+
 .ap-nav-divider {
   height: 1px;
   background: rgba(255,255,255,.07);
