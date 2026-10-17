@@ -18,7 +18,7 @@ export function markdownToHtml(rawText) {
         return '';
     }
 
-    return formatRichTextInline(rawText);
+    return formatRichTextInline(rawText, { wrapParagraphs: true });
 }
 
 export function htmlToMarkdown(root) {
@@ -35,6 +35,7 @@ export function htmlToMarkdown(root) {
         }
 
         const tag = node.tagName.toLowerCase();
+        if (['script', 'style', 'iframe', 'object', 'svg', 'template'].includes(tag)) return '';
         const inner = Array.from(node.childNodes).map(walk).join('');
 
         if (tag === 'strong' || tag === 'b') {
@@ -128,6 +129,7 @@ export function refreshRichEditors(root = document) {
             return;
         }
 
+        editor.dataset.placeholder = textarea.placeholder || '';
         editor.innerHTML = markdownToHtml(textarea.value || '');
         editor.classList.toggle('is-empty', !textarea.value.trim());
     });
@@ -180,6 +182,8 @@ function createRichEditor(textarea) {
         labelledBy.setAttribute('for', editor.id);
     }
 
+    if (labelledBy) labelledBy.setAttribute('for', editor.id);
+
     textarea.classList.add('ap-rich-source');
     textarea.setAttribute('aria-hidden', 'true');
     textarea.tabIndex = -1;
@@ -203,8 +207,14 @@ function createRichEditor(textarea) {
 
     editor.addEventListener('paste', (event) => {
         event.preventDefault();
+        const html = event.clipboardData?.getData('text/html') || '';
         const text = event.clipboardData?.getData('text/plain') || '';
-        document.execCommand('insertText', false, text);
+        // Parse clipboard HTML in an inert document, then rebuild only supported
+        // formatting through our escaped renderer. Never insert clipboard HTML.
+        const pasted = html
+            ? htmlToMarkdown(new DOMParser().parseFromString(html, 'text/html').body)
+            : text;
+        document.execCommand('insertHTML', false, markdownToHtml(pasted || text));
         handleSync();
     });
 
@@ -243,7 +253,10 @@ export function initDescriptionFormatToolbars(root = document) {
             editor = createRichEditor(textarea);
         }
 
+        if (toolbar.dataset.richToolbarBound) return;
+        toolbar.dataset.richToolbarBound = 'true';
         toolbar.querySelectorAll('[data-format]').forEach((btn) => {
+            btn.addEventListener('mousedown', (event) => event.preventDefault());
             btn.addEventListener('click', (event) => {
                 event.preventDefault();
                 applyEditorFormat(editor, btn.dataset.format);

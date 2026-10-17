@@ -199,7 +199,7 @@ test.describe('Advisor portal — refactor safety net', () => {
     await page.locator('#cxCatBtn').click();
     await page.locator('#cxCatPop .cx-cat[data-cat="job"]').click();
     await page.locator('#cxTitle').fill('Warehouse hiring event');
-    await page.locator('#cxDesc').fill('Walk-in interviews Thursday 10am to 2pm.');
+    await page.locator('#cxDescEditor').fill('Walk-in interviews Thursday 10am to 2pm.');
     await page.locator('#cxSubmitBtn').click();
 
     await page.waitForFunction(() => window.__created?.length > 0);

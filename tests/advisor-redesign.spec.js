@@ -402,7 +402,7 @@ test.describe('Advisor redesign', () => {
     await page.locator('#cxCatBtn').click();
     await page.locator('#cxCatPop .cx-cat[data-cat="job"]').click();
     await page.locator('#cxTitle').fill('Hotel housekeeping interviews');
-    await page.locator('#cxDesc').fill('Bring your resume and meet the hiring manager.');
+    await page.locator('#cxDescEditor').fill('Bring your resume and meet the hiring manager.');
 
     await expect(page.locator('#cxCatBtn')).toContainText('Job');
     await expect(page.locator('#bulletinForm [name="category"]')).toHaveValue('job');
