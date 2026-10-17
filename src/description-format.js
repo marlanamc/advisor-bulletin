@@ -166,6 +166,7 @@ function createRichEditor(textarea) {
     editor.tabIndex = 0;
     editor.dataset.richEditor = textarea.id;
     editor.setAttribute('aria-multiline', 'true');
+    if (textarea.lang) editor.lang = textarea.lang;
 
     if (textarea.placeholder) {
         editor.dataset.placeholder = textarea.placeholder;

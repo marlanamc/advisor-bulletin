@@ -79,8 +79,16 @@ const BLOCK_DEFS = {
   <input class="cx-input" data-cx-mirror="${isRes ? 'resourceTitleEs' : 'titleEs'}" placeholder="If blank, English is used">
 </div>
 <div class="cx-field">
-  <label class="cx-label">Spanish summary <span class="cx-opt-tag">optional</span></label>
-  <textarea class="cx-textarea" rows="2" data-cx-mirror="${isRes ? 'resourceSummaryEs' : 'summaryEs'}" placeholder="Paste a translation — you don't have to write it yourself"></textarea>
+  <label class="cx-label" for="cxDescEs">Spanish description <span class="cx-opt-tag">optional</span></label>
+  <div class="cx-description-field">
+    <div class="cx-description-toolbar" data-rich-toolbar aria-controls="cxDescEs" role="group" aria-label="Spanish description formatting">
+      <button type="button" data-format="bold" aria-label="Bold"><strong>B</strong></button>
+      <button type="button" data-format="italic" aria-label="Italic"><em>I</em></button>
+      <button type="button" data-format="underline" aria-label="Underline"><u>U</u></button>
+      <button type="button" data-format="bullet">• Bullets</button>
+    </div>
+    <textarea class="cx-textarea" id="cxDescEs" lang="es" rows="2" data-cx-mirror="${isRes ? 'resourceSummaryEs' : 'summaryEs'}" placeholder="Paste a translation — you don't have to write it yourself"></textarea>
+  </div>
 </div>`
         },
     },
@@ -947,6 +955,7 @@ ${htmlContent}`
     }
 
     prefillBlockFromMirrors(block)
+    initDescriptionFormatToolbars(block)
     syncMirrors()
     syncPreview()
 }
