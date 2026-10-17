@@ -101,7 +101,7 @@ export class AdminDraftMethods {
             else await setDoc(ref, { ...data, postedBy: this.getAuthPostedBy(), createdAt: serverTimestamp(), datePosted: serverTimestamp() });
             this.draftId = ref.id;
             this.draftDirty = this.draftVersion !== version;
-            this.showTemporaryMessage('Draft saved.', 'success');
+            this.showTemporaryMessage('Saved to My Drafts. Only you can see it.', 'success');
         } catch (error) {
             this.showTemporaryMessage(error.message || 'Unable to save draft. Please try again.', 'error');
         } finally {

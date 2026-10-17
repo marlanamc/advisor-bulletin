@@ -78,7 +78,10 @@
                 <div class="ap-sidebar-brand" data-ebhcs-brand-lockup data-brand-href="/" data-brand-variant="sidebar" data-brand-portal-tag="true"></div>
 
                 <nav class="ap-nav" role="navigation">
-                    <button class="ap-nav-item" type="button" data-ap-page="drafts" id="apNavDrafts">My Drafts</button>
+                    <button class="ap-nav-item" type="button" data-ap-page="drafts" id="apNavDrafts">
+                        <div class="ap-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg></div>
+                        My Drafts
+                    </button>
                     <button class="ap-nav-item ap-nav-create" type="button" data-ap-page="create" id="apNavCreate">
                         <div class="ap-nav-icon">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -496,6 +499,7 @@
                                         </button>
                                     </div>
                                     <label id="cxDescLabel" for="cxDesc">Description</label>
+                                    <div class="cx-description-field">
                                     <div class="cx-description-toolbar" data-rich-toolbar aria-controls="cxDesc" role="group" aria-label="Description formatting">
                                         <button type="button" data-format="bold" aria-label="Bold"><strong>B</strong></button>
                                         <button type="button" data-format="italic" aria-label="Italic"><em>I</em></button>
@@ -503,6 +507,7 @@
                                         <button type="button" data-format="bullet">• Bullets</button>
                                     </div>
                                     <textarea class="cx-doc-body" id="cxDesc" placeholder="Write what it is, who it's for, and how to sign up…" maxlength="2000"></textarea>
+                                    </div>
 
                                     <!-- resource help chips (resource mode only) -->
                                     <div class="cx-resblock cx-hidden" id="cxChipsBlock">
@@ -526,6 +531,10 @@
                                 </div>
                             </div>
 
+                            <div class="cx-draft-help">
+                                <span>Save a draft to finish later. Only you can see it.</span>
+                                <button type="button" data-ap-page="drafts">View My Drafts <span aria-hidden="true">→</span></button>
+                            </div>
                             <div class="cx-actions">
                                 <button type="button" class="ap-btn" id="saveDraftBtn">Save Draft</button>
                                 <button type="button" class="cx-btn-primary" id="cxSubmitBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Post to students</button>
