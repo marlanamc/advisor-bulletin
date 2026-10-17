@@ -9,3 +9,6 @@
 @import './portal/_toast.css';
 @import './portal/_mobile.css';
 @import './portal/_composer.css';
+
+/* Published posts use the existing update action, never private draft saving. */
+#saveDraftBtn[hidden] { display: none; }

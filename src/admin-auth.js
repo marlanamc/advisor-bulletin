@@ -81,6 +81,7 @@ export class AdminAuthMethods {
             this.showAdminPanel();
             this.clearLoginForm();
             this.setupRealtimeListener();
+            this.setupDraftListener();
             this.loadManageBulletins();
 
             // The name shown so far is just the email username — pulse the
@@ -126,6 +127,11 @@ export class AdminAuthMethods {
             this.bulletinsUnsubscribe();
             this.bulletinsUnsubscribe = null;
         }
+        this.draftsUnsubscribe?.();
+        this.draftsUnsubscribe = null;
+        this.drafts = [];
+        this.resetForm({ stayOnCreate: true });
+        this.renderMyDrafts();
         this.hideAdminPanel();
         this.clearLoginForm();
         this.setAuthView('login');

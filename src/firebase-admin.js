@@ -51,6 +51,7 @@ import { AdminToastMethods } from './admin-toasts.js'
 import { AdminAuthMethods } from './admin-auth.js'
 import { AdminDashboardMethods } from './admin-dashboard.js'
 import { AdminEditMethods } from './admin-edit.js'
+import { AdminDraftMethods } from './admin-drafts.js'
 import { AdminBulletinWriteMethods } from './admin-bulletin-write.js'
 
 // Firebase-enabled Admin Panel
@@ -81,6 +82,7 @@ class FirebaseAdminPanel {
 
     init() {
         this.bindEvents();
+        this.bindDraftEvents();
         this.setupOfflineHandling();
         this.setupRedesignEnhancements();
     }
@@ -882,6 +884,7 @@ applyMethods(FirebaseAdminPanel, AdminAuthMethods)
 applyMethods(FirebaseAdminPanel, AdminDashboardMethods)
 applyMethods(FirebaseAdminPanel, AdminEditMethods)
 applyMethods(FirebaseAdminPanel, AdminBulletinWriteMethods)
+applyMethods(FirebaseAdminPanel, AdminDraftMethods)
 
 // showTab / handleTabKeydown / toggleDateFields moved to
 // ./admin-tab-globals.js — mountAdvisorPortal assigns them onto window for

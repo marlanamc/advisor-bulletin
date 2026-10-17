@@ -20,7 +20,7 @@ import {
     assertFails,
     assertSucceeds,
 } from '@firebase/rules-unit-testing';
-import { doc, getDoc, setDoc, deleteDoc, updateDoc, addDoc, collection } from 'firebase/firestore';
+import { doc, getDoc, setDoc, deleteDoc, updateDoc, addDoc, collection, getDocs, query, where } from 'firebase/firestore';
 import { POST_CATEGORIES } from '../../src/feed-categories.js';
 
 let testEnv;
@@ -388,5 +388,41 @@ describe('people who should be shut out', () => {
         await assertFails(setDoc(doc(db, 'bulletins/new6'), post('nobody')));
         await assertFails(deleteDoc(doc(db, 'bulletins/p1')));
         await assertFails(getDoc(doc(db, 'advisors/cbaglio')));
+    });
+});
+
+
+describe('private manual drafts', () => {
+    const draft = () => ({ privateDraft: true, isActive: false, authorUid: 'rocha', postedBy: 'rocha', title: '', draftData: { fields: [] } });
+    test('incomplete drafts can be saved repeatedly, queried by owner, and deleted', async () => {
+        const db = ctx('rocha@ebhcs.org');
+        await assertSucceeds(setDoc(doc(db, 'bulletins/draft1'), draft()));
+        await assertSucceeds(updateDoc(doc(db, 'bulletins/draft1'), { title: 'Work in progress' }));
+        const result = await assertSucceeds(getDocs(query(collection(db, 'bulletins'), where('authorUid', '==', 'rocha'))));
+        assert.equal(result.size, 1);
+        await assertSucceeds(deleteDoc(doc(db, 'bulletins/draft1')));
+        assert.equal((await getDoc(doc(db, 'bulletins/p1'))).exists(), true);
+    });
+    test('other advisors, admins and anonymous users cannot read, edit, delete, or query a draft', async () => {
+        await setDoc(doc(ctx('rocha@ebhcs.org'), 'bulletins/draft1'), draft());
+        for (const db of [ctx('vlalin@ebhcs.org'), ctx('cbaglio@ebhcs.org'), testEnv.unauthenticatedContext().firestore()]) {
+            await assertFails(getDoc(doc(db, 'bulletins/draft1')));
+            await assertFails(updateDoc(doc(db, 'bulletins/draft1'), { title: 'Stolen' }));
+            await assertFails(deleteDoc(doc(db, 'bulletins/draft1')));
+            await assertFails(getDocs(query(collection(db, 'bulletins'), where('authorUid', '==', 'rocha'))));
+        }
+    });
+    test('active queries exclude drafts and publishing validates content on the same ID', async () => {
+        const db = ctx('rocha@ebhcs.org');
+        const ref = doc(db, 'bulletins/draft1');
+        await setDoc(ref, draft());
+        const active = await assertSucceeds(getDocs(query(collection(db, 'bulletins'), where('isActive', '==', true))));
+        assert.equal(active.docs.some(d => d.id === 'draft1'), false);
+        await assertFails(updateDoc(ref, { privateDraft: false, isActive: true }));
+        await assertFails(updateDoc(ref, { isActive: true }));
+        await assertFails(updateDoc(ref, { authorUid: 'vlalin' }));
+        await assertSucceeds(updateDoc(ref, { ...post('rocha'), privateDraft: false }));
+        await assertSucceeds(getDoc(doc(ctx('vlalin@ebhcs.org'), 'bulletins/draft1')));
+        await assertFails(updateDoc(doc(db, 'bulletins/p1'), draft()));
     });
 });
