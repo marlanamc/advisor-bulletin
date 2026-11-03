@@ -198,7 +198,11 @@ export class AdminBulletinWriteMethods {
             await runTransaction(db, async transaction => {
                 const saved = (await transaction.get(docRef)).data();
                 if (!saved?.privateDraft) throw new Error('This draft has already been published or deleted.');
-                transaction.update(docRef, bulletin);
+                // Drop the draft's stored attachment copies (up to 900 KB) before
+                // the flyer images are inlined below; otherwise draftData + image
+                // + imageEs can exceed Firestore's 1 MiB document limit and the
+                // publish fails. The files are still in the open form.
+                transaction.update(docRef, { ...bulletin, 'draftData.files': [] });
             });
         }
         const bulletinId = docRef.id;
