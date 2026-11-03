@@ -451,7 +451,7 @@ export class AdminAttachmentMethods {
                 } else if (flyerSource.convertedFromPdf) {
                     const pdfReadyMessage = fieldName === 'image'
                         ? 'PDF preview ready. The full PDF will be attached when you post.'
-                        : 'Spanish PDF preview ready. Page 1 will show when students switch to Spanish.';
+                        : 'Spanish PDF preview ready. The full Spanish PDF will be attached when you post.';
                     this.showTemporaryMessage(pdfReadyMessage, 'info');
                 }
             } catch (error) {
@@ -573,7 +573,7 @@ export class AdminAttachmentMethods {
             const converted = await convertPdfFirstPageToImageFile(file);
             const multiPageWarning = fieldName === 'image'
                 ? `This PDF has ${converted.pageCount} pages. Page 1 will show on the board; the full PDF will be attached.`
-                : `This PDF has ${converted.pageCount} pages. Page 1 will be used for the Spanish flyer.`;
+                : `This PDF has ${converted.pageCount} pages. Page 1 will show when students switch to Spanish; the full Spanish PDF will be attached.`;
             return {
                 uploadFile: converted.imageFile,
                 sourcePdf: file,

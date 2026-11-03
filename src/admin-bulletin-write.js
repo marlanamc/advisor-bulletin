@@ -233,7 +233,12 @@ export class AdminBulletinWriteMethods {
                 const imageFile = formData.get('image');
                 const imageEsFile = formData.get('imageEs');
                 const pdfFile = formData.get('pdf');
-                const attachSourcePdf = formData.get('attachSourcePdf') === 'on';
+                // The opt-out checkbox was removed from the composer (Jun 2026);
+                // a missing checkbox must mean "attach", or PDF flyers silently
+                // lose their full PDF.
+                const attachSourcePdf = document.getElementById('attachSourcePdf')
+                    ? formData.get('attachSourcePdf') === 'on'
+                    : true;
 
                 if (imageFile && imageFile.size > 0) {
                     await this.handleImageUpload(imageFile, bulletin, pdfFile, bulletinId, 'image', { attachSourcePdf });
@@ -316,6 +321,7 @@ export class AdminBulletinWriteMethods {
             } else {
                 bulletin.pdfUrl = existingBulletin.pdfUrl || null;
             }
+            bulletin.pdfUrlEs = this.isResourceBulletin(bulletin) ? null : (existingBulletin.pdfUrlEs || null);
             if (this.isResourceBulletin(bulletin)) {
                 bulletin.hasResourceLogo = existingBulletin.hasResourceLogo || false;
                 // If the form field is absent from the submission (hidden input missing) or
@@ -393,7 +399,9 @@ export class AdminBulletinWriteMethods {
             const imageFile = formData.get('image');
             const imageEsFile = formData.get('imageEs');
             const pdfFile = formData.get('pdf');
-            const attachSourcePdf = formData.get('attachSourcePdf') === 'on';
+            const attachSourcePdf = document.getElementById('attachSourcePdf')
+                ? formData.get('attachSourcePdf') === 'on'
+                : true;
 
             if (imageFile && imageFile.size > 0) {
                 await this.handleImageUpload(imageFile, bulletin, pdfFile, bulletinId, 'image', { attachSourcePdf });
@@ -597,7 +605,8 @@ export class AdminBulletinWriteMethods {
             isPublished: true,
             hideFromMainFeed: this.contentMode === 'event',
             image: null,
-            pdfUrl: null
+            pdfUrl: null,
+            pdfUrlEs: null
         };
 
         if (bulletin.eventLink) {
@@ -637,6 +646,7 @@ export class AdminBulletinWriteMethods {
                 if (payload.image) delete payload.image;
                 if (payload.imageEs) delete payload.imageEs;
                 if (payload.pdfUrl) delete payload.pdfUrl;
+                if (payload.pdfUrlEs) delete payload.pdfUrlEs;
                 if (payload.resourceLogo) delete payload.resourceLogo;
             }
 

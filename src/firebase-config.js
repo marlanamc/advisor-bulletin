@@ -1534,6 +1534,7 @@ class FirebaseBulletinBoard {
             || (bulletin.eventLink || '').trim()
             || bulletin.image
             || bulletin.pdfUrl
+            || bulletin.pdfUrlEs
         );
 
         return ['announcement', 'no-classes'].includes(bulletin.category) && !hasBody;
@@ -2304,11 +2305,13 @@ class FirebaseBulletinBoard {
                 throw new Error('Bulletin not found.');
             }
 
-            if (!bulletin.pdfUrl) {
+            const isSpanish = (document.body.getAttribute('data-lang') || 'EN') === 'ES';
+            const pdfUrl = (isSpanish && bulletin.pdfUrlEs) || bulletin.pdfUrl || bulletin.pdfUrlEs;
+            if (!pdfUrl) {
                 throw new Error('PDF not found for this bulletin.');
             }
 
-            await this.openResourcePdf(bulletin.pdfUrl);
+            await this.openResourcePdf(pdfUrl);
         } catch (error) {
             console.error('Error opening PDF:', error);
             alert('Failed to open PDF: ' + error.message);

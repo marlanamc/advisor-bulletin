@@ -272,7 +272,7 @@ export class BoardCalendarMethods {
                     </div>
 
                     <div class="bulletin-list-actions">
-                        ${bulletin.pdfUrl ? `
+                        ${(bulletin.pdfUrl || bulletin.pdfUrlEs) ? `
                             <button type="button" class="pdf-btn" aria-label="View PDF document for ${this.escapeAttribute(bulletin.title)}" data-calendar-action="open-pdf" data-bulletin-id="${this.escapeAttribute(bulletin.id)}">
                                 📄 View PDF
                             </button>

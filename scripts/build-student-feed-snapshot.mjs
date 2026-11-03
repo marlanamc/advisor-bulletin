@@ -86,6 +86,7 @@ function normalizeItem(id, data) {
     imageEs: compactUrl(data.imageEs, { allowImages: true }),
     eventLink: compactUrl(data.eventLink || data.url),
     pdfUrl: compactUrl(data.pdfUrl),
+    pdfUrlEs: compactUrl(data.pdfUrlEs),
   };
 
   if (type === 'resource') {

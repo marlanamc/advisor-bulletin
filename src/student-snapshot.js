@@ -307,7 +307,8 @@ function isCalendarOnly(item) {
         && !item.description
         && !item.eventLink
         && !item.image
-        && !item.pdfUrl;
+        && !item.pdfUrl
+        && !item.pdfUrlEs;
 }
 
 function createCard(item, index) {
@@ -447,6 +448,7 @@ function serializeBulletinForSnapshot(item) {
         imageEs: compactStoredUrl(item.imageEs),
         eventLink: compactStoredUrl(item.eventLink || item.url),
         pdfUrl: compactStoredUrl(item.pdfUrl),
+        pdfUrlEs: compactStoredUrl(item.pdfUrlEs),
     };
 }
 

@@ -75,6 +75,10 @@ export class AdminUploadMethods {
                 if (pdfToUpload) {
                     await this.handlePdfUpload(pdfToUpload, bulletin, editingId);
                 }
+            } else if (fieldName === 'imageEs' && isPdfFile(file)) {
+                // Keep the full Spanish PDF so Spanish readers can open every
+                // page, not just the converted page-1 card image.
+                await this.handlePdfUpload(file, bulletin, editingId, 'pdfUrlEs');
             }
 
             if (processedImage.infoMessage && !usedCachedImage) {
@@ -82,7 +86,7 @@ export class AdminUploadMethods {
             } else if (fieldName === 'image' && isPdfFile(file) && !usedCachedImage) {
                 this.showTemporaryMessage('PDF flyer converted. Students will see page 1 on the board and can open the full PDF from the post.', 'success');
             } else if (fieldName === 'imageEs' && isPdfFile(file) && !usedCachedImage) {
-                this.showTemporaryMessage('Spanish PDF flyer converted. Students will see page 1 when they switch to Spanish.', 'success');
+                this.showTemporaryMessage('Spanish PDF flyer converted. Students will see page 1 when they switch to Spanish and can open the full Spanish PDF.', 'success');
             }
         } catch (error) {
             console.error('Image processing error:', error);
@@ -96,7 +100,7 @@ export class AdminUploadMethods {
         }
     }
 
-    async handlePdfUpload(file, bulletin, editingId = null) {
+    async handlePdfUpload(file, bulletin, editingId = null, fieldName = 'pdfUrl') {
         try {
 
             // Check file size (10MB limit)
@@ -121,7 +125,8 @@ export class AdminUploadMethods {
             // Generate unique filename using the bulletin ID
             const timestamp = Date.now();
             const bulletinId = editingId || 'unknown';
-            const filename = `pdfs/${bulletinId}_${timestamp}.pdf`;
+            const suffix = fieldName === 'pdfUrlEs' ? '_es' : '';
+            const filename = `pdfs/${bulletinId}_${timestamp}${suffix}.pdf`;
 
             // Create storage reference and upload with explicit content-type
             const fileRef = storageRef(storage, filename);
@@ -134,8 +139,9 @@ export class AdminUploadMethods {
             // Update the document with the PDF URL
             if (editingId) {
                 await updateDoc(doc(db, 'bulletins', editingId), {
-                    pdfUrl: downloadUrl
+                    [fieldName]: downloadUrl
                 });
+                bulletin[fieldName] = downloadUrl;
                 this.showTemporaryMessage('PDF uploaded successfully!', 'success');
                 this.loadManageBulletins();
             } else {

@@ -169,6 +169,7 @@ export class AdminComposerFormMethods {
             || (bulletin.eventLink || '').trim()
             || bulletin.image
             || bulletin.pdfUrl
+            || bulletin.pdfUrlEs
         );
 
         return ['announcement', 'no-classes'].includes(bulletin.category) && !hasBody;
