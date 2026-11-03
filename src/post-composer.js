@@ -1226,7 +1226,7 @@ function bindUploads() {
     const esZone = document.querySelector('#cxBulletinHero [data-cx-upload="es"]')
     if (esZone) {
         const fileInput = document.createElement('input')
-        fileInput.type = 'file'; fileInput.accept = 'image/*'; fileInput.hidden = true
+        fileInput.type = 'file'; fileInput.accept = 'image/*,application/pdf'; fileInput.hidden = true
         fileInput.name = 'imageEs'; fileInput.id = '_cxUploadEs'
         document.getElementById('bulletinForm')?.appendChild(fileInput)
         const btn = esZone.querySelector('.cx-flyerbtn')
@@ -1583,19 +1583,23 @@ export function hydrateFromForm() {
             // Restore bulletin date block conditional fields (range/sessions)
             const blkDateType = document.querySelector('#cxBlocks #cxBlkDateType')
             if (blkDateType) {
+                // Read saved sessions BEFORE the change event: its mirror sync
+                // removes every input[data-cx-session], which is how restored
+                // drafts lost their session dates.
+                const eventDates = Array.from(form.querySelectorAll('input[name="eventDates"]')).map(i => i.value)
+                const startTimes = Array.from(form.querySelectorAll('input[name="eventSessionStartTimes"]')).map(i => i.value)
+                const endTimes   = Array.from(form.querySelectorAll('input[name="eventSessionEndTimes"]')).map(i => i.value)
                 blkDateType.value = gv('dateType') || 'event'
                 blkDateType.dispatchEvent(new Event('change'))
                 // Restore session rows if needed
                 if (blkDateType.value === 'sessions') {
-                    const eventDates = Array.from(form.querySelectorAll('input[name="eventDates"]')).map(i => i.value)
-                    const startTimes = Array.from(form.querySelectorAll('input[name="eventSessionStartTimes"]')).map(i => i.value)
-                    const endTimes   = Array.from(form.querySelectorAll('input[name="eventSessionEndTimes"]')).map(i => i.value)
                     const datesBlock = document.querySelector('#cxBlocks [data-cx-block="dates"]')
                     const sesList = datesBlock?.querySelector('#cxBlkSessionsList')
                     const blkSync = datesBlock?._syncBlkDateMirrors
                     if (sesList && eventDates.length) {
                         sesList.innerHTML = ''
                         eventDates.forEach((d, i) => sesList.appendChild(buildSessionRow(d, startTimes[i] || '', endTimes[i] || '', blkSync)))
+                        blkSync?.()
                     }
                 }
                 if (blkDateType.value === 'range' || blkDateType.value === 'recurring') {
