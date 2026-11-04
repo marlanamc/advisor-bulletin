@@ -152,6 +152,39 @@
     }
 }
 
+/* Very narrow phones (iPhone SE 1st gen, small Androids, zoomed text):
+   "English / Español" + search + brand don't fit in 320px, so switch the
+   pill to EN / ES and let the brand text truncate instead of overflowing. */
+@media (max-width: 359px) {
+    .lang-label-full {
+        display: none;
+    }
+
+    .lang-label-short {
+        display: inline;
+    }
+
+    .lang-btn {
+        min-width: 40px;
+    }
+
+    .topbar-actions {
+        gap: 6px;
+    }
+
+    .topbar-brand,
+    .topbar-brand-lockup {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    .topbar-brand-text > span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}
+
 @media (max-width: 420px) {
     .app-topbar {
         padding: 8px 12px;

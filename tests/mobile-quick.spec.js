@@ -82,6 +82,23 @@ test.describe('Quick mobile checks', () => {
     expect(layout.chipRailWidth).toBeLessThanOrEqual(layout.chipRailViewport + 1);
   });
 
+  test('no view overflows sideways on a 320px phone (even without the clip guard)', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 700 });
+    // html/body clip horizontal overflow as a safety net, which would hide
+    // regressions from a scrollWidth check — switch it off for the measurement.
+    await page.addStyleTag({ content: 'html, body { overflow-x: visible !important; }' });
+
+    for (const lang of ['EN', 'ES']) {
+      await page.locator(`[data-lang-switch="${lang}"]`).click();
+      for (const view of ['feed', 'calendar', 'resources', 'advisors', 'about']) {
+        const tab = page.locator(`.mobile-tab[data-app-view="${view}"]`);
+        if (await tab.count()) await tab.click();
+        const pageWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+        expect(pageWidth, `${lang} ${view}`).toBeLessThanOrEqual(321);
+      }
+    }
+  });
+
   test('Help schedule rows wrap long locations without horizontal overflow', async ({ page }) => {
     await page.locator('.mobile-tab[data-app-view="resources"]').click();
     await page.evaluate(() => {
