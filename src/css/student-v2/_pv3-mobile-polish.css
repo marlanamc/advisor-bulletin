@@ -990,3 +990,29 @@
         font-size: 19px;
     }
 }
+
+/* ── iOS focus-zoom guard ─────────────────────────────────────────
+   iOS Safari zooms the whole page in when a text field or select under
+   16px gets focus, and doesn't zoom back out afterwards — the page then
+   pans sideways everywhere (it looked like the search results "broke"
+   the site). 16px is the threshold; keep every form control at or above
+   it on touch-sized screens. */
+@media (max-width: 767px) {
+    input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+    select,
+    textarea,
+    .feed-category-select,
+    .search-layer.open .search-input,
+    .search-layer.open #searchInput {
+        font-size: 16px;
+    }
+}
+
+/* Long unbroken text (a pasted link, an echoed query, a long title) must
+   wrap inside the search panel instead of widening it. */
+.search-layer-panel,
+.search-results,
+.search-results-status {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}

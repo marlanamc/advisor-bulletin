@@ -99,6 +99,29 @@ test.describe('Quick mobile checks', () => {
     }
   });
 
+  test('form fields are at least 16px so iOS does not zoom the page on focus', async ({ page }) => {
+    await page.locator('#mobileSearchTrigger').click();
+    const tooSmall = await page.evaluate(() =>
+      [...document.querySelectorAll('input, select, textarea')]
+        .filter((el) => el.offsetParent && !['checkbox', 'radio', 'range', 'hidden'].includes(el.type))
+        .map((el) => ({ id: el.id || el.className, size: parseFloat(getComputedStyle(el).fontSize) }))
+        .filter((f) => f.size < 16)
+    );
+    expect(tooSmall).toEqual([]);
+  });
+
+  test('a long unbroken search query does not widen the search panel', async ({ page }) => {
+    await page.locator('#mobileSearchTrigger').click();
+    await page.fill('#searchInput', 'https://example.org/averyveryverylongurlwithoutanybreaksatall');
+    await page.locator('#searchBtn').click();
+    await expect(page.locator('#searchResults')).toBeVisible();
+    const panel = await page.evaluate(() => {
+      const el = document.querySelector('.search-layer-panel');
+      return { scroll: el.scrollWidth, client: el.clientWidth };
+    });
+    expect(panel.scroll).toBeLessThanOrEqual(panel.client + 1);
+  });
+
   test('Help schedule rows wrap long locations without horizontal overflow', async ({ page }) => {
     await page.locator('.mobile-tab[data-app-view="resources"]').click();
     await page.evaluate(() => {
