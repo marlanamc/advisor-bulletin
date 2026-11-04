@@ -82,6 +82,46 @@ test.describe('Quick mobile checks', () => {
     expect(layout.chipRailWidth).toBeLessThanOrEqual(layout.chipRailViewport + 1);
   });
 
+  test('no view overflows sideways on a 320px phone (even without the clip guard)', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 700 });
+    // html/body clip horizontal overflow as a safety net, which would hide
+    // regressions from a scrollWidth check — switch it off for the measurement.
+    await page.addStyleTag({ content: 'html, body { overflow-x: visible !important; }' });
+
+    for (const lang of ['EN', 'ES']) {
+      await page.locator(`[data-lang-switch="${lang}"]`).click();
+      for (const view of ['feed', 'calendar', 'resources', 'advisors', 'about']) {
+        const tab = page.locator(`.mobile-tab[data-app-view="${view}"]`);
+        if (await tab.count()) await tab.click();
+        const pageWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+        expect(pageWidth, `${lang} ${view}`).toBeLessThanOrEqual(321);
+      }
+    }
+  });
+
+  test('form fields are at least 16px so iOS does not zoom the page on focus', async ({ page }) => {
+    await page.locator('#mobileSearchTrigger').click();
+    const tooSmall = await page.evaluate(() =>
+      [...document.querySelectorAll('input, select, textarea')]
+        .filter((el) => el.offsetParent && !['checkbox', 'radio', 'range', 'hidden'].includes(el.type))
+        .map((el) => ({ id: el.id || el.className, size: parseFloat(getComputedStyle(el).fontSize) }))
+        .filter((f) => f.size < 16)
+    );
+    expect(tooSmall).toEqual([]);
+  });
+
+  test('a long unbroken search query does not widen the search panel', async ({ page }) => {
+    await page.locator('#mobileSearchTrigger').click();
+    await page.fill('#searchInput', 'https://example.org/averyveryverylongurlwithoutanybreaksatall');
+    await page.locator('#searchBtn').click();
+    await expect(page.locator('#searchResults')).toBeVisible();
+    const panel = await page.evaluate(() => {
+      const el = document.querySelector('.search-layer-panel');
+      return { scroll: el.scrollWidth, client: el.clientWidth };
+    });
+    expect(panel.scroll).toBeLessThanOrEqual(panel.client + 1);
+  });
+
   test('Help schedule rows wrap long locations without horizontal overflow', async ({ page }) => {
     await page.locator('.mobile-tab[data-app-view="resources"]').click();
     await page.evaluate(() => {

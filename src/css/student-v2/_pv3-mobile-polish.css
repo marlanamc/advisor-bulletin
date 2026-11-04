@@ -152,6 +152,39 @@
     }
 }
 
+/* Very narrow phones (iPhone SE 1st gen, small Androids, zoomed text):
+   "English / Español" + search + brand don't fit in 320px, so switch the
+   pill to EN / ES and let the brand text truncate instead of overflowing. */
+@media (max-width: 359px) {
+    .lang-label-full {
+        display: none;
+    }
+
+    .lang-label-short {
+        display: inline;
+    }
+
+    .lang-btn {
+        min-width: 40px;
+    }
+
+    .topbar-actions {
+        gap: 6px;
+    }
+
+    .topbar-brand,
+    .topbar-brand-lockup {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    .topbar-brand-text > span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}
+
 @media (max-width: 420px) {
     .app-topbar {
         padding: 8px 12px;
@@ -956,4 +989,30 @@
     .post-detail-action strong {
         font-size: 19px;
     }
+}
+
+/* ── iOS focus-zoom guard ─────────────────────────────────────────
+   iOS Safari zooms the whole page in when a text field or select under
+   16px gets focus, and doesn't zoom back out afterwards — the page then
+   pans sideways everywhere (it looked like the search results "broke"
+   the site). 16px is the threshold; keep every form control at or above
+   it on touch-sized screens. */
+@media (max-width: 767px) {
+    input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+    select,
+    textarea,
+    .feed-category-select,
+    .search-layer.open .search-input,
+    .search-layer.open #searchInput {
+        font-size: 16px;
+    }
+}
+
+/* Long unbroken text (a pasted link, an echoed query, a long title) must
+   wrap inside the search panel instead of widening it. */
+.search-layer-panel,
+.search-results,
+.search-results-status {
+    min-width: 0;
+    overflow-wrap: anywhere;
 }
