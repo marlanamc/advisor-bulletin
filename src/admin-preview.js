@@ -484,6 +484,7 @@ document.addEventListener('DOMContentLoaded', function() {
             family: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
             jobs: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>',
             'legal-aid': '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l-3 7H3l5.5 4-2 7L12 17l5.5 3-2-7L21 9h-6z"/></svg>',
+            'know-your-rights': '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg>',
             consulates: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="22" x2="4" y2="2"/><path d="M4 3h13l-3 4.5L17 12H4z"/></svg>',
             announcement: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>',
             'no-classes': '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="10" y1="14" x2="14" y2="18"/><line x1="14" y1="14" x2="10" y2="18"/></svg>',
@@ -550,6 +551,7 @@ document.addEventListener('DOMContentLoaded', function() {
         hse: '#0e7490',
         college: '#14315f',
         'legal-aid': '#55379e',
+        'know-your-rights': '#2f6f3e',
         money: '#1aa37a',
         consulates: '#0f6f7a'
     };
@@ -1204,6 +1206,7 @@ document.addEventListener('DOMContentLoaded', function() {
         'jobs':         { fill: 'ap-bar-fill-blue',   label: 'Job Help' },
         'hse':          { fill: 'ap-bar-fill-purple', label: 'GED / HSE' },
         'consulates':   { fill: 'ap-bar-fill-teal',   label: 'Consulates' },
+        'know-your-rights': { fill: 'ap-bar-fill-green', label: 'Know Your Rights' },
         'other':        { fill: 'ap-bar-fill-coral',  label: 'Other' }
     };
 

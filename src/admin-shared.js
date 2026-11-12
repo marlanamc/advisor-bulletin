@@ -16,6 +16,7 @@ export const ADMIN_RESOURCE_CATEGORY_DATA = {
     health:      ['Health / Salud', '❤️', 'heart'],
     housing:     ['Housing / Vivienda', '🏠', 'home'],
     'legal-aid': ['Legal Help / Ayuda legal', '⚖️', 'scale'],
+    'know-your-rights': ['Know Your Rights / Conozca sus derechos', '📄', 'document'],
     money:       ['Financial Help / Ayuda financiera', '💵', 'money'],
     esol:        ['English Class / Inglés', '🗣️', 'abc'],
     hse:         ['GED / HSE / Equivalencia escolar', '📚', 'abc'],

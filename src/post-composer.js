@@ -46,6 +46,7 @@ const CATS = {
     college:       { em: '🎓', chip: 'College',       bg: '#e1e6f0', fg: '#14315f' },
     money:         { em: '💵', chip: 'Money Help',    bg: '#d7f0e6', fg: '#1aa37a' },
     'legal-aid':   { em: '⚖️', chip: 'Legal Help',    bg: '#e8e2f7', fg: '#55379e' },
+    'know-your-rights': { em: '📄', chip: 'Know Your Rights', bg: '#dcefe0', fg: '#2f6f3e' },
     consulates:    { em: '🛂', chip: 'Consulates',    bg: '#dbeff2', fg: '#0f6f7a' },
     'career-fair': { em: '🤝', chip: 'Career Fair',   bg: '#e6f2d0', fg: '#4d7c0f' },
     announcement:  { em: '📣', chip: 'Announcement',  bg: '#dbeafe', fg: '#317dea' },
@@ -56,7 +57,7 @@ const PRIMARY_CATS = ['job', 'training', 'immigration', 'housing', 'health', 'an
 // The categories a BULLETIN POST may be filed under. CATS above is only a
 // chip-colour map shared with resource authoring, so it holds resource-tile
 // categories (jobs, family, family-community, general, hse, legal-aid,
-// consulates) that are not valid post categories. Offering those in the post
+// know-your-rights, consulates) that are not valid post categories. Offering those in the post
 // picker produced a card that firestore.rules rejects outright — a bare
 // "Missing or insufficient permissions" on submit — and that the student feed
 // has no filter for. POST_CATEGORIES (src/feed-categories.js) is the canonical
@@ -277,6 +278,7 @@ const CHIP_BUCKET_LABELS = {
     food: 'Food',
     housing: 'Housing',
     'legal-aid': 'Legal Help',
+    'know-your-rights': 'Know Your Rights',
     immigration: 'Immigration',
     jobs: 'Job Help',
     college: 'College',

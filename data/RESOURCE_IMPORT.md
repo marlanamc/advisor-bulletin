@@ -37,9 +37,9 @@ The launch CSV is intentionally selective. It should contain roughly **30-50 hig
 | Workforce/Training | `jobs` |
 | Education | `college` (override to `hse` for GED/HSE rows) |
 | Health & Wellness | `health` |
-| Immigration/Legal | `immigration` (override to `legal-aid` for general legal help, or `consulates` for a foreign consulate) |
+| Immigration/Legal | `immigration` (override to `legal-aid` for general legal help, `consulates` for a foreign consulate, or `know-your-rights` for a fact sheet or guide) |
 
-Valid categories match the student app: `immigration`, `jobs`, `housing`, `health`, `food`, `family`, `hse`, `college`, `legal-aid`, `money`, `consulates`.
+Valid categories match the student app: `immigration`, `jobs`, `housing`, `health`, `food`, `family`, `hse`, `college`, `legal-aid`, `know-your-rights`, `money`, `consulates`.
 
 ## Curation checklist (`include=Y`)
 

@@ -159,6 +159,15 @@ export const RESOURCE_CATEGORY_CONFIG = {
         color: '#55379e',
         tint: '#e8e2f7'
     },
+    // Things to read and keep (fact sheets, guides, forms) rather than places
+    // to call or visit -- most cards here are `resourceKind: 'document'`.
+    'know-your-rights': {
+        labelEn: 'Know Your Rights',
+        labelEs: 'Conozca sus derechos',
+        icon: 'document',
+        color: '#2f6f3e',
+        tint: '#dcefe0'
+    },
     money: {
         labelEn: 'Financial Help',
         labelEs: 'Ayuda financiera',
@@ -410,6 +419,15 @@ export const RESOURCE_ICON_SVGS = {
             <rect x="4.5" y="2.5" width="15" height="19" rx="2.4"/>
             <circle cx="12" cy="10" r="3.6" fill="var(--icon-cut, #fff)"/>
             <rect x="8" y="16.4" width="8" height="1.9" rx=".95" fill="var(--icon-cut, #fff)"/>
+        </svg>
+    `,
+    document: `
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M6.4 2.2h8.4l5 5v12.4a2.2 2.2 0 0 1-2.2 2.2H6.4a2.2 2.2 0 0 1-2.2-2.2V4.4a2.2 2.2 0 0 1 2.2-2.2Z"/>
+            <path d="M14.4 2.9v3.3a1.5 1.5 0 0 0 1.5 1.5h3.3Z" fill="var(--icon-cut, #fff)"/>
+            <rect x="7.4" y="10.4" width="9.2" height="1.8" rx=".9" fill="var(--icon-cut, #fff)"/>
+            <rect x="7.4" y="13.8" width="9.2" height="1.8" rx=".9" fill="var(--icon-cut, #fff)"/>
+            <rect x="7.4" y="17.2" width="5.6" height="1.8" rx=".9" fill="var(--icon-cut, #fff)"/>
         </svg>
     `,
     flag: `

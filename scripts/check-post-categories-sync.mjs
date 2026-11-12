@@ -10,7 +10,7 @@
 // Why this exists: the post picker used to be built from Object.keys(CATS),
 // a chip-colour map shared with resource authoring. It therefore offered seven
 // resource-tile categories (jobs, family, family-community, general, hse,
-// legal-aid, consulates) that firestore.rules rejects, so choosing e.g.
+// legal-aid, know-your-rights, consulates) that firestore.rules rejects, so choosing e.g.
 // "Family & Community" failed the submit with a bare "Missing or insufficient
 // permissions" that had nothing to do with the advisor's permissions — and the
 // student feed had no filter for them either. Nothing compared the three lists,

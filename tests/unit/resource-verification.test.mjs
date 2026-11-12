@@ -16,7 +16,7 @@ const NOW = new Date('2026-09-09T12:00:00Z');
 // the shared definition is pinned here rather than in either caller.
 
 test('the categories students act on fastest get the tightest window', () => {
-    for (const c of ['food', 'housing', 'health', 'legal-aid', 'immigration']) {
+    for (const c of ['food', 'housing', 'health', 'legal-aid', 'know-your-rights', 'immigration']) {
         assert.equal(recheckWindowFor(c), 3, `${c} should be 3 months`);
     }
     for (const c of ['money', 'jobs', 'family', 'family-community', 'consulates']) {

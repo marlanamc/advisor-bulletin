@@ -373,9 +373,9 @@ test.describe('Advisor redesign', () => {
 
   test('the post category picker only offers categories a post can be saved with', async ({ page }) => {
     // The picker used to be built from the CATS colour map it shares with
-    // resource authoring, so "+ More topics" offered seven resource-tile
+    // resource authoring, so "+ More topics" offered eight resource-tile
     // categories (jobs, family, family-community, general, hse, legal-aid,
-    // consulates) that firestore.rules rejects — picking "Family & Community"
+    // know-your-rights, consulates) that firestore.rules rejects — picking "Family & Community"
     // failed the post with a bare "Missing or insufficient permissions".
     await showSeededAdvisorDashboard(page);
 
@@ -390,7 +390,7 @@ test.describe('Advisor redesign', () => {
       'job', 'training', 'immigration', 'housing', 'health', 'food',
       'esol', 'college', 'money', 'career-fair', 'announcement', 'no-classes',
     ]);
-    for (const dead of ['jobs', 'family', 'family-community', 'general', 'hse', 'legal-aid', 'consulates']) {
+    for (const dead of ['jobs', 'family', 'family-community', 'general', 'hse', 'legal-aid', 'know-your-rights', 'consulates']) {
       expect(offered).not.toContain(dead);
     }
   });

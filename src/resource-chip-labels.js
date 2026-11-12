@@ -162,6 +162,9 @@ const RESOURCE_CHIP_ES = {
     'get training': 'Obtener capacitación',
     'join tenant support': 'Unirse a apoyo de inquilinos',
     'learn your rights': 'Conocer sus derechos',
+    'read the fact sheet': 'Leer la hoja informativa',
+    'learn about a new law': 'Conocer una ley nueva',
+    'know what to do': 'Saber qué hacer',
     'let someone get your info if detained': 'Dejar que alguien obtenga su información si lo detienen',
     'practice job skills': 'Practicar habilidades laborales',
     'report a problem': 'Reportar un problema',
@@ -415,6 +418,13 @@ export const SUGGESTED_RESOURCE_CHIPS_BY_CATEGORY = {
         'Get work help',
         'Report a problem',
         'Get immigration help'
+    ],
+    'know-your-rights': [
+        'Learn your rights',
+        'Read the fact sheet',
+        'Learn about a new law',
+        'Make a family emergency plan',
+        'Know what to do'
     ],
     immigration: [
         'Get immigration help',

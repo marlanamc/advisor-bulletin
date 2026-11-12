@@ -17,6 +17,7 @@ export const CATEGORY_RECHECK_MONTHS = {
     housing: 3,
     health: 3,
     'legal-aid': 3,
+    'know-your-rights': 3,
     immigration: 3,
     money: 4,
     jobs: 4,
